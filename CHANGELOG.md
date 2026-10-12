@@ -17,6 +17,7 @@
 - analytics run entries record the death cause and the death height, apart from the highest height reached
 - analytics samples stamina every `staminaSampleIntervalS` seconds (default 2) while a run plays
 - analytics saves the session file on session open, run start, banana, web, branch hit, and game over, not only on game over, so a run in progress is on disk
+- analytics also saves every `autosaveIntervalS` seconds (default 10, 0 turns off) while a run plays; any save restarts the countdown
 - analytics marks a run cut short by stopping Play mode, a scene reload, or F9 as `Interrupted`, with all its graphs, and leaves it out of the death cause pie & death height histogram
 - `DeathCause` enum and `GameController.LastDeathCause`, set by `LoseGame(DeathCause)` before `Lost` is raised
 - `StaminaBarController.MaxStamina`: the balance config's stamina ceiling
