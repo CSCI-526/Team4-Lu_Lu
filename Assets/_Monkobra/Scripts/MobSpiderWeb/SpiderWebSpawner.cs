@@ -10,21 +10,17 @@ using UnityEngine;
 /// any object active from scene load, never under the pool's mock tree,
 /// which is deactivated at runtime.
 /// <para>
-/// The spawn rate comes from the Spider Web group of
-/// <see cref="GameBalanceConfig"/>: no web below the start climb, then each
-/// slot's chance, read at the segment's middle, follows the chance curve up
-/// to the max chance at the full-chance climb and stays there. A climb
-/// height is a spot's height above the player's start y, from
-/// <see cref="RampedDifficultyService"/>, so it is the distance the monkey
-/// climbs to meet the web, whatever the world y.
+/// Rolled like branches, from the Spider Web group of
+/// <see cref="GameBalanceConfig"/>: a fixed attempt count per segment, each
+/// attempt against the web probability curve sampled at the segment's ramped
+/// difficulty, read at its middle from <see cref="RampedDifficultyService"/>.
 /// </para>
 /// <para>
 /// A web lies on its segment's own stretch of bark facing outward: the
 /// prefab's strands sit in its local YZ plane, so local +X, the face normal,
 /// is turned away from the trunk axis. A candidate spot is dropped if it is
-/// below the start climb, too close to another web, or its trigger volume
-/// overlaps any branch or fruit. Out of retries, the web is skipped rather
-/// than placed overlapping.
+/// too close to another web, or its trigger volume overlaps any branch or
+/// fruit. Out of retries, the web is skipped rather than placed overlapping.
 /// </para>
 /// <para>
 /// Webs are children of their segment, so a restart's clear removes them.
@@ -43,7 +39,7 @@ public class SpiderWebSpawner: MonoBehaviour {
     private SpiderWebTrap webPrefab;
 
     [SerializeField]
-    [Tooltip("game balance tuning; web slots, start climb & chance ramp")]
+    [Tooltip("game balance tuning; web attempts & chance curve")]
     private GameBalanceConfig balanceConfig;
 
     [Header("Web Position")]
@@ -76,22 +72,17 @@ public class SpiderWebSpawner: MonoBehaviour {
     [Header("Testing")]
     [SerializeField]
     [Tooltip(
-        "replace the balance start climb and chance ramp w/ the 2 test "
-            + "values below. Tick it b4 Play to cover the first stack, and "
-            + "leave the scene unsaved"
+        "replace the balance chance curve w/ the test chance below. Tick it "
+            + "b4 Play to cover the first stack, and leave the scene unsaved"
     )]
     private bool useTestOverride = false;
 
     [SerializeField]
-    [Tooltip(
-        "start climb above the player's start y while testing; u. 0 may put "
-            + "a web on the monkey's start spot"
-    )]
-    private float testStartClimbU = 5f;
-
-    [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("chance 0~1 that one slot gets a web while testing, any height")]
+    [Tooltip(
+        "chance 0~1 that one attempt gets a web while testing, any "
+            + "difficulty. A web may land on the monkey's start spot"
+    )]
     private float testSpawnChance = 1f;
 
     // MonoBehaviour Lifecycle  ################################################
@@ -146,9 +137,8 @@ public class SpiderWebSpawner: MonoBehaviour {
         listener = null;
     }
 
-    // trigger volume of every spawned web, plus a ring at the start climb
-    // once the run's start y is known, visible in the Scene view, and in the
-    // Game view with Gizmos on
+    // trigger volume of every spawned web, visible in the Scene view, and in
+    // the Game view with Gizmos on
     private void OnDrawGizmos() {
         if (prefabTrigger == null) {
             return;
@@ -163,17 +153,6 @@ public class SpiderWebSpawner: MonoBehaviour {
             Gizmos.DrawWireCube(prefabTrigger.center, prefabTrigger.size);
         }
         Gizmos.matrix = Matrix4x4.identity;
-
-        if (balanceConfig != null && RampedDifficultyService.I != null) {
-            float startY =
-                RampedDifficultyService.I.PlayerGameStartYPosition
-                + StartClimbU;
-            Gizmos.color = GIZMO_START_COLOR;
-            DrawRing(
-                new Vector3(transform.position.x, startY, transform.position.z),
-                trunkRadiusU + GIZMO_RING_PADDING_U
-            );
-        }
     }
 
     // Editor Validation  ######################################################
@@ -183,7 +162,6 @@ public class SpiderWebSpawner: MonoBehaviour {
         minWebSeparationU = Mathf.Max(0f, minWebSeparationU);
         clearanceU = Mathf.Max(0f, clearanceU);
         maxPlacementAttempts = Mathf.Max(1, maxPlacementAttempts);
-        testStartClimbU = Mathf.Max(0f, testStartClimbU);
     }
 
     // Event Handlers  #########################################################
@@ -194,10 +172,7 @@ public class SpiderWebSpawner: MonoBehaviour {
     // constants  ##############################################################
     private const string BRANCH_TAG = "Branch";
     private const string FRUIT_TAG = "FruitCollider";
-    private const int GIZMO_RING_SEGMENTS = 48;
-    private const float GIZMO_RING_PADDING_U = 1f; // ring sits off the bark
     private static readonly Color GIZMO_WEB_COLOR = Color.yellow;
-    private static readonly Color GIZMO_START_COLOR = Color.cyan;
 
     // private members  ########################################################
     private static SpiderWebSpawner listener; // the one spawner subscribed
@@ -207,15 +182,11 @@ public class SpiderWebSpawner: MonoBehaviour {
     private bool hasWarnedNoDifficulty; // missing service logged once
     private readonly List<SpiderWebTrap> spawnedWebs = new();
 
-    // start climb in force, the test one while overriding; u
-    private float StartClimbU =>
-        useTestOverride ? testStartClimbU : balanceConfig.WebStartClimbU;
-
     // cached references  ------------------------------------------------------
     private BoxCollider prefabTrigger;
 
     // private methods  ########################################################
-    // rolls this spawner's web slots for segment, which already holds its
+    // rolls this spawner's web attempts for segment, which already holds its
     // branches
     private void PopulateSegment(DynamicTreeSegmentPrefabRoot segment) {
         if (segment == null || prefabTrigger == null) {
@@ -236,10 +207,10 @@ public class SpiderWebSpawner: MonoBehaviour {
 
         ClearWebs(segment);
 
-        // pivots sit mid-segment, so this is the segment's middle climb
-        float climbedU =
-            difficulty.GetClimbedYDistance(segment.transform.position.y);
-        float chance = GetSpawnChance(climbedU);
+        // pivots sit mid-segment, so this is the segment's middle difficulty
+        float chance = GetSpawnChance(
+            difficulty.GetRampedValueFromYPosition(segment.transform.position.y)
+        );
         if (chance <= 0f) {
             return;
         }
@@ -248,10 +219,10 @@ public class SpiderWebSpawner: MonoBehaviour {
         // poses into physics so the overlap test can see them
         Physics.SyncTransforms();
 
-        int slotCount = balanceConfig.WebSlotsPerSegment;
-        for (int slot = 0; slot < slotCount; slot++) {
+        int attemptCount = balanceConfig.WebAttemptCount;
+        for (int i = 0; i < attemptCount; i++) {
             if (Random.value < chance) {
-                TrySpawnWeb(segment, difficulty);
+                TrySpawnWeb(segment);
             }
         }
     }
@@ -275,31 +246,17 @@ public class SpiderWebSpawner: MonoBehaviour {
         }
     }
 
-    // chance 0~1 that one slot gets a web at climbedU above the start y
-    private float GetSpawnChance(float climbedU) {
-        if (climbedU < StartClimbU) {
-            return 0f;
-        }
+    // chance 0~1 that one attempt gets a web at rampedDifficulty
+    private float GetSpawnChance(float rampedDifficulty) {
         if (useTestOverride) {
             return testSpawnChance;
         }
-
-        float startU = balanceConfig.WebStartClimbU;
-        float fullU = balanceConfig.WebFullChanceClimbU;
-        // a zero-length ramp is at its top as soon as it starts
-        float progress = fullU > startU
-            ? Mathf.InverseLerp(startU, fullU, climbedU)
-            : 1f;
         return Mathf.Clamp01(
-            balanceConfig.WebMaxSpawnChance
-                * balanceConfig.WebSpawnChanceCurve.Evaluate(progress)
+            balanceConfig.WebSpawnProbabilityCurve.Evaluate(rampedDifficulty)
         );
     }
 
-    private bool TrySpawnWeb(
-        DynamicTreeSegmentPrefabRoot segment,
-        RampedDifficultyService difficulty
-    ) {
+    private bool TrySpawnWeb(DynamicTreeSegmentPrefabRoot segment) {
         Transform segmentXfm = segment.transform;
 
         // the trunk cylinder is centered on the segment pivot, so this keeps
@@ -322,7 +279,7 @@ public class SpiderWebSpawner: MonoBehaviour {
 
             Vector3 position = segmentXfm.TransformPoint(localPosition);
             Quaternion rotation = segmentXfm.rotation * localRotation;
-            if (!IsSpotClear(position, rotation, difficulty)) {
+            if (!IsSpotClear(position, rotation)) {
                 continue;
             }
 
@@ -339,15 +296,7 @@ public class SpiderWebSpawner: MonoBehaviour {
         return false;
     }
 
-    private bool IsSpotClear(
-        Vector3 position,
-        Quaternion rotation,
-        RampedDifficultyService difficulty
-    ) {
-        if (difficulty.GetClimbedYDistance(position.y) < StartClimbU) {
-            return false;
-        }
-
+    private bool IsSpotClear(Vector3 position, Quaternion rotation) {
         // a web already cleared off a restarted segment is inactive and
         // never counts
         foreach (SpiderWebTrap web in spawnedWebs) {
@@ -384,18 +333,5 @@ public class SpiderWebSpawner: MonoBehaviour {
         return hit.CompareTag(BRANCH_TAG)
             || hit.CompareTag(FRUIT_TAG)
             || hit.GetComponentInParent<BranchWithScriptRoot>() != null;
-    }
-
-    private static void DrawRing(Vector3 center, float radius) {
-        Vector3 previous = center + Vector3.forward * radius;
-        for (int i = 1; i <= GIZMO_RING_SEGMENTS; i++) {
-            float angleRad = i * 2f * Mathf.PI / GIZMO_RING_SEGMENTS;
-            Vector3 next =
-                center
-                + new Vector3(Mathf.Sin(angleRad), 0f, Mathf.Cos(angleRad))
-                    * radius;
-            Gizmos.DrawLine(previous, next);
-            previous = next;
-        }
     }
 }

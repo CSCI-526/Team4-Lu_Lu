@@ -78,23 +78,13 @@ public class GameBalanceConfig: ScriptableObject {
     public AnimationCurve BananaSpawnProbabilityCurve =>
         bananaSpawnProbabilityCurve;
 
-    /// <returns>web slots rolled per tree segment</returns>
-    public int WebSlotsPerSegment => webSlotsPerSegment;
+    /// <returns>web creation attempts rolled per segment</returns>
+    public int WebAttemptCount => webAttemptCount;
 
-    /// <returns>climb height above the player's start y below which no web
-    /// spawns; world u</returns>
-    public float WebStartClimbU => webStartClimbU;
-
-    /// <returns>climb height above the player's start y where the web chance
-    /// reaches its max; world u</returns>
-    public float WebFullChanceClimbU => webFullChanceClimbU;
-
-    /// <returns>highest chance 0~1 that one slot gets a web</returns>
-    public float WebMaxSpawnChance => webMaxSpawnChance;
-
-    /// <returns>x: progress 0~1 from the start climb to the full-chance
-    /// climb; y: share 0~1 of the max web chance</returns>
-    public AnimationCurve WebSpawnChanceCurve => webSpawnChanceCurve;
+    /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that one attempt
+    /// creates a web</returns>
+    public AnimationCurve WebSpawnProbabilityCurve =>
+        webSpawnProbabilityCurve;
 
     /// <returns>falling cobra creation attempts rolled per segment</returns>
     public int FallingCobraAttemptCount => fallingCobraAttemptCount;
@@ -220,37 +210,16 @@ public class GameBalanceConfig: ScriptableObject {
     [Header("Spider Web")]
     [SerializeField]
     [Min(0)]
-    [Tooltip("web slots rolled per tree segment")]
-    private int webSlotsPerSegment = 2;
-
-    [SerializeField]
-    [Min(0f)]
-    [Tooltip(
-        "climb height above the player's start y below which no web "
-            + "spawns; u"
-    )]
-    private float webStartClimbU = 50f;
-
-    [SerializeField]
-    [Min(0f)]
-    [Tooltip(
-        "climb height above the player's start y where the web chance "
-            + "reaches its max, never below the start climb; u"
-    )]
-    private float webFullChanceClimbU = 300f;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    [Tooltip("highest chance 0~1 that one slot gets a web")]
-    private float webMaxSpawnChance = 0.5f;
+    [Tooltip("web creation attempts rolled per segment")]
+    private int webAttemptCount = 2;
 
     [SerializeField]
     [Tooltip(
-        "x: progress 0~1 from the start climb to the full-chance climb; "
-            + "y: share 0~1 of the max web chance. Flat past x = 1"
+        "x: ramped difficulty 0~1; y: chance 0~1 that one attempt "
+            + "creates a web"
     )]
-    private AnimationCurve webSpawnChanceCurve =
-        AnimationCurve.Linear(0f, 0.2f, 1f, 1f);
+    private AnimationCurve webSpawnProbabilityCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 0.5f);
 
     [Header("Falling Cobra")]
     [SerializeField]
@@ -298,10 +267,7 @@ public class GameBalanceConfig: ScriptableObject {
             0,
             branchGenerationAttemptCount
         );
-        webSlotsPerSegment = Mathf.Max(0, webSlotsPerSegment);
-        webStartClimbU = Mathf.Max(0f, webStartClimbU);
-        webFullChanceClimbU = Mathf.Max(webStartClimbU, webFullChanceClimbU);
-        webMaxSpawnChance = Mathf.Clamp01(webMaxSpawnChance);
+        webAttemptCount = Mathf.Max(0, webAttemptCount);
         fallingCobraAttemptCount = Mathf.Max(0, fallingCobraAttemptCount);
         fallingCobraFallSpeedU = Mathf.Max(0f, fallingCobraFallSpeedU);
         fallingCobraHorizontalSpeedU = Mathf.Max(
