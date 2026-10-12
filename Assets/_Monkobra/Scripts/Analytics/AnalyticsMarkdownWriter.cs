@@ -32,7 +32,9 @@ public static class AnalyticsMarkdownWriter {
         if (run.Status == RunStatus.Lost) {
             sb.Append("- Death Height: ").Append(FormatHeight(end.Height));
             sb.Append('\n');
-            sb.Append("- Death Cause: ").Append(run.Cause).Append('\n');
+            sb.Append("- Death Cause: ").Append(
+                DeathCauseResolver.GetDisplayName(run.Cause)
+            ).Append('\n');
         }
         sb.Append('\n');
 
@@ -147,7 +149,9 @@ public static class AnalyticsMarkdownWriter {
         foreach (DeathCause cause in Enum.GetValues(typeof(DeathCause))) {
             int count = causes.FindAll(c => c == cause).Count;
             if (count > 0) {
-                sb.Append("    \"").Append(cause).Append("\" : ");
+                sb.Append("    \"");
+                sb.Append(DeathCauseResolver.GetDisplayName(cause));
+                sb.Append("\" : ");
                 sb.Append(count).Append('\n');
             }
         }

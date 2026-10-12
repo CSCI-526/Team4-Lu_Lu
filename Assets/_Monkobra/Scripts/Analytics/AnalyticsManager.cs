@@ -9,7 +9,8 @@ using UnityEngine.SceneManagement;
 /// Writes playtest analytics to a markdown file per session. A session is one
 /// game launch: the file opens with an h1 timestamp, and every game over
 /// appends one run entry. Scene restarts keep the same session, and the
-/// <see cref="restartSessionKey"/> forces a fresh file mid-launch.
+/// <see cref="AnalyticsConfig.RestartSessionKey"/> forces a fresh file
+/// mid-launch.
 /// <para>
 /// Attach to a root GameObject of the first scene. It is kept across scene
 /// reloads, and the copy each reload brings in destroys itself. Files land in
@@ -86,18 +87,8 @@ public class AnalyticsManager: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("forces a new session file")]
-    private Key restartSessionKey = Key.F9;
-
-    [SerializeField]
-    [Min(0.1f)]
-    [Tooltip("seconds b/t stamina samples while a run is playing")]
-    private float staminaSampleIntervalS = 2f;
-
-    [SerializeField]
-    [Min(0f)]
-    [Tooltip("seconds b/t timed saves while a run is playing, 0 turns off")]
-    private float autosaveIntervalS = 10f;
+    [Tooltip("shared analytics tuning")]
+    private AnalyticsConfig config;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -108,6 +99,13 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         I = this;
+        if (config == null) {
+            Debug.LogWarning(
+                "Analytics:\tno config assigned, using defaults",
+                this
+            );
+            config = ScriptableObject.CreateInstance<AnalyticsConfig>();
+        }
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
         // static event, webs spawn at runtime so none can be looked up here
@@ -124,9 +122,13 @@ public class AnalyticsManager: MonoBehaviour {
         ) {
             if (Time.time >= nextStaminaSampleTime) {
                 AddStaminaSample();
-                nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
+                nextStaminaSampleTime =
+                    Time.time + config.StaminaSampleIntervalS;
             }
-            if (autosaveIntervalS > 0f && Time.time >= nextAutosaveTime) {
+            if (
+                config.AutosaveIntervalS > 0f
+                && Time.time >= nextAutosaveTime
+            ) {
                 SaveSession();
             }
         }
@@ -136,7 +138,7 @@ public class AnalyticsManager: MonoBehaviour {
             return;
         }
 
-        if (keyboard[restartSessionKey].wasPressedThisFrame) {
+        if (keyboard[config.RestartSessionKey].wasPressedThisFrame) {
             Debug.LogWarning(
                 "Analytics:\trestart session key pressed, closing session "
                     + SessionFilePath,
@@ -183,7 +185,7 @@ public class AnalyticsManager: MonoBehaviour {
                 StartClock = DateTime.Now
             };
             AddStaminaSample();
-            nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
+            nextStaminaSampleTime = Time.time + config.StaminaSampleIntervalS;
             session.Runs.Add(currentRun);
             SaveSession();
         } else if (state == GameState.Lost) {
@@ -295,7 +297,7 @@ public class AnalyticsManager: MonoBehaviour {
     // whether the whole session was written to its file; any save, event or
     // timed, restarts the timed save countdown
     private bool SaveSession() {
-        nextAutosaveTime = Time.time + autosaveIntervalS;
+        nextAutosaveTime = Time.time + config.AutosaveIntervalS;
         if (string.IsNullOrEmpty(SessionFilePath)) {
             return false;
         }
@@ -307,7 +309,7 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     // closes the open run w/ status & saves, the run joined the session at its
-    // start; death cause is read only for a lost run
+    // start; death cause is inferred only for a lost run
     private void CloseRun(RunStatus status) {
         if (string.IsNullOrEmpty(SessionFilePath) || currentRun == null) {
             return;
@@ -318,9 +320,12 @@ public class AnalyticsManager: MonoBehaviour {
 
         // where & why the run ended, as opposed to the highest point reached
         run.End = CreateStamp();
-        GameController game = GameController.I;
-        if (status == RunStatus.Lost && game != null) {
-            run.Cause = game.LastDeathCause;
+        if (status == RunStatus.Lost) {
+            run.Cause = DeathCauseResolver.Resolve(
+                run,
+                run.End.Clock,
+                config.DeathCauseWindowS
+            );
         }
         run.Status = status;
         run.DurationS = Time.time - run.StartTime;
