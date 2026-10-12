@@ -20,6 +20,7 @@ Monkobra is a Unity course project (USC CSCI-526, Fall 2026) descended from a pa
 | Stack, scenes, run lifecycle, monkey, tree, stamina, score, input, UI, conventions | [Technical Design Document](docs/monkobra-tdd.md) |
 | Cobra, falling cobra, branches, spider webs, touch outcomes | [Mobs](docs/mob-doc.md) |
 | Detection zones, reach, release check, camera swap, outlines | [Grab System](docs/grab-doc.md) |
+| Why difficulty follows height, the roll model, the single balance asset | [Balance Design](docs/balance-doc.md) |
 | Controls, setup | [README](README.md) |
 | Git flow for teammates (Chinese) | [Work with Git](docs/work-with-git.md) |
 | Agent rules, WebGL export | [AGENTS.md](AGENTS.md) |
@@ -34,7 +35,7 @@ monkobra/
 ├── AGENTS.md          agent rules
 ├── CONTEXT.md         this file
 ├── CHANGELOG.md       version history, plus open triage tags in a comment
-├── docs/              design, technical, mob, grab, and git documents
+├── docs/              design, technical, mob, grab, balance, and git documents
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
 │   │   ├── Scenes/    Lv1Scene
@@ -95,7 +96,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | Script | Role | Detail |
 | --- | --- | --- |
 | `GameController/GameController`, `GameState`, `DeathCause` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost; `LoseGame` records a `DeathCause` | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
-| `GameController/GameBalanceConfig` | ScriptableObject holding every balance number | [TDD](docs/monkobra-tdd.md#game-balance) |
+| `GameController/GameBalanceConfig` | ScriptableObject holding every balance number | [Balance Design](docs/balance-doc.md) |
 | `Player/MonkeyPrefabRoot` | kinematic body: orbit, climb, stun, `IsHeld` | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/MonkeyConfig` | ScriptableObject of monkey tuning and input actions | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/ArmRoot` | one arm: climb stroke, reach, release check | [Grab](docs/grab-doc.md#reach-and-release) |
@@ -118,7 +119,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `MobGreatCobra/CobraCollisions` | cobra contact calls `LoseGame` | [Mobs](docs/mob-doc.md#contact) |
 | `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment, attempts against a probability curve at the segment's ramped difficulty | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `MobFallingCobra/FallingCobra` | dormant until the monkey is near, then warning, a constant fall that slides toward the monkey's angle, and a hit capsule | [Mobs](docs/mob-doc.md#falling-cobra) |
-| `GameController/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the one climb baseline, and maps it to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [TDD](docs/monkobra-tdd.md#tree) |
+| `GameController/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the one climb baseline, and maps it to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [Balance Design](docs/balance-doc.md#difficulty-follows-height) |
 | `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: one markdown file per launch in `persistentDataPath/Analytics/`, a run entry added on each game over, with death cause, death height, and Mermaid graphs (score split, height over time, stamina curve, run timeline); the file is rewritten per run so a session summary (death causes, death height histogram) stays on top, F9 starts a new session | none |
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |

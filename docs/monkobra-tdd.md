@@ -12,6 +12,7 @@ How Monkobra is built: the engine and packages, the run lifecycle, the systems t
 | [Grab System](grab-doc.md) | detection zones, arm reach, release check, camera swap, outline feedback |
 | [AGENTS.md](../AGENTS.md) | rules for agents, including the WebGL export steps |
 | [CONTEXT.md](../CONTEXT.md) | descriptive system map and known gaps |
+| [Balance Design](balance-doc.md) | why difficulty follows height, the per-segment roll model, the single balance asset |
 | [CHANGELOG.md](../CHANGELOG.md) | version history |
 
 A system gets its own document when it spans several scripts and carries rules a reader cannot see from one file. Everything else stays here.
@@ -84,7 +85,7 @@ Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and `Gam
 
 ## Game Balance
 
-Every game balance number lives in one asset, `Settings/GameBalanceConfig.asset`, an instance of the `GameBalanceConfig` ScriptableObject. To tweak the game's feel, edit that single file and nothing else: no balance value is held in a second asset or hard-coded in a script.
+Every game balance number lives in one asset (how height becomes spawn chances is in [Balance Design](balance-doc.md)), `Settings/GameBalanceConfig.asset`, an instance of the `GameBalanceConfig` ScriptableObject. To tweak the game's feel, edit that single file and nothing else: no balance value is held in a second asset or hard-coded in a script.
 
 | Group | Fields | Read by |
 | --- | --- | --- |
