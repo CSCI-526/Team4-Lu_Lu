@@ -137,10 +137,9 @@ public class AnalyticsManager: MonoBehaviour {
             && observedGame != null
             && observedGame.State == GameState.Playing
         ) {
-            if (Time.time >= nextStaminaSampleTime) {
-                AddStaminaSample();
-                nextStaminaSampleTime =
-                    Time.time + config.StaminaSampleIntervalS;
+            if (Time.time >= nextSampleTime) {
+                AddSample();
+                nextSampleTime = Time.time + config.SampleIntervalS;
             }
             if (
                 config.AutosaveIntervalS > 0f
@@ -204,8 +203,8 @@ public class AnalyticsManager: MonoBehaviour {
                 StartTime = Time.time,
                 StartClock = DateTime.Now
             };
-            AddStaminaSample();
-            nextStaminaSampleTime = Time.time + config.StaminaSampleIntervalS;
+            AddSample();
+            nextSampleTime = Time.time + config.SampleIntervalS;
             session.Runs.Add(currentRun);
             SaveSession();
         } else if (state == GameState.Lost) {
@@ -219,7 +218,6 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         currentRun.Bananas.Add(CreateStamp());
-        AddStaminaSample();
         SaveSession();
     }
 
@@ -244,7 +242,7 @@ public class AnalyticsManager: MonoBehaviour {
     private SessionData session = new SessionData();
     // run being played, null b/t a game over and the next start
     private RunData currentRun;
-    private float nextStaminaSampleTime;
+    private float nextSampleTime;
     private float nextAutosaveTime;
 
     // cached references  ------------------------------------------------------
@@ -300,16 +298,18 @@ public class AnalyticsManager: MonoBehaviour {
         );
     }
 
-    // records the stamina bar now, skipped w/o one in the scene
-    private void AddStaminaSample() {
-        StaminaBarController bar = StaminaBarController.I;
-        if (bar == null || currentRun == null) {
+    // records height & the stamina bar now, stamina reads 0 w/o a bar in the
+    // scene
+    private void AddSample() {
+        if (currentRun == null) {
             return;
         }
 
-        currentRun.StaminaSamples.Add(new StaminaSample(
+        StaminaBarController bar = StaminaBarController.I;
+        currentRun.Samples.Add(new RunSample(
             Time.time - currentRun.StartTime,
-            bar.CurrentStamina
+            CreateStamp().Height,
+            bar != null ? bar.CurrentStamina : 0f
         ));
     }
 
@@ -361,7 +361,7 @@ public class AnalyticsManager: MonoBehaviour {
 
         // the end sample needs the run to stay current for a moment
         currentRun = run;
-        AddStaminaSample();
+        AddSample();
         currentRun = null;
 
         if (SaveSession() && Debug.isDebugBuild) {
