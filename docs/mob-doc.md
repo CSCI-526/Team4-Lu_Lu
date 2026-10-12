@@ -6,7 +6,7 @@ Everything in the level that can hurt, hold, or hinder the monkey: the cobra, th
 
 | Mob | Touch | Result for the monkey | Run ends |
 | --- | --- | --- | --- |
-| Cobra | any solid part of the monkey meets any segment | `GameController.LoseGame` fires | ✔️ |
+| Cobra | any solid part of the monkey meets any segment | `GameController.LoseGame(DeathCause.Cobra)` fires | ✔️ |
 | Falling Cobra | the monkey's branch sensor meets its hit capsule | camera shake, stun, drop (same as a branch) | ❌ |
 | Branch | the monkey's branch sensor meets a `Branch`-tagged collider | camera shake, stun, drop | ❌ |
 | Spider Web | the monkey's solid body meets the web's trigger | body frozen, grab disabled, until the escape bar fills | ❌ |
@@ -85,7 +85,7 @@ For scale, the monkey climbs at up to 6 u/s ([Monkey Movement](monkobra-tdd.md#m
 
 ### Contact
 
-`CobraCollisions` runs on trigger enter and on trigger stay, so a monkey already inside the coil when an overlap begins is still caught. Any counted part calls `GameController.LoseGame`, which runs once per run.
+`CobraCollisions` runs on trigger enter and on trigger stay, so a monkey already inside the coil when an overlap begins is still caught. Any counted part calls `GameController.LoseGame(DeathCause.Cobra)`, which runs once per run.
 
 ## Falling Cobra
 

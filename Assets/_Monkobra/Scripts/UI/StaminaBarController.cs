@@ -13,6 +13,11 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
+    /// <returns>stamina ceiling from the balance config, 0 w/o a config
+    /// </returns>
+    public float MaxStamina =>
+        balanceConfig != null ? balanceConfig.MaxStamina : 0f;
+
     /// <summary>raised each time a fruit restores stamina</summary>
     public event Action FruitConsumed;
 
@@ -41,6 +46,14 @@ public class StaminaBarController: MonoBehaviour {
         }
 
         ExhaustedMoveAttempted?.Invoke();
+    }
+
+    /// <summary>
+    /// reports the monkey is resting, called every physics step no move key
+    /// is held; the timer drain pauses while resting so recovery can show
+    /// </summary>
+    public void NotifyResting() {
+        lastRestTime = Time.time;
     }
 
     public void AddStamina(float amount) {
@@ -128,8 +141,12 @@ public class StaminaBarController: MonoBehaviour {
         }
     }
 
+    // constants  ##############################################################
+    private const float REST_GRACE_S = 0.1f;
+
     // private members  ########################################################
     private float currentStamina;
+    private float lastRestTime = float.NegativeInfinity; // Time.time
 
     // cached references  ------------------------------------------------------
     private Slider staminaSlider;
@@ -141,6 +158,11 @@ public class StaminaBarController: MonoBehaviour {
             yield return new WaitForSeconds(
                 balanceConfig.StaminaDecreaseIntervalS
             );
+
+            // resting regains stamina, a lump drain would undo it
+            if (Time.time - lastRestTime <= REST_GRACE_S) {
+                continue;
+            }
 
             currentStamina = Mathf.Max(
                 0f,

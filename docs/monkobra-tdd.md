@@ -77,7 +77,7 @@ stateDiagram-v2
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, interact reloads the scene after `restartInputDelay` |
 
-`LoseGame` runs once, from Playing only: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
+`LoseGame(DeathCause)` runs once, from Playing only: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It stores the cause in `LastDeathCause` for analytics, then calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
 Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and `GameController.State != GameState.Playing`. Current checkers: `ArmRoot.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`, `SpiderWebStruggle`.
 
@@ -138,7 +138,7 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`.
 
 `StaminaBarController` is a singleton `Slider` that reads `GameBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `ExhaustedMoveAttempted`, which `MonkeyPrefabRoot` triggers through `NotifyMoveAttempt` while an input is held on an empty bar.
 
-- Timer Drain: a fixed amount every interval, as a coroutine started in `Start`
+- Timer Drain: a fixed amount every interval, as a coroutine started in `Start`; a tick is skipped while the monkey rests (`NotifyResting`, no move key held), so idle recovery is never undone by a lump drop
 - Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways
 - Restore: `AddStaminaByFruit` adds the per-banana amount, capped at the maximum ([Grab System](grab-doc.md#on-a-successful-grab))
 - Idle Recovery: `MonkeyPrefabRoot` adds `GameBalanceConfig.IdleStaminaRecoveryPerS` per second while no move key is pressed

@@ -44,6 +44,9 @@ public class AnalyticsManager: MonoBehaviour {
     /// </summary>
     public void StartNewSession() {
         RunCount = 0;
+        runEntries.Clear();
+        sessionDeathCauses.Clear();
+        sessionDeathHeights.Clear();
 
         DateTime now = DateTime.Now;
         string stamp = now.ToString(
@@ -59,10 +62,11 @@ public class AnalyticsManager: MonoBehaviour {
                 "yyyy-MM-dd HH:mm:ss",
                 CultureInfo.InvariantCulture
             );
+            sessionHeader = "# MonKobra Analytics: Session: " + title + "\n\n"
+                + "MonKobra v" + Application.version + "\n\n";
             File.WriteAllText(
                 SessionFilePath,
-                "# MonKobra Analytics: Session: " + title + "\n\n"
-                    + "MonKobra v" + Application.version + "\n\n",
+                sessionHeader,
                 new UTF8Encoding(false)
             );
         } catch (Exception e) {
@@ -84,6 +88,11 @@ public class AnalyticsManager: MonoBehaviour {
     [Tooltip("forces a new session file")]
     private Key restartSessionKey = Key.F9;
 
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("seconds b/t stamina samples while a run is playing")]
+    private float staminaSampleIntervalS = 2f;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (I != null && I != this) {
@@ -102,6 +111,15 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     private void Update() {
+        if (
+            observedGame != null
+            && observedGame.State == GameState.Playing
+            && Time.time >= nextStaminaSampleTime
+        ) {
+            AddStaminaSample();
+            nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
+        }
+
         Keyboard keyboard = Keyboard.current;
         if (keyboard == null) {
             return;
@@ -141,6 +159,9 @@ public class AnalyticsManager: MonoBehaviour {
             bananaClocks.Clear();
             webClocks.Clear();
             branchClocks.Clear();
+            staminaSamples.Clear();
+            AddStaminaSample();
+            nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
         } else if (state == GameState.Lost) {
             AppendRun();
         }
@@ -148,6 +169,7 @@ public class AnalyticsManager: MonoBehaviour {
 
     private void OnBananaCollected() {
         bananaClocks.Add(CreateStamp());
+        AddStaminaSample(true);
     }
 
     private void OnWebEncountered(SpiderWebTrap _) {
@@ -161,6 +183,8 @@ public class AnalyticsManager: MonoBehaviour {
     // constants  ##############################################################
     private const string FOLDER_NAME = "Analytics";
     private const string CLOCK_FORMAT = "HH:mm:ss";
+    // width of one death height histogram bin; world u
+    private const int HEIGHT_BIN_U = 10;
 
     // nested types  ###########################################################
     private readonly struct EventStamp {
@@ -174,12 +198,57 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    private readonly struct StaminaSample {
+        // seconds since the run started
+        public readonly float Elapsed;
+        public readonly float Stamina;
+        // whether the sample was taken on a banana pickup
+        public readonly bool IsBanana;
+
+        public StaminaSample(float elapsed, float stamina, bool isBanana) {
+            Elapsed = elapsed;
+            Stamina = stamina;
+            IsBanana = isBanana;
+        }
+    }
+
+    // one point on the run's timeline, ordered by seconds since run start
+    private readonly struct TimelineEntry {
+        public readonly double Elapsed;
+        public readonly string Label;
+        // height above the run start y; world u
+        public readonly float Height;
+        public readonly bool HasHeight;
+
+        public TimelineEntry(
+            double elapsed,
+            string label,
+            float height,
+            bool hasHeight
+        ) {
+            Elapsed = elapsed;
+            Label = label;
+            Height = height;
+            HasHeight = hasHeight;
+        }
+    }
+
     // private members  ########################################################
     private float runStartTime;
     private DateTime runStartClock;
     private readonly List<EventStamp> bananaClocks = new List<EventStamp>();
     private readonly List<EventStamp> webClocks = new List<EventStamp>();
     private readonly List<EventStamp> branchClocks = new List<EventStamp>();
+    private readonly List<StaminaSample> staminaSamples =
+        new List<StaminaSample>();
+    private float nextStaminaSampleTime;
+
+    // the session file is rewritten on each run so its summary stays on top
+    private string sessionHeader = string.Empty;
+    private readonly List<string> runEntries = new List<string>();
+    private readonly List<DeathCause> sessionDeathCauses =
+        new List<DeathCause>();
+    private readonly List<float> sessionDeathHeights = new List<float>();
 
     // cached references  ------------------------------------------------------
     private GameController observedGame;
@@ -276,6 +345,251 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    // records the stamina bar now, skipped w/o one in the scene
+    private void AddStaminaSample(bool isBanana = false) {
+        StaminaBarController bar = StaminaBarController.I;
+        if (bar == null) {
+            return;
+        }
+
+        staminaSamples.Add(new StaminaSample(
+            Time.time - runStartTime,
+            bar.CurrentStamina,
+            isBanana
+        ));
+    }
+
+    // line of sampled stamina over the run w/ a bar at each banana pickup,
+    // skipped w/o 2 samples
+    private void AppendStaminaCurve(StringBuilder sb) {
+        if (staminaSamples.Count < 2) {
+            return;
+        }
+
+        StaminaBarController bar = StaminaBarController.I;
+        int maxStamina = Mathf.Max(
+            1,
+            Mathf.CeilToInt(bar != null ? bar.MaxStamina : 0f)
+        );
+        var times = new List<string>();
+        var values = new List<string>();
+        var markers = new List<string>();
+        for (int i = 0; i < staminaSamples.Count; i++) {
+            times.Add(FormatSeconds(staminaSamples[i].Elapsed));
+            values.Add(staminaSamples[i].Stamina.ToString(
+                "F1",
+                CultureInfo.InvariantCulture
+            ));
+            markers.Add(
+                staminaSamples[i].IsBanana
+                    ? maxStamina.ToString(CultureInfo.InvariantCulture)
+                    : "0"
+            );
+        }
+
+        sb.Append("#### Stamina Curve\n\nBars mark banana pickups.\n\n");
+        sb.Append("```mermaid\nxychart-beta\n");
+        sb.Append("    title \"Stamina Curve\"\n");
+        sb.Append("    x-axis \"Elapsed (s)\" [")
+            .Append(string.Join(", ", times)).Append("]\n");
+        sb.Append("    y-axis \"Stamina\" 0 --> ").Append(maxStamina);
+        sb.Append('\n');
+        sb.Append("    bar [").Append(string.Join(", ", markers));
+        sb.Append("]\n");
+        sb.Append("    line [").Append(string.Join(", ", values));
+        sb.Append("]\n```\n\n");
+    }
+
+    // pie of what ended each run of the session
+    private void AppendDeathCauses(StringBuilder sb) {
+        sb.Append("#### Death Causes\n\n```mermaid\npie showData\n");
+        sb.Append("    title Death Causes\n");
+        foreach (DeathCause cause in Enum.GetValues(typeof(DeathCause))) {
+            int count = sessionDeathCauses.FindAll(c => c == cause).Count;
+            if (count > 0) {
+                sb.Append("    \"").Append(cause).Append("\" : ");
+                sb.Append(count).Append('\n');
+            }
+        }
+        sb.Append("```\n\n");
+    }
+
+    // bars of deaths per height band across the session; heights below 0
+    // count in the first band
+    private void AppendDeathHeightHistogram(StringBuilder sb) {
+        var bins = new List<int>();
+        for (int i = 0; i < sessionDeathHeights.Count; i++) {
+            int bin = Mathf.Max(
+                0,
+                Mathf.FloorToInt(sessionDeathHeights[i] / HEIGHT_BIN_U)
+            );
+            while (bins.Count <= bin) {
+                bins.Add(0);
+            }
+            bins[bin]++;
+        }
+
+        var labels = new List<string>();
+        int maxCount = 1;
+        for (int i = 0; i < bins.Count; i++) {
+            labels.Add(
+                "\"" + (i * HEIGHT_BIN_U) + "-"
+                    + (((i + 1) * HEIGHT_BIN_U) - 1) + "\""
+            );
+            maxCount = Mathf.Max(maxCount, bins[i]);
+        }
+
+        sb.Append("#### Death Height Histogram\n\n```mermaid\nxychart-beta\n");
+        sb.Append("    title \"Death Height Histogram\"\n");
+        sb.Append("    x-axis \"Height (u)\" [")
+            .Append(string.Join(", ", labels)).Append("]\n");
+        sb.Append("    y-axis \"Deaths\" 0 --> ").Append(maxCount);
+        sb.Append('\n');
+        sb.Append("    bar [").Append(string.Join(", ", bins));
+        sb.Append("]\n```\n\n");
+    }
+
+    // rewrites the whole file: header, session summary, then every run
+    private bool WriteSessionFile() {
+        var sb = new StringBuilder(sessionHeader);
+        if (runEntries.Count > 0) {
+            sb.Append("## Session Summary\n\n");
+            AppendDeathCauses(sb);
+            AppendDeathHeightHistogram(sb);
+        }
+        for (int i = 0; i < runEntries.Count; i++) {
+            sb.Append(runEntries[i]);
+        }
+
+        try {
+            File.WriteAllText(
+                SessionFilePath,
+                sb.ToString(),
+                new UTF8Encoding(false)
+            );
+        } catch (Exception e) {
+            Debug.LogWarning("Analytics:\tfail to write session: " + e, this);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static string FormatSeconds(double seconds) {
+        return seconds.ToString("F1", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatHeight(float height) {
+        return height.ToString("+0.0;-0.0;+0.0", CultureInfo.InvariantCulture);
+    }
+
+    // every event of the run, plus start & game over, sorted by time
+    private List<TimelineEntry> BuildTimeline(EventStamp end) {
+        var entries = new List<TimelineEntry> {
+            new TimelineEntry(0.0, "Start", 0f, true)
+        };
+        AddTimelineEntries(entries, bananaClocks, "Banana", true);
+        AddTimelineEntries(entries, webClocks, "Web", false);
+        AddTimelineEntries(entries, branchClocks, "Branch", true);
+        entries.Add(new TimelineEntry(
+            (end.Clock - runStartClock).TotalSeconds,
+            "Game Over",
+            end.Height,
+            true
+        ));
+        entries.Sort((a, b) => a.Elapsed.CompareTo(b.Elapsed));
+        return entries;
+    }
+
+    private void AddTimelineEntries(
+        List<TimelineEntry> entries,
+        List<EventStamp> stamps,
+        string name,
+        bool hasHeight
+    ) {
+        for (int i = 0; i < stamps.Count; i++) {
+            entries.Add(new TimelineEntry(
+                (stamps[i].Clock - runStartClock).TotalSeconds,
+                name + " " + (i + 1),
+                stamps[i].Height,
+                hasHeight
+            ));
+        }
+    }
+
+    // pie of height score against banana score, skipped w/o any score
+    private static void AppendScoreSplit(
+        StringBuilder sb,
+        long heightScore,
+        long rewardScore
+    ) {
+        if (heightScore <= 0 && rewardScore <= 0) {
+            return;
+        }
+
+        sb.Append("#### Score Split\n\n```mermaid\npie showData\n");
+        sb.Append("    title Score Split\n");
+        if (heightScore > 0) {
+            sb.Append("    \"Height\" : ").Append(heightScore).Append('\n');
+        }
+        if (rewardScore > 0) {
+            sb.Append("    \"Banana\" : ").Append(rewardScore).Append('\n');
+        }
+        sb.Append("```\n\n");
+    }
+
+    // line of height at each event that carries one, x axis is categorical so
+    // spacing is per event, not per second
+    private static void AppendHeightOverTime(
+        StringBuilder sb,
+        List<TimelineEntry> entries
+    ) {
+        var times = new List<string>();
+        var heights = new List<string>();
+        float minHeight = 0f;
+        float maxHeight = 1f;
+        for (int i = 0; i < entries.Count; i++) {
+            if (!entries[i].HasHeight) {
+                continue;
+            }
+
+            times.Add(FormatSeconds(entries[i].Elapsed));
+            heights.Add(entries[i].Height.ToString(
+                "F1",
+                CultureInfo.InvariantCulture
+            ));
+            minHeight = Mathf.Min(minHeight, entries[i].Height);
+            maxHeight = Mathf.Max(maxHeight, entries[i].Height);
+        }
+
+        sb.Append("#### Height Over Time\n\n```mermaid\nxychart-beta\n");
+        sb.Append("    title \"Height Over Time\"\n");
+        sb.Append("    x-axis \"Elapsed (s)\" [")
+            .Append(string.Join(", ", times)).Append("]\n");
+        sb.Append("    y-axis \"Height (u)\" ")
+            .Append(Mathf.FloorToInt(minHeight)).Append(" --> ")
+            .Append(Mathf.CeilToInt(maxHeight)).Append('\n');
+        sb.Append("    line [").Append(string.Join(", ", heights));
+        sb.Append("]\n```\n\n");
+    }
+
+    private static void AppendRunTimeline(
+        StringBuilder sb,
+        List<TimelineEntry> entries
+    ) {
+        sb.Append("#### Run Timeline\n\n```mermaid\ntimeline\n");
+        sb.Append("    title Run Timeline\n");
+        for (int i = 0; i < entries.Count; i++) {
+            sb.Append("    +").Append(FormatSeconds(entries[i].Elapsed));
+            sb.Append(" s : ").Append(entries[i].Label);
+            if (entries[i].HasHeight) {
+                sb.Append(", y ").Append(FormatHeight(entries[i].Height));
+            }
+            sb.Append('\n');
+        }
+        sb.Append("```\n\n");
+    }
+
     private void AppendRun() {
         if (string.IsNullOrEmpty(SessionFilePath)) {
             return;
@@ -296,9 +610,20 @@ public class AnalyticsManager: MonoBehaviour {
         long heightScore = scoreMgr != null ? scoreMgr.DistanceScore : 0;
         long rewardScore = scoreMgr != null ? scoreMgr.RewardScore : 0;
 
+        // where & why the run ended, as opposed to the highest point reached
+        EventStamp death = CreateStamp();
+        GameController game = GameController.I;
+        DeathCause cause = game != null
+            ? game.LastDeathCause
+            : DeathCause.Unknown;
+        AddStaminaSample();
+
         var sb = new StringBuilder();
         sb.Append("## Run ").Append(RunCount).Append("\n\n");
-        sb.Append("- Final Height: ").Append(height).Append("\n\n");
+        sb.Append("- Final Height: ").Append(height).Append('\n');
+        sb.Append("- Death Height: ").Append(FormatHeight(death.Height));
+        sb.Append('\n');
+        sb.Append("- Death Cause: ").Append(cause).Append("\n\n");
 
         sb.Append("#### Run Duration: ");
         sb.Append(duration.ToString("F1", CultureInfo.InvariantCulture));
@@ -327,14 +652,16 @@ public class AnalyticsManager: MonoBehaviour {
         sb.Append("\n\n");
         AppendClockList(sb, branchClocks, runStartClock, true);
 
-        try {
-            File.AppendAllText(
-                SessionFilePath,
-                sb.ToString(),
-                new UTF8Encoding(false)
-            );
-        } catch (Exception e) {
-            Debug.LogWarning("Analytics:\tfail to append run: " + e, this);
+        List<TimelineEntry> timeline = BuildTimeline(death);
+        AppendScoreSplit(sb, heightScore, rewardScore);
+        AppendHeightOverTime(sb, timeline);
+        AppendStaminaCurve(sb);
+        AppendRunTimeline(sb, timeline);
+
+        runEntries.Add(sb.ToString());
+        sessionDeathCauses.Add(cause);
+        sessionDeathHeights.Add(death.Height);
+        if (!WriteSessionFile()) {
             return;
         }
 
