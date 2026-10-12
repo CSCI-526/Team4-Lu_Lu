@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: AnalyticsConfig
   m_EditorClassIdentifier: Assembly-CSharp::AnalyticsConfig
   restartSessionKey: 102
+  mockSessionKey: 103
   staminaSampleIntervalS: 2
   autosaveIntervalS: 10
   deathCauseWindowS: 2

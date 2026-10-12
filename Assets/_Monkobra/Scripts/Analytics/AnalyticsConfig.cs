@@ -14,6 +14,9 @@ public class AnalyticsConfig: ScriptableObject {
     /// <returns>key that forces a new session file</returns>
     public Key RestartSessionKey => restartSessionKey;
 
+    /// <returns>key that saves a mock session file, for layout checks</returns>
+    public Key MockSessionKey => mockSessionKey;
+
     /// <returns>seconds b/t stamina samples while a run is playing</returns>
     public float StaminaSampleIntervalS => staminaSampleIntervalS;
 
@@ -30,6 +33,10 @@ public class AnalyticsConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("forces a new session file")]
     private Key restartSessionKey = Key.F9;
+
+    [SerializeField]
+    [Tooltip("saves a mock session file, the live session is untouched")]
+    private Key mockSessionKey = Key.F10;
 
     [Header("Sampling")]
     [SerializeField]

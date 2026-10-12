@@ -85,6 +85,22 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// saves a mock session file beside the real ones, the live session is
+    /// untouched
+    /// </summary>
+    public void SaveMockSession() {
+        string path = MockAnalyticsGenerator.SaveMockSession(
+            Path.Combine(Application.persistentDataPath, FOLDER_NAME),
+            DateTime.Now
+        );
+        if (string.IsNullOrEmpty(path)) {
+            Debug.LogWarning("Analytics:\tfail to save mock session", this);
+        } else {
+            Debug.Log("Analytics:\tmock session saved " + path, this);
+        }
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("shared analytics tuning")]
@@ -145,6 +161,9 @@ public class AnalyticsManager: MonoBehaviour {
                 this
             );
             StartNewSession();
+        }
+        if (keyboard[config.MockSessionKey].wasPressedThisFrame) {
+            SaveMockSession();
         }
     }
 
