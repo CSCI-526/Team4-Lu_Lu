@@ -234,6 +234,7 @@ public class MonkeyPrefabRoot: MonoBehaviour {
 
             // standing still, no key pressed, regains stamina slowly
             if (!hasInput) {
+                staminaBar.NotifyResting();
                 staminaBar.AddStamina(
                     balanceConfig.IdleStaminaRecoveryPerS
                         * Time.fixedDeltaTime
