@@ -29,7 +29,7 @@ Spider webs follow a probability curve of climb height, so they are rare early o
 
 ## Contributing
 
-Agent rules and the WebGL export steps are in [AGENTS.md](AGENTS.md), the script index and known gaps in [CONTEXT.md](CONTEXT.md), how the game is built in the [Technical Design Document](docs/monkobra-tdd.md), and version history in [CHANGELOG.md](CHANGELOG.md).
+Agent rules and the WebGL export steps are in [AGENTS.md](AGENTS.md), the script index and known gaps in [CONTEXT.md](CONTEXT.md), how the game is built in the [Technical Design Document](docs/monkobra-tdd.md), and the teammate git flow in [Work with Git](docs/work-with-git.md), and version history in [CHANGELOG.md](CHANGELOG.md).
 
 ## Acknowledgments
 

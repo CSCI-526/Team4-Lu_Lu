@@ -28,11 +28,11 @@ graph TD
 
 | Script | Role |
 | --- | --- |
-| `ArmRoot/DetectionZone` | side-tagged trigger volume on the monkey that forwards enter and exit events |
-| `ArmRoot/UpwardFruitDetection` | singleton (`I`) that keeps the reachable fruit per side, picks the reach side, and relays the grabbable fruit |
-| `ArmRoot/ArmRoot` | one arm: hand-over-hand climb stroke, or the reach and the release check |
-| `ArmRoot/MonkeyConfig` | reach speed, stroke tuning, and the interact action both arms and the camera read |
-| `ArmRoot/CameraRigManager` | swaps the behind, look-left, and look-right Cinemachine cameras |
+| `Player/DetectionZone` | side-tagged trigger volume on the monkey that forwards enter and exit events |
+| `Player/UpwardFruitDetection` | singleton (`I`) that keeps the reachable fruit per side, picks the reach side, and relays the grabbable fruit |
+| `Player/ArmRoot` | one arm: hand-over-hand climb stroke, or the reach and the release check |
+| `Player/MonkeyConfig` | reach speed, stroke tuning, and the interact action both arms and the camera read |
+| `Cameras/CameraRigManager` | swaps the behind, look-left, and look-right Cinemachine cameras |
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchWithScriptRoot` | decides whether a branch bears a banana |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
@@ -86,11 +86,11 @@ Bananas come from branches, not their own spawner. `BranchWithScriptRoot` rolls 
 
 | Setting | Value | Where |
 | --- | --- | --- |
-| Reach Extend Speed | 4 u/s | `Settings/MonkeyConfig.asset` |
+| Reach Extend Speed | 4 u/s | `Settings/_Shared/MonkeyConfig.asset` |
 | Max Reach | the joint's linear limit | `ConfigurableJoint` on the `Arm` prefab |
-| Stamina Per Banana | 30, capped at the 100 maximum | `GameConfig` (default, not overridden in the asset) |
-| Points Per Banana | 100 | `Settings/Scoring/BananaScore.asset` |
-| Banana Chance Per Branch | 0.15 | `Prefabs/Environment/BranchWithFruit` |
+| Stamina Per Banana | 30, capped at the 100 maximum | `Settings/GameBalanceConfig.asset` |
+| Points Per Banana | 100 | `Settings/GameBalanceConfig.asset` |
+| Banana Chance Per Branch | a curve of the ramped difficulty, 0 to 1 by default | `bananaSpawnProbabilityCurve` in `Settings/GameBalanceConfig.asset` |
 
 ## Known Gaps
 

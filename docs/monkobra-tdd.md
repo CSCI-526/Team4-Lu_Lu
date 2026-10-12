@@ -32,9 +32,9 @@ A system gets its own document when it spans several scripts and carries rules a
 
 | Scene | Purpose |
 | --- | --- |
-| `Lv1Scene` | the game and the only scene in Build Settings; `DTSPool` also holds the falling-cobra spawner |
-| `CobraDemo` | test scene for the chasing cobra |
-| `FallingCobraDemo` | test scene for the falling cobra, the only scene that has one |
+| `Lv1Scene` | the game and the only scene; `DTSPool` also holds the spider web and falling cobra spawners |
+
+Personal copies of `Lv1Scene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
 The folder layout and a script-by-script index are in [CONTEXT.md](../CONTEXT.md#repository-layout).
 
@@ -49,7 +49,8 @@ graph LR
   Mobs[Mobs] -->|touch| Monkey
   Mobs -->|cobra contact| Game[GameController]
   Stamina -->|empty| Monkey
-  Tree[Tree and TreeTop] -->|win zone| Game
+  Mobs -->|falling cobra, web| Monkey
+  Game -->|state, death cause| Analytics[AnalyticsManager]
   Game --> Screens[ScreensManager]
   Game -->|EndRun| Score
   Config[ScriptableObject configs] --> Monkey
@@ -126,13 +127,12 @@ Climb speeds come from `Settings/GameBalanceConfig.asset`. Orbit speed, accelera
 
 ## Tree
 
-The tree is a stack of static and dynamic trunk segments under a `TreeTop`.
+The tree is a stack of static and dynamic trunk segments under a `TreeTop`, which carries no win zone: a run only loses.
 
 - Extent: `TreeManager` (singleton `I`) holds `MinY` and `MaxY`, 0 and 100 by default, from the finite tree; nothing reads them any more; `FallingCobraSpawner` takes each segment's pivot as the trunk axis
 - Climb Height: heights that drive difficulty are measured above the monkey's start y by `RampedDifficultyService.GetClimbedYDistance`: branch density, banana chance, web chance, falling cobra chance, the score, and the height HUD. Nothing shifts the world origin; if something ever does, it only has to move `PlayerGameStartYPosition` along
 - Segments: each `DynamicTreeSegmentPrefabRoot` places branches on itself in `Start` and in every `Restart` ([Mobs](mob-doc.md#placement)), then raises the static `BranchesGenerated`, which `SpiderWebSpawner` answers with webs ([Mobs](mob-doc.md#placement-1)) and `FallingCobraSpawner` with falling cobras ([Mobs](mob-doc.md#spawning))
 - Pool: `DTSPool` sits on an empty object, finds the `Player`-tagged object once, and instantiates `segmentCount` copies of `segmentPrefab` end to end, the first (lowest) one created at the world height `firstSegmentY`. It keeps them in a FIFO: only when the stack top is less than `lookAheadU` above the player, and the lowest segment lies wholly under the player, that lowest one is moved over the stack top by `DynamicTreeSegmentPrefabRoot.Restart`, which clears its branches and webs and rolls branches again; the webs follow through `BranchesGenerated`, the pool never calls the spawner. Its `mockTree` field names an editor-only stand-in, `Envs/Tree` in `Lv1Scene`, that is deactivated at runtime, so nothing that must run may sit under it
-- Top: the `TreeTop` prefab carries the win zone
 
 ## Stamina
 
@@ -191,7 +191,7 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 | Element | Script | Shows |
 | --- | --- | --- |
 | Stamina Bar | `UI/StaminaBarController` | current stamina |
-| Climb Progress | `UI/ProgressBarRoot` | the monkey's height as a share of the tree, with a cobra marker |
+| Climb Progress | `UI/ProgressBarRoot` | a window `windowSizeY` (20 u) tall below the monkey, with a marker for how near the cobra's head is |
 | Score | `UI/ScoreDisplay` | total score, on the HUD and the lose panel |
 | Height | `UI/HeightDisplayController` | height climbed since game start, in world units |
 | Screens | `UI/ScreensManager` | tutorial and lose panels |
@@ -207,7 +207,7 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 - Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `GameBalanceConfig` ([Game Balance](#game-balance)), monkey arm and input in `MonkeyConfig`, branch geometry in `BranchFruitPlacementConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives
-- Style: `ArmRoot/`, `GameController`, `GameBalanceConfig`, `UI/StaminaBarController`, `UI/ScreensManager`, `Cobra/CobraClimb`, `Cobra/CobraCollisions`, and most of `Environment/` follow the house Unity style. `Scoring/`, `Cobra/FallingCobra`, `Cobra/FallingCobraSpawner`, and `Environment/SpiderWebBuilder` are still in the template style, some with Chinese comments
+- Style: `Player/`, `GameController/`, `Analytics/`, `MobGreatCobra/`, `MobFallingCobra/`, `UI/StaminaBarController`, `UI/ScreensManager`, and most of `Environment/` follow the house Unity style. `Scoring/`, `UI/ProgressBarRoot`, and `MobSpiderWeb/SpiderWebBuilder` are still in the template style, some with Chinese comments
 
 ## Build and Deploy
 
