@@ -126,8 +126,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Analytics/DeathCause`, `Analytics/DeathCauseResolver` | static: infers a lost run's cause from its stamps: a branch hit or web encounter w/i `DeathCauseWindowS` (default 2 s) before the loss, else `GreatCobra`; also the display names | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `Analytics/MockAnalyticsGenerator` | static: builds a fully mocked `SessionData` (5 runs ending now) & saves it as `0<stamp>-mock.md` beside the real files, live session untouched | none |
 | `Analytics/AnalyticsConfig` | ScriptableObject (`Settings/Analytics/AnalyticsConfig.asset`): restart & mock keys, stamina sample & autosave intervals, death cause window; `AnalyticsManager` reads all tuning from it | none |
-| `Analytics/SessionData` | plain data of one session: title, app version, runs, and the death causes & heights of `Lost` runs only | none |
-| `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry (Mermaid graphs: score split, height over time, stamina curve, run timeline) & the whole session file (summary of `Lost` runs: death causes pie, death height histogram), writes the file | none |
+| `Analytics/SessionData` | plain data of one session: title, app version, runs, and the death causes of `Lost` runs only | none |
+| `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry (Mermaid graphs: score split, height over time, stamina curve, run timeline) & the whole session file (summary of `Lost` runs: death causes pie), writes the file | none |
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |
 | `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |

@@ -28,19 +28,4 @@ public class SessionData {
 
         return causes;
     }
-
-    /// <summary>
-    /// death heights of the <see cref="RunStatus.Lost"/> runs, in run order;
-    /// world u
-    /// </summary>
-    public List<float> GetLostDeathHeights() {
-        var heights = new List<float>();
-        for (int i = 0; i < Runs.Count; i++) {
-            if (Runs[i].Status == RunStatus.Lost) {
-                heights.Add(Runs[i].End.Height);
-            }
-        }
-
-        return heights;
-    }
 }
