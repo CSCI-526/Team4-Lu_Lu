@@ -94,6 +94,11 @@ public class AnalyticsManager: MonoBehaviour {
     [Tooltip("seconds b/t stamina samples while a run is playing")]
     private float staminaSampleIntervalS = 2f;
 
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("seconds b/t timed saves while a run is playing, 0 turns off")]
+    private float autosaveIntervalS = 10f;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (I != null && I != this) {
@@ -116,10 +121,14 @@ public class AnalyticsManager: MonoBehaviour {
             currentRun != null
             && observedGame != null
             && observedGame.State == GameState.Playing
-            && Time.time >= nextStaminaSampleTime
         ) {
-            AddStaminaSample();
-            nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
+            if (Time.time >= nextStaminaSampleTime) {
+                AddStaminaSample();
+                nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
+            }
+            if (autosaveIntervalS > 0f && Time.time >= nextAutosaveTime) {
+                SaveSession();
+            }
         }
 
         Keyboard keyboard = Keyboard.current;
@@ -214,6 +223,7 @@ public class AnalyticsManager: MonoBehaviour {
     // run being played, null b/t a game over and the next start
     private RunData currentRun;
     private float nextStaminaSampleTime;
+    private float nextAutosaveTime;
 
     // cached references  ------------------------------------------------------
     private GameController observedGame;
@@ -282,8 +292,10 @@ public class AnalyticsManager: MonoBehaviour {
         ));
     }
 
-    // whether the whole session was written to its file
+    // whether the whole session was written to its file; any save, event or
+    // timed, restarts the timed save countdown
     private bool SaveSession() {
+        nextAutosaveTime = Time.time + autosaveIntervalS;
         if (string.IsNullOrEmpty(SessionFilePath)) {
             return false;
         }
