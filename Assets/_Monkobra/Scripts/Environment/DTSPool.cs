@@ -16,9 +16,10 @@ using UnityEngine;
 /// forever.
 /// </para>
 /// <para>
-/// The pool knows nothing of webs: a <see cref="SpiderWebSpawner"/> hears
+/// The pool knows nothing of webs or falling cobras: a
+/// <see cref="SpiderWebSpawner"/> and a <see cref="FallingCobraSpawner"/> hear
 /// each segment's <see cref="DynamicTreeSegmentPrefabRoot.BranchesGenerated"/>
-/// and redoes its webs then, so it must stay off the deactivated mock tree.
+/// and redo theirs then, so they must stay off the deactivated mock tree.
 /// </para>
 /// </summary>
 // after every segment's own Start, which rolls its branches
@@ -78,6 +79,17 @@ public class DTSPool: MonoBehaviour {
                         "DTSPool:\ta SpiderWebSpawner under mockTree is "
                             + "deactivated with it, no webs will spawn; move "
                             + "it off the mock tree",
+                        mockTree
+                    );
+                }
+                if (
+                    mockTree.GetComponentInChildren<FallingCobraSpawner>(true)
+                    != null
+                ) {
+                    Debug.LogWarning(
+                        "DTSPool:\ta FallingCobraSpawner under mockTree is "
+                            + "deactivated with it, no falling cobras will "
+                            + "spawn; move it off the mock tree",
                         mockTree
                     );
                 }

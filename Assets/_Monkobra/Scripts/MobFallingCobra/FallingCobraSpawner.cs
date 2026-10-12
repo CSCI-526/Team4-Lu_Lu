@@ -1,190 +1,230 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
+/// <summary>
+/// Hangs dormant <see cref="FallingCobra"/>s on the trunk of each
+/// <see cref="DynamicTreeSegmentPrefabRoot"/> as soon as it has rolled its
+/// branches, on its first Start and after every restart by
+/// <see cref="DTSPool"/>, by listening to
+/// <see cref="DynamicTreeSegmentPrefabRoot.BranchesGenerated"/>. Put one on
+/// any object active from scene load, never under the pool's mock tree,
+/// which is deactivated at runtime.
+/// <para>
+/// Rolled like branches: a fixed attempt count per segment, each attempt
+/// against the falling cobra probability curve of
+/// <see cref="GameBalanceConfig"/> sampled at the segment's ramped
+/// difficulty. Each cobra is a child of its segment, so a restart's clear
+/// removes it.
+/// </para>
+/// <para>
+/// A cobra hangs at a random angle on a ring of <c>spawnRadiusU</c> about the
+/// segment's pivot, which sits on the trunk axis, at a random height that
+/// keeps the whole snake inside the segment. A spot too close to another
+/// cobra of the segment is retried, and skipped when retries run out.
+/// </para>
+/// </summary>
 public class FallingCobraSpawner: MonoBehaviour {
-    [Header("References")]
-    [SerializeField] private FallingCobra fallingCobraPrefab;
-    [SerializeField] private Transform treeCenter;
-
-    [Header("When to Spawn")]
+    // Inspector Fields  #######################################################
+    [Header("Wiring")]
     [SerializeField]
-    [Tooltip("Vertical distance climbed from the player's starting height before falling cobras can spawn; u")]
-    private float startClimbHeightU = 60f;
+    [FormerlySerializedAs("fallingCobraPrefab")]
+    [Tooltip("falling cobra prefab, spawned dormant on a segment")]
+    private FallingCobra cobraPrefab;
 
-    [SerializeField] private float initialSpawnIntervalS = 8f;
-    [SerializeField] private float minSpawnIntervalS = 4f;
     [SerializeField]
-    [Tooltip("Additional climb after falling cobras unlock before the minimum spawn interval is reached; u")]
-    private float climbDistanceToMinIntervalU = 200f;
-    [SerializeField] private float retryIntervalS = 1f;
+    [Tooltip("game balance tuning; cobra attempts, chance & speeds")]
+    private GameBalanceConfig balanceConfig;
 
-    [Header("Branch Selection")]
-    [SerializeField] private float minBranchAbovePlayerU = 4f;
-    [SerializeField] private float maxBranchAbovePlayerU = 9f;
-    [SerializeField] private float maxSideDistanceU = 3f;
-    [SerializeField] private float heightAboveBranchU = 0.5f;
+    [Header("Cobra Position")]
+    [SerializeField]
+    [Tooltip(
+        "ring radius about the trunk axis the cobra hangs and slides on, "
+            + "about the monkey's orbit radius; u"
+    )]
+    private float spawnRadiusU = 5.5f;
 
-    private Transform player;
-    private FallingCobra activeCobra;
-    private float playerStartY;
-    private float highestClimbHeightU;
-    private bool spawningUnlocked;
-    private float nextSpawnTime;
+    [SerializeField]
+    [Tooltip("min distance b/t cobra pivots on one segment; u")]
+    private float minCobraSeparationU = 4f;
 
+    [SerializeField]
+    [Tooltip("position retries per cobra b4 skipping it")]
+    private int maxPlacementAttempts = 20;
+
+    // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        if (fallingCobraPrefab == null) {
-            Debug.LogError(
+        // Inspector Assignment Guard  -----------------------------------------
+        if (cobraPrefab == null) {
+            Debug.LogWarning(
                 "FallingCobraSpawner:\tmust assign Inspector Field: "
-                    + "fallingCobraPrefab",
+                    + "cobraPrefab",
                 this
             );
         }
-        if (treeCenter == null) {
-            Debug.LogError(
+        if (balanceConfig == null) {
+            Debug.LogWarning(
                 "FallingCobraSpawner:\tmust assign Inspector Field: "
-                    + "treeCenter",
+                    + "balanceConfig",
                 this
             );
         }
+        if (cobraPrefab == null || balanceConfig == null) {
+            enabled = false;
+        }
     }
 
-    private void Start() {
-        GameObject playerObject =
-            GameObject.FindGameObjectWithTag("Player");
-        if (playerObject != null) {
-            player = playerObject.transform;
-            playerStartY = player.position.y;
-        } else {
-            Debug.LogError(
-                "FallingCobraSpawner:\tPlayer not found",
+    // scene OnEnables all run b4 any Start, so no segment rolls unheard.
+    // First wins: a 2nd listener would roll every segment twice
+    private void OnEnable() {
+        if (listener != null && listener != this) {
+            Debug.LogWarning(
+                "FallingCobraSpawner:\tanother spawner already listens, this "
+                    + "one stays idle",
                 this
             );
-        }
-    }
-
-    private void Update() {
-        if (
-            player == null
-            || treeCenter == null
-            || fallingCobraPrefab == null
-        ) {
             return;
         }
-
-        highestClimbHeightU = Mathf.Max(
-            highestClimbHeightU,
-            player.position.y - playerStartY
-        );
-        if (!spawningUnlocked) {
-            if (highestClimbHeightU < startClimbHeightU) {
-                return;
-            }
-            spawningUnlocked = true;
-        }
-
-        if (activeCobra != null || Time.time < nextSpawnTime) {
-            return;
-        }
-
-        if (!TryFindBranchSpawn(out Vector3 spawnPosition)) {
-            nextSpawnTime = Time.time + retryIntervalS;
-            return;
-        }
-
-        activeCobra = Instantiate(
-            fallingCobraPrefab,
-            spawnPosition,
-            Quaternion.identity
-        );
-        float climbAfterUnlockU =
-            highestClimbHeightU - startClimbHeightU;
-        float difficulty = Mathf.Clamp01(
-            climbAfterUnlockU / climbDistanceToMinIntervalU
-        );
-        float currentIntervalS = Mathf.Lerp(
-            initialSpawnIntervalS,
-            minSpawnIntervalS,
-            difficulty
-        );
-        nextSpawnTime = Time.time + currentIntervalS;
+        listener = this;
+        DynamicTreeSegmentPrefabRoot.BranchesGenerated += OnBranchesGenerated;
     }
 
-    private bool TryFindBranchSpawn(out Vector3 spawnPosition) {
-        spawnPosition = Vector3.zero;
-
-        Vector3 treeCenterPosition = treeCenter.position;
-        float playerRadius = new Vector2(
-            player.position.x - treeCenterPosition.x,
-            player.position.z - treeCenterPosition.z
-        ).magnitude;
-
-        float bestSideDistanceSqr =
-            maxSideDistanceU * maxSideDistanceU;
-        bool found = false;
-
-        foreach (
-            GameObject branch in GameObject.FindGameObjectsWithTag("Branch")
-        ) {
-            float heightAbovePlayer =
-                branch.transform.position.y - player.position.y;
-            if (
-                heightAbovePlayer < minBranchAbovePlayerU
-                || heightAbovePlayer > maxBranchAbovePlayerU
-            ) {
-                continue;
-            }
-
-            Vector3 direction =
-                branch.transform.position - treeCenterPosition;
-            direction.y = 0f;
-            if (direction.sqrMagnitude < 0.001f) {
-                continue;
-            }
-
-            // 枝條比猴子的繞樹路徑更靠外；
-            // 將落蛇位置移到相同角度的猴子路徑上。
-            Vector3 pathPosition =
-                treeCenterPosition + direction.normalized * playerRadius;
-            float sideDistanceSqr =
-                new Vector2(
-                    pathPosition.x - player.position.x,
-                    pathPosition.z - player.position.z
-                ).sqrMagnitude;
-
-            if (sideDistanceSqr > bestSideDistanceSqr) {
-                continue;
-            }
-
-            bestSideDistanceSqr = sideDistanceSqr;
-            spawnPosition = new Vector3(
-                pathPosition.x,
-                branch.transform.position.y + heightAboveBranchU,
-                pathPosition.z
-            );
-            found = true;
+    private void OnDisable() {
+        if (listener != this) {
+            return;
         }
-
-        return found;
+        DynamicTreeSegmentPrefabRoot.BranchesGenerated -= OnBranchesGenerated;
+        listener = null;
     }
 
+    // Editor Validation  ######################################################
     private void OnValidate() {
-        startClimbHeightU = Mathf.Max(0f, startClimbHeightU);
-        initialSpawnIntervalS =
-            Mathf.Max(0.1f, initialSpawnIntervalS);
-        minSpawnIntervalS = Mathf.Clamp(
-            minSpawnIntervalS,
-            0.1f,
-            initialSpawnIntervalS
+        spawnRadiusU = Mathf.Max(0f, spawnRadiusU);
+        minCobraSeparationU = Mathf.Max(0f, minCobraSeparationU);
+        maxPlacementAttempts = Mathf.Max(1, maxPlacementAttempts);
+    }
+
+    // Event Handlers  #########################################################
+    private void OnBranchesGenerated(DynamicTreeSegmentPrefabRoot segment) {
+        PopulateSegment(segment);
+    }
+
+    // private members  ########################################################
+    private static FallingCobraSpawner listener; // the one spawner subscribed
+
+    private bool hasWarnedNoDifficulty; // missing service logged once
+    private readonly List<FallingCobra> spawnedCobras = new();
+
+    // private methods  ########################################################
+    // rolls this spawner's cobra attempts for segment, which already holds its
+    // branches
+    private void PopulateSegment(DynamicTreeSegmentPrefabRoot segment) {
+        if (segment == null) {
+            return;
+        }
+        RampedDifficultyService difficulty = RampedDifficultyService.I;
+        if (difficulty == null) {
+            if (!hasWarnedNoDifficulty) {
+                Debug.LogWarning(
+                    "FallingCobraSpawner:\tno RampedDifficultyService in "
+                        + "scene, skip cobras",
+                    this
+                );
+                hasWarnedNoDifficulty = true;
+            }
+            return;
+        }
+
+        ClearCobras(segment);
+
+        // pivots sit mid-segment, so this is the segment's middle difficulty
+        float spawnProbability = Mathf.Clamp01(
+            balanceConfig.FallingCobraSpawnProbabilityCurve.Evaluate(
+                difficulty.GetRampedValueFromYPosition(
+                    segment.transform.position.y
+                )
+            )
         );
-        climbDistanceToMinIntervalU =
-            Mathf.Max(0.1f, climbDistanceToMinIntervalU);
-        retryIntervalS = Mathf.Max(0.1f, retryIntervalS);
-        minBranchAbovePlayerU =
-            Mathf.Max(0f, minBranchAbovePlayerU);
-        maxBranchAbovePlayerU = Mathf.Max(
-            minBranchAbovePlayerU,
-            maxBranchAbovePlayerU
-        );
-        maxSideDistanceU = Mathf.Max(0f, maxSideDistanceU);
-        heightAboveBranchU = Mathf.Max(0f, heightAboveBranchU);
+
+        int attemptCount = balanceConfig.FallingCobraAttemptCount;
+        for (int i = 0; i < attemptCount; i++) {
+            if (Random.value < spawnProbability) {
+                TrySpawnCobra(segment);
+            }
+        }
+    }
+
+    // a segment's previous cobras go b4 it rolls again: its restart has
+    // already cleared them, any still active are destroyed here, so a
+    // segment never carries 2 rolls
+    private void ClearCobras(DynamicTreeSegmentPrefabRoot segment) {
+        for (int i = spawnedCobras.Count - 1; i >= 0; i--) {
+            FallingCobra cobra = spawnedCobras[i];
+            if (cobra != null && cobra.transform.parent != segment.transform) {
+                continue;
+            }
+            // inactive first, Destroy only lands at the end of the frame
+            if (cobra != null && cobra.gameObject.activeSelf) {
+                cobra.gameObject.SetActive(false);
+                Destroy(cobra.gameObject);
+            }
+            spawnedCobras.RemoveAt(i);
+        }
+    }
+
+    private bool TrySpawnCobra(DynamicTreeSegmentPrefabRoot segment) {
+        Transform segmentXfm = segment.transform;
+
+        // the prefab builds its hit capsule in Awake, so its length is only
+        // known on an instance
+        FallingCobra cobra = Instantiate(cobraPrefab, segmentXfm);
+
+        // the trunk cylinder is centered on the segment pivot; keep the whole
+        // snake, tail to head, inside the segment's own height
+        float halfHeight = segment.GetHeight() * 0.5f;
+        float tailU = cobra.TailBelowPivotU;
+        float minLocalY = -halfHeight + tailU;
+        float maxLocalY = halfHeight - (cobra.LengthU - tailU);
+        if (maxLocalY < minLocalY) {
+            Destroy(cobra.gameObject);
+            return false;
+        }
+
+        for (int attempt = 0; attempt < maxPlacementAttempts; attempt++) {
+            Quaternion yaw = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+            Vector3 localPosition =
+                yaw * Vector3.forward * spawnRadiusU
+                + Vector3.up * Random.Range(minLocalY, maxLocalY);
+            Vector3 position = segmentXfm.TransformPoint(localPosition);
+            if (!IsSpotFree(position)) {
+                continue;
+            }
+
+            cobra.transform.SetPositionAndRotation(
+                position,
+                segmentXfm.rotation
+            );
+            Physics.SyncTransforms();
+            cobra.Initialize(balanceConfig, segmentXfm.position);
+            spawnedCobras.Add(cobra);
+            return true;
+        }
+
+        Destroy(cobra.gameObject);
+        return false;
+    }
+
+    private bool IsSpotFree(Vector3 position) {
+        foreach (FallingCobra other in spawnedCobras) {
+            if (
+                other != null
+                && other.gameObject.activeInHierarchy
+                && Vector3.Distance(other.transform.position, position)
+                    < minCobraSeparationU
+            ) {
+                return false;
+            }
+        }
+        return true;
     }
 }
