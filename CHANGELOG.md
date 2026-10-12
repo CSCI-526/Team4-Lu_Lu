@@ -16,11 +16,14 @@
 - analytics session files open with a Session Summary: a death causes pie and a death height histogram in 10 u bands, so the file is now rewritten on each game over instead of appended to
 - analytics run entries record the death cause and the death height, apart from the highest height reached
 - analytics samples stamina every `staminaSampleIntervalS` seconds (default 2) while a run plays
+- analytics saves the session file on session open, run start, banana, web, branch hit, and game over, not only on game over, so a run in progress is on disk
+- analytics marks a run cut short by stopping Play mode, a scene reload, or F9 as `Interrupted`, with all its graphs, and leaves it out of the death cause pie & death height histogram
 - `DeathCause` enum and `GameController.LastDeathCause`, set by `LoseGame(DeathCause)` before `Lost` is raised
 - `StaminaBarController.MaxStamina`: the balance config's stamina ceiling
 
 ### Changed
 
+- analytics split `AnalyticsManager` into data containers `RunData` & `SessionData`, a static `AnalyticsMarkdownWriter`, and a lean manager that observes, fills, and saves
 - `DynamicTreeSegmentPrefabRoot.Restart` moves a segment and re-rolls its branches, clearing the old branches and webs
 - `MonkeyPrefabRoot` exposes `IsHeld` to freeze the body in place
 - `SpiderWebSpawner` places webs on each `BranchesGenerated` instead of a one-off pass at `Start`, measures height from the player's start y instead of `TreeManager` progress, and drops a segment's old webs before rolling it again; `startProgress`, `maxWebsPerSegment`, and `spawnChance` are gone
