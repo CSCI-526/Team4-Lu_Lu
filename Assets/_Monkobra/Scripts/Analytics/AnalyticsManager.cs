@@ -43,6 +43,8 @@ public class AnalyticsManager: MonoBehaviour {
     /// closes the current session and opens a new file, run numbering restarts
     /// </summary>
     public void StartNewSession() {
+        // a run still open belongs to the session being closed
+        CloseRun(RunStatus.Interrupted);
         DateTime now = DateTime.Now;
         session = new SessionData {
             StartClock = now,
@@ -135,6 +137,17 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    // covers Play mode stop in the Editor
+    private void OnApplicationQuit() {
+        CloseRun(RunStatus.Interrupted);
+    }
+
+    private void OnApplicationPause(bool isPaused) {
+        if (isPaused) {
+            CloseRun(RunStatus.Interrupted);
+        }
+    }
+
     private void OnDestroy() {
         if (I != this) {
             return;
@@ -154,6 +167,8 @@ public class AnalyticsManager: MonoBehaviour {
 
     private void OnGameStateChanged(GameState state) {
         if (state == GameState.Playing) {
+            // scene reloaded mid run, the old run never saw a game over
+            CloseRun(RunStatus.Interrupted);
             currentRun = new RunData {
                 StartTime = Time.time,
                 StartClock = DateTime.Now
@@ -163,7 +178,7 @@ public class AnalyticsManager: MonoBehaviour {
             session.Runs.Add(currentRun);
             SaveSession();
         } else if (state == GameState.Lost) {
-            FinishRun();
+            CloseRun(RunStatus.Lost);
         }
     }
 
@@ -279,8 +294,9 @@ public class AnalyticsManager: MonoBehaviour {
         );
     }
 
-    // closes the run as lost & saves, the run joined the session at its start
-    private void FinishRun() {
+    // closes the open run w/ status & saves, the run joined the session at its
+    // start; death cause is read only for a lost run
+    private void CloseRun(RunStatus status) {
         if (string.IsNullOrEmpty(SessionFilePath) || currentRun == null) {
             return;
         }
@@ -291,8 +307,10 @@ public class AnalyticsManager: MonoBehaviour {
         // where & why the run ended, as opposed to the highest point reached
         run.End = CreateStamp();
         GameController game = GameController.I;
-        run.Cause = game != null ? game.LastDeathCause : DeathCause.Unknown;
-        run.Status = RunStatus.Lost;
+        if (status == RunStatus.Lost && game != null) {
+            run.Cause = game.LastDeathCause;
+        }
+        run.Status = status;
         run.DurationS = Time.time - run.StartTime;
         run.FinalHeight = RampedDifficultyService.I != null
             ? Mathf.Max(
@@ -313,7 +331,7 @@ public class AnalyticsManager: MonoBehaviour {
         currentRun = null;
 
         if (SaveSession() && Debug.isDebugBuild) {
-            Debug.Log("Analytics:\trun " + RunCount + " appended");
+            Debug.Log("Analytics:\trun " + RunCount + " " + status);
         }
     }
 }
