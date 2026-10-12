@@ -100,6 +100,7 @@ public static class MockAnalyticsGenerator {
     private const float RUN_GAP_S = 5f;
     private const float STEP_S = 0.25f;
     private const float MAX_RUN_S = 240f;
+    // mirrors the default of AnalyticsConfig.SampleIntervalS
     private const float SAMPLE_INTERVAL_S = 2f;
 
     // game tuning mirrored from GameBalanceConfig  ----------------------------
@@ -255,7 +256,7 @@ public static class MockAnalyticsGenerator {
             run.Branches.Add(ToStamp(m, start));
         }
 
-        AddStaminaSamples(run, plan);
+        AddSamples(run, plan);
 
         if (plan.IsLost) {
             // the cause comes from the same rule as a real run
@@ -275,24 +276,21 @@ public static class MockAnalyticsGenerator {
         return run;
     }
 
-    // a sample at the start, every interval, on each banana & at the end, so refills show
-    private static void AddStaminaSamples(RunData run, RunPlan plan) {
-        var samples = new List<StaminaSample>();
+    // a sample at the start, then every interval & at the end, as the real
+    // sampler does; a banana refill shows at the next tick
+    private static void AddSamples(RunData run, RunPlan plan) {
         float nextT = 0f;
         foreach (Moment m in plan.Track) {
             if (m.T >= nextT) {
-                samples.Add(new StaminaSample(m.T, m.Stamina));
+                run.Samples.Add(new RunSample(m.T, m.Height, m.Stamina));
                 nextT = m.T + SAMPLE_INTERVAL_S;
             }
         }
-        foreach (Moment m in plan.Bananas) {
-            samples.Add(new StaminaSample(m.T, m.Stamina));
-        }
-        Moment last = plan.Track[plan.Track.Count - 1];
-        samples.Add(new StaminaSample(last.T, last.Stamina));
 
-        samples.Sort((a, b) => a.Elapsed.CompareTo(b.Elapsed));
-        run.StaminaSamples.AddRange(samples);
+        Moment last = plan.Track[plan.Track.Count - 1];
+        if (run.Samples[run.Samples.Count - 1].Elapsed < last.T) {
+            run.Samples.Add(new RunSample(last.T, last.Height, last.Stamina));
+        }
     }
 
     private static EventStamp ToStamp(Moment m, DateTime start) {
