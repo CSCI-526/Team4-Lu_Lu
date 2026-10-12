@@ -93,10 +93,11 @@ Every game balance number lives in one asset, `Settings/GameBalanceConfig.asset`
 | Score | `pointsPerMeter`, `unitsPerMeter`, `scoreRewardPoints` | `ScoreManager` |
 | Ramped Difficulty | `rampedDifficultyCurve` | `RampedDifficultyService` |
 | Branch | `branchGenerationAttemptCount`, `branchSpawnProbabilityCurve`, `bananaSpawnProbabilityCurve` | `DynamicTreeSegmentPrefabRoot` |
-| Spider Web | `webSlotsPerSegment`, `webStartClimbU`, `webFullChanceClimbU`, `webMaxSpawnChance`, `webSpawnChanceCurve` | `SpiderWebSpawner` |
+| Spider Web | `webAttemptCount`, `webSpawnProbabilityCurve` | `SpiderWebSpawner` |
+| Falling Cobra | `fallingCobraAttemptCount`, `fallingCobraSpawnProbabilityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU` | `FallingCobraSpawner`, `FallingCobra` |
 
-- Wiring: each reader holds a `GameBalanceConfig` inspector field (`balanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyPrefabRoot`, `DynamicTreeSegmentPrefabRoot`, `RampedDifficultyService`, and `SpiderWebSpawner`), all pointing at the same asset
-- Not Balance: the arm stroke and reach, orbit speed, acceleration, and input actions stay in `MonkeyConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`
+- Wiring: each reader holds a `GameBalanceConfig` inspector field (`balanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyPrefabRoot`, `DynamicTreeSegmentPrefabRoot`, `RampedDifficultyService`, `SpiderWebSpawner`, and `FallingCobraSpawner`), all pointing at the same asset
+- Not Balance: the arm stroke and reach, orbit speed, acceleration, and input actions stay in `MonkeyConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, and retries stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab
 - Retired: `GameConfig`, `ScoreConfig`, and `ScoreReward` were folded into `GameBalanceConfig` and removed
 - Suffixes: `U` is world units, `S` is seconds, `Deg` is degrees, `PerU` is per world unit travelled
 
@@ -127,9 +128,9 @@ Climb speeds come from `Settings/GameBalanceConfig.asset`. Orbit speed, accelera
 
 The tree is a stack of static and dynamic trunk segments under a `TreeTop`.
 
-- Extent: `TreeManager` (singleton `I`) holds `MinY` and `MaxY`, 0 and 100 by default, from the finite tree; nothing reads them any more; `FallingCobraSpawner` takes the `DTSPool` transform as the trunk axis. It sits on the mock tree, so it outlives the deactivation only because its `Awake` runs before `DTSPool`'s
-- Climb Height: heights that drive difficulty are measured above the monkey's start y by `RampedDifficultyService.GetClimbedYDistance`: branch density, banana chance, web chance, the score, and the height HUD. Nothing shifts the world origin; if something ever does, it only has to move `PlayerGameStartYPosition` along
-- Segments: each `DynamicTreeSegmentPrefabRoot` places branches on itself in `Start` and in every `Restart` ([Mobs](mob-doc.md#placement)), then raises the static `BranchesGenerated`, which `SpiderWebSpawner` answers with webs ([Mobs](mob-doc.md#placement-1))
+- Extent: `TreeManager` (singleton `I`) holds `MinY` and `MaxY`, 0 and 100 by default, from the finite tree; nothing reads them any more; `FallingCobraSpawner` takes each segment's pivot as the trunk axis
+- Climb Height: heights that drive difficulty are measured above the monkey's start y by `RampedDifficultyService.GetClimbedYDistance`: branch density, banana chance, web chance, falling cobra chance, the score, and the height HUD. Nothing shifts the world origin; if something ever does, it only has to move `PlayerGameStartYPosition` along
+- Segments: each `DynamicTreeSegmentPrefabRoot` places branches on itself in `Start` and in every `Restart` ([Mobs](mob-doc.md#placement)), then raises the static `BranchesGenerated`, which `SpiderWebSpawner` answers with webs ([Mobs](mob-doc.md#placement-1)) and `FallingCobraSpawner` with falling cobras ([Mobs](mob-doc.md#spawning))
 - Pool: `DTSPool` sits on an empty object, finds the `Player`-tagged object once, and instantiates `segmentCount` copies of `segmentPrefab` end to end, the first (lowest) one created at the world height `firstSegmentY`. It keeps them in a FIFO: only when the stack top is less than `lookAheadU` above the player, and the lowest segment lies wholly under the player, that lowest one is moved over the stack top by `DynamicTreeSegmentPrefabRoot.Restart`, which clears its branches and webs and rolls branches again; the webs follow through `BranchesGenerated`, the pool never calls the spawner. Its `mockTree` field names an editor-only stand-in, `Envs/Tree` in `Lv1Scene`, that is deactivated at runtime, so nothing that must run may sit under it
 - Top: the `TreeTop` prefab carries the win zone
 

@@ -74,6 +74,8 @@ graph LR
   Game -->|EndRun| Score
   Pool[DTSPool] -->|Restart| Segment[DynamicTreeSegmentPrefabRoot]
   Segment -->|BranchesGenerated| Spawner[SpiderWebSpawner]
+  Segment -->|BranchesGenerated| CobraSpawner[FallingCobraSpawner]
+  CobraSpawner --> FallCobra[FallingCobra]
   Spawner --> Web[SpiderWebTrap]
   Web -->|TryTrap| Struggle[SpiderWebStruggle]
   Struggle -->|IsHeld| Root
@@ -102,15 +104,15 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Environment/BranchFruitPlacementConfig` | ScriptableObject of branch placement | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/BranchWithScriptRoot` | decides whether a branch bears a banana | [Grab](docs/grab-doc.md#fruit-supply) |
 | `Environment/FruitOutlineListener` | two-tier banana outline | [Grab](docs/grab-doc.md#feedback) |
-| `MobSpiderWeb/SpiderWebSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, places webs on that segment's trunk by a chance that ramps with climb height | [Mobs](docs/mob-doc.md#placement-1) |
+| `MobSpiderWeb/SpiderWebSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, rolls webs on that segment's trunk, attempts against a probability curve at the segment's ramped difficulty | [Mobs](docs/mob-doc.md#placement-1) |
 | `MobSpiderWeb/SpiderWebTrap` | web prefab root with one deepened trigger box | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `MobSpiderWeb/SpiderWebStruggle` | on the monkey: trap state, escape bar, immunity | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `MobSpiderWeb/SpiderWebBuilder` | `Build Web` context menu that builds the web strands out of cubes, a one-off authoring aid | none |
 | `Environment/WinZoneHandler` | empty leftover on `TreeTop`, win removed, to delete | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `Cobra/CobraClimb` | chasing cobra path, coil, and look | [Mobs](docs/mob-doc.md#cobra) |
 | `Cobra/CobraCollisions` | cobra contact calls `LoseGame` | [Mobs](docs/mob-doc.md#contact) |
-| `Cobra/FallingCobraSpawner` | unlock, rhythm, and branch pick | [Mobs](docs/mob-doc.md#falling-cobra) |
-| `Cobra/FallingCobra` | warning, fall, and hit capsule | [Mobs](docs/mob-doc.md#falling-cobra) |
+| `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment, attempts against a probability curve at the segment's ramped difficulty | [Mobs](docs/mob-doc.md#falling-cobra) |
+| `MobFallingCobra/FallingCobra` | dormant until the monkey is near, then warning, a constant fall that slides toward the monkey's angle, and a hit capsule | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `Difficulty/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the one climb baseline, and maps it to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [TDD](docs/monkobra-tdd.md#tree) |
 | `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: one markdown file per launch in `persistentDataPath/Analytics/`, a run entry appended on each game over, F9 starts a new session | none |
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |

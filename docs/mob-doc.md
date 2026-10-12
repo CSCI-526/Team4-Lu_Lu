@@ -93,27 +93,31 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 
 ### Spawning
 
-`FallingCobraSpawner` is attached to the active `DTSPool` object in `Lv1Scene`. It finds the `Player`-tagged monkey, uses the pool's transform as the tree center, and tracks the highest climb since the start. It does not depend on the mock tree, which the pool deactivates at runtime.
+`FallingCobraSpawner` sits on the active `DTSPool` object in `Lv1Scene`, never under the pool's mock tree, which the pool deactivates at runtime (it logs a warning if one is left there). Like the web spawner it listens to `DynamicTreeSegmentPrefabRoot.BranchesGenerated`, so each roll of a segment's branches gets exactly one roll of falling cobras. Only the first enabled spawner listens.
 
-1. Unlock: spawning begins once the monkey has climbed `startClimbHeightU` above its starting height, and stays unlocked even if the monkey later falls
-2. Spot: it looks for a `Branch`-tagged object 4 to 9 u above the monkey whose angle round the trunk puts it within 3 u (sideways) of the monkey, nearest first, and spawns the cobra on the monkey's own orbit ring above that branch. If none qualifies it retries each second
-3. Rhythm: only one falling cobra exists at a time. The wait before the next one shortens from the initial interval to the minimum as the peak climb after unlock grows
+- Count: a fixed `fallingCobraAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `fallingCobraSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyService`, read at the segment's middle), the same model as branches
+- Spot: a cobra hangs on a ring of `spawnRadiusU` about the segment's pivot, on the trunk axis, at a random angle and a random height that keeps the whole snake inside its segment. A spot too close to another cobra of the segment is retried, then skipped
+- Cleanup: cobras are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous cobras too
+- Concurrency: several can be live at once, one roll per segment; frequency follows climb height and the curve, not a clock
 
-| Setting (`Lv1Scene` > `DTSPool` > `FallingCobraSpawner`) | Value |
-| --- | --- |
-| Unlock Climb | 60 u |
-| Initial Interval | 8 s |
-| Min Interval | 4 s |
-| Climb To Reach Min Interval | 200 u after unlock |
-| Branch Window Above Player | 4 to 9 u |
-| Max Side Distance | 3 u |
+| Setting | Value | Home |
+| --- | --- | --- |
+| Attempts Per Segment | 2 | `Settings/GameBalanceConfig.asset` |
+| Spawn Probability Curve | linear, 0 at difficulty 0 to 0.5 at difficulty 1 | 〃 |
+| Fall Speed | 6 u/s | 〃 |
+| Horizontal Chase Speed | 2 u/s along the ring | 〃 |
+| Spawn Radius | about the monkey's orbit radius (5.88 u) | `FallingCobraSpawner` on `DTSPool` |
+| Min Cobra Separation | 4 u | 〃 |
+| Trigger Distance | 12 u | falling cobra prefab |
+| Max Fall Distance | 30 u | 〃 |
 
 ### Behavior
 
-- Warning: it starts red immediately, then pulses red against its green base for 1.25 s at 4 Hz and has no hit shape
-- Fall: it clears the warning color, returns to green, then drops at 6 u/s with one capsule trigger tagged `Branch` covering the whole snake, while every segment collider is switched off
+- Dormant: it hangs still, in its normal color, until the monkey is within the trigger distance (3D) and the cobra is at or above the monkey's height
+- Warning: it then pulses red against its green base for 1.25 s at 4 Hz and has no hit shape
+- Fall: it clears the warning color, then drops at a constant speed with one capsule trigger tagged `Branch` covering the whole snake, while every segment collider is switched off. Each physics step it re-reads the monkey's angle about the tree and slides round the trunk toward it by the shortest arc at the horizontal speed, never overshooting, so it keeps tracking a monkey that orbits
 - Hit: because the capsule is tagged `Branch`, the monkey's own branch sensor applies the usual shake, stun, and drop, and the capsule is switched off after the first touch so one snake costs one drop
-- Despawn: 5 u below the monkey it destroys itself, which frees the spawner for the next one
+- Off: after falling the max fall distance it switches itself off; the segment's restart destroys it later
 
 ## Spider Web
 
@@ -123,22 +127,17 @@ A static trap on the trunk that holds the monkey in place while the cobra keeps 
 
 `SpiderWebSpawner` sits on `Envs/DTSPool` in `Lv1Scene`, and on any object that stays active from scene load, never under the pool's mock tree, which `DTSPool` deactivates at runtime (it logs a warning if one is left there). It listens to `DynamicTreeSegmentPrefabRoot.BranchesGenerated`, raised each time a segment has rolled its branches, on its first `Start` and after every `DTSPool` restart, so each roll of branches gets exactly one roll of webs. Only the first enabled spawner listens.
 
-- Climb Height: a spot's height above the monkey's start y, from `RampedDifficultyService.GetClimbedYDistance`, the same baseline as the score and the height HUD, so world y never matters
-- Slots: each segment rolls a fixed number of slots, each spawning a web with a chance read at the segment's middle climb height
-- Chance: none below the start climb. From there the chance curve, x the progress 0~1 from the start climb to the full-chance climb and y the share 0~1 of the max chance, scales the max chance, and stays at the curve's end past the full-chance climb
-- Spot: a web lies flat on its segment's bark facing outward. A spot is dropped if it is below the start climb, too close to another live web, or its trigger volume (plus clearance) overlaps a branch or fruit. After the retry cap the web is skipped rather than placed overlapping
+- Count: a fixed `webAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `webSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyService`, read at the segment's middle), the same model as branches
+- Spot: a web lies flat on its segment's bark facing outward. A spot is dropped if it is too close to another live web, or its trigger volume (plus clearance) overlaps a branch or fruit. After the retry cap the web is skipped rather than placed overlapping
 - Cleanup: webs are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous webs too, destroying any still active, so none linger and none double up. A web removed under a held monkey frees it
 
 | Setting | Value | Asset |
 | --- | --- | --- |
-| Slots Per Segment | 2 | `Settings/GameBalanceConfig.asset` |
-| Start Climb | 50 u | 〃 |
-| Full-Chance Climb | 300 u | 〃 |
-| Max Chance Per Slot | 0.5 | 〃 |
-| Chance Curve | linear, 0.2 of max at the start climb to 1 at the full-chance climb | 〃 |
+| Attempts Per Segment | 2 | `Settings/GameBalanceConfig.asset` |
+| Spawn Probability Curve | linear, 0 at difficulty 0 to 0.5 at difficulty 1 | 〃 |
 | Min Web Separation | 4 u | `SpiderWebSpawner` on `Envs/DTSPool` |
 
-With these values a slot's chance is 0.1 at 50 u, 0.3 at 175 u, and 0.5 from 300 u up.
+The curve is the only gate: webs appear wherever it is above 0, and the ramped difficulty is 0 until the climb reaches the start of `rampedDifficultyCurve`.
 
 ### Trap and Escape
 
@@ -158,10 +157,10 @@ The struggle suspends interact because of a shared Space binding, see [Input](mo
 
 ### Testing
 
-Webs are in `Lv1Scene`. They first appear 50 u above the monkey's start, so for a quick test select `Envs/DTSPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn from Test Start Climb U (5 u) up at Test Spawn Chance (1) per slot, ignoring the balance ramp. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real ramp, edit the Spider Web group of `Settings/GameBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box and, in Play mode, the start climb as a ring.
+Webs are in `Lv1Scene` and follow the web probability curve. For a quick test select `Envs/DTSPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at Test Spawn Chance (1) per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/GameBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
 
 ## Known Gaps
 
-- Mob tuning for the cobra, the web escape, and web geometry lives on scene components, not in a shared ScriptableObject; only the web spawn rate is in `GameBalanceConfig`
+- Mob tuning for the cobra, the web escape, and web geometry lives on scene components, not in a shared ScriptableObject; only the web and falling cobra spawn rates, speeds, and attempt counts are in `GameBalanceConfig`
 - Stamina is not linked to branch hits
 - `Lv1Scene`'s Canvas holds 2 objects named `ProgressBar`, the climb progress and the web escape bar, so look them up by path
