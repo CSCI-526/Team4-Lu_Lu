@@ -8,7 +8,7 @@ Course project for USC CSCI-526, Fall 2026.
 
 You play a monkey racing up a very tall tree. The cobra never stops climbing, and your stamina drains with every meter. Dodge branches, then hold E or Space to reach for a banana and release to grab it: a clean grab is the only way to refill the stamina bar before it runs dry. Every grab costs focus that would otherwise go to dodging, so each banana is a risk.
 
-The pillars, mechanics, and difficulty are in the [Game Design Document](docs/monkobra-gdd.md), every hazard and what it does on touch in [Mobs](docs/mob-doc.md), and how grabbing works in the [Grab System](docs/grab-doc.md), and why difficulty ramps with height in [Balance Design](docs/balance-doc.md).
+The pillars, mechanics, and difficulty are in the [Game Design Document](docs/monkobra-gdd.md), every hazard and what it does on touch in [Mobs](docs/mob-doc.md), and how grabbing works in the [Grab System](docs/grab-doc.md), why difficulty ramps with height in [Balance Design](docs/balance-doc.md), and how a whole run plays out in the [Gameplay Loop](docs/gameplay-loop-doc.md).
 
 ## Controls
 

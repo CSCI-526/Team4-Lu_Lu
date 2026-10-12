@@ -6,16 +6,27 @@ The complete moment-to-moment loop of a run: climbing, hazards, the banana grab,
 
 ```mermaid
 graph TD
-  Start([Run starts]) --> Climb[Climb and dodge hazards]
+  Start([Run starts]) --> Climb[Climb and circle the trunk]
   Cobra[Cobra chases from below] -.-> Climb
+  Climb -.->|drains| Stamina[(Stamina)]
 
-  Climb --> Banana{Banana in reach?}
+  Climb --> Hazard{Hazard ahead?}
+  Hazard -->|branch or falling cobra| Hit[Knocked down the trunk]
+  Hazard -->|spider web| Stuck[Stuck until escape bar fills]
+  Hit --> Cost[Time lost, cobra closes in]
+  Stuck --> Cost
+  Cost --> Climb
+
+  Hazard -->|clear| Banana{Banana in reach?}
   Banana -->|no| Climb
   Banana -->|yes| Grab[Hold to reach, release to grab]
   Grab -->|hit| Restore[Stamina restored, points gained]
-  Grab -->|miss| Lost[Time lost, cobra closes in]
+  Grab -->|miss| Cost
+  Restore -.-> Stamina
   Restore --> Climb
-  Lost --> Climb
+
+  Stamina -.->|empty| Slow[Climb slows down]
+  Slow -.-> Climb
 
   Climb -->|top of tree| Win([Win])
   Climb -->|cobra touches monkey| Lose([Lose])
@@ -25,7 +36,8 @@ graph TD
 ```
 
 - Solid Arrows: the player's flow from action to action
-- Dashed Arrow: the cobra's pressure, which never pauses
+- Dashed Arrows: the pressures that run beside the player's actions, the cobra and stamina
+- Cylinder Node: the stamina resource
 
 ## Stages
 
