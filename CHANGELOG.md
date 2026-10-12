@@ -1,9 +1,11 @@
 # Monkobra CHANGELOG
 
 <!--
+FIXME collect web encounter for analytics
+FIXME improve cobra prob spawn
+
 Bug falling cobra gone
-Fixme ramp difficulty for: spider web, & falling cobra
-Fixme collect web encounter for analytics
+Fixme ramp difficulty for: falling cobra
 -->
 
 ## [Unreleased]
@@ -13,14 +15,22 @@ Fixme collect web encounter for analytics
 - Spider web trap in `Lv1Scene`, also in the `WebDemo` test scene: webs spawn on the upper trunk clear of branches and fruit, hold the monkey on contact, and break on rapid Space presses, with a first-trap hint and an escape bar that hide on escape or game over, and a short immunity after escaping
 
 - `DTSPool`: recycles the lowest tree segment over the top as the monkey climbs, for an endless tree; deactivates an optional mock tree at runtime
+- spider web spawn in `GameBalanceConfig`'s Spider Web group: an attempt count per segment and a probability curve of the ramped difficulty, the same model as branches
+- falling cobra spawn in `GameBalanceConfig`'s Falling Cobra group: an attempt count per segment, a probability curve of the ramped difficulty, a constant fall speed, and a horizontal chase speed
+- `SpiderWebSpawner` test override: webs at a flat chance at any height, for quick checks
+- `DynamicTreeSegmentPrefabRoot.BranchesGenerated`: static event raised after a segment rolls its branches, on first `Start` and every `Restart`
+- `RampedDifficultyService.GetClimbedYDistance`: height of any y above the player's start y
 
 ### Changed
 
 - `DynamicTreeSegmentPrefabRoot.Restart` moves a segment and re-rolls its branches, clearing the old branches and webs
 - `MonkeyPrefabRoot` exposes `IsHeld` to freeze the body in place
+- `SpiderWebSpawner` places webs on each `BranchesGenerated` instead of a one-off pass at `Start`, measures height from the player's start y instead of `TreeManager` progress, and drops a segment's old webs before rolling it again; `startProgress`, `maxWebsPerSegment`, and `spawnChance` are gone
+- `DTSPool` no longer references or calls `SpiderWebSpawner`, and warns when one sits under its mock tree
 - falling cobra contact in `FallingCobraDemo` now uses the monkey's branch-hit stun and drop instead of ending the run
-- falling cobra spawning now unlocks after a configurable climb distance from the monkey's starting height instead of 60% of the finite tree
-- falling cobra spawn intervals now shorten with the monkey's highest climb, down to a configurable minimum
+- falling cobras are rolled per tree segment like branches: `FallingCobraSpawner` listens to `BranchesGenerated`, hangs dormant cobras as segment children on a ring about the trunk, and no longer runs a global timer, a 60 u unlock, or a one-at-a-time limit
+- `FallingCobra` wakes when the monkey is within a trigger distance, falls at a constant speed while sliding round the trunk toward the monkey's live angle, and switches itself off after a fall limit
+- spider webs spawn from an attempt count and a ramped difficulty probability curve; the start climb, full-chance climb, max chance, and slot count are gone
 - cobra coil fill: `CobraClimb` clones body segments so the coil has no gap
 - cobra look: bead-chain body w/ small gaps & slight taper, flat hooded head w/ eyes, raised neck, slow slither wave
 - cobra body coils ≥ 1 full loop round the trunk as a corkscrew, so dropping onto it or orbiting into it is always fatal
@@ -33,6 +43,7 @@ Fixme collect web encounter for analytics
 
 ### Fixed
 
+- spider webs missing from `Lv1Scene` since the endless tree: `SpiderWebSpawner` sat on `Envs/Tree`, the mock tree `DTSPool` deactivates at runtime, so it never ran
 - cobra contact script class renamed `CobraCollisions` to match its file, so Unity can load it
 - cobra contact counts the monkey's tail & hands, not only its body; detection triggers no longer matter
 - cobra no longer retreats downward with a descending monkey, which let the monkey push it down and never touch it
