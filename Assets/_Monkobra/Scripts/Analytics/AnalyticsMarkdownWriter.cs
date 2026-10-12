@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using UnityEngine;
 
@@ -70,8 +71,48 @@ public static class AnalyticsMarkdownWriter {
         return sb.ToString();
     }
 
+    /// <summary>
+    /// whole session file: header, summary of the
+    /// <see cref="RunStatus.Lost"/> runs, then every run
+    /// </summary>
+    public static string BuildSession(SessionData session) {
+        var sb = new StringBuilder();
+        sb.Append("# MonKobra Analytics: Session: ").Append(session.Title);
+        sb.Append("\n\n");
+        sb.Append("MonKobra v").Append(session.AppVersion).Append("\n\n");
+
+        List<DeathCause> causes = session.GetLostDeathCauses();
+        if (causes.Count > 0) {
+            sb.Append("## Session Summary\n\n");
+            AppendDeathCauses(sb, causes);
+            AppendDeathHeightHistogram(sb, session.GetLostDeathHeights());
+        }
+        for (int i = 0; i < session.Runs.Count; i++) {
+            sb.Append(BuildRun(session.Runs[i], i + 1));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// whether <paramref name="text"/> was written to
+    /// <paramref name="path"/>, a failure logs a warning
+    /// </summary>
+    public static bool WriteFile(string path, string text) {
+        try {
+            File.WriteAllText(path, text, new UTF8Encoding(false));
+        } catch (Exception e) {
+            Debug.LogWarning("Analytics:\tfail to write session: " + e);
+            return false;
+        }
+
+        return true;
+    }
+
     // constants  ##############################################################
     private const string CLOCK_FORMAT = "HH:mm:ss";
+    // width of one death height histogram bin; world u
+    private const int HEIGHT_BIN_U = 10;
 
     // nested types  ###########################################################
     // one point on the run's timeline, ordered by seconds since run start
@@ -96,6 +137,61 @@ public static class AnalyticsMarkdownWriter {
     }
 
     // private methods  ########################################################
+    // pie of what ended each lost run of the session
+    private static void AppendDeathCauses(
+        StringBuilder sb,
+        List<DeathCause> causes
+    ) {
+        sb.Append("#### Death Causes\n\n```mermaid\npie showData\n");
+        sb.Append("    title Death Causes\n");
+        foreach (DeathCause cause in Enum.GetValues(typeof(DeathCause))) {
+            int count = causes.FindAll(c => c == cause).Count;
+            if (count > 0) {
+                sb.Append("    \"").Append(cause).Append("\" : ");
+                sb.Append(count).Append('\n');
+            }
+        }
+        sb.Append("```\n\n");
+    }
+
+    // bars of deaths per height band across the session; heights below 0
+    // count in the first band
+    private static void AppendDeathHeightHistogram(
+        StringBuilder sb,
+        List<float> deathHeights
+    ) {
+        var bins = new List<int>();
+        for (int i = 0; i < deathHeights.Count; i++) {
+            int bin = Mathf.Max(
+                0,
+                Mathf.FloorToInt(deathHeights[i] / HEIGHT_BIN_U)
+            );
+            while (bins.Count <= bin) {
+                bins.Add(0);
+            }
+            bins[bin]++;
+        }
+
+        var labels = new List<string>();
+        int maxCount = 1;
+        for (int i = 0; i < bins.Count; i++) {
+            labels.Add(
+                "\"" + (i * HEIGHT_BIN_U) + "-"
+                    + (((i + 1) * HEIGHT_BIN_U) - 1) + "\""
+            );
+            maxCount = Mathf.Max(maxCount, bins[i]);
+        }
+
+        sb.Append("#### Death Height Histogram\n\n```mermaid\nxychart-beta\n");
+        sb.Append("    title \"Death Height Histogram\"\n");
+        sb.Append("    x-axis \"Height (u)\" [")
+            .Append(string.Join(", ", labels)).Append("]\n");
+        sb.Append("    y-axis \"Deaths\" 0 --> ").Append(maxCount);
+        sb.Append('\n');
+        sb.Append("    bar [").Append(string.Join(", ", bins));
+        sb.Append("]\n```\n\n");
+    }
+
     private static string FormatClock(DateTime clock) {
         return clock.ToString(CLOCK_FORMAT, CultureInfo.InvariantCulture);
     }
