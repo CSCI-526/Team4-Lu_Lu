@@ -160,6 +160,8 @@ public class AnalyticsManager: MonoBehaviour {
             };
             AddStaminaSample();
             nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
+            session.Runs.Add(currentRun);
+            SaveSession();
         } else if (state == GameState.Lost) {
             FinishRun();
         }
@@ -172,17 +174,20 @@ public class AnalyticsManager: MonoBehaviour {
 
         currentRun.Bananas.Add(CreateStamp());
         AddStaminaSample(true);
+        SaveSession();
     }
 
     private void OnWebEncountered(SpiderWebTrap _) {
         if (currentRun != null) {
             currentRun.Webs.Add(CreateStamp());
+            SaveSession();
         }
     }
 
     private void OnBranchHit(Collider _) {
         if (currentRun != null) {
             currentRun.Branches.Add(CreateStamp());
+            SaveSession();
         }
     }
 
@@ -264,13 +269,17 @@ public class AnalyticsManager: MonoBehaviour {
 
     // whether the whole session was written to its file
     private bool SaveSession() {
+        if (string.IsNullOrEmpty(SessionFilePath)) {
+            return false;
+        }
+
         return AnalyticsMarkdownWriter.WriteFile(
             SessionFilePath,
             AnalyticsMarkdownWriter.BuildSession(session)
         );
     }
 
-    // closes the run as lost, adds it to the session & saves
+    // closes the run as lost & saves, the run joined the session at its start
     private void FinishRun() {
         if (string.IsNullOrEmpty(SessionFilePath) || currentRun == null) {
             return;
@@ -303,7 +312,6 @@ public class AnalyticsManager: MonoBehaviour {
         AddStaminaSample();
         currentRun = null;
 
-        session.Runs.Add(run);
         if (SaveSession() && Debug.isDebugBuild) {
             Debug.Log("Analytics:\trun " + RunCount + " appended");
         }
