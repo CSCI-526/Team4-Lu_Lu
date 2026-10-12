@@ -16,6 +16,7 @@ Todo more data collection, using mermaid
 - `SpiderWebSpawner` test override: webs at a flat chance at any height, for quick checks
 - `DynamicTreeSegmentPrefabRoot.BranchesGenerated`: static event raised after a segment rolls its branches, on first `Start` and every `Restart`
 - `RampedDifficultyService.GetClimbedYDistance`: height of any y above the player's start y
+- analytics run entries end with three Mermaid graphs: a score split pie, a height over time line, and a run timeline
 
 ### Changed
 

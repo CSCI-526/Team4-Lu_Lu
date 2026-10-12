@@ -174,6 +174,27 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    // one point on the run's timeline, ordered by seconds since run start
+    private readonly struct TimelineEntry {
+        public readonly double Elapsed;
+        public readonly string Label;
+        // height above the run start y; world u
+        public readonly float Height;
+        public readonly bool HasHeight;
+
+        public TimelineEntry(
+            double elapsed,
+            string label,
+            float height,
+            bool hasHeight
+        ) {
+            Elapsed = elapsed;
+            Label = label;
+            Height = height;
+            HasHeight = hasHeight;
+        }
+    }
+
     // private members  ########################################################
     private float runStartTime;
     private DateTime runStartClock;
@@ -276,6 +297,121 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    private static string FormatSeconds(double seconds) {
+        return seconds.ToString("F1", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatHeight(float height) {
+        return height.ToString("+0.0;-0.0;+0.0", CultureInfo.InvariantCulture);
+    }
+
+    // every event of the run, plus start & game over, sorted by time
+    private List<TimelineEntry> BuildTimeline(EventStamp end) {
+        var entries = new List<TimelineEntry> {
+            new TimelineEntry(0.0, "Start", 0f, true)
+        };
+        AddTimelineEntries(entries, bananaClocks, "Banana", true);
+        AddTimelineEntries(entries, webClocks, "Web", false);
+        AddTimelineEntries(entries, branchClocks, "Branch", true);
+        entries.Add(new TimelineEntry(
+            (end.Clock - runStartClock).TotalSeconds,
+            "Game Over",
+            end.Height,
+            true
+        ));
+        entries.Sort((a, b) => a.Elapsed.CompareTo(b.Elapsed));
+        return entries;
+    }
+
+    private void AddTimelineEntries(
+        List<TimelineEntry> entries,
+        List<EventStamp> stamps,
+        string name,
+        bool hasHeight
+    ) {
+        for (int i = 0; i < stamps.Count; i++) {
+            entries.Add(new TimelineEntry(
+                (stamps[i].Clock - runStartClock).TotalSeconds,
+                name + " " + (i + 1),
+                stamps[i].Height,
+                hasHeight
+            ));
+        }
+    }
+
+    // pie of height score against banana score, skipped w/o any score
+    private static void AppendScoreSplit(
+        StringBuilder sb,
+        long heightScore,
+        long rewardScore
+    ) {
+        if (heightScore <= 0 && rewardScore <= 0) {
+            return;
+        }
+
+        sb.Append("#### Score Split\n\n```mermaid\npie showData\n");
+        sb.Append("    title Score Split\n");
+        if (heightScore > 0) {
+            sb.Append("    \"Height\" : ").Append(heightScore).Append('\n');
+        }
+        if (rewardScore > 0) {
+            sb.Append("    \"Banana\" : ").Append(rewardScore).Append('\n');
+        }
+        sb.Append("```\n\n");
+    }
+
+    // line of height at each event that carries one, x axis is categorical so
+    // spacing is per event, not per second
+    private static void AppendHeightOverTime(
+        StringBuilder sb,
+        List<TimelineEntry> entries
+    ) {
+        var times = new List<string>();
+        var heights = new List<string>();
+        float minHeight = 0f;
+        float maxHeight = 1f;
+        for (int i = 0; i < entries.Count; i++) {
+            if (!entries[i].HasHeight) {
+                continue;
+            }
+
+            times.Add(FormatSeconds(entries[i].Elapsed));
+            heights.Add(entries[i].Height.ToString(
+                "F1",
+                CultureInfo.InvariantCulture
+            ));
+            minHeight = Mathf.Min(minHeight, entries[i].Height);
+            maxHeight = Mathf.Max(maxHeight, entries[i].Height);
+        }
+
+        sb.Append("#### Height Over Time\n\n```mermaid\nxychart-beta\n");
+        sb.Append("    title \"Height Over Time\"\n");
+        sb.Append("    x-axis \"Elapsed (s)\" [")
+            .Append(string.Join(", ", times)).Append("]\n");
+        sb.Append("    y-axis \"Height (u)\" ")
+            .Append(Mathf.FloorToInt(minHeight)).Append(" --> ")
+            .Append(Mathf.CeilToInt(maxHeight)).Append('\n');
+        sb.Append("    line [").Append(string.Join(", ", heights));
+        sb.Append("]\n```\n\n");
+    }
+
+    private static void AppendRunTimeline(
+        StringBuilder sb,
+        List<TimelineEntry> entries
+    ) {
+        sb.Append("#### Run Timeline\n\n```mermaid\ntimeline\n");
+        sb.Append("    title Run Timeline\n");
+        for (int i = 0; i < entries.Count; i++) {
+            sb.Append("    +").Append(FormatSeconds(entries[i].Elapsed));
+            sb.Append(" s : ").Append(entries[i].Label);
+            if (entries[i].HasHeight) {
+                sb.Append(", y ").Append(FormatHeight(entries[i].Height));
+            }
+            sb.Append('\n');
+        }
+        sb.Append("```\n\n");
+    }
+
     private void AppendRun() {
         if (string.IsNullOrEmpty(SessionFilePath)) {
             return;
@@ -326,6 +462,11 @@ public class AnalyticsManager: MonoBehaviour {
         sb.Append("#### Branch Hit: ").Append(branchClocks.Count);
         sb.Append("\n\n");
         AppendClockList(sb, branchClocks, runStartClock, true);
+
+        List<TimelineEntry> timeline = BuildTimeline(CreateStamp());
+        AppendScoreSplit(sb, heightScore, rewardScore);
+        AppendHeightOverTime(sb, timeline);
+        AppendRunTimeline(sb, timeline);
 
         try {
             File.AppendAllText(
