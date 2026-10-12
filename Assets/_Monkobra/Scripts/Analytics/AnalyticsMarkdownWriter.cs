@@ -176,12 +176,12 @@ public static class AnalyticsMarkdownWriter {
             durations.Add(FormatNumber(run.DurationS));
         }
 
-        AppendRunBars(sb, "Final Score per Run", "Score", labels, scores);
+        AppendRunBars(sb, "Final Score vs Run", "Score", labels, scores);
         AppendRunBars(
-            sb, "Death Height per Run", "Height (u)", labels, heights
+            sb, "Death Height vs Run", "Height (u)", labels, heights
         );
         AppendRunBars(
-            sb, "Run Duration per Run", "Duration (s)", labels, durations
+            sb, "Duration vs Run", "Duration (s)", labels, durations
         );
     }
 
@@ -234,25 +234,29 @@ public static class AnalyticsMarkdownWriter {
         DateTime start,
         bool hasHeight
     ) {
+        if (stamps.Count == 0) {
+            return;
+        }
+
+        sb.Append(hasHeight ? "| # | Time | y |\n" : "| # | Time |\n");
+        sb.Append(hasHeight ? "|---|---|---|\n" : "|---|---|\n");
         for (int i = 0; i < stamps.Count; i++) {
             TimeSpan elapsed = stamps[i].Clock - start;
-            sb.Append(i + 1).Append(". +");
+            sb.Append("| ").Append(i + 1).Append(" | +");
             sb.Append(elapsed.ToString(
                 @"hh\:mm\:ss",
                 CultureInfo.InvariantCulture
             ));
+            sb.Append(" |");
             if (hasHeight) {
-                sb.Append("    y=");
-                sb.Append(stamps[i].Height.ToString(
-                    "+0.0;-0.0;+0.0",
+                sb.Append(' ').Append(stamps[i].Height.ToString(
+                    "0.0",
                     CultureInfo.InvariantCulture
-                ));
+                )).Append(" |");
             }
             sb.Append('\n');
         }
-        if (stamps.Count > 0) {
-            sb.Append('\n');
-        }
+        sb.Append('\n');
     }
 
     // line of sampled stamina over the run w/ a bar at each banana pickup,
@@ -286,9 +290,9 @@ public static class AnalyticsMarkdownWriter {
             );
         }
 
-        sb.Append("#### Stamina Curve\n\nBars mark banana pickups.\n\n");
+        sb.Append("Bars mark banana pickups.\n\n");
         sb.Append("```mermaid\nxychart-beta\n");
-        sb.Append("    title \"Stamina Curve\"\n");
+        sb.Append("    title \"Stamina vs Time\"\n");
         sb.Append("    x-axis \"Elapsed (s)\" [")
             .Append(string.Join(", ", times)).Append("]\n");
         sb.Append("    y-axis \"Stamina\" 0 --> ").Append(maxStamina);
@@ -407,8 +411,8 @@ public static class AnalyticsMarkdownWriter {
             maxHeight = Mathf.Max(maxHeight, entries[i].Height);
         }
 
-        sb.Append("#### Height Over Time\n\n```mermaid\nxychart-beta\n");
-        sb.Append("    title \"Height Over Time\"\n");
+        sb.Append("```mermaid\nxychart-beta\n");
+        sb.Append("    title \"Height vs Time\"\n");
         sb.Append("    x-axis \"Elapsed (s)\" [")
             .Append(string.Join(", ", times)).Append("]\n");
         sb.Append("    y-axis \"Height (u)\" ")

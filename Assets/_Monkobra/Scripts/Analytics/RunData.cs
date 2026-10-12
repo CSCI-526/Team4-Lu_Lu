@@ -26,7 +26,7 @@ public readonly struct EventStamp {
 }
 
 /// <summary>
-/// one point of the stamina curve
+/// one point of the stamina vs time chart
 /// </summary>
 public readonly struct StaminaSample {
     // seconds since the run started
