@@ -1917,11 +1917,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f013f45ac33c9624c8cdb3041b37174c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FallingCobra
+  triggerDistanceU: 12
   warningDurationS: 1.25
-  fallSpeedU: 6
+  maxFallDistanceU: 30
   segmentSpacingU: 0.35
   hitRadiusU: 0.5
-  despawnBelowPlayerU: 5
 --- !u!136 &3902953696277176351
 CapsuleCollider:
   m_ObjectHideFlags: 0

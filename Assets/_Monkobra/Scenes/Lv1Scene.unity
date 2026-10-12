@@ -2087,7 +2087,6 @@ MonoBehaviour:
   clearanceU: 0.3
   maxPlacementAttempts: 30
   useTestOverride: 0
-  testStartClimbU: 5
   testSpawnChance: 1
 --- !u!114 &824126030
 MonoBehaviour:
@@ -2101,17 +2100,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cc9663b4ecb664694bb8df0376ab90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FallingCobraSpawner
-  fallingCobraPrefab: {fileID: -3548897315033333001, guid: b60be837c54dfb545b11b9dd5e789cbb, type: 3}
-  treeCenter: {fileID: 824126027}
-  startClimbHeightU: 60
-  initialSpawnIntervalS: 8
-  minSpawnIntervalS: 4
-  climbDistanceToMinIntervalU: 200
-  retryIntervalS: 1
-  minBranchAbovePlayerU: 4
-  maxBranchAbovePlayerU: 9
-  maxSideDistanceU: 3
-  heightAboveBranchU: 0.5
+  cobraPrefab: {fileID: -3548897315033333001, guid: b60be837c54dfb545b11b9dd5e789cbb, type: 3}
+  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  spawnRadiusU: 5.88
+  minCobraSeparationU: 4
+  maxPlacementAttempts: 20
 --- !u!1 &825330269
 GameObject:
   m_ObjectHideFlags: 0
