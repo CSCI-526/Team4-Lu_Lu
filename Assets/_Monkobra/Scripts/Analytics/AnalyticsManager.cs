@@ -219,7 +219,7 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         currentRun.Bananas.Add(CreateStamp());
-        AddStaminaSample(true);
+        AddStaminaSample();
         SaveSession();
     }
 
@@ -301,7 +301,7 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     // records the stamina bar now, skipped w/o one in the scene
-    private void AddStaminaSample(bool isBanana = false) {
+    private void AddStaminaSample() {
         StaminaBarController bar = StaminaBarController.I;
         if (bar == null || currentRun == null) {
             return;
@@ -309,8 +309,7 @@ public class AnalyticsManager: MonoBehaviour {
 
         currentRun.StaminaSamples.Add(new StaminaSample(
             Time.time - currentRun.StartTime,
-            bar.CurrentStamina,
-            isBanana
+            bar.CurrentStamina
         ));
     }
 
@@ -349,14 +348,12 @@ public class AnalyticsManager: MonoBehaviour {
         }
         run.Status = status;
         run.DurationS = Time.time - run.StartTime;
-        run.FinalHeight = RampedDifficultyService.I != null
+        run.HighestHeight = RampedDifficultyService.I != null
             ? Mathf.Max(
-                0,
-                Mathf.FloorToInt(
-                    RampedDifficultyService.I.HighestPlayerClimbedYDistance
-                )
+                0f,
+                RampedDifficultyService.I.HighestPlayerClimbedYDistance
             )
-            : 0;
+            : 0f;
         ScoreManager scoreMgr = ScoreManager.I;
         run.TotalScore = scoreMgr != null ? scoreMgr.TotalScore : 0;
         run.HeightScore = scoreMgr != null ? scoreMgr.DistanceScore : 0;

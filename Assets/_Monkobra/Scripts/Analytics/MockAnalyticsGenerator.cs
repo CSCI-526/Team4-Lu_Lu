@@ -238,7 +238,7 @@ public static class MockAnalyticsGenerator {
             Status = plan.IsLost ? RunStatus.Lost : RunStatus.Interrupted,
             StartClock = start,
             DurationS = plan.DurationS,
-            FinalHeight = Mathf.FloorToInt(plan.HighestHeight)
+            HighestHeight = plan.HighestHeight
         };
         run.End = new EventStamp(
             start.AddSeconds(plan.DurationS),
@@ -275,21 +275,21 @@ public static class MockAnalyticsGenerator {
         return run;
     }
 
-    // a sample at the start, every interval, on each banana & at the end
+    // a sample at the start, every interval, on each banana & at the end, so refills show
     private static void AddStaminaSamples(RunData run, RunPlan plan) {
         var samples = new List<StaminaSample>();
         float nextT = 0f;
         foreach (Moment m in plan.Track) {
             if (m.T >= nextT) {
-                samples.Add(new StaminaSample(m.T, m.Stamina, false));
+                samples.Add(new StaminaSample(m.T, m.Stamina));
                 nextT = m.T + SAMPLE_INTERVAL_S;
             }
         }
         foreach (Moment m in plan.Bananas) {
-            samples.Add(new StaminaSample(m.T, m.Stamina, true));
+            samples.Add(new StaminaSample(m.T, m.Stamina));
         }
         Moment last = plan.Track[plan.Track.Count - 1];
-        samples.Add(new StaminaSample(last.T, last.Stamina, false));
+        samples.Add(new StaminaSample(last.T, last.Stamina));
 
         samples.Sort((a, b) => a.Elapsed.CompareTo(b.Elapsed));
         run.StaminaSamples.AddRange(samples);

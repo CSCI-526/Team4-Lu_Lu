@@ -28,7 +28,8 @@ public static class AnalyticsMarkdownWriter {
         if (run.Status != RunStatus.Lost) {
             sb.Append("- Status: ").Append(run.Status).Append('\n');
         }
-        sb.Append("- Final Height: ").Append(run.FinalHeight).Append('\n');
+        sb.Append("- Highest Height: ").Append(FormatHeight(run.HighestHeight));
+        sb.Append('\n');
         if (run.Status == RunStatus.Lost) {
             sb.Append("- Death Height: ").Append(FormatHeight(end.Height));
             sb.Append('\n');
@@ -162,6 +163,7 @@ public static class AnalyticsMarkdownWriter {
     ) {
         var labels = new List<string>();
         var scores = new List<string>();
+        var highests = new List<string>();
         var heights = new List<string>();
         var durations = new List<string>();
         for (int i = 0; i < session.Runs.Count; i++) {
@@ -172,11 +174,15 @@ public static class AnalyticsMarkdownWriter {
 
             labels.Add("\"" + (i + 1) + "\"");
             scores.Add(run.TotalScore.ToString(CultureInfo.InvariantCulture));
+            highests.Add(FormatNumber(run.HighestHeight));
             heights.Add(FormatNumber(run.End.Height));
             durations.Add(FormatNumber(run.DurationS));
         }
 
         AppendRunBars(sb, "Final Score vs Run", "Score", labels, scores);
+        AppendRunBars(
+            sb, "Highest Height vs Run", "Height (u)", labels, highests
+        );
         AppendRunBars(
             sb, "Death Height vs Run", "Height (u)", labels, heights
         );
@@ -259,8 +265,7 @@ public static class AnalyticsMarkdownWriter {
         sb.Append('\n');
     }
 
-    // line of sampled stamina over the run w/ a bar at each banana pickup,
-    // skipped w/o 2 samples
+    // line of sampled stamina over the run, skipped w/o 2 samples
     private static void AppendStaminaCurve(
         StringBuilder sb,
         List<StaminaSample> samples
@@ -276,29 +281,20 @@ public static class AnalyticsMarkdownWriter {
         );
         var times = new List<string>();
         var values = new List<string>();
-        var markers = new List<string>();
         for (int i = 0; i < samples.Count; i++) {
             times.Add(FormatSeconds(samples[i].Elapsed));
             values.Add(samples[i].Stamina.ToString(
                 "F1",
                 CultureInfo.InvariantCulture
             ));
-            markers.Add(
-                samples[i].IsBanana
-                    ? maxStamina.ToString(CultureInfo.InvariantCulture)
-                    : "0"
-            );
         }
 
-        sb.Append("Bars mark banana pickups.\n\n");
         sb.Append("```mermaid\nxychart-beta\n");
         sb.Append("    title \"Stamina vs Time\"\n");
         sb.Append("    x-axis \"Elapsed (s)\" [")
             .Append(string.Join(", ", times)).Append("]\n");
         sb.Append("    y-axis \"Stamina\" 0 --> ").Append(maxStamina);
         sb.Append('\n');
-        sb.Append("    bar [").Append(string.Join(", ", markers));
-        sb.Append("]\n");
         sb.Append("    line [").Append(string.Join(", ", values));
         sb.Append("]\n```\n\n");
     }
@@ -394,6 +390,7 @@ public static class AnalyticsMarkdownWriter {
         List<TimelineEntry> entries
     ) {
         var times = new List<string>();
+        var highests = new List<string>();
         var heights = new List<string>();
         float minHeight = 0f;
         float maxHeight = 1f;

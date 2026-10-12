@@ -32,13 +32,10 @@ public readonly struct StaminaSample {
     // seconds since the run started
     public readonly float Elapsed;
     public readonly float Stamina;
-    // whether the sample was taken on a banana pickup
-    public readonly bool IsBanana;
 
-    public StaminaSample(float elapsed, float stamina, bool isBanana) {
+    public StaminaSample(float elapsed, float stamina) {
         Elapsed = elapsed;
         Stamina = stamina;
-        IsBanana = isBanana;
     }
 }
 
@@ -62,8 +59,9 @@ public class RunData {
     // set once the run leaves InProgress  --------------------------------------
     public EventStamp End;
     public DeathCause Cause = DeathCause.Unknown;
-    // highest point reached; world u
-    public int FinalHeight;
+    // highest point reached, as opposed to where the run ended (End.Height);
+    // world u
+    public float HighestHeight;
     public long TotalScore;
     public long HeightScore;
     public long RewardScore;
