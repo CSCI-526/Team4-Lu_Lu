@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -17,8 +18,9 @@ public class AnalyticsConfig: ScriptableObject {
     /// <returns>key that saves a mock session file, for layout checks</returns>
     public Key MockSessionKey => mockSessionKey;
 
-    /// <returns>seconds b/t stamina samples while a run is playing</returns>
-    public float StaminaSampleIntervalS => staminaSampleIntervalS;
+    /// <returns>seconds b/t run samples of height & stamina while a run is
+    /// playing</returns>
+    public float SampleIntervalS => sampleIntervalS;
 
     /// <returns>seconds b/t timed saves while a run is playing, 0 turns off
     /// </returns>
@@ -40,8 +42,10 @@ public class AnalyticsConfig: ScriptableObject {
 
     [Header("Sampling")]
     [SerializeField]
-    [Tooltip("seconds b/t stamina samples while a run is playing")]
-    private float staminaSampleIntervalS = 2f;
+    [FormerlySerializedAs("staminaSampleIntervalS")]
+    [Tooltip("seconds b/t run samples of height & stamina while a run is "
+        + "playing")]
+    private float sampleIntervalS = 2f;
 
     [SerializeField]
     [Tooltip("seconds b/t timed saves while a run is playing, 0 turns off")]
@@ -55,7 +59,7 @@ public class AnalyticsConfig: ScriptableObject {
 
     // Editor Validation  ######################################################
     private void OnValidate() {
-        staminaSampleIntervalS = Mathf.Max(0.1f, staminaSampleIntervalS);
+        sampleIntervalS = Mathf.Max(0.1f, sampleIntervalS);
         autosaveIntervalS = Mathf.Max(0f, autosaveIntervalS);
         deathCauseWindowS = Mathf.Max(0f, deathCauseWindowS);
     }

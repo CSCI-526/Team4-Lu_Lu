@@ -26,15 +26,18 @@ public readonly struct EventStamp {
 }
 
 /// <summary>
-/// one point of the stamina vs time chart
+/// one timed point of the height vs time & stamina vs time charts
 /// </summary>
-public readonly struct StaminaSample {
+public readonly struct RunSample {
     // seconds since the run started
     public readonly float Elapsed;
+    // height above the run start y; world u
+    public readonly float Height;
     public readonly float Stamina;
 
-    public StaminaSample(float elapsed, float stamina) {
+    public RunSample(float elapsed, float height, float stamina) {
         Elapsed = elapsed;
+        Height = height;
         Stamina = stamina;
     }
 }
@@ -53,8 +56,7 @@ public class RunData {
     public readonly List<EventStamp> Bananas = new List<EventStamp>();
     public readonly List<EventStamp> Webs = new List<EventStamp>();
     public readonly List<EventStamp> Branches = new List<EventStamp>();
-    public readonly List<StaminaSample> StaminaSamples =
-        new List<StaminaSample>();
+    public readonly List<RunSample> Samples = new List<RunSample>();
 
     // set once the run leaves InProgress  --------------------------------------
     public EventStamp End;
