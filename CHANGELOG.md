@@ -14,19 +14,23 @@
 - `SpiderWebSpawner` test override: webs at a flat chance at any height, for quick checks
 - `DynamicTreeSegmentPrefabRoot.BranchesGenerated`: static event raised after a segment rolls its branches, on first `Start` and every `Restart`
 - `RampedDifficultyService.GetClimbedYDistance`: height of any y above the player's start y
-- analytics run entries end with Mermaid graphs: a score split pie, a height over time line, a stamina curve with a bar at each banana pickup, and a run timeline
-- analytics session files open with a Session Summary: a death causes pie and a death height histogram in 10 u bands, so the file is now rewritten on each game over instead of appended to
+- analytics run entries end with Mermaid graphs: a score split pie, a height vs time line, and a stamina vs time line, the last two drawn from the same timed samples
+- analytics session files open with a Session Summary of lost runs: a death causes pie, then bar charts of final score, highest height, death height, and duration vs run; the file is rewritten on each save instead of appended to
 - analytics run entries record the death cause and the death height, apart from the highest height reached
-- analytics samples stamina every `staminaSampleIntervalS` seconds (default 2) while a run plays
+- analytics samples height & stamina together every `sampleIntervalS` seconds (default 2) while a run plays, plus at run start & end
 - analytics saves the session file on session open, run start, banana, web, branch hit, and game over, not only on game over, so a run in progress is on disk
 - analytics also saves every `autosaveIntervalS` seconds (default 10, 0 turns off) while a run plays; any save restarts the countdown
-- analytics marks a run cut short by stopping Play mode, a scene reload, or F9 as `Interrupted`, with all its graphs, and leaves it out of the death cause pie & death height histogram
-- `DeathCause` enum and `GameController.LastDeathCause`, set by `LoseGame(DeathCause)` before `Lost` is raised
+- analytics marks a run cut short by stopping Play mode, a scene reload, or F9 as `Interrupted`, with all its graphs, and leaves it out of the session summary
+- analytics infers a lost run's death cause from its logged events: the latest branch hit or web encounter within `deathCauseWindowS` (default 2 s) before the loss, else the great cobra
+- `AnalyticsConfig` asset (`Settings/Analytics/`): analytics keys, sample & autosave intervals, and the death cause window
+- F10 saves a fully mocked session file (`MockAnalyticsGenerator`) beside the real ones, for checking the report without playing
 - `StaminaBarController.MaxStamina`: the balance config's stamina ceiling
 
 ### Changed
 
 - analytics split `AnalyticsManager` into data containers `RunData` & `SessionData`, a static `AnalyticsMarkdownWriter`, and a lean manager that observes, fills, and saves
+- `GameController.LoseGame()` takes no cause and `GameController` keeps no `LastDeathCause`; the `DeathCause` enum moved into `Analytics/`
+- analytics run entries record the highest height reached as a float `HighestHeight`, not an integer final height
 - `DynamicTreeSegmentPrefabRoot.Restart` moves a segment and re-rolls its branches, clearing the old branches and webs
 - `MonkeyPrefabRoot` exposes `IsHeld` to freeze the body in place
 - `SpiderWebSpawner` places webs on each `BranchesGenerated` instead of a one-off pass at `Start`, measures height from the player's start y instead of `TreeManager` progress, and drops a segment's old webs before rolling it again; `startProgress`, `maxWebsPerSegment`, and `spawnChance` are gone
