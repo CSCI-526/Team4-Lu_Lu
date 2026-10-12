@@ -46,8 +46,7 @@ public static class AnalyticsMarkdownWriter {
         sb.Append('\n');
         sb.Append("- Time Stop: ").Append(FormatClock(end.Clock));
         sb.Append("\n\n");
-        List<TimelineEntry> timeline = BuildTimeline(run, end);
-        AppendHeightOverTime(sb, timeline);
+        AppendHeightCurve(sb, run.Samples);
 
         sb.Append("#### Final Score: ").Append(run.TotalScore).Append("\n\n");
         sb.Append("- Score from Height: ").Append(run.HeightScore);
@@ -60,7 +59,7 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("#### Banana Count: ").Append(run.Bananas.Count);
         sb.Append("\n\n");
         AppendClockList(sb, run.Bananas, run.StartClock, true);
-        AppendStaminaCurve(sb, run.StaminaSamples);
+        AppendStaminaCurve(sb, run.Samples);
 
         sb.Append("#### Web Encounter: ").Append(run.Webs.Count);
         sb.Append("\n\n");
@@ -113,28 +112,6 @@ public static class AnalyticsMarkdownWriter {
 
     // constants  ##############################################################
     private const string CLOCK_FORMAT = "HH:mm:ss";
-
-    // nested types  ###########################################################
-    // one point on the run's timeline, ordered by seconds since run start
-    private readonly struct TimelineEntry {
-        public readonly double Elapsed;
-        public readonly string Label;
-        // height above the run start y; world u
-        public readonly float Height;
-        public readonly bool HasHeight;
-
-        public TimelineEntry(
-            double elapsed,
-            string label,
-            float height,
-            bool hasHeight
-        ) {
-            Elapsed = elapsed;
-            Label = label;
-            Height = height;
-            HasHeight = hasHeight;
-        }
-    }
 
     // private methods  ########################################################
     // pie of what ended each lost run of the session
@@ -268,7 +245,7 @@ public static class AnalyticsMarkdownWriter {
     // line of sampled stamina over the run, skipped w/o 2 samples
     private static void AppendStaminaCurve(
         StringBuilder sb,
-        List<StaminaSample> samples
+        List<RunSample> samples
     ) {
         if (samples.Count < 2) {
             return;
@@ -299,69 +276,6 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("]\n```\n\n");
     }
 
-    // every event of the run, plus start & its end, sorted by time
-    private static List<TimelineEntry> BuildTimeline(
-        RunData run,
-        EventStamp end
-    ) {
-        string endLabel;
-        switch (run.Status) {
-            case RunStatus.Lost:
-                endLabel = "Game Over";
-                break;
-            case RunStatus.Interrupted:
-                endLabel = "Interrupted";
-                break;
-            default:
-                endLabel = "Now";
-                break;
-        }
-
-        var entries = new List<TimelineEntry> {
-            new TimelineEntry(0.0, "Start", 0f, true)
-        };
-        AddTimelineEntries(
-            entries,
-            run.Bananas,
-            run.StartClock,
-            "Banana",
-            true
-        );
-        AddTimelineEntries(entries, run.Webs, run.StartClock, "Web", false);
-        AddTimelineEntries(
-            entries,
-            run.Branches,
-            run.StartClock,
-            "Branch",
-            true
-        );
-        entries.Add(new TimelineEntry(
-            (end.Clock - run.StartClock).TotalSeconds,
-            endLabel,
-            end.Height,
-            true
-        ));
-        entries.Sort((a, b) => a.Elapsed.CompareTo(b.Elapsed));
-        return entries;
-    }
-
-    private static void AddTimelineEntries(
-        List<TimelineEntry> entries,
-        List<EventStamp> stamps,
-        DateTime start,
-        string name,
-        bool hasHeight
-    ) {
-        for (int i = 0; i < stamps.Count; i++) {
-            entries.Add(new TimelineEntry(
-                (stamps[i].Clock - start).TotalSeconds,
-                name + " " + (i + 1),
-                stamps[i].Height,
-                hasHeight
-            ));
-        }
-    }
-
     // pie of height score against banana score, skipped w/o any score
     private static void AppendScoreSplit(
         StringBuilder sb,
@@ -383,29 +297,28 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("```\n\n");
     }
 
-    // line of height at each event that carries one, x axis is categorical so
-    // spacing is per event, not per second
-    private static void AppendHeightOverTime(
+    // line of sampled height over the run, skipped w/o 2 samples; the x axis
+    // is categorical, so even spacing relies on the regular sample interval
+    private static void AppendHeightCurve(
         StringBuilder sb,
-        List<TimelineEntry> entries
+        List<RunSample> samples
     ) {
+        if (samples.Count < 2) {
+            return;
+        }
+
         var times = new List<string>();
-        var highests = new List<string>();
         var heights = new List<string>();
         float minHeight = 0f;
         float maxHeight = 1f;
-        for (int i = 0; i < entries.Count; i++) {
-            if (!entries[i].HasHeight) {
-                continue;
-            }
-
-            times.Add(FormatSeconds(entries[i].Elapsed));
-            heights.Add(entries[i].Height.ToString(
+        for (int i = 0; i < samples.Count; i++) {
+            times.Add(FormatSeconds(samples[i].Elapsed));
+            heights.Add(samples[i].Height.ToString(
                 "F1",
                 CultureInfo.InvariantCulture
             ));
-            minHeight = Mathf.Min(minHeight, entries[i].Height);
-            maxHeight = Mathf.Max(maxHeight, entries[i].Height);
+            minHeight = Mathf.Min(minHeight, samples[i].Height);
+            maxHeight = Mathf.Max(maxHeight, samples[i].Height);
         }
 
         sb.Append("```mermaid\nxychart-beta\n");
