@@ -1,8 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-TODO more data collection
-FIXME web encounter trapping
+Todo more data collection, using mermaid
 -->
 
 ## [Unreleased]

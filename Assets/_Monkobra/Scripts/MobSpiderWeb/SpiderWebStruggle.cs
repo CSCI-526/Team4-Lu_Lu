@@ -69,6 +69,8 @@ public class SpiderWebStruggle: MonoBehaviour {
         trapCount++;
 
         monkeyRoot.IsHeld = true;
+        // the web's origin is its hub, the center of the strands in 3D
+        monkeyRoot.PullTo(web.transform.position);
         SuspendInteract();
 
         if (Debug.isDebugBuild) {
