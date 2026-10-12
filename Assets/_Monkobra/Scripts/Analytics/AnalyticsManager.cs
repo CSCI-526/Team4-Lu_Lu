@@ -92,7 +92,8 @@ public class AnalyticsManager: MonoBehaviour {
     public void SaveMockSession() {
         string path = MockAnalyticsGenerator.SaveMockSession(
             Path.Combine(Application.persistentDataPath, FOLDER_NAME),
-            DateTime.Now
+            DateTime.Now,
+            config.DeathCauseWindowS
         );
         if (string.IsNullOrEmpty(path)) {
             Debug.LogWarning("Analytics:\tfail to save mock session", this);

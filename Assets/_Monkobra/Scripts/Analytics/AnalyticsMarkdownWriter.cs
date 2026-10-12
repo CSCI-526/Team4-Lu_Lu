@@ -45,6 +45,8 @@ public static class AnalyticsMarkdownWriter {
         sb.Append('\n');
         sb.Append("- Time Stop: ").Append(FormatClock(end.Clock));
         sb.Append("\n\n");
+        List<TimelineEntry> timeline = BuildTimeline(run, end);
+        AppendHeightOverTime(sb, timeline);
 
         sb.Append("#### Final Score: ").Append(run.TotalScore).Append("\n\n");
         sb.Append("- Score from Height: ").Append(run.HeightScore);
@@ -52,6 +54,7 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("- Score from Banana: ");
         sb.Append(FormatBananaScore(run.RewardScore, run.Bananas.Count));
         sb.Append("\n\n");
+        AppendScoreSplit(sb, run.HeightScore, run.RewardScore);
 
         sb.Append("#### Banana Count: ").Append(run.Bananas.Count);
         sb.Append("\n\n");
@@ -65,9 +68,6 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("\n\n");
         AppendClockList(sb, run.Branches, run.StartClock, true);
 
-        List<TimelineEntry> timeline = BuildTimeline(run, end);
-        AppendScoreSplit(sb, run.HeightScore, run.RewardScore);
-        AppendHeightOverTime(sb, timeline);
         AppendStaminaCurve(sb, run.StaminaSamples);
         AppendRunTimeline(sb, timeline);
         return sb.ToString();
@@ -87,6 +87,7 @@ public static class AnalyticsMarkdownWriter {
         if (causes.Count > 0) {
             sb.Append("## Session Summary\n\n");
             AppendDeathCauses(sb, causes);
+            AppendLostRunBars(sb, session);
         }
         for (int i = 0; i < session.Runs.Count; i++) {
             sb.Append(BuildRun(session.Runs[i], i + 1));
@@ -153,6 +154,56 @@ public static class AnalyticsMarkdownWriter {
             }
         }
         sb.Append("```\n\n");
+    }
+
+    // one bar chart per measure over the lost runs, x is the run number
+    private static void AppendLostRunBars(
+        StringBuilder sb,
+        SessionData session
+    ) {
+        var labels = new List<string>();
+        var scores = new List<string>();
+        var heights = new List<string>();
+        var durations = new List<string>();
+        for (int i = 0; i < session.Runs.Count; i++) {
+            RunData run = session.Runs[i];
+            if (run.Status != RunStatus.Lost) {
+                continue;
+            }
+
+            labels.Add("\"" + (i + 1) + "\"");
+            scores.Add(run.TotalScore.ToString(CultureInfo.InvariantCulture));
+            heights.Add(FormatNumber(run.End.Height));
+            durations.Add(FormatNumber(run.DurationS));
+        }
+
+        AppendRunBars(sb, "Final Score per Run", "Score", labels, scores);
+        AppendRunBars(
+            sb, "Death Height per Run", "Height (u)", labels, heights
+        );
+        AppendRunBars(
+            sb, "Run Duration per Run", "Duration (s)", labels, durations
+        );
+    }
+
+    private static void AppendRunBars(
+        StringBuilder sb,
+        string title,
+        string yLabel,
+        List<string> labels,
+        List<string> values
+    ) {
+        sb.Append("#### ").Append(title).Append("\n\n```mermaid\n");
+        sb.Append("xychart-beta\n    title \"").Append(title).Append("\"\n");
+        sb.Append("    x-axis \"Run\" [")
+            .Append(string.Join(", ", labels)).Append("]\n");
+        sb.Append("    y-axis \"").Append(yLabel).Append("\"\n");
+        sb.Append("    bar [").Append(string.Join(", ", values));
+        sb.Append("]\n```\n\n");
+    }
+
+    private static string FormatNumber(float value) {
+        return value.ToString("0.#", CultureInfo.InvariantCulture);
     }
 
     private static string FormatClock(DateTime clock) {
@@ -322,7 +373,7 @@ public static class AnalyticsMarkdownWriter {
             return;
         }
 
-        sb.Append("#### Score Split\n\n```mermaid\npie showData\n");
+        sb.Append("```mermaid\npie showData\n");
         sb.Append("    title Score Split\n");
         if (heightScore > 0) {
             sb.Append("    \"Height\" : ").Append(heightScore).Append('\n');
