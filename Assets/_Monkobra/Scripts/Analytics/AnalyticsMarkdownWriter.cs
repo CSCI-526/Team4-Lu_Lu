@@ -59,6 +59,7 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("#### Banana Count: ").Append(run.Bananas.Count);
         sb.Append("\n\n");
         AppendClockList(sb, run.Bananas, run.StartClock, true);
+        AppendStaminaCurve(sb, run.StaminaSamples);
 
         sb.Append("#### Web Encounter: ").Append(run.Webs.Count);
         sb.Append("\n\n");
@@ -68,8 +69,6 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("\n\n");
         AppendClockList(sb, run.Branches, run.StartClock, true);
 
-        AppendStaminaCurve(sb, run.StaminaSamples);
-        AppendRunTimeline(sb, timeline);
         return sb.ToString();
     }
 
@@ -417,22 +416,5 @@ public static class AnalyticsMarkdownWriter {
             .Append(Mathf.CeilToInt(maxHeight)).Append('\n');
         sb.Append("    line [").Append(string.Join(", ", heights));
         sb.Append("]\n```\n\n");
-    }
-
-    private static void AppendRunTimeline(
-        StringBuilder sb,
-        List<TimelineEntry> entries
-    ) {
-        sb.Append("#### Run Timeline\n\n```mermaid\ntimeline\n");
-        sb.Append("    title Run Timeline\n");
-        for (int i = 0; i < entries.Count; i++) {
-            sb.Append("    +").Append(FormatSeconds(entries[i].Elapsed));
-            sb.Append(" s : ").Append(entries[i].Label);
-            if (entries[i].HasHeight) {
-                sb.Append(", y ").Append(FormatHeight(entries[i].Height));
-            }
-            sb.Append('\n');
-        }
-        sb.Append("```\n\n");
     }
 }
