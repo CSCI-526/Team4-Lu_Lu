@@ -43,7 +43,7 @@ public class CobraCollisions: MonoBehaviour {
             );
         }
 
-        GameController.I.LoseGame(DeathCause.Cobra);
+        GameController.I.LoseGame();
     }
 
     /// <returns>true for the monkey's physical parts: body, tail and hands;

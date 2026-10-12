@@ -51,7 +51,7 @@ graph LR
   Mobs -->|cobra contact| Game[GameController]
   Stamina -->|empty| Monkey
   Mobs -->|falling cobra, web| Monkey
-  Game -->|state, death cause| Analytics[AnalyticsManager]
+  Game -->|state| Analytics[AnalyticsManager]
   Game --> Screens[ScreensManager]
   Game -->|EndRun| Score
   Config[ScriptableObject configs] --> Monkey
@@ -79,7 +79,7 @@ stateDiagram-v2
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, interact reloads the scene after `restartInputDelay` |
 
-`LoseGame(DeathCause)` runs once, from Playing only: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It stores the cause in `LastDeathCause` for analytics, then calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
+`LoseGame()` runs once, from Playing only: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` (default 2 s) before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
 Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and `GameController.State != GameState.Playing`. Current checkers: `ArmRoot.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`, `SpiderWebStruggle`.
 
