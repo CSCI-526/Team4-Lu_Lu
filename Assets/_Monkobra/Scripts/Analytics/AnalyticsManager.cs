@@ -95,6 +95,8 @@ public class AnalyticsManager: MonoBehaviour {
         I = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
+        // static event, webs spawn at runtime so none can be looked up here
+        SpiderWebTrap.Encountered += OnWebEncountered;
         StartNewSession();
         ObserveScene();
     }
@@ -121,7 +123,8 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        Observe(null, null, null, null);
+        SpiderWebTrap.Encountered -= OnWebEncountered;
+        Observe(null, null, null);
         I = null;
     }
 
@@ -147,7 +150,7 @@ public class AnalyticsManager: MonoBehaviour {
         bananaClocks.Add(CreateStamp());
     }
 
-    private void OnWebTrapped(bool _) {
+    private void OnWebEncountered(SpiderWebTrap _) {
         webClocks.Add(CreateStamp());
     }
 
@@ -181,7 +184,6 @@ public class AnalyticsManager: MonoBehaviour {
     // cached references  ------------------------------------------------------
     private GameController observedGame;
     private ScoreManager observedScore;
-    private SpiderWebStruggle observedWeb;
     private HitBranchDetection observedBranch;
 
     // private methods  ########################################################
@@ -189,7 +191,6 @@ public class AnalyticsManager: MonoBehaviour {
         Observe(
             GameController.I,
             ScoreManager.I,
-            FindFirstObjectByType<SpiderWebStruggle>(),
             FindFirstObjectByType<HitBranchDetection>()
         );
     }
@@ -197,7 +198,6 @@ public class AnalyticsManager: MonoBehaviour {
     private void Observe(
         GameController game,
         ScoreManager score,
-        SpiderWebStruggle web,
         HitBranchDetection branch
     ) {
         if (observedGame != null) {
@@ -206,16 +206,12 @@ public class AnalyticsManager: MonoBehaviour {
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
         }
-        if (observedWeb != null) {
-            observedWeb.Trapped -= OnWebTrapped;
-        }
         if (observedBranch != null) {
             observedBranch.BranchHit -= OnBranchHit;
         }
 
         observedGame = game;
         observedScore = score;
-        observedWeb = web;
         observedBranch = branch;
 
         if (observedGame != null) {
@@ -223,9 +219,6 @@ public class AnalyticsManager: MonoBehaviour {
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
-        }
-        if (observedWeb != null) {
-            observedWeb.Trapped += OnWebTrapped;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit += OnBranchHit;

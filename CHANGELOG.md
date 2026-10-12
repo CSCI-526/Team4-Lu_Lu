@@ -1,11 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-FIXME collect web encounter for analytics
-FIXME improve cobra prob spawn
-
-Bug falling cobra gone
-Fixme ramp difficulty for: falling cobra
+Todo more data collection, using mermaid
 -->
 
 ## [Unreleased]
@@ -36,6 +32,9 @@ Fixme ramp difficulty for: falling cobra
 - cobra body coils ≥ 1 full loop round the trunk as a corkscrew, so dropping onto it or orbiting into it is always fatal
 - cobra coil shape tuned by `coilTurns`, `coilPitchU`, `maxSegmentGapU`, replacing per-segment angle & height spacing
 - `Cobra/` scripts → house Unity style
+
+- `SpiderWebTrap.Encountered`: static event raised once per web, on the monkey's first body contact, trapped or not
+- analytics records every web encounter through `SpiderWebTrap.Encountered`, replacing a lookup of the one `SpiderWebStruggle` in the scene
 
 ### Deprecated
 

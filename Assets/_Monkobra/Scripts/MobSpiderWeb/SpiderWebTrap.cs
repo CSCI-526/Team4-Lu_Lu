@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -14,6 +15,13 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(BoxCollider))]
 public class SpiderWebTrap: MonoBehaviour {
+    // Public Members  #########################################################
+    /// <summary>
+    /// Raised once per web, the first time the monkey's body touches it,
+    /// whether or not it traps. Static, so listeners need no web reference.
+    /// </summary>
+    public static event Action<SpiderWebTrap> Encountered;
+
     // Public Methods  #########################################################
     /// <summary>
     /// Plays a short squash and twist, visual feedback for 1 escape press.
@@ -106,6 +114,7 @@ public class SpiderWebTrap: MonoBehaviour {
     }
 
     // private members  ########################################################
+    private bool isEncountered; // whether the monkey already touched this web
     private float pulseTimeLeftS;
     private Vector3 restScale = Vector3.one;
     private Quaternion restRotation = Quaternion.identity;
@@ -128,6 +137,11 @@ public class SpiderWebTrap: MonoBehaviour {
             || !otherBody.TryGetComponent(out SpiderWebStruggle struggle)
         ) {
             return;
+        }
+
+        if (!isEncountered) {
+            isEncountered = true;
+            Encountered?.Invoke(this);
         }
 
         struggle.TryTrap(this);

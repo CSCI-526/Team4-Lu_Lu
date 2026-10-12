@@ -32,10 +32,30 @@ public class MonkeyPrefabRoot: MonoBehaviour {
         set {
             isHeld = value;
             climbSpeedU = 0f;
+            // freed after a pull: glide back onto the ring, never snap
+            if (!value && hasPullTarget) {
+                hasPullTarget = false;
+                isReturning = true;
+            }
         }
     }
 
+    // Public Methods  #########################################################
+    /// <summary>
+    /// While held, slides the body to <paramref name="worldPos"/> in 3D, e.g.
+    /// the hub of the web that caught it. Releasing the hold glides the body
+    /// back onto its orbit ring, keeping the height it was pulled to.
+    /// </summary>
+    public void PullTo(Vector3 worldPos) {
+        pullTarget = worldPos;
+        hasPullTarget = true;
+    }
+
     // Inspector Fields  #######################################################
+    [SerializeField]
+    [Tooltip("speed of the pull into a web and the glide back out; u/s")]
+    private float pullSpeedU = 12f;
+
     [SerializeField]
     [Tooltip("raises branch hit event, knocks monkey off climb")]
     private HitBranchDetection hitBranchDetection;
@@ -142,6 +162,15 @@ public class MonkeyPrefabRoot: MonoBehaviour {
         if (isHeld) {
             if (body != null) {
                 body.WakeUp();
+                if (hasPullTarget) {
+                    body.MovePosition(
+                        Vector3.MoveTowards(
+                            body.position,
+                            pullTarget,
+                            pullSpeedU * Time.fixedDeltaTime
+                        )
+                    );
+                }
             }
             return;
         }
@@ -215,6 +244,15 @@ public class MonkeyPrefabRoot: MonoBehaviour {
         Vector3 next =
             transform.parent.position + CalcOrbitOffset(orbitAngleDeg);
         next.y = nextY;
+        if (isReturning) {
+            Vector3 step = Vector3.MoveTowards(
+                body.position,
+                next,
+                pullSpeedU * Time.fixedDeltaTime
+            );
+            isReturning = step != next;
+            next = step;
+        }
         body.MovePosition(next);
         body.MoveRotation(Quaternion.Euler(0f, orbitAngleDeg, 0f));
     }
@@ -260,6 +298,9 @@ public class MonkeyPrefabRoot: MonoBehaviour {
     private float stunEndTime; // Time.time when control returns
     private float dropTargetY; // world Y where hit fall stops
     private bool isHeld; // body frozen in place, see IsHeld
+    private Vector3 pullTarget; // world pos the held body slides to
+    private bool hasPullTarget; // whether the held body is being pulled
+    private bool isReturning; // whether the body glides back onto its ring
 
     private bool IsStunned => Time.time < stunEndTime;
 
