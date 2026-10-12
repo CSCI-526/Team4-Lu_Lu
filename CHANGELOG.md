@@ -31,7 +31,6 @@ Fixme ramp difficulty for: falling cobra
 - falling cobras are rolled per tree segment like branches: `FallingCobraSpawner` listens to `BranchesGenerated`, hangs dormant cobras as segment children on a ring about the trunk, and no longer runs a global timer, a 60 u unlock, or a one-at-a-time limit
 - `FallingCobra` wakes when the monkey is within a trigger distance, falls at a constant speed while sliding round the trunk toward the monkey's live angle, and switches itself off after a fall limit
 - spider webs spawn from an attempt count and a ramped difficulty probability curve; the start climb, full-chance climb, max chance, and slot count are gone
-- falling cobra spawn intervals now shorten with the monkey's highest climb, down to a configurable minimum
 - cobra coil fill: `CobraClimb` clones body segments so the coil has no gap
 - cobra look: bead-chain body w/ small gaps & slight taper, flat hooded head w/ eyes, raised neck, slow slither wave
 - cobra body coils ≥ 1 full loop round the trunk as a corkscrew, so dropping onto it or orbiting into it is always fatal
