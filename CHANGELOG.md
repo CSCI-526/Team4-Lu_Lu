@@ -16,7 +16,11 @@ Todo more data collection, using mermaid
 - `SpiderWebSpawner` test override: webs at a flat chance at any height, for quick checks
 - `DynamicTreeSegmentPrefabRoot.BranchesGenerated`: static event raised after a segment rolls its branches, on first `Start` and every `Restart`
 - `RampedDifficultyService.GetClimbedYDistance`: height of any y above the player's start y
-- analytics run entries end with three Mermaid graphs: a score split pie, a height over time line, and a run timeline
+- analytics run entries end with Mermaid graphs: a score split pie, a height over time line, a stamina over time line, and a run timeline
+- analytics run entries record the death cause and the death height, apart from the highest height reached
+- analytics samples stamina every `staminaSampleIntervalS` seconds (default 2) while a run plays
+- `DeathCause` enum and `GameController.LastDeathCause`, set by `LoseGame(DeathCause)` before `Lost` is raised
+- `StaminaBarController.MaxStamina`: the balance config's stamina ceiling
 
 ### Changed
 

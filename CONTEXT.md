@@ -88,7 +88,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 
 | Script | Role | Detail |
 | --- | --- | --- |
-| `GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `GameController`, `GameState`, `DeathCause` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost; `LoseGame` records a `DeathCause` | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `GameConfig` | ScriptableObject of stamina tuning | [TDD](docs/monkobra-tdd.md#stamina) |
 | `ArmRoot/MonkeyPrefabRoot` | kinematic body: orbit, climb, stun, `IsHeld` | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `ArmRoot/MonkeyConfig` | ScriptableObject of monkey tuning and input actions | [TDD](docs/monkobra-tdd.md#monkey-movement) |
@@ -114,7 +114,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment, attempts against a probability curve at the segment's ramped difficulty | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `MobFallingCobra/FallingCobra` | dormant until the monkey is near, then warning, a constant fall that slides toward the monkey's angle, and a hit capsule | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `Difficulty/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the one climb baseline, and maps it to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [TDD](docs/monkobra-tdd.md#tree) |
-| `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: one markdown file per launch in `persistentDataPath/Analytics/`, a run entry appended on each game over, with Mermaid graphs (score split, height over time, run timeline), F9 starts a new session | none |
+| `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: one markdown file per launch in `persistentDataPath/Analytics/`, a run entry appended on each game over, with death cause, death height, and Mermaid graphs (score split, height over time, stamina over time, run timeline), F9 starts a new session | none |
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScoreConfig`, `Scoring/ScoreReward` | ScriptableObjects of score rules and pickup points | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |

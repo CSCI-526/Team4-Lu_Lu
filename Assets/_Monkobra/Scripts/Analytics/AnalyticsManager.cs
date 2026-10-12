@@ -84,6 +84,11 @@ public class AnalyticsManager: MonoBehaviour {
     [Tooltip("forces a new session file")]
     private Key restartSessionKey = Key.F9;
 
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("seconds b/t stamina samples while a run is playing")]
+    private float staminaSampleIntervalS = 2f;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (I != null && I != this) {
@@ -102,6 +107,15 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     private void Update() {
+        if (
+            observedGame != null
+            && observedGame.State == GameState.Playing
+            && Time.time >= nextStaminaSampleTime
+        ) {
+            AddStaminaSample();
+            nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
+        }
+
         Keyboard keyboard = Keyboard.current;
         if (keyboard == null) {
             return;
@@ -141,6 +155,9 @@ public class AnalyticsManager: MonoBehaviour {
             bananaClocks.Clear();
             webClocks.Clear();
             branchClocks.Clear();
+            staminaSamples.Clear();
+            AddStaminaSample();
+            nextStaminaSampleTime = Time.time + staminaSampleIntervalS;
         } else if (state == GameState.Lost) {
             AppendRun();
         }
@@ -174,6 +191,17 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    private readonly struct StaminaSample {
+        // seconds since the run started
+        public readonly float Elapsed;
+        public readonly float Stamina;
+
+        public StaminaSample(float elapsed, float stamina) {
+            Elapsed = elapsed;
+            Stamina = stamina;
+        }
+    }
+
     // one point on the run's timeline, ordered by seconds since run start
     private readonly struct TimelineEntry {
         public readonly double Elapsed;
@@ -201,6 +229,9 @@ public class AnalyticsManager: MonoBehaviour {
     private readonly List<EventStamp> bananaClocks = new List<EventStamp>();
     private readonly List<EventStamp> webClocks = new List<EventStamp>();
     private readonly List<EventStamp> branchClocks = new List<EventStamp>();
+    private readonly List<StaminaSample> staminaSamples =
+        new List<StaminaSample>();
+    private float nextStaminaSampleTime;
 
     // cached references  ------------------------------------------------------
     private GameController observedGame;
@@ -295,6 +326,46 @@ public class AnalyticsManager: MonoBehaviour {
         if (stamps.Count > 0) {
             sb.Append('\n');
         }
+    }
+
+    // records the stamina bar now, skipped w/o one in the scene
+    private void AddStaminaSample() {
+        StaminaBarController bar = StaminaBarController.I;
+        if (bar == null) {
+            return;
+        }
+
+        staminaSamples.Add(
+            new StaminaSample(Time.time - runStartTime, bar.CurrentStamina)
+        );
+    }
+
+    // line of sampled stamina over the run, skipped w/o 2 samples
+    private void AppendStaminaOverTime(StringBuilder sb) {
+        if (staminaSamples.Count < 2) {
+            return;
+        }
+
+        var times = new List<string>();
+        var values = new List<string>();
+        for (int i = 0; i < staminaSamples.Count; i++) {
+            times.Add(FormatSeconds(staminaSamples[i].Elapsed));
+            values.Add(staminaSamples[i].Stamina.ToString(
+                "F1",
+                CultureInfo.InvariantCulture
+            ));
+        }
+
+        StaminaBarController bar = StaminaBarController.I;
+        float maxStamina = bar != null ? bar.MaxStamina : 0f;
+        sb.Append("#### Stamina Over Time\n\n```mermaid\nxychart-beta\n");
+        sb.Append("    title \"Stamina Over Time\"\n");
+        sb.Append("    x-axis \"Elapsed (s)\" [")
+            .Append(string.Join(", ", times)).Append("]\n");
+        sb.Append("    y-axis \"Stamina\" 0 --> ")
+            .Append(Mathf.Max(1, Mathf.CeilToInt(maxStamina))).Append('\n');
+        sb.Append("    line [").Append(string.Join(", ", values));
+        sb.Append("]\n```\n\n");
     }
 
     private static string FormatSeconds(double seconds) {
@@ -432,9 +503,20 @@ public class AnalyticsManager: MonoBehaviour {
         long heightScore = scoreMgr != null ? scoreMgr.DistanceScore : 0;
         long rewardScore = scoreMgr != null ? scoreMgr.RewardScore : 0;
 
+        // where & why the run ended, as opposed to the highest point reached
+        EventStamp death = CreateStamp();
+        GameController game = GameController.I;
+        DeathCause cause = game != null
+            ? game.LastDeathCause
+            : DeathCause.Unknown;
+        AddStaminaSample();
+
         var sb = new StringBuilder();
         sb.Append("## Run ").Append(RunCount).Append("\n\n");
-        sb.Append("- Final Height: ").Append(height).Append("\n\n");
+        sb.Append("- Final Height: ").Append(height).Append('\n');
+        sb.Append("- Death Height: ").Append(FormatHeight(death.Height));
+        sb.Append('\n');
+        sb.Append("- Death Cause: ").Append(cause).Append("\n\n");
 
         sb.Append("#### Run Duration: ");
         sb.Append(duration.ToString("F1", CultureInfo.InvariantCulture));
@@ -463,9 +545,10 @@ public class AnalyticsManager: MonoBehaviour {
         sb.Append("\n\n");
         AppendClockList(sb, branchClocks, runStartClock, true);
 
-        List<TimelineEntry> timeline = BuildTimeline(CreateStamp());
+        List<TimelineEntry> timeline = BuildTimeline(death);
         AppendScoreSplit(sb, heightScore, rewardScore);
         AppendHeightOverTime(sb, timeline);
+        AppendStaminaOverTime(sb);
         AppendRunTimeline(sb, timeline);
 
         try {

@@ -13,6 +13,11 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
+    /// <returns>stamina ceiling from the balance config, 0 w/o a config
+    /// </returns>
+    public float MaxStamina =>
+        balanceConfig != null ? balanceConfig.MaxStamina : 0f;
+
     /// <summary>raised each time a fruit restores stamina</summary>
     public event Action FruitConsumed;
 
