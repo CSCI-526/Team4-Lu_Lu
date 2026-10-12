@@ -148,6 +148,10 @@ public class GameController: MonoBehaviour {
 
         if (next == GameState.Lost) {
             lostTime = Time.unscaledTime;
+            // a web trap may have paused interact; restart needs it live
+            if (InteractAction != null) {
+                InteractAction.action.Enable();
+            }
         }
 
         StateChanged?.Invoke(next);
