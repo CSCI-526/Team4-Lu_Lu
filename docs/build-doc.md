@@ -37,10 +37,11 @@ Steps:
 1. `File > Build Profiles`, select `ItchIO`, click Build, choose the location
 2. Zip the folder's contents, so `index.html` sits at the zip root
 3. Page settings: Kind of project `HTML`, tick "played in the browser"
-4. Embed in page at 1920×1080 with the fullscreen button; tick Mobile Friendly only if touch works
-5. Set visibility to Draft while testing, then Public
-6. Re-upload: upload the new zip, delete the old one
-7. Check: load in a private window, watch the devtools Network tab
+4. Embed options: "Embed in page" with "Auto-detect size (Unity HTML only)", which reads the profile's 1920×1080 canvas
+5. Frame options: tick only "Fullscreen button"
+6. Set visibility to Draft while testing, then Public
+7. Re-upload: upload the new zip, delete the old one
+8. Check: load in a private window, watch the devtools Network tab
 
 Limits: 1,000 files, 240 characters per path, 500 MB total, 200 MB per file.
 
