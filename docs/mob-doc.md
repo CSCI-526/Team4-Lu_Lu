@@ -7,7 +7,7 @@ Everything in the level that can hurt, hold, or hinder the monkey: the cobra, th
 | Mob | Touch | Result for the monkey | Run ends |
 | --- | --- | --- | --- |
 | Cobra | any solid part of the monkey meets any segment | `GameController.LoseGame()` fires | ✔️ |
-| Falling Cobra | the monkey's branch sensor meets its hit capsule | camera shake, stun, drop (same as a branch) | ❌ |
+| Falling Cobra | any part of the monkey (branch sensor, body, tail, hand) meets its hit capsule | camera shake, stun, drop (same as a branch) | ❌ |
 | Branch | the monkey's branch sensor meets a `Branch`-tagged collider | camera shake, stun, drop | ❌ |
 | Spider Web | the monkey's solid body meets the web's trigger | body frozen, grab disabled, until the escape bar fills | ❌ |
 
@@ -66,6 +66,8 @@ The chasing cobra is code-built geometry on one root: `CobraClimb` poses the bod
 - Path: the head orbits the trunk axis (`pathCenter`) at a fixed radius while climbing, and the body trails it as a corkscrew
 - Never Down: the head only climbs, so a monkey that descends runs into the coil instead of pushing it down
 - Closing In: when the coil is within `slowDownDistance` below the monkey, the climb slows to a minimum share of its speed for suspense, but never stops
+- Base Speed: outside a surge the cobra climbs at `cobraBaseSpeedCurve` (`GameBalanceConfig`) sampled at the monkey's ramped difficulty, 3.4 u/s at the start, 3.9 mid climb, 4.0 at full difficulty, set against the monkey's real average climb (dodging, grabbing, and resting make it well under its 6 u/s top speed), so a clean run keeps a lead early and the chase tightens late
+- Mistake Surge: each mistake of the monkey (a branch or falling cobra hit, counted once per stun, or any web trap) adds `cobraSurgePerMistakeS` of surge time, capped at `cobraMaxSurgeS`, and one stack. While a surge runs the cobra climbs at its base speed plus `cobraSurgeSpeedPerMistakeU` per stack, capped at `cobraMaxSurgeSpeedU`, which may pass the monkey's up speed, and it skips the slow-down near the monkey. When the surge time runs out the stacks reset. The speed eases at `cobraSpeedChangeRateU`; all of these live in `GameBalanceConfig`, wired through `balanceConfig` on the `GreatCobra` prefab's `CobraClimb`. Each stacked mistake raises `CatchUpStarted`: `ProgressBarRoot` shows "The cobra is speeding up!" (with ×N from the 2nd stack) at the screen center, sized to the screen height, for 1.5 s, fading out, and flashes the cobra marker red while the surge lasts
 - Coil: the body spans at least one full loop, and `Awake` clones the last segment until no gap along the coil exceeds `maxSegmentGapU`, so the monkey cannot slip through by orbiting
 - Look: a chain of rounded beads with small gaps, slightly tapered, a flat hooded head with primitive-sphere eyes, a raised neck, and a slow slither wave. The hit shape stays gapless even where the visual has gaps
 
@@ -97,6 +99,7 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 
 - Count: a fixed `fallingCobraAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `fallingCobraSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyService`, read at the segment's middle), the same model as branches
 - Spot: a cobra hangs on a ring of `spawnRadiusU` about the segment's pivot, on the trunk axis, at a random angle and a random height that keeps the whole snake inside its segment. A spot too close to another cobra of the segment is retried, then skipped
+- Banana Ambush: with `fallingCobraBananaAmbushChance` (`GameBalanceConfig`) a cobra instead hangs at the angle of one banana of its segment, `ambushMinAboveBananaU` to `ambushMaxAboveBananaU` above it (on the spawner); with no banana, or no room above it inside the segment, it falls back to a random spot
 - Cleanup: cobras are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous cobras too
 - Concurrency: several can be live at once, one roll per segment; frequency follows climb height and the curve, not a clock
 
@@ -105,18 +108,21 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 | Attempts Per Segment | 2 | `Settings/GameBalanceConfig.asset` |
 | Spawn Probability Curve | linear, 0 at difficulty 0 to 0.5 at difficulty 1 | 〃 |
 | Fall Speed | 6 u/s | 〃 |
-| Horizontal Chase Speed | 2 u/s along the ring | 〃 |
+| Horizontal Chase Speed | 4 u/s along the ring | 〃 |
+| Reach Wake Distance | 20 u | 〃 |
+| Banana Ambush Chance | 0.5 | 〃 |
 | Spawn Radius | about the monkey's orbit radius (5.88 u) | `FallingCobraSpawner` on `DTSPool` |
 | Min Cobra Separation | 4 u | 〃 |
 | Trigger Distance | 12 u | falling cobra prefab |
 | Max Fall Distance | 30 u | 〃 |
+| Ambush Height Above Banana | 3 to 6 u | `FallingCobraSpawner` on `DTSPool` |
 
 ### Behavior
 
-- Dormant: it hangs still, in its normal color, until the monkey is within the trigger distance (3D) and the cobra is at or above the monkey's height
+- Dormant: it hangs still, in its normal color, until the monkey is within the trigger distance (3D), or within the farther reach wake distance while either arm reaches for a banana, and the cobra is at or above the monkey's height, so a grab is the riskiest moment to stand under a cobra
 - Warning: it then pulses red against its green base for 1.25 s at 4 Hz and has no hit shape
 - Fall: it clears the warning color, then drops at a constant speed with one capsule trigger tagged `Branch` covering the whole snake, while every segment collider is switched off. Each physics step it re-reads the monkey's angle about the tree and slides round the trunk toward it by the shortest arc at the horizontal speed, never overshooting, so it keeps tracking a monkey that orbits
-- Hit: because the capsule is tagged `Branch`, the monkey's own branch sensor applies the usual shake, stun, and drop, and the capsule is switched off after the first touch so one snake costs one drop
+- Hit: any part of the snake touching any part of the monkey applies the usual shake, stun, and drop. The capsule is tagged `Branch`, so the monkey's branch sensor handles its own contact; a contact on the body, tail, or a hand calls `HitBranchDetection.ReportHit` for the same drop. After a hit the snake stops homing in and its hit capsule rests for the stun plus `fallingCobraRehitGraceS` (1 s), so the monkey can dodge sideways; a monkey still inside once it returns is dropped again, up to `fallingCobraMaxHits` (2) drops per snake
 - Off: after falling the max fall distance it switches itself off; the segment's restart destroys it later
 
 ## Spider Web

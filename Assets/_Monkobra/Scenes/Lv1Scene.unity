@@ -667,7 +667,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   cobraHead: {fileID: 423716334}
   cobraMarker: {fileID: 1428035531}
-  windowSizeY: 15
+  windowSizeY: 60
 --- !u!4 &332351311 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7491037331942951093, guid: d7b7ba174e361a94b843e9a27ce78bba, type: 3}

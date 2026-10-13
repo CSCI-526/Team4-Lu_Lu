@@ -40,6 +40,16 @@
 - `ScorePickup` on a fruit hands its points over once, `ScoreReward` & `ScoreConfig` carry the point values, banana & coconut score assets
 - `ScoreDisplay` HUD shows the live score in `Lv1Scene`
 
+##### Wenhai Dong
+
+- great cobra base speed rises with the ramped difficulty, from `cobraBaseSpeedCurve` in `GameBalanceConfig`'s new Great Cobra group (3.4 u/s at the start, 3.9 mid climb, 4.0 at the top)
+- great cobra mistake surge: each branch or falling cobra hit (once per stun) and every web trap makes `CobraClimb` speed up for a while; repeated mistakes stack, faster and longer, up to past the monkey's up speed (`cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraMaxSurgeSpeedU`, `cobraSpeedChangeRateU`)
+- surge cue: on `CobraClimb.CatchUpStarted`, `ProgressBarRoot` shows "The cobra is speeding up!" (×N when stacked) at the screen center, sized to the screen height so it reads on 4K, for a moment, and flashes the cobra marker red while the surge lasts
+- falling cobra reach wake: a dormant falling cobra wakes from farther away (`fallingCobraReachWakeDistanceU`) while the monkey reaches for a banana, combining the two hazards
+- falling cobra banana ambush: `FallingCobraSpawner` hangs some cobras (`fallingCobraBananaAmbushChance`) just above a banana of their segment
+- falling cobra re-hit: `fallingCobraRehitGraceS` & `fallingCobraMaxHits` tune how soon and how often one snake can drop the monkey again
+- `HitBranchDetection.ReportHit`: applies a branch-hit drop from a hazard that touched the monkey outside the sensor
+
 ### Changed
 
 ##### Erik
@@ -68,6 +78,9 @@
 - cobra coil shape tuned by `coilTurns`, `coilPitchU`, `maxSegmentGapU`, replacing per-segment angle & height spacing
 - `Cobra/` scripts → house Unity style
 - cobra body thickness: `maxThicknessU` & a `thicknessProfile` curve along the body, tuned in `Lv1Scene`
+- balance retuned in `GameBalanceConfig.asset` for a 7–8 min run: ramp reaches max at 1200 u (was 500); more branches (0.3 → 0.6 chance); steady bananas, about 0.42 per segment at the base, a slight dip in the web-only stretch, 0.72 mid climb, about 1 at the top; webs from difficulty 0.05 with 3 attempts, 0.4 by 0.25, 0.6 at the top; falling cobras from difficulty 0.15, 0.4 at the top, sliding at 4 u/s; idle stamina recovery 2 → 2.5 per s; banana restore 30 → 35
+- `Lv1Scene` climb progress bar shows 60 u below the monkey (was 15), so the cobra marker leaves the bottom
+- `SpiderWeb` prefab: web and its trap box are 20% larger (root scale 1.5 → 1.8 on the web face)
 
 ##### Belle Dai
 
@@ -91,6 +104,9 @@
 - cobra contact also checked while overlapping, not only on entry
 - monkey body collider height 1 → 2 to match its visible body, so contact registers from the monkey's bottom, not its middle (also reaches win zone & other triggers ~0.5 U sooner)
 - cobra no longer parks at the player's height waiting for its head to come round; the coil climbs on into the player, so body contact kills at once
+- falling cobra drops the monkey on contact with any part of it, not only the branch sensor; a body or tail contact used to switch the hit off without any drop
+- falling cobra no longer pushes a monkey down several times in a row: after its first hit it stops homing in and its hit shape rests for the stun plus 1 s so the monkey can dodge sideways; a monkey still inside after that is dropped again, at most 2 drops per snake
+- webs make the great cobra surge on every trap, not only the first trap of the scene
 
 ##### Belle Dai
 

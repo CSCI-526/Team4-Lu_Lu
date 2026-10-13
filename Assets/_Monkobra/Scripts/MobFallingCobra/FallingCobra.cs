@@ -7,11 +7,19 @@ using UnityEngine;
 /// <see cref="Initialize"/>.
 /// <para>
 /// Three states. Dormant: nothing moves until the monkey comes within
-/// <c>triggerDistanceU</c> (3D) and the cobra is at or above the monkey's
-/// height. Warning: a red pulse for <c>warningDurationS</c>. Falling: a
+/// <c>triggerDistanceU</c> (3D), or within the farther
+/// <see cref="GameBalanceConfig.FallingCobraReachWakeDistanceU"/> while an
+/// arm reaches for a banana, and the cobra is at or above the monkey's
+/// height, so a grab is the riskiest moment to stand under a cobra.
+/// Warning: a red pulse for <c>warningDurationS</c>. Falling: a
 /// constant downward speed, while each physics step the cobra re-reads the
 /// monkey's angle about the tree axis and slides round the trunk toward it by
-/// the shortest arc, so it keeps homing on a monkey that orbits. After
+/// the shortest arc, so it keeps homing on a monkey that orbits. Any part of
+/// the snake touching any part of the monkey (body, tail, hand, or its
+/// branch sensor) applies a branch-hit drop. After a hit the cobra stops
+/// homing, so the monkey can slip aside, and its hit shape rests through the
+/// stun plus a grace time; a monkey still inside it after that is dropped
+/// again, up to a hit limit per cobra. After
 /// <c>maxFallDistanceU</c> it switches itself off; the segment's restart
 /// destroys it later.
 /// </para>
@@ -50,6 +58,9 @@ public class FallingCobra: MonoBehaviour {
 
         fallSpeedU = config.FallingCobraFallSpeedU;
         horizontalSpeedU = config.FallingCobraHorizontalSpeedU;
+        reachWakeDistanceU = config.FallingCobraReachWakeDistanceU;
+        hitRestS = config.HitStunDurationS + config.FallingCobraRehitGraceS;
+        maxHits = config.FallingCobraMaxHits;
         axisXZ = new Vector2(treeAxisPosition.x, treeAxisPosition.z);
         Vector3 position = transform.position;
         ringRadiusU = Vector2.Distance(
@@ -149,14 +160,13 @@ public class FallingCobra: MonoBehaviour {
         GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYER_TAG);
         if (playerObject != null) {
             player = playerObject.transform;
+            playerArms = playerObject.GetComponentsInChildren<ArmRoot>(true);
+            playerSensor =
+                playerObject.GetComponentInChildren<HitBranchDetection>(true);
         }
     }
 
     private void Update() {
-        if (hitMonkey && hitCollider.enabled) {
-            hitCollider.enabled = false;
-        }
-
         switch (state) {
             case State.Dormant:
                 TryWake();
@@ -172,19 +182,23 @@ public class FallingCobra: MonoBehaviour {
             StartFalling();
         }
         if (state == State.Falling) {
+            RestoreHitShape();
             StepFall();
         }
     }
 
     private void OnTriggerEnter(Collider other) {
-        if (
-            other.CompareTag(PLAYER_TAG)
-            || other.GetComponent<HitBranchDetection>() != null
-        ) {
-            // The monkey's detector handles the drop. Stop later contacts
-            // after this physics step, once its own trigger callback has run.
-            hitMonkey = true;
+        if (other.GetComponent<HitBranchDetection>() != null) {
+            // the sensor raises the drop itself, as for a branch
+            RegisterHit();
+            return;
         }
+        TryHit(other);
+    }
+
+    // still inside the snake once the hit shape is back: drop again
+    private void OnTriggerStay(Collider other) {
+        TryHit(other);
     }
 
     // Editor Validation  ######################################################
@@ -213,9 +227,13 @@ public class FallingCobra: MonoBehaviour {
     // private members  ########################################################
     private State state = State.Dormant;
     private bool isInitialized; // if the spawner armed this cobra
-    private bool hitMonkey;
+    private float hitRestS; // from config; stun plus re-hit grace; s
+    private int maxHits; // from config; drops one cobra may cause
+    private int hitCount; // drops caused so far
+    private float hitShapeBackTime; // Time.time the rested hit shape returns
     private float fallSpeedU; // from config; u/s
     private float horizontalSpeedU; // from config; u/s along the ring
+    private float reachWakeDistanceU; // from config; wake range mid-grab; u
     private Vector2 axisXZ; // tree axis, world xz
     private float ringRadiusU; // horizontal distance to the axis; u
     private float warningStartTime;
@@ -229,6 +247,8 @@ public class FallingCobra: MonoBehaviour {
     private Color[] baseColors;
     private MaterialPropertyBlock warningBlock;
     private Transform player;
+    private ArmRoot[] playerArms; // the monkey's arms, read for a reach
+    private HitBranchDetection playerSensor; // applies the drop
 
     // private methods  ########################################################
     // wakes when the monkey is close and the cobra is not below it, a fall
@@ -241,13 +261,82 @@ public class FallingCobra: MonoBehaviour {
         if (position.y < player.position.y) {
             return;
         }
-        if (Vector3.Distance(position, player.position) >= triggerDistanceU) {
+        float wakeDistanceU = IsMonkeyReaching()
+            ? Mathf.Max(triggerDistanceU, reachWakeDistanceU)
+            : triggerDistanceU;
+        if (Vector3.Distance(position, player.position) >= wakeDistanceU) {
             return;
         }
 
         state = State.Warning;
         warningStartTime = Time.time;
         fallStartTime = warningStartTime + warningDurationS;
+    }
+
+    // any part of the monkey, the sensor included, once the last drop's stun
+    // is over; the sensor applies it, so it shakes and drops like a branch
+    private void TryHit(Collider other) {
+        if (state != State.Falling || !hitCollider.enabled) {
+            return;
+        }
+        bool isSensor = other.GetComponent<HitBranchDetection>() != null;
+        if (!isSensor && !IsMonkeyPart(other)) {
+            return;
+        }
+        RegisterHit();
+        if (playerSensor != null) {
+            playerSensor.ReportHit(hitCollider);
+        }
+    }
+
+    // a hit rests the hit shape through the stun and a grace time, so the
+    // monkey gets a moment to slip aside, and ends the homing for good
+    private void RegisterHit() {
+        hitCount++;
+        hitCollider.enabled = false;
+        hitShapeBackTime = Time.time + hitRestS;
+    }
+
+    private void RestoreHitShape() {
+        if (
+            hitCount > 0
+            && hitCount < maxHits
+            && !hitCollider.enabled
+            && Time.time >= hitShapeBackTime
+        ) {
+            // re-enabling raises trigger enter for an overlapping monkey
+            hitCollider.enabled = true;
+        }
+    }
+
+    /// <returns>true for the monkey's physical parts: body, tail and hands;
+    /// false for its other trigger volumes, which reach far past the body
+    /// </returns>
+    private static bool IsMonkeyPart(Collider other) {
+        if (other.GetComponentInParent<ArmRoot>() != null) {
+            return true;
+        }
+        if (other.isTrigger) {
+            return false;
+        }
+        for (Transform t = other.transform; t != null; t = t.parent) {
+            if (t.CompareTag(PLAYER_TAG)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool IsMonkeyReaching() {
+        if (playerArms == null) {
+            return false;
+        }
+        foreach (ArmRoot arm in playerArms) {
+            if (arm != null && arm.IsReaching) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void PulseWarning() {
@@ -290,7 +379,12 @@ public class FallingCobra: MonoBehaviour {
         Vector3 position = body.position;
         position.y -= dropU;
 
-        if (player != null && ringRadiusU > MIN_RING_RADIUS_U) {
+        // homing stops after the first hit, so the monkey can get away
+        if (
+            hitCount == 0
+            && player != null
+            && ringRadiusU > MIN_RING_RADIUS_U
+        ) {
             Vector2 fromAxis = new Vector2(position.x, position.z) - axisXZ;
             Vector2 toPlayer =
                 new Vector2(player.position.x, player.position.z) - axisXZ;

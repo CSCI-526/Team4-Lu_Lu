@@ -1,10 +1,15 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
 /// Cobra that coils round the trunk and climbs after the monkey without ever
 /// stopping or backing down, so once it reaches the monkey, whatever part
-/// touches first ends the run. The body
+/// touches first ends the run. Its base speed rises with the ramped
+/// difficulty. Each mistake of the monkey (a branch or
+/// falling cobra hit, or a web) makes it surge for a while, and mistakes
+/// stack, faster and longer, possibly past the monkey's own speed; tuned in
+/// <see cref="GameBalanceConfig"/>. The body
 /// wraps at least one full loop as a corkscrew with no gap round the trunk, so
 /// a monkey dropping onto the cobra's height cannot slip past it by orbiting.
 /// Segments are laid along the coil as a chain of rounded beads with small
@@ -14,6 +19,17 @@ using UnityEngine.Serialization;
 /// Contact itself is handled by <see cref="CobraCollisions"/>.
 /// </summary>
 public class CobraClimb: MonoBehaviour {
+    // Public Members  #########################################################
+    /// <returns>if the cobra is surging after a mistake of the monkey
+    /// </returns>
+    public bool IsCatchingUp => isCatchingUp;
+
+    /// <summary>
+    /// Raised on every mistake that adds to a surge, with the mistakes
+    /// stacked in it so far, for a short warning.
+    /// </summary>
+    public event Action<int> CatchUpStarted;
+
     // Inspector Fields  #######################################################
     [Header("References")]
     [SerializeField]
@@ -26,6 +42,13 @@ public class CobraClimb: MonoBehaviour {
             + "to fill the coil"
     )]
     private Transform[] bodySegments;
+
+    [SerializeField]
+    [Tooltip(
+        "game balance tuning; catch-up when the monkey is far ahead, "
+            + "none if unset"
+    )]
+    private GameBalanceConfig balanceConfig;
 
     [Header("Tree Path")]
     [SerializeField]
@@ -167,6 +190,14 @@ public class CobraClimb: MonoBehaviour {
             return;
         }
 
+        if (balanceConfig == null) {
+            Debug.LogWarning(
+                "CobraClimb:\tno Inspector Field: balanceConfig, "
+                    + "the cobra will not catch up",
+                this
+            );
+        }
+
         FillCoilSegments();
         segmentPositions = new Vector3[bodySegments.Length];
         StyleBody();
@@ -178,6 +209,7 @@ public class CobraClimb: MonoBehaviour {
         }
 
         headHeight = startHeight;
+        currentClimbSpeed = climbSpeed;
         UpdateBody();
     }
 
@@ -189,14 +221,32 @@ public class CobraClimb: MonoBehaviour {
 
             if (playerObject != null) {
                 player = playerObject.transform;
+                ListenForMistakes(playerObject);
             }
         }
 
         headAngle += Direction * orbitSpeedDegrees * Time.deltaTime;
 
-        float currentClimbSpeed = climbSpeed;
+        float baseClimbSpeed = BaseClimbSpeed();
+        float targetClimbSpeed = baseClimbSpeed;
 
-        if (slowNearPlayer && player != null) {
+        // a surge ends when its stacked time runs out, and its stack with it
+        if (surgeStacks > 0 && Time.time >= surgeEndTime) {
+            surgeStacks = 0;
+        }
+        isCatchingUp = surgeStacks > 0 && balanceConfig != null;
+
+        if (isCatchingUp) {
+            // a surge never slows near the monkey: it is the punishment
+            targetClimbSpeed = Mathf.Max(
+                baseClimbSpeed,
+                Mathf.Min(
+                    baseClimbSpeed
+                        + surgeStacks * balanceConfig.CobraSurgeSpeedPerMistakeU,
+                    balanceConfig.CobraMaxSurgeSpeedU
+                )
+            );
+        } else if (player != null && slowNearPlayer) {
             float coilTopHeight = headHeight - neckLiftU;
             float distanceBelowPlayer =
                 player.position.y - pathCenter.position.y - coilTopHeight;
@@ -204,7 +254,7 @@ public class CobraClimb: MonoBehaviour {
             if (distanceBelowPlayer > 0f
                 && distanceBelowPlayer < slowDownDistance) {
                 // closing in: slow down for suspense, but never stop
-                currentClimbSpeed *= Mathf.Lerp(
+                targetClimbSpeed *= Mathf.Lerp(
                     minimumSpeedShare,
                     1f,
                     distanceBelowPlayer / slowDownDistance
@@ -212,12 +262,31 @@ public class CobraClimb: MonoBehaviour {
             }
         }
 
+        // ease toward the target, so a speed-up or a slow-down never jumps
+        float speedChangeRate = balanceConfig != null
+            ? balanceConfig.CobraSpeedChangeRateU
+            : float.PositiveInfinity;
+        currentClimbSpeed = Mathf.MoveTowards(
+            currentClimbSpeed,
+            targetClimbSpeed,
+            speedChangeRate * Time.deltaTime
+        );
+
         // always up, never held at the player's height and never down: the
         // coil climbs on into the monkey, and a monkey moving or dropping
         // down runs into it instead of pushing it
         headHeight += currentClimbSpeed * Time.deltaTime;
 
         UpdateBody();
+    }
+
+    private void OnDestroy() {
+        if (playerSensor != null) {
+            playerSensor.BranchHit -= OnMonkeyHit;
+        }
+        if (playerStruggle != null) {
+            playerStruggle.Trapped -= OnMonkeyTrapped;
+        }
     }
 
     // Editor Validation  ######################################################
@@ -249,6 +318,13 @@ public class CobraClimb: MonoBehaviour {
 
     private float headAngle;
     private float headHeight;
+    private float currentClimbSpeed; // eased toward the target; u/s
+    private bool isCatchingUp;
+    private int surgeStacks; // mistakes stacked in the running surge
+    private float surgeEndTime; // Time.time the running surge ends
+    private float nextCountedHitTime; // Time.time b4 which hits add nothing
+    private HitBranchDetection playerSensor;
+    private SpiderWebStruggle playerStruggle;
     private Transform player;
     private Vector3[] segmentPositions;
 
@@ -273,6 +349,81 @@ public class CobraClimb: MonoBehaviour {
     private float SegmentArcStepU => CoilLengthU / LastIndex;
 
     // private methods  ########################################################
+    /// <returns>climb speed outside a surge: from the config's base speed
+    /// curve at the monkey's ramped difficulty, so the chase tightens as the
+    /// climb goes on, else the inspector's climb speed; u/s</returns>
+    private float BaseClimbSpeed() {
+        if (
+            balanceConfig == null
+            || player == null
+            || RampedDifficultyService.I == null
+        ) {
+            return climbSpeed;
+        }
+        float difficulty =
+            RampedDifficultyService.I.GetRampedValueFromYPosition(
+                player.position.y
+            );
+        return Mathf.Max(
+            0f,
+            balanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty)
+        );
+    }
+
+    // a branch or falling cobra hit, or a web, costs the monkey time; the
+    // cobra surges to make the mistake felt
+    private void ListenForMistakes(GameObject playerObject) {
+        playerSensor =
+            playerObject.GetComponentInChildren<HitBranchDetection>(true);
+        if (playerSensor != null) {
+            playerSensor.BranchHit += OnMonkeyHit;
+        }
+        playerStruggle = playerObject.GetComponent<SpiderWebStruggle>();
+        if (playerStruggle != null) {
+            playerStruggle.Trapped += OnMonkeyTrapped;
+        }
+    }
+
+    // one stun is one mistake: hits the monkey ignores while stunned, e.g.
+    // a 2nd branch on the way down, add nothing
+    private void OnMonkeyHit(Collider hazard) {
+        if (balanceConfig != null && Time.time < nextCountedHitTime) {
+            return;
+        }
+        if (balanceConfig != null) {
+            nextCountedHitTime = Time.time + balanceConfig.HitStunDurationS;
+        }
+        StartSurge();
+    }
+
+    // raised on every trap; its flag only says if it is the first trap of
+    // the scene, so it is ignored here
+    private void OnMonkeyTrapped(bool isFirstTrap) {
+        StartSurge();
+    }
+
+    // each mistake adds a stack and surge time, both capped by the config
+    private void StartSurge() {
+        if (
+            balanceConfig == null
+            || balanceConfig.CobraSurgePerMistakeS <= 0f
+        ) {
+            return;
+        }
+        float remainingS = Mathf.Max(0f, surgeEndTime - Time.time);
+        if (surgeStacks == 0) {
+            remainingS = 0f;
+        }
+        surgeEndTime =
+            Time.time
+            + Mathf.Min(
+                remainingS + balanceConfig.CobraSurgePerMistakeS,
+                balanceConfig.CobraMaxSurgeS
+            );
+        surgeStacks++;
+        CatchUpStarted?.Invoke(surgeStacks);
+    }
+
     /// <summary>
     /// Clone the last body segment until neighbouring segments sit no more
     /// than <see cref="maxSegmentGapU"/> apart along the whole coil, so the

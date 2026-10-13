@@ -23,6 +23,13 @@ using UnityEngine.Serialization;
 /// keeps the whole snake inside the segment. A spot too close to another
 /// cobra of the segment is retried, and skipped when retries run out.
 /// </para>
+/// <para>
+/// Ambush: with <see cref="GameBalanceConfig.FallingCobraBananaAmbushChance"/>
+/// a cobra instead hangs at the angle of a banana on its segment, a little
+/// above it, so reaching for that banana is what wakes it. If the segment
+/// has no banana, or no ambush spot fits, the cobra falls back to a random
+/// spot.
+/// </para>
 /// </summary>
 public class FallingCobraSpawner: MonoBehaviour {
     // Inspector Fields  #######################################################
@@ -51,6 +58,15 @@ public class FallingCobraSpawner: MonoBehaviour {
     [SerializeField]
     [Tooltip("position retries per cobra b4 skipping it")]
     private int maxPlacementAttempts = 20;
+
+    [Header("Banana Ambush")]
+    [SerializeField]
+    [Tooltip("lowest height of an ambush cobra's pivot above its banana; u")]
+    private float ambushMinAboveBananaU = 3f;
+
+    [SerializeField]
+    [Tooltip("highest height of an ambush cobra's pivot above its banana; u")]
+    private float ambushMaxAboveBananaU = 6f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -102,12 +118,20 @@ public class FallingCobraSpawner: MonoBehaviour {
         spawnRadiusU = Mathf.Max(0f, spawnRadiusU);
         minCobraSeparationU = Mathf.Max(0f, minCobraSeparationU);
         maxPlacementAttempts = Mathf.Max(1, maxPlacementAttempts);
+        ambushMinAboveBananaU = Mathf.Max(0f, ambushMinAboveBananaU);
+        ambushMaxAboveBananaU = Mathf.Max(
+            ambushMinAboveBananaU,
+            ambushMaxAboveBananaU
+        );
     }
 
     // Event Handlers  #########################################################
     private void OnBranchesGenerated(DynamicTreeSegmentPrefabRoot segment) {
         PopulateSegment(segment);
     }
+
+    // constants  ##############################################################
+    private const string FRUIT_TAG = "FruitCollider";
 
     // private members  ########################################################
     private static FallingCobraSpawner listener; // the one spawner subscribed
@@ -190,13 +214,34 @@ public class FallingCobraSpawner: MonoBehaviour {
             return false;
         }
 
+        // an ambush aims at one banana of the segment, picked once
+        Vector3? bananaLocal = null;
+        if (Random.value < balanceConfig.FallingCobraBananaAmbushChance) {
+            bananaLocal = PickBananaLocal(segmentXfm);
+        }
+
         for (int attempt = 0; attempt < maxPlacementAttempts; attempt++) {
-            Quaternion yaw = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            Vector3 localPosition =
-                yaw * Vector3.forward * spawnRadiusU
-                + Vector3.up * Random.Range(minLocalY, maxLocalY);
+            // above a banana, at its angle round the trunk, else anywhere
+            Vector3 localPosition = Vector3.zero;
+            bool isAmbush =
+                bananaLocal.HasValue
+                && TryAmbushLocal(
+                    bananaLocal.Value,
+                    minLocalY,
+                    maxLocalY,
+                    out localPosition
+                );
+            if (!isAmbush) {
+                Quaternion yaw =
+                    Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+                localPosition =
+                    yaw * Vector3.forward * spawnRadiusU
+                    + Vector3.up * Random.Range(minLocalY, maxLocalY);
+            }
             Vector3 position = segmentXfm.TransformPoint(localPosition);
             if (!IsSpotFree(position)) {
+                // a taken ambush spot falls back to random spots
+                bananaLocal = null;
                 continue;
             }
 
@@ -212,6 +257,61 @@ public class FallingCobraSpawner: MonoBehaviour {
 
         Destroy(cobra.gameObject);
         return false;
+    }
+
+    // a random banana still shown on the segment, in segment-local space,
+    // or null when the segment bears none
+    private static Vector3? PickBananaLocal(Transform segmentXfm) {
+        List<Vector3> bananas = new();
+        foreach (
+            Collider fruit in segmentXfm.GetComponentsInChildren<Collider>()
+        ) {
+            if (fruit.CompareTag(FRUIT_TAG) && fruit.enabled) {
+                // transform, not bounds: a just-placed branch has no
+                // synced physics bounds yet
+                bananas.Add(
+                    segmentXfm.InverseTransformPoint(
+                        fruit.transform.position
+                    )
+                );
+            }
+        }
+        if (bananas.Count == 0) {
+            return null;
+        }
+        return bananas[Random.Range(0, bananas.Count)];
+    }
+
+    // a spot on the cobra ring at the banana's angle, a random height above
+    // it, iff that height keeps the snake inside the segment
+    private bool TryAmbushLocal(
+        Vector3 bananaLocal,
+        float minLocalY,
+        float maxLocalY,
+        out Vector3 localPosition
+    ) {
+        localPosition = Vector3.zero;
+        Vector3 flat = new Vector3(bananaLocal.x, 0f, bananaLocal.z);
+        if (flat.sqrMagnitude < 0.0001f) {
+            return false;
+        }
+
+        float lowY = Mathf.Max(
+            minLocalY,
+            bananaLocal.y + ambushMinAboveBananaU
+        );
+        float highY = Mathf.Min(
+            maxLocalY,
+            bananaLocal.y + ambushMaxAboveBananaU
+        );
+        if (highY < lowY) {
+            return false;
+        }
+
+        localPosition =
+            flat.normalized * spawnRadiusU
+            + Vector3.up * Random.Range(lowY, highY);
+        return true;
     }
 
     private bool IsSpotFree(Vector3 position) {

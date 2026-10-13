@@ -1264,6 +1264,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9829221b635be4cfba4313900241db4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CobraClimb
+  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   pathCenter: {fileID: 7335942435961454440}
   bodySegments:
   - {fileID: 4063569279546901762}
