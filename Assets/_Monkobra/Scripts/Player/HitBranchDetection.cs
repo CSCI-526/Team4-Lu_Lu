@@ -15,6 +15,17 @@ public class HitBranchDetection: MonoBehaviour {
     /// </summary>
     public event Action<Collider> BranchHit;
 
+    // Public Methods  #########################################################
+    /// <summary>
+    /// Applies a branch hit from a hazard that touched another part of the
+    /// monkey, not this sensor: the same camera shake and
+    /// <see cref="BranchHit"/> as a sensor contact.
+    /// </summary>
+    /// <param name="source">the hazard's collider</param>
+    public void ReportHit(Collider source) {
+        ApplyHit(source);
+    }
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         impulseSource = GetComponent<CinemachineImpulseSource>();
@@ -26,11 +37,16 @@ public class HitBranchDetection: MonoBehaviour {
             return;
         }
 
+        ApplyHit(other);
+    }
+
+    // private methods  ########################################################
+    private void ApplyHit(Collider source) {
         if (Debug.isDebugBuild) {
-            Debug.Log($"HitBranchDetection:\thit branch {other.name}");
+            Debug.Log($"HitBranchDetection:\thit branch {source.name}");
         }
         impulseSource.GenerateImpulse();
-        BranchHit?.Invoke(other);
+        BranchHit?.Invoke(source);
     }
 
     // constants  ##############################################################
