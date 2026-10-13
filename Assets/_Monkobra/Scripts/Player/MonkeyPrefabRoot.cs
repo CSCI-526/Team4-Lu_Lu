@@ -20,7 +20,42 @@ using UnityEngine.InputSystem;
 /// </para>
 /// </summary>
 public class MonkeyPrefabRoot: MonoBehaviour {
+    // Public Members  #########################################################
+    /// <summary>
+    /// While true the body stays exactly where it is, ignoring input and any
+    /// branch-hit fall. Set by <see cref="SpiderWebStruggle"/> while the
+    /// monkey is caught in a web. Either change zeroes the climb speed, so
+    /// the climb resumes from rest rather than with the speed carried in.
+    /// </summary>
+    public bool IsHeld {
+        get => isHeld;
+        set {
+            isHeld = value;
+            climbSpeedU = 0f;
+            // freed after a pull: glide back onto the ring, never snap
+            if (!value && hasPullTarget) {
+                hasPullTarget = false;
+                isReturning = true;
+            }
+        }
+    }
+
+    // Public Methods  #########################################################
+    /// <summary>
+    /// While held, slides the body to <paramref name="worldPos"/> in 3D, e.g.
+    /// the hub of the web that caught it. Releasing the hold glides the body
+    /// back onto its orbit ring, keeping the height it was pulled to.
+    /// </summary>
+    public void PullTo(Vector3 worldPos) {
+        pullTarget = worldPos;
+        hasPullTarget = true;
+    }
+
     // Inspector Fields  #######################################################
+    [SerializeField]
+    [Tooltip("speed of the pull into a web and the glide back out; u/s")]
+    private float pullSpeedU = 12f;
+
     [SerializeField]
     [Tooltip("raises branch hit event, knocks monkey off climb")]
     private HitBranchDetection hitBranchDetection;
@@ -31,6 +66,10 @@ public class MonkeyPrefabRoot: MonoBehaviour {
             + "arms use"
     )]
     private MonkeyConfig config;
+
+    [SerializeField]
+    [Tooltip("game balance tuning; climb speed, exhaustion and branch hit")]
+    private GameBalanceConfig balanceConfig;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -53,6 +92,14 @@ public class MonkeyPrefabRoot: MonoBehaviour {
                 "MonkeyPrefabRoot:\tmust assign MonkeyConfig field: "
                     + "moveAction",
                 config
+            );
+        }
+
+        if (balanceConfig == null) {
+            Debug.LogWarning(
+                "MonkeyPrefabRoot:	must assign Inspector Field: "
+                    + "balanceConfig",
+                this
             );
         }
 
@@ -106,7 +153,25 @@ public class MonkeyPrefabRoot: MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        if (config == null) {
+        if (config == null || balanceConfig == null) {
+            return;
+        }
+
+        // held, e.g. caught in a web: write no new pose so the body stays
+        // put, but keep it awake so the cobra's trigger still registers it
+        if (isHeld) {
+            if (body != null) {
+                body.WakeUp();
+                if (hasPullTarget) {
+                    body.MovePosition(
+                        Vector3.MoveTowards(
+                            body.position,
+                            pullTarget,
+                            pullSpeedU * Time.fixedDeltaTime
+                        )
+                    );
+                }
+            }
             return;
         }
 
@@ -118,13 +183,23 @@ public class MonkeyPrefabRoot: MonoBehaviour {
 
         // the orbit angle is the only horizontal state, so the body sits
         // exactly on its ring every step rather than chasing it
+        // an empty stamina bar slows the monkey instead of ending the run
+        StaminaBarController staminaBar = StaminaBarController.I;
+        bool isExhausted = staminaBar != null && !staminaBar.HasStamina;
+        if (isExhausted && hasInput) {
+            staminaBar.NotifyMoveAttempt();
+        }
+        float upSpeedScale = isExhausted
+            ? balanceConfig.ExhaustedSpeedMultiplier
+            : 1f;
+
         orbitAngleDeg -= directionalInput.x
             * config.RotationSpeedDeg
             * Time.fixedDeltaTime;
 
         float maxClimbSpeed = directionalInput.y >= 0f
-            ? config.UpSpeedU
-            : config.DownSpeedU;
+            ? balanceConfig.UpSpeedU * upSpeedScale
+            : balanceConfig.DownSpeedU;
         float rampRate = hasInput
             ? config.AccelerationU
             : config.DecelerationU;
@@ -142,49 +217,53 @@ public class MonkeyPrefabRoot: MonoBehaviour {
             nextY = Mathf.Max(
                 dropTargetY,
                 transform.position.y
-                    - config.HitDropSpeedU * Time.fixedDeltaTime
+                    - balanceConfig.HitDropSpeedU * Time.fixedDeltaTime
             );
         }
 
         // the stun fall is involuntary and so is descending: only voluntary
         // upward and sideways travel costs stamina
-        if (!isStunned && StaminaBar.I != null) {
+        if (!isStunned && staminaBar != null) {
             float climbedU = nextY - transform.position.y;
             float orbitedU = Mathf.Abs(directionalInput.x)
                 * config.RotationSpeedDeg
                 * Time.fixedDeltaTime
                 * Mathf.Deg2Rad
                 * orbitRadius;
-            StaminaBar.I.DrainByMovement(climbedU, orbitedU);
+            staminaBar.DrainByMovement(climbedU, orbitedU);
+
+            // standing still, no key pressed, regains stamina slowly
+            if (!hasInput) {
+                staminaBar.NotifyResting();
+                staminaBar.AddStamina(
+                    balanceConfig.IdleStaminaRecoveryPerS
+                        * Time.fixedDeltaTime
+                );
+            }
         }
 
         Vector3 next =
             transform.parent.position + CalcOrbitOffset(orbitAngleDeg);
         next.y = nextY;
+        if (isReturning) {
+            Vector3 step = Vector3.MoveTowards(
+                body.position,
+                next,
+                pullSpeedU * Time.fixedDeltaTime
+            );
+            isReturning = step != next;
+            next = step;
+        }
         body.MovePosition(next);
         body.MoveRotation(Quaternion.Euler(0f, orbitAngleDeg, 0f));
     }
 
     // Event Handlers  #########################################################
-    private void OnTriggerEnter(Collider other) {
-        if (!other.CompareTag(WIN_ZONE_TAG)) {
-            return;
-        }
-
-        if (GameController.I != null) {
-            GameController.I.WinGame();
-        } else {
-            Debug.LogError(
-                "MonkeyPrefabRoot:\tGameController instance not found",
-                this
-            );
-        }
-    }
-
-    // knock monkey off climb: ignore input for the config's stun duration,
-    // fall its drop distance. Ignore hit while previous one in effect
+    // knock monkey off climb: ignore input for the stun duration, fall the
+    // drop distance, both from the balance config. Ignore hit while previous
+    // one in effect
     private void OnBranchHit(Collider branch) {
-        if (config == null) {
+        if (config == null || balanceConfig == null) {
             return;
         }
 
@@ -198,12 +277,13 @@ public class MonkeyPrefabRoot: MonoBehaviour {
             return;
         }
 
-        stunEndTime = Time.time + config.HitStunDurationS;
-        dropTargetY = transform.position.y - config.HitDropDistanceU;
+        stunEndTime = Time.time + balanceConfig.HitStunDurationS;
+        dropTargetY =
+            transform.position.y - balanceConfig.HitDropDistanceU;
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "MonkeyPrefabRoot:\tbranch hit, control lost for "
-                    + $"{config.HitStunDurationS}s"
+                    + $"{balanceConfig.HitStunDurationS}s"
             );
         }
     }
@@ -211,7 +291,6 @@ public class MonkeyPrefabRoot: MonoBehaviour {
     // constants  ##############################################################
     private const float INPUT_DEADZONE = 0.1f;
     private const float INPUT_DEADZONE_SQR = INPUT_DEADZONE * INPUT_DEADZONE;
-    private const string WIN_ZONE_TAG = "WinZone";
 
     // private members  ########################################################
     private float orbitAngleDeg;
@@ -219,6 +298,10 @@ public class MonkeyPrefabRoot: MonoBehaviour {
     private float climbSpeedU; // ramped vertical speed, this script's own
     private float stunEndTime; // Time.time when control returns
     private float dropTargetY; // world Y where hit fall stops
+    private bool isHeld; // body frozen in place, see IsHeld
+    private Vector3 pullTarget; // world pos the held body slides to
+    private bool hasPullTarget; // whether the held body is being pulled
+    private bool isReturning; // whether the body glides back onto its ring
 
     private bool IsStunned => Time.time < stunEndTime;
 

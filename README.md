@@ -2,42 +2,37 @@
 
 A 3D vertical climbing game: scale a very tall tree while a cobra chases you from below. *Raiden* meets *Gold Miner*, in 3D.
 
-Course project for USC CSCI-526, Fall 2026.
+Course project for USC CSCI-526, Fall 2026. Current version: `0.9.0` (pre-alpha), see the [CHANGELOG](CHANGELOG.md).
 
 ## Overview
 
-You play a monkey racing up an endless tree. The cobra never stops climbing, and your stamina drains with every meter. Dodge branches, then reach out and grab bananas to refill the stamina bar before it runs dry.
+You play a monkey racing up a very tall tree. The cobra never stops climbing, and your stamina drains with every meter. Dodge branches, then hold E or Space to reach for a banana and release to grab it: a clean grab is the only way to refill the stamina bar before it runs dry. Every grab costs focus that would otherwise go to dodging, so each banana is a risk.
 
-- Genre: 3D obstacle-running, in the family of *Temple Run 2*, *Subway Surfers*, and *Minion Rush*
-- Engine: Unity
-- Camera: monkey held at the center of view, with an infinitely tall tree and a skybox behind
+The pillars, mechanics, and difficulty are in the [Game Design Document](docs/monkobra-gdd.md), every hazard and what it does on touch in [Mobs](docs/mob-doc.md), how grabbing works in the [Grab System](docs/grab-doc.md), why difficulty ramps with height in [Balance Design](docs/balance-doc.md), and how a whole run plays out in the [Gameplay Loop](docs/gameplay-loop-doc.md).
 
-### Core Twist
+## Controls
 
-Banana grabbing and stamina balancing.
+| Input | Action |
+| --- | --- |
+| Up, Down or W, S | climb the tree |
+| Left, Right or A, D | circle around the tree |
+| E or Space (hold and release) | reach out and grab a banana |
+| Space (press rapidly) | break free of a spider web |
 
-- Grab: hold the space key to stretch the monkey's arm toward a nearby banana, release at the right moment to pick it up
-- Restore: a successful grab refills the stamina bar by a large margin
-- Balance: climbing drains stamina, and grabbing costs focus that would otherwise go to dodging, so every pickup is a risk
+Gamepad: left stick or D-pad moves, the north button grabs, the south button breaks free of a web.
 
-### Controls
-
-- Up / Down: climb the tree
-- Left / Right: circle around the tree
-- Space (hold and release): reach out and grab a banana
-
-## Mechanics
-
-- Movement and Climb: free up-down and around-the-tree movement, with stamina spent on every climb and, at a lower rate, on every step around the trunk
-- Cobra Chase: a cobra tangles up the trunk from the bottom of the screen, and touching it ends the run
-- Branch Collision: hitting a branch shakes the camera, drops the monkey, and briefly takes away control
-- Banana Grab: hold-and-release timing sets how far the arm stretches, and a clean grab restores stamina
-- Stamina Bar: drains over time and with movement, topped up only by grabbing bananas
+Every run is logged for playtest review: each launch writes one markdown report with graphs to `Analytics/` under Unity's `persistentDataPath`. F9 starts a new session and F10 saves a mock report; both keys are set in `Settings/Analytics/AnalyticsConfig.asset`.
 
 ## Getting Started
 
 Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `Lv1Scene` and press Play. The game also runs in the browser from the committed WebGL export in `Monkobra/`, served by GitHub Pages.
 
+Spider webs follow a probability curve of climb height, so they are rare early on. To meet them right away, select `Envs/DTSPool` in `Lv1Scene`, tick Spider Web Spawner > Use Test Override before pressing Play, and leave the scene unsaved: webs then spawn at a flat chance at any height. How often webs appear is tuned in the Spider Web group of `Settings/GameBalanceConfig.asset`. Details are in [Testing](docs/mob-doc.md#testing).
+
 ## Contributing
 
-Agent rules and the WebGL export steps are in [AGENTS.md](AGENTS.md), the system map and known gaps in [CONTEXT.md](CONTEXT.md), and version history in [CHANGELOG.md](CHANGELOG.md).
+Agent rules are in [AGENTS.md](AGENTS.md), the WebGL export steps in [Build](docs/build-doc.md), the script index and known gaps in [CONTEXT.md](CONTEXT.md), how the game is built in the [Technical Design Document](docs/monkobra-tdd.md), the teammate git flow in [Work with Git](docs/work-with-git.md), and version history in [CHANGELOG.md](CHANGELOG.md).
+
+## Acknowledgments
+
+Team: Yuqing Lu, Yangyi Lu (Erik), Houdong Pan, Wenhai Dong, Belle Dai.
