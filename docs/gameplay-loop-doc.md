@@ -15,6 +15,8 @@ graph TD
   Hazard -->|spider web| Stuck[Stuck until escape bar fills]
   Hit --> Cost[Time lost, cobra closes in]
   Stuck --> Cost
+  Cost -.->|mistake| Surge[Cobra surges]
+  Surge -.-> Cobra
   Cost --> Climb
 
   Hazard -->|clear| Banana{Banana in reach?}
@@ -28,10 +30,8 @@ graph TD
   Stamina -.->|empty| Slow[Climb slows down]
   Slow -.-> Climb
 
-  Climb -->|top of tree| Win([Win])
   Climb -->|cobra touches monkey| Lose([Lose])
-  Win --> Result[Final score shown]
-  Lose --> Result
+  Lose --> Result[Final height and score shown]
   Result -->|play again| Start
 ```
 
@@ -46,16 +46,16 @@ graph TD
 3. spot a banana in a side's detection zone and decide whether the pause is worth it
 4. hold interact to reach, release when the hand overlaps the banana
 5. a hit restores stamina and scores points, a miss only costs time spent exposed
-6. repeat until the top is reached or the cobra touches the monkey
+6. repeat until the cobra touches the monkey
 
 ## Pressures
 
-- Cobra: constant pursuit, so every pause (a web, a miss, a hit, an empty bar) is paid for in distance
+- Cobra: constant pursuit, so every pause (a web, a miss, a hit, an empty bar) is paid for in distance; each hit or web also makes it surge, stacking with repeated mistakes ([Mobs](mob-doc.md#motion))
 - Stamina: an empty bar does not end the run, it slows the upward climb, see [Technical Design Document](monkobra-tdd.md#stamina)
 - Attention: a reach turns the camera to the banana's side, away from the branches and webs ahead
 
 ## Win and Lose
 
-- Win: the monkey reaches the top of the tree
+- Win: none, the tree is endless
 - Lose: the cobra touches the monkey
-- Result: either outcome ends the run and shows the final score
+- Result: the loss ends the run and shows the final height and score

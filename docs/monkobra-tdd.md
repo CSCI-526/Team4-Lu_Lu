@@ -150,7 +150,8 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`, whic
 | --- | --- |
 | Max Stamina | 100 |
 | Timer Drain | 10 per 10 s |
-| Restore Per Banana | 30 |
+| Restore Per Banana | 35 |
+| Idle Recovery | 2.5 per s |
 | Upward Cost | 0.5 per u |
 | Sideways Cost | 0.3 per u |
 
@@ -193,7 +194,7 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 | Element | Script | Shows |
 | --- | --- | --- |
 | Stamina Bar | `UI/StaminaBarController` | current stamina |
-| Climb Progress | `UI/ProgressBarRoot` | a window `windowSizeY` (20 u) tall below the monkey, with a marker for how near the cobra's head is |
+| Climb Progress | `UI/ProgressBarRoot` | a window `windowSizeY` (60 u in `Lv1Scene`) tall below the monkey, with a marker for how near the cobra's head is |
 | Score | `UI/ScoreDisplay` | total score, on the HUD and the lose panel |
 | Height | `UI/HeightDisplayController` | height climbed since game start, in world units |
 | Screens | `UI/ScreensManager` | tutorial and lose panels |

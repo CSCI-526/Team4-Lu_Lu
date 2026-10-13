@@ -88,9 +88,9 @@ Bananas come from branches, not their own spawner. `BranchWithScriptRoot` rolls 
 | --- | --- | --- |
 | Reach Extend Speed | 4 u/s | `Settings/_Shared/MonkeyConfig.asset` |
 | Max Reach | the joint's linear limit | `ConfigurableJoint` on the `Arm` prefab |
-| Stamina Per Banana | 30, capped at the 100 maximum | `Settings/GameBalanceConfig.asset` |
+| Stamina Per Banana | 35, capped at the 100 maximum | `Settings/GameBalanceConfig.asset` |
 | Points Per Banana | 100 | `Settings/GameBalanceConfig.asset` |
-| Banana Chance Per Branch | a curve of the ramped difficulty, 0 to 1 by default | `bananaSpawnProbabilityCurve` in `Settings/GameBalanceConfig.asset` |
+| Banana Chance Per Branch | a curve of the ramped difficulty, about 0.13 to 0.17 as tuned | `bananaSpawnProbabilityCurve` in `Settings/GameBalanceConfig.asset` |
 
 ## Known Gaps
 

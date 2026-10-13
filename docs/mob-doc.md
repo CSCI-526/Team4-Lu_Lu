@@ -35,7 +35,7 @@ A branch is a prefab (`Prefabs/Environment/BranchWithFruit`) holding a `Branch`-
 
 | Setting | Value | Asset |
 | --- | --- | --- |
-| Stun Duration | 0.75 s | `Settings/MonkeyConfig.asset` |
+| Stun Duration | 0.75 s | `Settings/GameBalanceConfig.asset` |
 | Drop Distance | 10 u | 〃 |
 | Drop Speed | 8 u/s | 〃 |
 
@@ -43,19 +43,18 @@ A branch is a prefab (`Prefabs/Environment/BranchWithFruit`) holding a `Branch`-
 
 `DynamicTreeSegmentPrefabRoot` decorates each dynamic trunk segment with branches in its `Start`, after `TreeManager` exists. Placement tuning sits in `BranchFruitPlacementConfig`.
 
-- Count: a fixed `branchGenerationAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `branchSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyService`, linear 0 to 1 by default) and spawns a branch if a random roll falls below that chance; why the curve is shaped by difficulty is in [Balance Design](balance-doc.md#one-roll-model)
+- Count: a fixed `branchGenerationAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `branchSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyService`) and spawns a branch if a random roll falls below that chance; why the curve is shaped by difficulty is in [Balance Design](balance-doc.md#one-roll-model)
 - Position: a random angle round the trunk and a random height in the segment, at a fixed radius, retried until a spot keeps the minimum separation from branches already placed on that segment, else the last try is accepted
-- Banana: `DynamicTreeSegmentPrefabRoot` samples `bananaSpawnProbabilityCurve` (`GameBalanceConfig`, linear 0 to 1 by default) at each placed branch's ramped difficulty and passes the chance to `BranchWithScriptRoot.Initialize`, which rolls whether the branch bears a banana, then randomizes the stem length and banana rotation
+- Banana: `DynamicTreeSegmentPrefabRoot` samples `bananaSpawnProbabilityCurve` (`GameBalanceConfig`) at each placed branch's ramped difficulty and passes the chance to `BranchWithScriptRoot.Initialize`, which rolls whether the branch bears a banana, then randomizes the stem length and banana rotation
 
 | Setting | Value | Asset |
 | --- | --- | --- |
-| Branches At Tree Base | 2 | `Settings/BranchFruitPlacementConfig.asset` |
-| Branches At Max Density | 9 | 〃 |
-| Max Density Reached At | 60% of the climb | 〃 |
-| Branch Radius | 6.6 u | 〃 |
+| Attempts Per Segment | 10 | `Settings/GameBalanceConfig.asset` |
+| Branch Chance | 0.3 at difficulty 0, 0.6 at difficulty 1 | 〃 |
+| Banana Chance | about 0.13 to 0.17 across the climb | 〃 |
+| Branch Radius | 6.6 u | `Settings/Mob/BranchFruitPlacementConfig.asset` |
 | Min Separation | 3 u | 〃 |
 | Placement Retries | 30 | 〃 |
-| Banana Chance | 0.15 | `Prefabs/Environment/BranchWithFruit` |
 
 ## Cobra
 
@@ -75,7 +74,7 @@ The chasing cobra is code-built geometry on one root: `CobraClimb` poses the bod
 | --- | --- |
 | Orbit Radius | 5.5 u |
 | Start Height | -5 u |
-| Climb Speed | 3 u/s |
+| Fallback Climb Speed | 3 u/s, used only without a balance asset |
 | Orbit Speed | 45 deg/s, clockwise |
 | Coil Turns | 1.1 |
 | Coil Pitch | 1.5 u per loop |
@@ -106,7 +105,7 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 | Setting | Value | Home |
 | --- | --- | --- |
 | Attempts Per Segment | 2 | `Settings/GameBalanceConfig.asset` |
-| Spawn Probability Curve | linear, 0 at difficulty 0 to 0.5 at difficulty 1 | 〃 |
+| Spawn Probability Curve | 0 up to difficulty 0.15, then rising to 0.4 at difficulty 1 | 〃 |
 | Fall Speed | 6 u/s | 〃 |
 | Horizontal Chase Speed | 4 u/s along the ring | 〃 |
 | Reach Wake Distance | 20 u | 〃 |
@@ -139,8 +138,8 @@ A static trap on the trunk that holds the monkey in place while the cobra keeps 
 
 | Setting | Value | Asset |
 | --- | --- | --- |
-| Attempts Per Segment | 2 | `Settings/GameBalanceConfig.asset` |
-| Spawn Probability Curve | linear, 0 at difficulty 0 to 0.5 at difficulty 1 | 〃 |
+| Attempts Per Segment | 3 | `Settings/GameBalanceConfig.asset` |
+| Spawn Probability Curve | 0 up to difficulty 0.05, 0.4 at 0.25, 0.6 at 1 | 〃 |
 | Min Web Separation | 4 u | `SpiderWebSpawner` on `Envs/DTSPool` |
 
 The curve is the only gate: webs appear wherever it is above 0, and the ramped difficulty is 0 until the climb reaches the start of `rampedDifficultyCurve`.

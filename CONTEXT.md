@@ -21,7 +21,7 @@ Monkobra is a Unity course project (USC CSCI-526, Fall 2026) descended from a pa
 | Cobra, falling cobra, branches, spider webs, touch outcomes | [Mobs](docs/mob-doc.md) |
 | Detection zones, reach, release check, camera swap, outlines | [Grab System](docs/grab-doc.md) |
 | Why difficulty follows height, the roll model, the single balance asset | [Balance Design](docs/balance-doc.md) |
-| The run from start to win or lose, as one diagram | [Gameplay Loop](docs/gameplay-loop-doc.md) |
+| The run from start to loss, as one diagram | [Gameplay Loop](docs/gameplay-loop-doc.md) |
 | Controls, setup | [README](README.md) |
 | Git flow for teammates (Chinese) | [Work with Git](docs/work-with-git.md) |
 | Agent rules, WebGL export | [AGENTS.md](AGENTS.md) |

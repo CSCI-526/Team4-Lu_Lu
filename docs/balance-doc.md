@@ -55,7 +55,7 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 
 ## Balance Is One Asset
 
-`GameBalanceConfig` is the single home of balance numbers, grouped by system: stamina, movement, branch hit, score, ramped difficulty, branch, spider web, falling cobra.
+`GameBalanceConfig` is the single home of balance numbers, grouped by system: stamina, movement, branch hit, score, ramped difficulty, branch, spider web, falling cobra, great cobra.
 
 - Why One Asset: balance questions cross systems, since stamina drain, banana supply, and climb speed together decide how long a run lasts; one file keeps them in view together and rules out a second, forgotten copy of a number
 - Readers Hold The Reference: each consumer has a `balanceConfig` field pointing at the same asset, so there is no global to trip over, and a test scene can swap in another asset

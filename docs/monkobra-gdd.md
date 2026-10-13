@@ -53,15 +53,14 @@ graph TD
   Reach -->|miss| Exposed[Time lost, cobra closes in]
   Restore --> Climb
   Exposed --> Climb
-  Climb -->|top reached| Win[Win]
-  Climb -->|cobra contact or stamina 0| Lose[Lose]
+  Climb -->|cobra contact| Lose[Lose]
 ```
 
 ## Resources and Pressures
 
 - Stamina: the survival resource, drained by time and by movement, restored by grabbing or slowly by resting, and an empty bar slows the monkey instead of ending the run
-- The Cobra: a pressure that never relents, it climbs nonstop and ends the run on any contact
-- Height: both the goal and the measure of progress, the canopy is the win condition
+- The Cobra: a pressure that never relents, it climbs nonstop, surges after each mistake, and ends the run on any contact
+- Height: both the goal and the measure of progress, the tree is endless, so the run is a race for the highest point
 - Attention: the hidden resource, since every grab spends focus that dodging would otherwise use
 
 ## Mechanics
@@ -78,9 +77,9 @@ graph TD
 
 ## Win and Lose
 
-- Win: the monkey reaches the top of the tree
-- Lose: the cobra touches the monkey, or stamina reaches zero
-- Result: either outcome ends the run and shows the final score
+- Win: none, the tree is endless and a run only ends in a loss
+- Lose: the cobra touches the monkey; an empty stamina bar only slows the climb
+- Result: the loss ends the run and shows the final height, score, and bananas collected
 
 ## Player Experience
 
