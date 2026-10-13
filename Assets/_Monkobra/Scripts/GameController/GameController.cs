@@ -17,14 +17,6 @@ public class GameController: MonoBehaviour {
     public event Action<GameState> StateChanged;
 
     /// <summary>
-    /// what ended the latest run, set before <see cref="StateChanged"/> raises
-    /// <see cref="GameState.Lost"/>
-    /// </summary>
-    public DeathCause LastDeathCause {
-        get; private set;
-    }
-
-    /// <summary>
     /// whether cobra collisions are ignored entirely, a debug cheat; warns
     /// each time it is switched on
     /// </summary>
@@ -37,12 +29,10 @@ public class GameController: MonoBehaviour {
     }
 
     // Public Methods  #########################################################
-    public void LoseGame(DeathCause cause) {
+    public void LoseGame() {
         if (State != GameState.Playing) {
             return;
         }
-
-        LastDeathCause = cause;
 
         // settle score first
         if (ScoreManager.I != null) {

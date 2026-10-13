@@ -84,7 +84,7 @@ graph LR
   Web -->|TryTrap| Struggle[SpiderWebStruggle]
   Struggle -->|IsHeld| Root
   Struggle --> Prompt[SpiderWebPrompt]
-  Game -->|StateChanged, LastDeathCause| Analytics[AnalyticsManager]
+  Game -->|StateChanged| Analytics[AnalyticsManager]
   Score -->|BananaCollected| Analytics
   Hit -->|BranchHit| Analytics
   Web -->|Encountered| Analytics
@@ -96,7 +96,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 
 | Script | Role | Detail |
 | --- | --- | --- |
-| `GameController/GameController`, `GameState`, `DeathCause` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost; `LoseGame` records a `DeathCause` | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `GameController/GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost; `LoseGame()` takes no cause, analytics infers it | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `GameController/GameBalanceConfig` | ScriptableObject holding every balance number | [Balance Design](docs/balance-doc.md) |
 | `Player/MonkeyPrefabRoot` | kinematic body: orbit, climb, stun, `IsHeld` | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/MonkeyConfig` | ScriptableObject of monkey tuning and input actions | [TDD](docs/monkobra-tdd.md#monkey-movement) |
@@ -121,7 +121,13 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment, attempts against a probability curve at the segment's ramped difficulty | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `MobFallingCobra/FallingCobra` | dormant until the monkey is near, then warning, a constant fall that slides toward the monkey's angle, and a hit capsule | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `GameController/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the one climb baseline, and maps it to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [Balance Design](docs/balance-doc.md#difficulty-follows-height) |
-| `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: one markdown file per launch in `persistentDataPath/Analytics/`, a run entry added on each game over, with death cause, death height, and Mermaid graphs (score split, height over time, stamina curve, run timeline); the file is rewritten per run so a session summary (death causes, death height histogram) stays on top, F9 starts a new session | none |
+| `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: observes the game, fills a `SessionData` & the open `RunData`, and saves the session file (one markdown file per launch in `persistentDataPath/Analytics/`) on session open, run start, banana, web, branch hit, game over, quit or pause, and every `autosaveIntervalS` (default 10 s) while a run plays; samples height & stamina every `sampleIntervalS` (default 2 s) plus at run start & end; F9 starts a new session, F10 saves a mock session file | none |
+| `Analytics/RunData` | plain data of one run: stamps, timed samples of height & stamina, status (`InProgress`, `Lost`, `Interrupted`), end, death cause, scores; also `EventStamp`, `RunSample`, `RunStatus` | none |
+| `Analytics/DeathCause`, `Analytics/DeathCauseResolver` | static: infers a lost run's cause from its stamps: a branch hit or web encounter w/i `DeathCauseWindowS` (default 2 s) before the loss, else `GreatCobra`; also the display names | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `Analytics/MockAnalyticsGenerator` | static: builds a fully mocked `SessionData` (6~9 simulated runs ending now, skill rising) & saves it as `0<stamp>-mock.md` beside the real files, live session untouched | none |
+| `Analytics/AnalyticsConfig` | ScriptableObject (`Settings/Analytics/AnalyticsConfig.asset`): restart & mock keys, run sample (height & stamina) & autosave intervals, death cause window; `AnalyticsManager` reads all tuning from it | none |
+| `Analytics/SessionData` | plain data of one session: title, app version, runs, and the death causes of `Lost` runs only | none |
+| `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry (Mermaid graphs: score split, height vs time & stamina vs time, both from the same timed samples) & the whole session file (summary of `Lost` runs: death causes pie, then bar charts of final score, highest height, death height & duration vs run, `Lost` runs only), writes the file | none |
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |
 | `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |

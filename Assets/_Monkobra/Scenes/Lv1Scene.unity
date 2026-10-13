@@ -3923,7 +3923,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e520f59043585fa448c2a99df01cd5e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnalyticsManager
-  restartSessionKey: 102
+  config: {fileID: 11400000, guid: 7d9a3e5c1b4f4a2e8c6d0f1b3a5e7c35, type: 2}
 --- !u!1 &2100000010
 GameObject:
   m_ObjectHideFlags: 0
