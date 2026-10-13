@@ -20,6 +20,8 @@
 
 - 只在自己的分支上改动，不要动 `dev` 和 `main`
 - 每做完一小步就提交（commit），然后点 `Push origin`
+- 💎 每次提交都要写清楚的提交信息（commit message），说明这一步具体做了什么，不要写 `update`、`fix`、`wip` 这类含糊的话；这些提交信息会被用来生成每位成员的 Weekly Progress
+- 一个提交只做一件事，信息用一句话讲明白改了什么、为什么改，例如 `Speed up cobra chase when player idles over 3 seconds`、`Fix spider web not despawning after touching a banana`
 
 ### 4. 提交前先关闭 Unity
 
@@ -40,7 +42,6 @@
 ### 7. 创建拉取请求（Pull Request，PR）
 
 - 点 `Create Pull Request`，目标分支（base）选 `dev`
-- 💎 PR 描述请简明扼要，几句话说清楚这个分支做了什么即可，不必冗长；这些内容会被用来提交每位成员的 Weekly Progress
 - 创建成功后会自动提示，不需要再通知任何人
 
 > [!NOTE]
