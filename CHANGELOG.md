@@ -49,6 +49,7 @@
 - falling cobra banana ambush: `FallingCobraSpawner` hangs some cobras (`fallingCobraBananaAmbushChance`) just above a banana of their segment
 - falling cobra re-hit: `fallingCobraRehitGraceS` & `fallingCobraMaxHits` tune how soon and how often one snake can drop the monkey again
 - `HitBranchDetection.ReportHit`: applies a branch-hit drop from a hazard that touched the monkey outside the sensor
+- game balancing: Great Cobra group in `GameBalanceConfig` & a playtest-driven tuning pass over every hazard curve, so one run lasts 7–8 min with the cobra pressing harder as the climb goes on (details under Changed)
 
 ### Changed
 
@@ -79,6 +80,7 @@
 - `Cobra/` scripts → house Unity style
 - cobra body thickness: `maxThicknessU` & a `thicknessProfile` curve along the body, tuned in `Lv1Scene`
 - balance retuned in `GameBalanceConfig.asset` for a 7–8 min run: ramp reaches max at 1200 u (was 500); more branches (0.3 → 0.6 chance); steady bananas, about 0.42 per segment at the base, a slight dip in the web-only stretch, 0.72 mid climb, about 1 at the top; webs from difficulty 0.05 with 3 attempts, 0.4 by 0.25, 0.6 at the top; falling cobras from difficulty 0.15, 0.4 at the top, sliding at 4 u/s; idle stamina recovery 2 → 2.5 per s; banana restore 30 → 35
+- balance pass on bananas: sparse early, a slight dip in the web-only stretch, then rising so the stamina budget holds for the whole climb, with the cobra, branch, web, and falling cobra curves tuned against it
 - `Lv1Scene` climb progress bar shows 60 u below the monkey (was 15), so the cobra marker leaves the bottom
 - `SpiderWeb` prefab: web and its trap box are 20% larger (root scale 1.5 → 1.8 on the web face)
 
