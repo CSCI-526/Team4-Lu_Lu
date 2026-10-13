@@ -1,6 +1,6 @@
 # Monkobra DEVLOG
 
-## Week 8
+## Week 8: Pre-Alpha 0.9.0
 
 - Endless Tree & Difficulty: lowest segment recycles over the top, so a run never ends; climb height maps to 0~1 difficulty driving all hazard chances. Initially fixed stack w/ linear branch count; changed to one shared curve in `GameBalanceConfig`
 - Spider Web Trap: web holds the monkey, mash Space to break free. Initially placed once at start on fixed heights; changed to per-segment rolls to fit the recycled tree
@@ -9,13 +9,17 @@
 - Fruit Outlines: 2 tiers, reachable & grabbable. Initially one outline, unclear whether a release would grab; changed to 2 materials matching the Grab System release check
 - Run Analytics: per-session markdown report w/ death causes, per-run charts, height & stamina curves; F10 generates a mock session. Initially an event log appended at game over; changed to rewrite on every save plus 10 s autosave
 
-#### Screenshots
+![Endless climb with a web high above](devlog-assets/wk8%20Screenshot%202026-10-12%20165020.png)
+*HUD: score and height (high point) top left, stamina bar bottom left, progress bar right showing the player's height relative to the great cobra. The run is infinite: the tree recycles its segments, so there is no summit*
 
-<!-- TODO add screenshots, each with a one-line caption -->
+![Monkey trapped in a spider web](devlog-assets/wk8%20Screenshot%202026-10-12%20165035.png)
+*Spider web trap: the monkey is held on contact, with a prompt and escape bar to mash Space*
 
-- endless climb at low and high difficulty
-- monkey in a spider web with escape bar
-- falling cobra mid-drop
-- HUD: stamina and progress bars
-- reachable vs grabbable fruit outlines
-- generated session report
+![Banana outlined on a branch](devlog-assets/wk8%20Screenshot%202026-10-12%20165048.png)
+*Fruit outline: reachable fruit (inside the detection zone) gets a weaker outline; grabbable fruit (under the hand, so a release grabs it) gets a stronger one*
+
+![Falling cobra above the monkey](devlog-assets/wk8%20Screenshot%202026-10-12%20165130.png)
+*Falling cobra hanging dormant above the monkey, green while asleep*
+
+![Falling cobra turned red](devlog-assets/wk8%20Screenshot%202026-10-12%20165246.png)
+*Falling cobra awake: it turns red as a warning, then drops while sliding round the trunk toward the monkey*
