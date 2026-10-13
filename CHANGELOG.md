@@ -6,14 +6,11 @@
 
 ### Added
 
-- Spider web trap in `Lv1Scene`, also in the `WebDemo` test scene: webs spawn on the upper trunk clear of branches and fruit, hold the monkey on contact, and break on rapid Space presses, with a first-trap hint and an escape bar that hide on escape or game over, and a short immunity after escaping
+##### Erik
 
 - `DTSPool`: recycles the lowest tree segment over the top as the monkey climbs, for an endless tree; deactivates an optional mock tree at runtime
 - spider web spawn in `GameBalanceConfig`'s Spider Web group: an attempt count per segment and a probability curve of the ramped difficulty, the same model as branches
 - falling cobra spawn in `GameBalanceConfig`'s Falling Cobra group: an attempt count per segment, a probability curve of the ramped difficulty, a constant fall speed, and a horizontal chase speed
-- `SpiderWebSpawner` test override: webs at a flat chance at any height, for quick checks
-- `DynamicTreeSegmentPrefabRoot.BranchesGenerated`: static event raised after a segment rolls its branches, on first `Start` and every `Restart`
-- `RampedDifficultyService.GetClimbedYDistance`: height of any y above the player's start y
 - analytics run entries end with Mermaid graphs: a score split pie, a height vs time line, and a stamina vs time line, the last two drawn from the same timed samples
 - analytics session files open with a Session Summary of lost runs: a death causes pie, then bar charts of final score, highest height, death height, and duration vs run; the file is rewritten on each save instead of appended to
 - analytics run entries record the death cause and the death height, apart from the highest height reached
@@ -25,28 +22,58 @@
 - `AnalyticsConfig` asset (`Settings/Analytics/`): analytics keys, sample & autosave intervals, and the death cause window
 - F10 saves a fully mocked session file (`MockAnalyticsGenerator`) beside the real ones, for checking the report without playing
 - `StaminaBarController.MaxStamina`: the balance config's stamina ceiling
+- `SpiderWebTrap.Encountered`: static event raised once per web, on the monkey's first body contact, trapped or not
+
+##### Yuqing Lu
+
+- Spider web trap in `Lv1Scene`, also in the `WebDemo` test scene: webs spawn on the upper trunk clear of branches and fruit, hold the monkey on contact, and break on rapid Space presses, with a first-trap hint and an escape bar that hide on escape or game over, and a short immunity after escaping
+- `SpiderWebSpawner` test override: webs at a flat chance at any height, for quick checks
+- `DynamicTreeSegmentPrefabRoot.BranchesGenerated`: static event raised after a segment rolls its branches, on first `Start` and every `Restart`
+- `RampedDifficultyService.GetClimbedYDistance`: height of any y above the player's start y
+
+##### Belle Dai
+
+- falling cobra prototype: `FallingCobra` warns, then drops on the monkey, and `FallingCobraSpawner` places it; tried in the `FallingCobraDemo` test scene
+- falling cobra spawner in `Lv1Scene`, on the active `DTSPool` object, using the pool's transform as the tree center
+
+##### Houdong Pan
+
+- scoring: `ScoreManager` adds a distance score from the highest climb to a reward score per banana, and stops once the run ends
+- `ScorePickup` on a fruit hands its points over once, `ScoreReward` & `ScoreConfig` carry the point values, banana & coconut score assets
+- `ScoreDisplay` HUD shows the live score in `Lv1Scene`
 
 ### Changed
+
+##### Erik
 
 - analytics split `AnalyticsManager` into data containers `RunData` & `SessionData`, a static `AnalyticsMarkdownWriter`, and a lean manager that observes, fills, and saves
 - `GameController.LoseGame()` takes no cause and `GameController` keeps no `LastDeathCause`; the `DeathCause` enum moved into `Analytics/`
 - analytics run entries record the highest height reached as a float `HighestHeight`, not an integer final height
+- analytics records every web encounter through `SpiderWebTrap.Encountered`, replacing a lookup of the one `SpiderWebStruggle` in the scene
 - `DynamicTreeSegmentPrefabRoot.Restart` moves a segment and re-rolls its branches, clearing the old branches and webs
 - `MonkeyPrefabRoot` exposes `IsHeld` to freeze the body in place
-- `SpiderWebSpawner` places webs on each `BranchesGenerated` instead of a one-off pass at `Start`, measures height from the player's start y instead of `TreeManager` progress, and drops a segment's old webs before rolling it again; `startProgress`, `maxWebsPerSegment`, and `spawnChance` are gone
-- `DTSPool` no longer references or calls `SpiderWebSpawner`, and warns when one sits under its mock tree
-- falling cobra contact in `FallingCobraDemo` now uses the monkey's branch-hit stun and drop instead of ending the run
 - falling cobras are rolled per tree segment like branches: `FallingCobraSpawner` listens to `BranchesGenerated`, hangs dormant cobras as segment children on a ring about the trunk, and no longer runs a global timer, a 60 u unlock, or a one-at-a-time limit
 - `FallingCobra` wakes when the monkey is within a trigger distance, falls at a constant speed while sliding round the trunk toward the monkey's live angle, and switches itself off after a fall limit
 - spider webs spawn from an attempt count and a ramped difficulty probability curve; the start climb, full-chance climb, max chance, and slot count are gone
+- `docs/work-with-git.md` asks for a short PR description of what the branch did, since it feeds each member's Weekly Progress
+
+##### Yuqing Lu
+
+- `SpiderWebSpawner` places webs on each `BranchesGenerated` instead of a one-off pass at `Start`, measures height from the player's start y instead of `TreeManager` progress, and drops a segment's old webs before rolling it again; `startProgress`, `maxWebsPerSegment`, and `spawnChance` are gone
+- `DTSPool` no longer references or calls `SpiderWebSpawner`, and warns when one sits under its mock tree
+
+##### Wenhai Dong
+
 - cobra coil fill: `CobraClimb` clones body segments so the coil has no gap
 - cobra look: bead-chain body w/ small gaps & slight taper, flat hooded head w/ eyes, raised neck, slow slither wave
 - cobra body coils ≥ 1 full loop round the trunk as a corkscrew, so dropping onto it or orbiting into it is always fatal
 - cobra coil shape tuned by `coilTurns`, `coilPitchU`, `maxSegmentGapU`, replacing per-segment angle & height spacing
 - `Cobra/` scripts → house Unity style
+- cobra body thickness: `maxThicknessU` & a `thicknessProfile` curve along the body, tuned in `Lv1Scene`
 
-- `SpiderWebTrap.Encountered`: static event raised once per web, on the monkey's first body contact, trapped or not
-- analytics records every web encounter through `SpiderWebTrap.Encountered`, replacing a lookup of the one `SpiderWebStruggle` in the scene
+##### Belle Dai
+
+- falling cobra contact in `FallingCobraDemo` now uses the monkey's branch-hit stun and drop instead of ending the run
 
 ### Deprecated
 
@@ -54,7 +81,12 @@
 
 ### Fixed
 
+##### Yuqing Lu
+
 - spider webs missing from `Lv1Scene` since the endless tree: `SpiderWebSpawner` sat on `Envs/Tree`, the mock tree `DTSPool` deactivates at runtime, so it never ran
+
+##### Wenhai Dong
+
 - cobra contact script class renamed `CobraCollisions` to match its file, so Unity can load it
 - cobra contact counts the monkey's tail & hands, not only its body; detection triggers no longer matter
 - cobra no longer retreats downward with a descending monkey, which let the monkey push it down and never touch it
@@ -62,9 +94,23 @@
 - monkey body collider height 1 → 2 to match its visible body, so contact registers from the monkey's bottom, not its middle (also reaches win zone & other triggers ~0.5 U sooner)
 - cobra no longer parks at the player's height waiting for its head to come round; the coil climbs on into the player, so body contact kills at once
 
+##### Belle Dai
+
+- falling cobra warning starts red at once and pulses from that moment, instead of from the global clock
+- falling cobra spawner reads an assigned `treeCenter` instead of `TreeManager`, so it works on the endless tree
+
 ### Security
 
 [unreleased]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v0.1.1...dev
+
+
+
+
+
+
+
+
+
 
 
 
@@ -92,6 +138,15 @@
 - unused reach tuning from `MonkeyConfig`
 
 [0.1.1]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v0.1.0...v0.1.1
+
+
+
+
+
+
+
+
+
 
 
 

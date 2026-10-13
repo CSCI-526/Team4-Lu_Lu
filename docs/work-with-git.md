@@ -40,6 +40,7 @@
 ### 7. 创建拉取请求（Pull Request，PR）
 
 - 点 `Create Pull Request`，目标分支（base）选 `dev`
+- 💎 PR 描述请简明扼要，几句话说清楚这个分支做了什么即可，不必冗长；这些内容会被用来提交每位成员的 Weekly Progress
 - 创建成功后会自动提示，不需要再通知任何人
 
 > [!NOTE]
