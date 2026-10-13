@@ -13,6 +13,7 @@ Profile settings (Pages cannot set response headers):
 - Decompression Fallback: off; tick it only if size forces compression back on
 - WebGL Template: `Default`
 - Development Build: off
+- Default Canvas: 1920×1080
 - Scenes: the global list (`Lv1Scene` only)
 
 Steps:
@@ -36,7 +37,7 @@ Steps:
 1. `File > Build Profiles`, select `ItchIO`, click Build, choose the location
 2. Zip the folder's contents, so `index.html` sits at the zip root
 3. Page settings: Kind of project `HTML`, tick "played in the browser"
-4. Embed in page at 960×600 with the fullscreen button; tick Mobile Friendly only if touch works
+4. Embed in page at 1920×1080 with the fullscreen button; tick Mobile Friendly only if touch works
 5. Set visibility to Draft while testing, then Public
 6. Re-upload: upload the new zip, delete the old one
 7. Check: load in a private window, watch the devtools Network tab
