@@ -55,6 +55,7 @@
 - falling cobras are rolled per tree segment like branches: `FallingCobraSpawner` listens to `BranchesGenerated`, hangs dormant cobras as segment children on a ring about the trunk, and no longer runs a global timer, a 60 u unlock, or a one-at-a-time limit
 - `FallingCobra` wakes when the monkey is within a trigger distance, falls at a constant speed while sliding round the trunk toward the monkey's live angle, and switches itself off after a fall limit
 - spider webs spawn from an attempt count and a ramped difficulty probability curve; the start climb, full-chance climb, max chance, and slot count are gone
+- `docs/work-with-git.md` asks for a short PR description of what the branch did, since it feeds each member's Weekly Progress
 
 ##### Yuqing Lu
 

@@ -102,6 +102,7 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - After the merge: ask the user to reopen Unity and confirm the scene works before the final commit and push
 - Dev scenes: a personal copy of `Lv1Scene.unity` under `Assets/_Monkobra/Scenes/` is allowed for experiments; before the final merge the feature must exist in `Lv1Scene.unity`, never only in the personal scene
 - PR: `gh pr create --base dev`; nothing further is needed after the PR is created
+- PR description: a few plain sentences on what the branch did, no padding; it feeds each member's Weekly Progress
 
 ## Documentation Maintenance
 
