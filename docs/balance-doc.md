@@ -84,4 +84,4 @@ Because bananas also cost focus to grab ([Grab System](grab-doc.md)), raising ba
 
 - Every hazard shares one ramp, so a hazard cannot begin at its own height without reshaping its curve to stay flat until then
 - A freshly created `GameBalanceConfig` defaults differ from the tuned asset, so a recreated asset plays differently until retuned
-- Difficulty ignores how close the chasing cobra is, see the [Game Design Document](monkobra-gdd.md#difficulty)
+- Difficulty ignores how close the chasing cobra is; only the cobra's own surge reacts to the player, speeding up after each hit or web and stacking with repeated mistakes, see [Mobs](mob-doc.md#motion)

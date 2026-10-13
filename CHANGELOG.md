@@ -18,6 +18,13 @@
 - analytics samples stamina every `staminaSampleIntervalS` seconds (default 2) while a run plays
 - `DeathCause` enum and `GameController.LastDeathCause`, set by `LoseGame(DeathCause)` before `Lost` is raised
 - `StaminaBarController.MaxStamina`: the balance config's stamina ceiling
+- great cobra base speed rises with the ramped difficulty, from `cobraBaseSpeedCurve` (3.4 to 4.0 u/s)
+- `Lv1Scene` climb progress bar shows 60 u below the monkey (was 15), so the cobra marker leaves the bottom
+- great cobra mistake surge: `CobraClimb` speeds up after each hit or web, stacking faster and longer with repeated mistakes, possibly past the monkey's up speed, tuned in `GameBalanceConfig`'s new Great Cobra group
+- falling cobra reach wake: a dormant falling cobra wakes from farther away while the monkey reaches for a banana
+- falling cobra banana ambush: `FallingCobraSpawner` hangs some cobras just above a banana of their segment
+- surge cue: on `CobraClimb.CatchUpStarted`, `ProgressBarRoot` shows "The cobra is speeding up!" (×N when stacked) at the screen center, sized to the screen height, for a moment, and flashes the cobra marker red while the surge lasts
+- `HitBranchDetection.ReportHit`: applies a branch-hit drop from a hazard that touched the monkey outside the sensor
 
 ### Changed
 
@@ -34,6 +41,7 @@
 - cobra body coils ≥ 1 full loop round the trunk as a corkscrew, so dropping onto it or orbiting into it is always fatal
 - cobra coil shape tuned by `coilTurns`, `coilPitchU`, `maxSegmentGapU`, replacing per-segment angle & height spacing
 - `Cobra/` scripts → house Unity style
+- balance retuned for a 7–8 min run: ramp reaches max at 1200 u (was 500), more branches, fewer bananas early and a supply that grows with height (about 0.45 per segment at the base, 0.72 mid climb, 0.84 at the top), webs from difficulty 0.08 with 3 attempts, falling cobras from difficulty 0.3 sliding at 4 u/s
 
 - `SpiderWebTrap.Encountered`: static event raised once per web, on the monkey's first body contact, trapped or not
 - analytics records every web encounter through `SpiderWebTrap.Encountered`, replacing a lookup of the one `SpiderWebStruggle` in the scene
@@ -43,6 +51,12 @@
 ### Removed
 
 ### Fixed
+
+- falling cobra drops the monkey on contact with any part of it, not only the branch sensor; a body or tail contact used to switch the hit off without any drop
+- a monkey still inside a falling cobra after its hit shape rests (stun plus `fallingCobraRehitGraceS`) is dropped again, up to `fallingCobraMaxHits` drops per snake; the snake stops homing in after its first hit so the monkey can dodge sideways
+- `GameBalanceConfig.asset`: spider webs start earlier and ramp faster (from 0.05 difficulty, 0.4 at 0.25), and falling cobras start at 0.15 difficulty instead of 0.3, so the web-only stretch is short and busier; banana chance dips slightly over that stretch (0.14 at the start, 0.13 at 0.12, back to 0.16 by 0.3)
+- `GameBalanceConfig.asset`: idle stamina recovery 2 to 2.5 per s, banana restore 30 to 35
+- `SpiderWeb` prefab: web and its trap box are 20% larger (root scale 1.5 to 1.8 on the web face)
 
 - spider webs missing from `Lv1Scene` since the endless tree: `SpiderWebSpawner` sat on `Envs/Tree`, the mock tree `DTSPool` deactivates at runtime, so it never ran
 - cobra contact script class renamed `CobraCollisions` to match its file, so Unity can load it
