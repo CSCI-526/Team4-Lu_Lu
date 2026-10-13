@@ -79,7 +79,7 @@ stateDiagram-v2
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, interact reloads the scene after `restartInputDelay` |
 
-`LoseGame()` runs once, from Playing only: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` (default 2 s) before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
+`LoseGame()` runs once, from Playing only: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
 Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and `GameController.State != GameState.Playing`. Current checkers: `ArmRoot.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`, `SpiderWebStruggle`.
 
@@ -117,14 +117,6 @@ The balance values in each section below are the current ones; change them in th
 - Stun: after a branch hit the input is ignored and the body falls a set distance ([Mobs](mob-doc.md#hit-penalty))
 - Stamina Cost: each step reports upward and sideways distance to `StaminaBarController.DrainByMovement`. The stun fall and descending cost nothing
 
-| Setting | Value |
-| --- | --- |
-| Climb Speed Up | 6 u/s |
-| Climb Speed Down | 12 u/s |
-| Orbit Speed | 50 deg/s |
-| Acceleration | 20 u/s² |
-| Deceleration | 30 u/s² |
-
 Climb speeds come from `Settings/GameBalanceConfig.asset`. Orbit speed, acceleration, and deceleration come from `Settings/_Shared/MonkeyConfig.asset`, which also holds the arm stroke and reach tuning covered by the [Grab System](grab-doc.md#tuning).
 
 ## Tree
@@ -144,16 +136,7 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`, whic
 - Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways
 - Restore: `AddStaminaByFruit` adds the per-banana amount, capped at the maximum ([Grab System](grab-doc.md#on-a-successful-grab))
 - Idle Recovery: `MonkeyPrefabRoot` adds `GameBalanceConfig.IdleStaminaRecoveryPerS` per second while no move key is pressed
-- Depletion: reaching 0 does not end the run: `MonkeyPrefabRoot` scales upward climb speed only by `GameBalanceConfig.ExhaustedSpeedMultiplier` (0.2) until stamina is above 0 again
-
-| Setting | Value |
-| --- | --- |
-| Max Stamina | 100 |
-| Timer Drain | 10 per 10 s |
-| Restore Per Banana | 35 |
-| Idle Recovery | 2.5 per s |
-| Upward Cost | 0.5 per u |
-| Sideways Cost | 0.3 per u |
+- Depletion: reaching 0 does not end the run: `MonkeyPrefabRoot` scales upward climb speed only by `GameBalanceConfig.ExhaustedSpeedMultiplier` until stamina is above 0 again
 
 All values live in `Settings/GameBalanceConfig.asset`.
 
@@ -165,12 +148,6 @@ All values live in `Settings/GameBalanceConfig.asset`.
 - Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups
 - Gate: `CanScore` is true only after start, before `EndRun`, while unpaused, and while the game is not over
 - Display: `ScoreDisplay` shows the total on the HUD and on the lose panel
-
-| Setting | Value |
-| --- | --- |
-| Points Per Meter | 1 |
-| World Units Per Meter | 0.1 |
-| Points Per Banana | 100 |
 
 All values live in `Settings/GameBalanceConfig.asset`; `ScorePickup` carries no reward asset of its own.
 
@@ -194,7 +171,7 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 | Element | Script | Shows |
 | --- | --- | --- |
 | Stamina Bar | `UI/StaminaBarController` | current stamina |
-| Climb Progress | `UI/ProgressBarRoot` | a window `windowSizeY` (60 u in `Lv1Scene`) tall below the monkey, with a marker for how near the cobra's head is |
+| Climb Progress | `UI/ProgressBarRoot` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is |
 | Score | `UI/ScoreDisplay` | total score, on the HUD and the lose panel |
 | Height | `UI/HeightDisplayController` | height climbed since game start, in world units |
 | Screens | `UI/ScreensManager` | tutorial and lose panels |

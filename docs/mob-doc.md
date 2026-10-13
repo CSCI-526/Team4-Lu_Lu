@@ -33,11 +33,7 @@ A branch is a prefab (`Prefabs/Environment/BranchWithFruit`) holding a `Branch`-
 3. a second hit during the stun is ignored, so overlapping branches cost one drop, not two
 4. the stun fall is involuntary, so it drains no movement stamina
 
-| Setting | Value | Asset |
-| --- | --- | --- |
-| Stun Duration | 0.75 s | `Settings/GameBalanceConfig.asset` |
-| Drop Distance | 10 u | 〃 |
-| Drop Speed | 8 u/s | 〃 |
+The stun duration and drop distance and speed are in `Settings/GameBalanceConfig.asset`.
 
 ### Placement
 
@@ -47,14 +43,7 @@ A branch is a prefab (`Prefabs/Environment/BranchWithFruit`) holding a `Branch`-
 - Position: a random angle round the trunk and a random height in the segment, at a fixed radius, retried until a spot keeps the minimum separation from branches already placed on that segment, else the last try is accepted
 - Banana: `DynamicTreeSegmentPrefabRoot` samples `bananaSpawnProbabilityCurve` (`GameBalanceConfig`) at each placed branch's ramped difficulty and passes the chance to `BranchWithScriptRoot.Initialize`, which rolls whether the branch bears a banana, then randomizes the stem length and banana rotation
 
-| Setting | Value | Asset |
-| --- | --- | --- |
-| Attempts Per Segment | 10 | `Settings/GameBalanceConfig.asset` |
-| Branch Chance | 0.3 at difficulty 0, 0.6 at difficulty 1 | 〃 |
-| Banana Chance | about 0.13 to 0.17 across the climb | 〃 |
-| Branch Radius | 6.6 u | `Settings/Mob/BranchFruitPlacementConfig.asset` |
-| Min Separation | 3 u | 〃 |
-| Placement Retries | 30 | 〃 |
+Attempt counts and the branch and banana chance curves are in `Settings/GameBalanceConfig.asset`; branch radius, separation, and placement retries are in `Settings/Mob/BranchFruitPlacementConfig.asset`.
 
 ## Cobra
 
@@ -65,24 +54,14 @@ The chasing cobra is code-built geometry on one root: `CobraClimb` poses the bod
 - Path: the head orbits the trunk axis (`pathCenter`) at a fixed radius while climbing, and the body trails it as a corkscrew
 - Never Down: the head only climbs, so a monkey that descends runs into the coil instead of pushing it down
 - Closing In: when the coil is within `slowDownDistance` below the monkey, the climb slows to a minimum share of its speed for suspense, but never stops
-- Base Speed: outside a surge the cobra climbs at `cobraBaseSpeedCurve` (`GameBalanceConfig`) sampled at the monkey's ramped difficulty, 3.4 u/s at the start, 3.9 mid climb, 4.0 at full difficulty, set against the monkey's real average climb (dodging, grabbing, and resting make it well under its 6 u/s top speed), so a clean run keeps a lead early and the chase tightens late
-- Mistake Surge: each mistake of the monkey (a branch or falling cobra hit, counted once per stun, or any web trap) adds `cobraSurgePerMistakeS` of surge time, capped at `cobraMaxSurgeS`, and one stack. While a surge runs the cobra climbs at its base speed plus `cobraSurgeSpeedPerMistakeU` per stack, capped at `cobraMaxSurgeSpeedU`, which may pass the monkey's up speed, and it skips the slow-down near the monkey. When the surge time runs out the stacks reset. The speed eases at `cobraSpeedChangeRateU`; all of these live in `GameBalanceConfig`, wired through `balanceConfig` on the `GreatCobra` prefab's `CobraClimb`. Each stacked mistake raises `CatchUpStarted`: `ProgressBarRoot` shows "The cobra is speeding up!" (with ×N from the 2nd stack) at the screen center, sized to the screen height, for 1.5 s, fading out, and flashes the cobra marker red while the surge lasts
+- Base Speed: outside a surge the cobra climbs at `cobraBaseSpeedCurve` (`GameBalanceConfig`) sampled at the monkey's ramped difficulty, set against the monkey's real average climb (dodging, grabbing, and resting keep it well under its top speed), so a clean run keeps a lead early and the chase tightens late
+- Mistake Surge: each mistake of the monkey (a branch or falling cobra hit, counted once per stun, or any web trap) adds `cobraSurgePerMistakeS` of surge time, capped at `cobraMaxSurgeS`, and one stack. While a surge runs the cobra climbs at its base speed plus `cobraSurgeSpeedPerMistakeU` per stack, capped at `cobraMaxSurgeSpeedU`, which may pass the monkey's up speed, and it skips the slow-down near the monkey. When the surge time runs out the stacks reset. The speed eases at `cobraSpeedChangeRateU`; all of these live in `GameBalanceConfig`, wired through `balanceConfig` on the `GreatCobra` prefab's `CobraClimb`. Each stacked mistake raises `CatchUpStarted`: `ProgressBarRoot` shows "The cobra is speeding up!" (with ×N from the 2nd stack) at the screen center, sized to the screen height, fading out, and flashes the cobra marker red while the surge lasts
 - Coil: the body spans at least one full loop, and `Awake` clones the last segment until no gap along the coil exceeds `maxSegmentGapU`, so the monkey cannot slip through by orbiting
 - Look: a chain of rounded beads with small gaps, slightly tapered, a flat hooded head with primitive-sphere eyes, a raised neck, and a slow slither wave. The hit shape stays gapless even where the visual has gaps
 
-| Setting (`Lv1Scene`) | Value |
-| --- | --- |
-| Orbit Radius | 5.5 u |
-| Start Height | -5 u |
-| Fallback Climb Speed | 3 u/s, used only without a balance asset |
-| Orbit Speed | 45 deg/s, clockwise |
-| Coil Turns | 1.1 |
-| Coil Pitch | 1.5 u per loop |
-| Max Segment Gap | 0.4 u |
-| Slow Down Distance | 2 u |
-| Min Speed Share Near Player | 0.3 |
+The cobra's shape, orbit, coil, and slow-down values are fields on `CobraClimb`, set on the `GreatCobra` prefab.
 
-For scale, the monkey climbs at up to 6 u/s ([Monkey Movement](monkobra-tdd.md#monkey-movement)), so it can outrun the cobra, but only by spending stamina.
+The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)) is above the cobra's base speed, so it can outrun the cobra, but only by spending stamina.
 
 ### Contact
 
@@ -102,26 +81,14 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 - Cleanup: cobras are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous cobras too
 - Concurrency: several can be live at once, one roll per segment; frequency follows climb height and the curve, not a clock
 
-| Setting | Value | Home |
-| --- | --- | --- |
-| Attempts Per Segment | 2 | `Settings/GameBalanceConfig.asset` |
-| Spawn Probability Curve | 0 up to difficulty 0.15, then rising to 0.4 at difficulty 1 | 〃 |
-| Fall Speed | 6 u/s | 〃 |
-| Horizontal Chase Speed | 4 u/s along the ring | 〃 |
-| Reach Wake Distance | 20 u | 〃 |
-| Banana Ambush Chance | 0.5 | 〃 |
-| Spawn Radius | about the monkey's orbit radius (5.88 u) | `FallingCobraSpawner` on `DTSPool` |
-| Min Cobra Separation | 4 u | 〃 |
-| Trigger Distance | 12 u | falling cobra prefab |
-| Max Fall Distance | 30 u | 〃 |
-| Ambush Height Above Banana | 3 to 6 u | `FallingCobraSpawner` on `DTSPool` |
+Fall and chase speeds, the wake distance, and the ambush chance are in `Settings/GameBalanceConfig.asset`; spawn radius, separation, and ambush height are on `FallingCobraSpawner` on `DTSPool`; trigger and fall distances are on the falling cobra prefab.
 
 ### Behavior
 
 - Dormant: it hangs still, in its normal color, until the monkey is within the trigger distance (3D), or within the farther reach wake distance while either arm reaches for a banana, and the cobra is at or above the monkey's height, so a grab is the riskiest moment to stand under a cobra
-- Warning: it then pulses red against its green base for 1.25 s at 4 Hz and has no hit shape
+- Warning: it then pulses red against its green base for a short warning and has no hit shape
 - Fall: it clears the warning color, then drops at a constant speed with one capsule trigger tagged `Branch` covering the whole snake, while every segment collider is switched off. Each physics step it re-reads the monkey's angle about the tree and slides round the trunk toward it by the shortest arc at the horizontal speed, never overshooting, so it keeps tracking a monkey that orbits
-- Hit: any part of the snake touching any part of the monkey applies the usual shake, stun, and drop. The capsule is tagged `Branch`, so the monkey's branch sensor handles its own contact; a contact on the body, tail, or a hand calls `HitBranchDetection.ReportHit` for the same drop. After a hit the snake stops homing in and its hit capsule rests for the stun plus `fallingCobraRehitGraceS` (1 s), so the monkey can dodge sideways; a monkey still inside once it returns is dropped again, up to `fallingCobraMaxHits` (2) drops per snake
+- Hit: any part of the snake touching any part of the monkey applies the usual shake, stun, and drop. The capsule is tagged `Branch`, so the monkey's branch sensor handles its own contact; a contact on the body, tail, or a hand calls `HitBranchDetection.ReportHit` for the same drop. After a hit the snake stops homing in and its hit capsule rests for the stun plus `fallingCobraRehitGraceS`, so the monkey can dodge sideways; a monkey still inside once it returns is dropped again, up to `fallingCobraMaxHits` drops per snake
 - Off: after falling the max fall distance it switches itself off; the segment's restart destroys it later
 
 ## Spider Web
@@ -136,11 +103,7 @@ A static trap on the trunk that holds the monkey in place while the cobra keeps 
 - Spot: a web lies flat on its segment's bark facing outward. A spot is dropped if it is too close to another live web, or its trigger volume (plus clearance) overlaps a branch or fruit. After the retry cap the web is skipped rather than placed overlapping
 - Cleanup: webs are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous webs too, destroying any still active, so none linger and none double up. A web removed under a held monkey frees it
 
-| Setting | Value | Asset |
-| --- | --- | --- |
-| Attempts Per Segment | 3 | `Settings/GameBalanceConfig.asset` |
-| Spawn Probability Curve | 0 up to difficulty 0.05, 0.4 at 0.25, 0.6 at 1 | 〃 |
-| Min Web Separation | 4 u | `SpiderWebSpawner` on `Envs/DTSPool` |
+The attempt count and spawn probability curve are in `Settings/GameBalanceConfig.asset`; the minimum separation is on `SpiderWebSpawner` on `Envs/DTSPool`.
 
 The curve is the only gate: webs appear wherever it is above 0, and the ramped difficulty is 0 until the climb reaches the start of `rampedDifficultyCurve`.
 
@@ -152,17 +115,13 @@ The curve is the only gate: webs appear wherever it is above 0, and the ramped d
 4. Break Free: a full bar removes the web, unfreezes the body, and grants brief immunity to every web. Interact stays off until that immunity ends, so leftover presses do not fire a grab
 5. Prompt: `SpiderWebPrompt` shows a hint on the first trap per scene load and the escape bar on every trap, and hides both on escape or game over
 
-| Setting | Value |
-| --- | --- |
-| Progress Per Press | 0.12 (9 presses from empty) |
-| Decay While Idle | 0.35 per s |
-| Immunity After Escape | 1 s |
+The escape progress per press, its decay while idle, and the immunity after escaping are fields on `SpiderWebStruggle`.
 
 The struggle suspends interact because of a shared Space binding, see [Input](monkobra-tdd.md#input), and freezes while the game is paused or over.
 
 ### Testing
 
-Webs are in `Lv1Scene` and follow the web probability curve. For a quick test select `Envs/DTSPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at Test Spawn Chance (1) per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/GameBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
+Webs are in `Lv1Scene` and follow the web probability curve. For a quick test select `Envs/DTSPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Spawn Chance per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/GameBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
 
 ## Known Gaps
 
