@@ -1,16 +1,33 @@
 # Monkobra CONTEXT
 
+Descriptive knowledge of this repository for agents and developers.
+
+- Belongs Here: what the system is, ie architecture, domain model, API surface, patterns, known gaps; only what the code cannot show, as it stands, never its history
+- Size: stay lean for the context window; when the file grows, move detail to `docs/` or cut it
+- Upkeep: update in the same change that moves architecture, patterns, commands, or environment variables
+- Structure: follow the existing sections; keep every statement true for every contributor
+- Belongs in `AGENTS.md`: prescriptive rules for agents, ie commands, conventions, constraints, do/don't
+- Belongs in `docs/`: system documentation for users and agents alike; link it from here, never grow this file to hold it
+- Local Layer: put machine-specific or personal context in `CONTEXT.local.md`; create it if missing, never commit it
+
 ## Project Overview
 
-Monkobra is a 3D vertical upward-scrolling game: a monkey climbs a tall tree, chased by a cobra, and grabs bananas to restore stamina. It descends from a paired prototype (`kami-lel/usc-csci-526-paired-prototype`).
+Monkobra is a Unity course project (USC CSCI-526, Fall 2026) descended from a paired prototype (`kami-lel/usc-csci-526-paired-prototype`). Where each kind of knowledge lives:
 
-| Aspect | Value |
+| Topic | Home |
 | --- | --- |
-| Engine | Unity 6 (`6000.3.22f1`), URP |
-| Packages in play | Input System, Cinemachine (camera views, impulse shake), uGUI |
-| Genre | 3D obstacle-running (*Temple Run 2*, *Subway Surfers*, *Minion Rush*) |
-| Course | USC CSCI-526, Fall 2026 |
-| Team | Yuqing Lu, Yangyi Lu (Erik) |
+| Concept, pillars, mechanics, difficulty intent | [Game Design Document](docs/monkobra-gdd.md) |
+| Stack, scenes, run lifecycle, monkey, tree, stamina, score, input, UI, conventions | [Technical Design Document](docs/monkobra-tdd.md) |
+| Cobra, falling cobra, branches, spider webs, touch outcomes | [Mobs](docs/mob-doc.md) |
+| Detection zones, reach, release check, camera swap, outlines | [Grab System](docs/grab-doc.md) |
+| Why difficulty follows height, the roll model, the single balance asset | [Balance Design](docs/balance-doc.md) |
+| The run from start to loss, as one diagram | [Gameplay Loop](docs/gameplay-loop-doc.md) |
+| Controls, setup | [README](README.md) |
+| Git flow for teammates (Chinese) | [Work with Git](docs/work-with-git.md) |
+| The three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows), Player Settings, deploys | [Build](docs/build-doc.md) |
+| Agent rules | [AGENTS.md](AGENTS.md) |
+
+This file is the script index and the map of how the pieces connect. Behavior and numbers live in the documents above, never here.
 
 ## Repository Layout
 
@@ -20,13 +37,17 @@ monkobra/
 ├── AGENTS.md          agent rules
 ├── CONTEXT.md         this file
 ├── CHANGELOG.md       version history, plus open triage tags in a comment
+├── docs/              design, technical, mob, grab, balance, gameplay loop, build, and git documents
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
-│   │   ├── Scenes/    Lv1Scene (main), CobraDemo (standalone cobra test)
-│   │   ├── Scripts/   Cobra/, Environment/, Player/, UI/, GameController, GameConfig
-│   │   ├── Prefabs/   Monkey, Environment/ (tree, branch), UI/StaminaBar
-│   │   ├── Material/  Environment/, Player/
-│   │   └── Settings/  tuning assets (MonkeyConfig, GameConfig, BranchFruitPlacementConfig), _Shared/ URP assets
+│   │   ├── Scenes/    Lv1Scene
+│   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, Scoring/, UI/
+│   │   ├── Prefabs/   Environment/, Mob/, Player/, UI/
+│   │   ├── Materials/ Environment/, Mob/, Player/
+│   │   ├── Input/     InputSystem_Actions
+│   │   ├── Shaders/   Environment/FruitOutline (inverted-hull Shader Graph)
+│   │   └── Settings/  GameBalanceConfig, Mob/ placement, _Shared/ URP assets and MonkeyConfig
+│   ├── TextMesh Pro/  imported TMP essentials, not authored
 │   └── Readme.asset   Unity template leftover
 ├── Monkobra/          committed WebGL export served by GitHub Pages
 ├── Packages/          manifest & lock
@@ -35,18 +56,7 @@ monkobra/
 
 The repository root is the Unity project root. `Library/`, `Temp/`, `Logs/`, `UserSettings/`, `*.csproj`, and `*.slnx` are ignored.
 
-## Gameplay Model
-
-| Element | Behavior | Status |
-| --- | --- | --- |
-| Monkey | kinematic body: vertical input ramps a climb speed along world Y, horizontal input orbits the trunk at a fixed radius | implemented |
-| Arms | `ArmRoot` drives a `ConfigurableJoint` per arm: an alternating hand-over-hand stroke while move input is held, or a reach that locks its aim at press and only stretches, with the hand reporting its own contacts | implemented |
-| Tree | stack of static and dynamic trunk segments under a `TreeTop`, each dynamic segment decorated with branches | implemented, finite height |
-| Branch hit | camera shake, then stun (input ignored) while the monkey drops a set distance, all tuned in `MonkeyConfig` | implemented |
-| Cobra | orbits and climbs the trunk on its own, trigger contact calls `GameController.LoseGame` | implemented |
-| Stamina | `StaminaBar` slider drains on a timer and by movement (`MonkeyPrefabRoot` calls `DrainByMovement` each step: climbing costs most, orbiting less, descending and the stun fall nothing), `AddStaminaByFruit` restores a fixed amount, budget, rates and fruit restore come from `GameConfig` | grabs restore it, not yet tied to hits |
-| Grab | hold the interact action: camera swaps to a side view and the arm stretches toward the newest fruit at `ReachExtendSpeedU`; release grabs it iff the hand collider overlaps the fruit at that instant, else a miss (too short, or stretched past it) | grab implemented, the fruit is switched off and `ArmRoot` calls `StaminaBar.I.AddStaminaByFruit` |
-| Win, lose | `GameController.WinGame` and `LoseGame` end the run once: `ScreensManager` shows the win or lose panel and time freezes. Triggers: win zone (`WinZoneHandler`, `MonkeyPrefabRoot`), cobra contact, stamina at 0 | implemented |
+## How the Pieces Connect
 
 ```mermaid
 graph LR
@@ -59,59 +69,82 @@ graph LR
   Hit --> Shake[Cinemachine impulse]
   Zones[DetectionZone x2] --> Fruit[UpwardFruitDetection]
   Fruit --> Cam[CameraRigManager]
+  Fruit --> Outline[FruitOutlineListener]
+  Arm -->|TryCollect| Pickup[ScorePickup]
+  Pickup --> Score[ScoreManager]
+  Score --> ScoreUI[ScoreDisplay]
   Cobra[CobraCollisions] --> Game[GameController]
-  Stamina[StaminaBar] --> Game
+  Stamina[StaminaBarController] --> Game
   Game --> Screens[ScreensManager]
+  Game -->|EndRun| Score
+  Pool[DTSPool] -->|Restart| Segment[DynamicTreeSegmentPrefabRoot]
+  Segment -->|BranchesGenerated| Spawner[SpiderWebSpawner]
+  Segment -->|BranchesGenerated| CobraSpawner[FallingCobraSpawner]
+  CobraSpawner --> FallCobra[FallingCobra]
+  Spawner --> Web[SpiderWebTrap]
+  Web -->|TryTrap| Struggle[SpiderWebStruggle]
+  Struggle -->|IsHeld| Root
+  Struggle --> Prompt[SpiderWebPrompt]
+  Game -->|StateChanged| Analytics[AnalyticsManager]
+  Score -->|BananaCollected| Analytics
+  Hit -->|BranchHit| Analytics
+  Web -->|Encountered| Analytics
 ```
 
-## Systems & Key Scripts
+## Script Index
 
-All under `Assets/_Monkobra/Scripts/`.
+All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 
-| Script | Role |
-| --- | --- |
-| `GameController` | scene singleton (`I`), owns the win or lose end state, freezes time |
-| `GameConfig` | ScriptableObject of game-wide tuning: max stamina, drain amount and interval, stamina per fruit, stamina per unit climbed and per unit orbited. Asset at `Settings/GameConfig.asset`, read by `StaminaBar` |
-| `Environment/TreeManager` | singleton (`I`) exposing tree `MinY`, `MaxY` for height-to-progress mapping |
-| `Environment/DynamicTreeSegmentPrefabRoot` | on `Start`, places Branch With Fruit prefabs on itself, count scaled by climb progress |
-| `Environment/BranchFruitPlacementConfig` | ScriptableObject of shared placement tuning: branch counts, radius, separation, retry cap. Asset at `Settings/` |
-| `Environment/BranchWithScriptRoot` | decides per branch whether it bears a banana, then shows or hides the fruit children |
-| `Player/MonkeyPrefabRoot` | movement, branch-hit stun and drop |
-| `Player/ArmRoot` | one arm's Rigidbody and `ConfigurableJoint`, sitting at the hand end: climbs a stroke cycle on move input, or on interact locks its aim at the newest fruit and stretches out, grabbing on release iff the hand overlaps the fruit. Reports the hand's live contacts. Writes only the joint's drive targets, never its configuration |
-| `Player/MonkeyConfig` | ScriptableObject of all shared monkey tuning: arm stroke, reach speed, climb and orbit speeds, branch-hit stun, and the move and interact actions the body and arms read |
-| `Player/HitBranchDetection` | trigger on tag `Branch`, raises `BranchHit`, fires the camera impulse |
-| `Player/UpwardFruitDetection` | singleton (`I`), `ReachForLeft` and `ReachForRight` from tag `FruitCollider` overlaps |
-| `Player/DetectionZone` | side-tagged trigger volume that forwards enter and exit events |
-| `Player/CameraRigManager` | swaps behind, look-left, look-right cameras by Cinemachine priority |
-| `Cobra/CobraClimb` | spiral path around `pathCenter`, body segments trail the head |
-| `Cobra/CobraCollisions` | trigger enter calls `GameController.LoseGame` |
-| `UI/StaminaBar` | singleton (`I`), slider drained on a timer and by `DrainByMovement`, loses the game at 0, `AddStaminaByFruit` restores it on a grab |
-| `Environment/WinZoneHandler` | win-zone trigger, calls `GameController.WinGame` on the player |
-| `UI/ScreensManager` | singleton (`I`), shows the win or lose panel |
-| `UI/ProgressBarRoot` | player-height progress scrollbar |
-
-## Patterns & Conventions
-
-- Singletons are scene-scoped and self-destroy the duplicate component only: `GameController.I`, `ScreensManager.I`, `TreeManager.I`, `UpwardFruitDetection.I`, `StaminaBar.I`
-- A consumer that may start before its singleton reads it in `Start`, not `Awake`, so Awake order never matters
-- Nothing about the monkey is mass or gravity driven: the body is kinematic and `MonkeyPrefabRoot` writes its position and rotation outright, so no arm joint or collision can move it, while each `ArmRoot` is posed purely by its joint drives, forces gravity off on its own Rigidbody, and ignores collisions with the body's colliders so a hand never reports the monkey itself
-- Detection scripts forward trigger events (`Entered`, `Exited`, `BranchHit`) rather than calling their consumers directly
-- Trigger matching relies on tags: `Branch`, `FruitCollider`
-- Input arrives through `InputActionReference` fields, each script enables and disables its own action, and the arms take theirs from `MonkeyConfig` so both read one action
-- Scripts guard required inspector fields in `Awake` with a logged error naming the field
-- Tuning values stay in serialized fields, and shared tuning sits in a ScriptableObject: `MonkeyPrefabRoot` and `ArmRoot` hold only wiring references and which side an arm is, every number and the input action come from `MonkeyConfig`, while game-wide numbers such as stamina come from `GameConfig`
-- Two coding styles coexist: the newer scripts (`Environment/`, `Player/`, `GameController`) follow the house Unity style, while `Cobra/` is an older contribution still in the template style
-- The core tension is escape vs. sustain: grabbing slows the monkey's reactions, so every pickup risks a branch or cobra collision
+| Script | Role | Detail |
+| --- | --- | --- |
+| `GameController/GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost; `LoseGame()` takes no cause, analytics infers it | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `GameController/GameBalanceConfig` | ScriptableObject holding every balance number | [Balance Design](docs/balance-doc.md) |
+| `Player/MonkeyPrefabRoot` | kinematic body: orbit, climb, stun, `IsHeld` | [TDD](docs/monkobra-tdd.md#monkey-movement) |
+| `Player/MonkeyConfig` | ScriptableObject of monkey tuning and input actions | [TDD](docs/monkobra-tdd.md#monkey-movement) |
+| `Player/ArmRoot` | one arm: climb stroke, reach, release check | [Grab](docs/grab-doc.md#reach-and-release) |
+| `Player/DetectionZone` | side-tagged trigger forwarding enter and exit | [Grab](docs/grab-doc.md#detection) |
+| `Player/UpwardFruitDetection` | singleton, reachable and grabbable fruit | [Grab](docs/grab-doc.md#detection) |
+| `Cameras/CameraRigManager` | swaps the three Cinemachine cameras | [Grab](docs/grab-doc.md#camera) |
+| `Cameras/CameraLookUp` | on the behind camera: tilts the aim point up while climbing | none |
+| `Player/HitBranchDetection` | branch sensor: raises `BranchHit`, shakes the camera; `ReportHit` applies the same drop for a hazard that touched the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
+| `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis; its `MinY` and `MaxY` are no longer read | [TDD](docs/monkobra-tdd.md#tree) |
+| `Environment/DynamicTreeSegmentPrefabRoot` | places branches on a segment, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
+| `Environment/DTSPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |
+| `Environment/BranchFruitPlacementConfig` | ScriptableObject of branch placement | [Mobs](docs/mob-doc.md#placement) |
+| `Environment/BranchWithScriptRoot` | decides whether a branch bears a banana | [Grab](docs/grab-doc.md#fruit-supply) |
+| `Environment/FruitOutlineListener` | two-tier banana outline | [Grab](docs/grab-doc.md#feedback) |
+| `MobSpiderWeb/SpiderWebSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, rolls webs on that segment's trunk, attempts against a probability curve at the segment's ramped difficulty | [Mobs](docs/mob-doc.md#placement-1) |
+| `MobSpiderWeb/SpiderWebTrap` | web prefab root with one deepened trigger box | [Mobs](docs/mob-doc.md#trap-and-escape) |
+| `MobSpiderWeb/SpiderWebStruggle` | on the monkey: trap state, escape bar, immunity | [Mobs](docs/mob-doc.md#trap-and-escape) |
+| `MobSpiderWeb/SpiderWebBuilder` | `Build Web` context menu that builds the web strands out of cubes, a one-off authoring aid | none |
+| `MobGreatCobra/CobraClimb` | chasing cobra path, coil, look, and balance-driven base speed with a stacking mistake surge (raises `CatchUpStarted`) | [Mobs](docs/mob-doc.md#cobra) |
+| `MobGreatCobra/CobraCollisions` | cobra contact calls `LoseGame` | [Mobs](docs/mob-doc.md#contact) |
+| `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment, attempts against a probability curve at the segment's ramped difficulty, some ambushing just above a banana | [Mobs](docs/mob-doc.md#falling-cobra) |
+| `MobFallingCobra/FallingCobra` | dormant until the monkey is near (farther while it reaches for a banana), then warning, a constant fall that slides toward the monkey's angle, and a hit capsule that drops the monkey on any-part contact, at most twice per snake | [Mobs](docs/mob-doc.md#falling-cobra) |
+| `GameController/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the one climb baseline, and maps it to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [Balance Design](docs/balance-doc.md#difficulty-follows-height) |
+| `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: observes the game, fills a `SessionData` & the open `RunData`, and saves one markdown session file per launch to `persistentDataPath/Analytics/` on every run event, on a timer, and on quit or pause; samples height & stamina on an interval; F9 starts a new session, F10 saves a mock one | none |
+| `Analytics/RunData` | plain data of one run: stamps, timed samples of height & stamina, status (`InProgress`, `Lost`, `Interrupted`), end, death cause, scores; also `EventStamp`, `RunSample`, `RunStatus` | none |
+| `Analytics/DeathCause`, `Analytics/DeathCauseResolver` | static: infers a lost run's cause from its stamps: a branch hit or web encounter w/i `DeathCauseWindowS` before the loss, else `GreatCobra`; also the display names | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `Analytics/MockAnalyticsGenerator` | static: builds a fully mocked `SessionData` & saves it as `0<stamp>-mock.md` beside the real files, live session untouched | none |
+| `Analytics/AnalyticsConfig` | ScriptableObject (`Settings/Analytics/AnalyticsConfig.asset`): every analytics tuning value, ie keys, intervals, death cause window | none |
+| `Analytics/SessionData` | plain data of one session: title, app version, runs | none |
+| `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry with Mermaid graphs & the whole session file with a summary of `Lost` runs, writes the file | none |
+| `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
+| `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |
+| `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |
+| `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while empty | [TDD](docs/monkobra-tdd.md#stamina) |
+| `UI/ScreensManager`, `UI/ProgressBarRoot`, `UI/ScoreDisplay`, `UI/HeightDisplayController`, `UI/LoseScreenController` | tutorial and lose panels, climb progress with the surge cue and red cobra marker, score label, climbed height label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
+| `UI/SpiderWebPrompt` | first-trap hint and escape bar | [Mobs](docs/mob-doc.md#trap-and-escape) |
 
 ## Known Gaps & Constraints
 
+Gaps that belong to one subsystem are listed in [Mobs](docs/mob-doc.md#known-gaps) and the [Grab System](docs/grab-doc.md#known-gaps). Project-wide ones:
+
 - No tests or run commands exist: verification means opening `Lv1Scene` in the Editor
-- Stamina drains on a timer and by movement, but is not linked to branch hits
-- `CobraDemo` scene remains next to `Lv1Scene`
-- The tree is finite (`TreeManager` min and max y), not the endless tree of the pitch
-- Difficulty does not scale with distance yet, apart from branch count per segment
+- `DTSPool` deactivates its mock tree, `Envs/Tree`, at runtime, so a component that must run cannot sit under it
+- Broader difficulty scaling is not yet designed, see the [Game Design Document](docs/monkobra-gdd.md#difficulty)
 - The prototype's WebGL link, gameplay video, and contributions belong to a different team's submission and do not describe this repository
 
 ## Living Document Maintenance
 
-Update this file in the same change that adds entities, systems, or mechanics, or shifts boundaries or workflows. The assistant that made the change writes the update as its final step, and the file stays on the pull-request checklist.
+A stale briefing is worse than none. Update this file in the same pull request that adds, moves, or renames a script, or shifts how the pieces connect. The assistant that made the change writes the update as its final step, and the file stays on the pull-request checklist.
