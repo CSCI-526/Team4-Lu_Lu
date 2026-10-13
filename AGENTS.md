@@ -31,7 +31,7 @@ Read these `docs/` files when their topic arises:
 
 ## Setup Commands
 
-Editor version is Unity `6000.3.22f1` (Unity 6, URP). Open the repository folder through Unity Hub. The only build is the WebGL export below, made from the Editor; no test command exists yet.
+Editor version is Unity `6000.3.22f1` (Unity 6, URP). Open the repository folder through Unity Hub. Builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) are made from the Editor with the Build Profiles in [Build](docs/build-doc.md); no test command exists yet.
 
 ## GitHub Pages WebGL Build
 

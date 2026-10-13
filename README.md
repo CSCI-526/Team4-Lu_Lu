@@ -2,13 +2,13 @@
 
 A 3D vertical climbing game: scale a very tall tree while a cobra chases you from below. *Raiden* meets *Gold Miner*, in 3D.
 
-Course project for USC CSCI-526, Fall 2026.
+Course project for USC CSCI-526, Fall 2026. Current version: `0.9.0` (pre-alpha), see the [CHANGELOG](CHANGELOG.md).
 
 ## Overview
 
 You play a monkey racing up a very tall tree. The cobra never stops climbing, and your stamina drains with every meter. Dodge branches, then hold E or Space to reach for a banana and release to grab it: a clean grab is the only way to refill the stamina bar before it runs dry. Every grab costs focus that would otherwise go to dodging, so each banana is a risk.
 
-The pillars, mechanics, and difficulty are in the [Game Design Document](docs/monkobra-gdd.md), every hazard and what it does on touch in [Mobs](docs/mob-doc.md), and how grabbing works in the [Grab System](docs/grab-doc.md), why difficulty ramps with height in [Balance Design](docs/balance-doc.md), and how a whole run plays out in the [Gameplay Loop](docs/gameplay-loop-doc.md).
+The pillars, mechanics, and difficulty are in the [Game Design Document](docs/monkobra-gdd.md), every hazard and what it does on touch in [Mobs](docs/mob-doc.md), how grabbing works in the [Grab System](docs/grab-doc.md), why difficulty ramps with height in [Balance Design](docs/balance-doc.md), and how a whole run plays out in the [Gameplay Loop](docs/gameplay-loop-doc.md).
 
 ## Controls
 
@@ -21,6 +21,8 @@ The pillars, mechanics, and difficulty are in the [Game Design Document](docs/mo
 
 Gamepad: left stick or D-pad moves, the north button grabs, the south button breaks free of a web.
 
+Every run is logged for playtest review: each launch writes one markdown report with graphs to `Analytics/` under Unity's `persistentDataPath`. F9 starts a new session and F10 saves a mock report; both keys are set in `Settings/Analytics/AnalyticsConfig.asset`.
+
 ## Getting Started
 
 Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `Lv1Scene` and press Play. The game also runs in the browser from the committed WebGL export in `Monkobra/`, served by GitHub Pages.
@@ -29,7 +31,7 @@ Spider webs follow a probability curve of climb height, so they are rare early o
 
 ## Contributing
 
-Agent rules are in [AGENTS.md](AGENTS.md), the WebGL export steps in [Build](docs/build-doc.md), the script index and known gaps in [CONTEXT.md](CONTEXT.md), how the game is built in the [Technical Design Document](docs/monkobra-tdd.md), and the teammate git flow in [Work with Git](docs/work-with-git.md), and version history in [CHANGELOG.md](CHANGELOG.md).
+Agent rules are in [AGENTS.md](AGENTS.md), the WebGL export steps in [Build](docs/build-doc.md), the script index and known gaps in [CONTEXT.md](CONTEXT.md), how the game is built in the [Technical Design Document](docs/monkobra-tdd.md), the teammate git flow in [Work with Git](docs/work-with-git.md), and version history in [CHANGELOG.md](CHANGELOG.md).
 
 ## Acknowledgments
 

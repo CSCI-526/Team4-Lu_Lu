@@ -84,6 +84,10 @@ stateDiagram-v2
 
 Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and `GameController.State != GameState.Playing`. Current checkers: `ArmRoot.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`, `SpiderWebStruggle`.
 
+## Analytics
+
+`AnalyticsManager` is a scene-placed singleton kept across reloads. It observes the run (`GameController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchDetection.BranchHit`, `SpiderWebTrap.Encountered`), fills a `SessionData` of `RunData` entries, and `AnalyticsMarkdownWriter` renders it to one markdown file per launch under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Keys, sample and autosave intervals, and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`.
+
 ## Game Balance
 
 Every game balance number lives in one asset (how height becomes spawn chances is in [Balance Design](balance-doc.md)), `Settings/GameBalanceConfig.asset`, an instance of the `GameBalanceConfig` ScriptableObject. To tweak the game's feel, edit that single file and nothing else: no balance value is held in a second asset or hard-coded in a script.
