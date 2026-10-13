@@ -19,6 +19,7 @@ Read these `docs/` files when their topic arises:
 - [Grab System](docs/grab-doc.md): detection zones, arm reach, and the release check
 - [Balance Design](docs/balance-doc.md): why difficulty follows height, how hazards are rolled per segment, and why balance lives in one asset
 - [Gameplay Loop](docs/gameplay-loop-doc.md): the complete run loop, from climbing and hazards to the grab and the win or lose end
+- [Build](docs/build-doc.md): the WebGL export, the three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) and their settings
 
 ## Layout & Naming
 
@@ -34,44 +35,12 @@ Editor version is Unity `6000.3.22f1` (Unity 6, URP). Open the repository folder
 
 ## GitHub Pages WebGL Build
 
-Method adapted from the sibling repo
-`usc-csci526-asgn1-u3d-creative-core-learn`, which serves its WebGL
-export straight off GitHub Pages; no GitHub-side build step runs
-either there or here, the committed export is served as-is:
+Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.md). Rules that always hold:
 
-- the WebGL export lives in `Monkobra/`, directly under the repo
-  root (sibling to `Assets/`, never inside it), a complete,
-  self-contained export holding `index.html`, `Build/`,
-  `TemplateData/`, and `StreamingAssets/` (if used); never name it
-  `Build/` or `Builds/`, which `.gitignore` ignores at the repo root
-  (see Layout & Naming above) and would silently drop a committed
-  export
-- export via `File > Build Settings > WebGL > Build`, output
-  directly into `Monkobra/`
-- serve locally before pushing (WebGL will not run from `file://`):
-  `python3 -m http.server 8000 --directory Monkobra`
-- commit and push `Monkobra/`; `Settings > Pages > Deploy from
-  branch` (root of `main`) then serves it automatically
-- never hand-edit a file inside `Monkobra/`; re-export from Unity
-  and re-commit instead
-
-Build Profile / Player Settings for the WebGL target, required
-because GitHub Pages is plain static hosting with no control over
-response headers:
-
-- Player Settings > Publishing Settings > Compression Format:
-  `Disabled`; GitHub Pages cannot set the `Content-Encoding` header
-  a `Gzip`/`Brotli` export needs, so a compressed build fails to
-  load. If build size later forces compression back on, also tick
-  Decompression Fallback so the page unpacks itself in the browser
-- Player Settings > Publishing Settings > WebGL Template: `Default`,
-  unless a later change intentionally swaps it for a custom shell
-- Build Profile (`File > Build Profiles > WebGL`): only the intended
-  scene(s) checked under Scenes in Build; Development Build off for
-  the exported version that gets committed and pushed
-- Player Settings > Resolution and Presentation: keep the default
-  canvas set to stretch/fill so the game fits whatever `index.html`
-  embeds it in
+- the export lives in `Monkobra/` at the repo root, never named `Build/` or `Builds/`, and is committed as-is
+- never hand-edit a file inside `Monkobra/`; re-export from Unity and re-commit instead
+- Compression Format stays `Disabled`: GitHub Pages cannot set the `Content-Encoding` header a compressed export needs
+- Development Build is off for the export that gets committed and pushed
 
 ## Code Style
 
@@ -122,5 +91,6 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - Update [README.md](README.md) when controls or setup steps change
 - Update the [Game Design Document](docs/monkobra-gdd.md) when design intent shifts, ie pillars, the core twist, resources, or win and lose rules; read it before changing how a mechanic is meant to feel
 - Update [Mobs](docs/mob-doc.md) when a cobra, branch, or web changes how it spawns, moves, or reacts to a touch, and the [Grab System](docs/grab-doc.md) when detection, reach, or release rules change
+- Update [Build](docs/build-doc.md) when the export steps, folder, or required Player Settings change
 - Update the [Technical Design Document](docs/monkobra-tdd.md) when the architecture, run lifecycle, tuning assets, input bindings, or conventions change
 - Update this file when commands or conventions change

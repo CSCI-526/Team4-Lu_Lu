@@ -24,7 +24,8 @@ Monkobra is a Unity course project (USC CSCI-526, Fall 2026) descended from a pa
 | The run from start to loss, as one diagram | [Gameplay Loop](docs/gameplay-loop-doc.md) |
 | Controls, setup | [README](README.md) |
 | Git flow for teammates (Chinese) | [Work with Git](docs/work-with-git.md) |
-| Agent rules, WebGL export | [AGENTS.md](AGENTS.md) |
+| The three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows), Player Settings, deploys | [Build](docs/build-doc.md) |
+| Agent rules | [AGENTS.md](AGENTS.md) |
 
 This file is the script index and the map of how the pieces connect. Behavior and numbers live in the documents above, never here.
 
@@ -36,7 +37,7 @@ monkobra/
 ├── AGENTS.md          agent rules
 ├── CONTEXT.md         this file
 ├── CHANGELOG.md       version history, plus open triage tags in a comment
-├── docs/              design, technical, mob, grab, balance, gameplay loop, and git documents
+├── docs/              design, technical, mob, grab, balance, gameplay loop, build, and git documents
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
 │   │   ├── Scenes/    Lv1Scene

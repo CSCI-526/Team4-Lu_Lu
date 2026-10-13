@@ -10,7 +10,8 @@ How Monkobra is built: the engine and packages, the run lifecycle, the systems t
 | This document | engine, architecture, run lifecycle, game balance, monkey, tree, stamina, score, UI, input, conventions |
 | [Mobs](mob-doc.md) | cobra, falling cobra, branches, spider webs, and what each does when the monkey touches it |
 | [Grab System](grab-doc.md) | detection zones, arm reach, release check, camera swap, outline feedback |
-| [AGENTS.md](../AGENTS.md) | rules for agents, including the WebGL export steps |
+| [Build](build-doc.md) | the WebGL export, the three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) and their settings |
+| [AGENTS.md](../AGENTS.md) | rules for agents |
 | [CONTEXT.md](../CONTEXT.md) | descriptive system map and known gaps |
 | [Balance Design](balance-doc.md) | why difficulty follows height, the per-segment roll model, the single balance asset |
 | [CHANGELOG.md](../CHANGELOG.md) | version history |
@@ -191,7 +192,7 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 
 ## Build and Deploy
 
-The only build is the WebGL export made from the Editor into `Monkobra/` and committed. Compression is disabled and the Default template is used, because GitHub Pages cannot set response headers. The steps and the required Player Settings are in [AGENTS.md](../AGENTS.md#github-pages-webgl-build).
+The only build is the WebGL export made from the Editor into `Monkobra/` and committed. Compression is disabled and the Default template is used, because GitHub Pages cannot set response headers. The steps and the required Player Settings are in [Build](build-doc.md).
 
 ## Known Gaps
 
