@@ -1,7 +1,5 @@
 # Monkobra CHANGELOG
 
-<!-- Fixme instruction to write CHANGELOG and DEVLOG -->
-
 ## [Unreleased]
 
 ### Added
