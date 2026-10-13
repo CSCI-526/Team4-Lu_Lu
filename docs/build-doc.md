@@ -2,22 +2,29 @@
 
 Unity `6000.3.22f1`. Every build goes to `builds/Monkobra v<version>+<Target>`, version from Player Settings. No build is committed; `builds/` stays gitignored. For every build: Development Build off, only intended scenes in `File > Build Profiles`.
 
-## WebGL Player Settings (GitHub Pages & itch.io)
-
-- Compression Format: `Disabled`
-- WebGL Template: `Default`
-- Canvas: stretch and fill
-
 ## GitHub Pages
 
 Location: `builds/Monkobra v0.9.0+GitHub`
 
+Player Settings (Pages cannot set response headers):
+
+- Compression Format: `Disabled`, under `Player Settings > Publishing Settings`; a `Gzip` or `Brotli` build fails to load
+- If size forces compression back on, also tick Decompression Fallback
+- WebGL Template: `Default`
+- Canvas: stretch and fill, under `Player Settings > Resolution and Presentation`
+
+Steps:
+
 1. `File > Build Profiles > WebGL > Build` into the location
-2. Test: `python3 -m http.server 8000 --directory "builds/Monkobra v0.9.0+GitHub"`
+2. Test, since WebGL will not run from `file://`: `python3 -m http.server 8000 --directory "builds/Monkobra v0.9.0+GitHub"`
 
 ## itch.io
 
 Location: `builds/Monkobra v0.9.0+Itch`
+
+Player Settings: same as GitHub Pages (`Disabled` works; gzip is the fallback, avoid Brotli).
+
+Steps:
 
 1. `File > Build Profiles > WebGL > Build` into the location
 2. Zip the folder's contents, so `index.html` sits at the zip root
