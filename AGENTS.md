@@ -89,6 +89,18 @@ No test suite exists yet. When one is added, record the exact scoped command her
 - Feature branches merge into `dev`, and `main` is the merge target
 - Do not use the `prepare-commit-msg` hook: write the commit message yourself and pass it with `-m`
 
+### Team Names
+
+Credit a teammate by the proper name below, matched from the git author, e.g. as the contributor heading in `CHANGELOG.md`:
+
+| Git Author | Name To Use |
+| --- | --- |
+| `kamiLeL` | Erik |
+| `Lu-Yuqing` | Yuqing Lu |
+| `beelleed` | Belle Dai |
+| `houdongpan` | Houdong Pan |
+| `Wenhai Dong` | Wenhai Dong |
+
 ### Git Workflow
 
 Teammates follow the human version in [Work with Git](docs/work-with-git.md) via GitHub Desktop. Agents run the same flow through the CLI:
