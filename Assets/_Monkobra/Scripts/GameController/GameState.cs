@@ -5,10 +5,10 @@ public enum GameState {
 
     /// <summary>
     /// Run is live but the monkey cannot lose, ends when
-    /// <see cref="GameController.EndStartProtection"/> is called, then
+    /// <see cref="GameController.EndStarterZone"/> is called, then
     /// becomes <see cref="Playing"/>.
     /// </summary>
-    StartProtection,
+    StarterZone,
 
     /// <summary>Run in progress, never paused, ends only on a loss.</summary>
     Playing,

@@ -21,7 +21,7 @@ public class GameController: MonoBehaviour {
     /// monkey is still protected
     /// </summary>
     public bool IsRunLive =>
-        State == GameState.Playing || State == GameState.StartProtection;
+        State == GameState.Playing || State == GameState.StarterZone;
 
     /// <summary>
     /// whether cobra collisions are ignored entirely, a debug cheat; warns
@@ -36,9 +36,9 @@ public class GameController: MonoBehaviour {
     }
 
     // Public Methods  #########################################################
-    // TODO call from the collision trigger that ends start protection
-    public void EndStartProtection() {
-        if (State == GameState.StartProtection) {
+    // TODO call from the collision trigger that ends the starter zone
+    public void EndStarterZone() {
+        if (State == GameState.StarterZone) {
             SetState(GameState.Playing);
         }
     }
@@ -131,7 +131,7 @@ public class GameController: MonoBehaviour {
     private void OnAnyPressed(InputControl _) {
         anyPressSub = null;
         if (State == GameState.Tutorial) {
-            SetState(GameState.StartProtection);
+            SetState(GameState.StarterZone);
         }
     }
 
@@ -149,7 +149,7 @@ public class GameController: MonoBehaviour {
     private void SetState(GameState next) {
         State = next;
         Time.timeScale = next == GameState.Playing
-            || next == GameState.StartProtection ? 1f : 0f;
+            || next == GameState.StarterZone ? 1f : 0f;
 
         if (next == GameState.Lost) {
             lostTime = Time.unscaledTime;
