@@ -13,7 +13,7 @@ Profile settings (Pages cannot set response headers):
 - Decompression Fallback: off; tick it only if size forces compression back on
 - WebGL Template: `Default`
 - Development Build: off
-- Default Canvas: 1920×1080
+- Default Canvas: 1280×720 (720p); the `Lv1Scene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same on every screen
 - Scenes: the global list (`Lv1Scene` only)
 
 Steps:
@@ -37,7 +37,7 @@ Steps:
 1. `File > Build Profiles`, select `ItchIO`, click Build, choose the location
 2. Zip the folder's contents, so `index.html` sits at the zip root
 3. Page settings: Kind of project `HTML`, tick "played in the browser"
-4. Embed options: "Embed in page" with "Auto-detect size (Unity HTML only)", which reads the profile's 1920×1080 canvas
+4. Embed options: "Embed in page" with "Auto-detect size (Unity HTML only)", which reads the profile's 1280×720 canvas
 5. Frame options: tick only "Fullscreen button"
 6. Set visibility to Draft while testing, then Public
 7. Re-upload: upload the new zip, delete the old one
