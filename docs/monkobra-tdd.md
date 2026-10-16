@@ -78,7 +78,7 @@ stateDiagram-v2
 | State | Time Scale | Screen |
 | --- | --- | --- |
 | Tutorial | 0 | tutorial panel, any button starts the run |
-| StarterZone | 1 | none, run is live, `LoseGame` works, until `EndStarterZone()` (no trigger calls it yet) |
+| StarterZone | 1 | none, run is live, `LoseGame` works, until `EndStarterZone()`, called by `StarterZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, interact reloads the scene after `restartInputDelay` |
 

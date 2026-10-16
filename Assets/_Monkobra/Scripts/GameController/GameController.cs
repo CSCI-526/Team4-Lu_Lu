@@ -36,7 +36,6 @@ public class GameController: MonoBehaviour {
     }
 
     // Public Methods  #########################################################
-    // TODO call from the collision trigger that ends the starter zone
     public void EndStarterZone() {
         if (State == GameState.StarterZone) {
             SetState(GameState.Playing);
