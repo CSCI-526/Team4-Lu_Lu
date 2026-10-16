@@ -11,9 +11,9 @@ Profile settings (Pages cannot set response headers):
 
 - Compression Format: `Disabled`; a `Gzip` or `Brotli` build fails to load
 - Decompression Fallback: off; tick it only if size forces compression back on
-- WebGL Template: `Default`
+- WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops
 - Development Build: off
-- Default Canvas: 1280×720 (720p); the `Lv1Scene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same on every screen
+- Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `Lv1Scene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
 - Scenes: the global list (`Lv1Scene` only)
 
 Steps:
@@ -37,7 +37,7 @@ Steps:
 1. `File > Build Profiles`, select `ItchIO`, click Build, choose the location
 2. Zip the folder's contents, so `index.html` sits at the zip root
 3. Page settings: Kind of project `HTML`, tick "played in the browser"
-4. Embed options: "Embed in page" with "Auto-detect size (Unity HTML only)", which reads the profile's 1280×720 canvas
+4. Embed options: "Embed in page" with a manual size of 1280×720; `FitWindow` fits the game into whatever frame size is set
 5. Frame options: tick only "Fullscreen button"
 6. Set visibility to Draft while testing, then Public
 7. Re-upload: upload the new zip, delete the old one

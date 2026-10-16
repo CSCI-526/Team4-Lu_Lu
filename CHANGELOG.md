@@ -13,6 +13,7 @@
 - web builds lock to 720p: both build profiles (and the project default) use a 1280×720 canvas, was 1920×1080, which overflowed smaller laptop screens
 - `Lv1Scene` Canvas Scaler: Scale With Screen Size at a 1280×720 reference (match 0.5), was Constant Pixel Size, so the UI keeps its size on Mac Retina, 4K, and Windows alike
 - `Lv1Scene` UI resized and repositioned for 720p (the 1080p layout scaled by 2/3): score & height top-left, stamina bar bottom-left, tutorial, lose screen, and web prompt centered; the climb progress bar is now anchored to the right-middle edge instead of 484 px up from the bottom-right corner, so it no longer runs off short screens
+- web builds use a new `FitWindow` WebGL template instead of Unity's `Default`: the game keeps 16:9, scales to fit any browser window with black bars, and renders at the screen's real pixel density, so it shows in full on small laptops and stays sharp on Retina & 4K; both build profiles and the project default use it
 
 ### Deprecated
 
