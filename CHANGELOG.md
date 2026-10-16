@@ -1,10 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-TODO add protection zone
-TODO add tutorial like experience
-FIXME add very flow great cobra
-FIXME add balance
+FIXME add balance, especially need banana during diff = 0
 
 Todo camera cool down efx during no stamina
 Todo camera shake when hit branch & falling cobra
