@@ -79,7 +79,7 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - Branch names: short kebab-case, no `feature/` prefix (e.g. `fix-cobra-bug`)
 - Start: `git switch dev && git pull origin dev && git switch -c <branch>`
 - Push often: `git push -u origin <branch>` first, then `git push`
-- Commit only while Unity is closed: the Editor buffers scene and prefab edits, so an open Editor can leave them out of the commit; if Unity is running, ask the user to close it first
+- Unity running does not block a commit: the Editor buffers scene and prefab edits, so an open Editor can leave them out of the commit; if Unity is running, tell the user and ask for confirmation, then commit once they confirm
 - Finish: `git fetch origin`, update local `dev` (`git switch dev && git pull origin dev`), `git switch <branch>`, `git merge dev`; resolve conflicts yourself, and for scene or prefab conflicts you cannot reconcile safely, stop and ask the user
 - After the merge: ask the user to reopen Unity and confirm the scene works before the final commit and push
 - Dev scenes: a personal copy of `Lv1Scene.unity` under `Assets/_Monkobra/Scenes/` is allowed for experiments; before the final merge the feature must exist in `Lv1Scene.unity`, never only in the personal scene
