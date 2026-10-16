@@ -97,7 +97,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 
 | Script | Role | Detail |
 | --- | --- | --- |
-| `GameController/GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost; `LoseGame()` takes no cause, analytics infers it | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `GameController/GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, StartProtection, Playing, Lost; `LoseGame()` takes no cause, analytics infers it | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `GameController/GameBalanceConfig` | ScriptableObject holding every balance number | [Balance Design](docs/balance-doc.md) |
 | `Player/MonkeyPrefabRoot` | kinematic body: orbit, climb, stun, `IsHeld` | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/MonkeyConfig` | ScriptableObject of monkey tuning and input actions | [TDD](docs/monkobra-tdd.md#monkey-movement) |

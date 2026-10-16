@@ -69,7 +69,8 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 ```mermaid
 stateDiagram-v2
   [*] --> Tutorial: scene load
-  Tutorial --> Playing: any button
+  Tutorial --> StartProtection: any button
+  StartProtection --> Playing: EndStartProtection
   Playing --> Lost: LoseGame
   Lost --> [*]: interact, reload scene
 ```
@@ -77,12 +78,13 @@ stateDiagram-v2
 | State | Time Scale | Screen |
 | --- | --- | --- |
 | Tutorial | 0 | tutorial panel, any button starts the run |
+| StartProtection | 1 | none, run is live but `LoseGame` is ignored until `EndStartProtection()` (no trigger calls it yet) |
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, interact reloads the scene after `restartInputDelay` |
 
 `LoseGame()` runs once, from Playing only: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
-Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and `GameController.State != GameState.Playing`. Current checkers: `ArmRoot.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`, `SpiderWebStruggle`.
+Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and the state. Grab, pickup, and scoring (`ArmRoot.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`) check `GameController.IsRunLive` (StartProtection or Playing); `SpiderWebStruggle` and the other HUD checkers still require `Playing`, so webs do not catch during protection.
 
 ## Analytics
 

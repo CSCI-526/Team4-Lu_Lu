@@ -12,6 +12,10 @@ FIXME add balance
 
 ### Added
 
+##### Erik
+
+- `StartProtection` game state between Tutorial and Playing: the run is live (climb, grab, score) but `LoseGame` is ignored until `GameController.EndStartProtection()` is called, then Playing begins; the collision trigger that calls it is not built yet
+
 ### Changed
 
 ##### Wenhai Dong

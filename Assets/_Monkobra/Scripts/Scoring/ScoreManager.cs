@@ -13,7 +13,7 @@ public class ScoreManager: MonoBehaviour {
     // raised once per banana pickup that scored
     public event Action BananaCollected;
 
-    public bool CanScore => isActiveAndEnabled && hasStarted && !isRunEnded && Time.timeScale > 0f && (GameController.I == null || GameController.I.State == GameState.Playing);
+    public bool CanScore => isActiveAndEnabled && hasStarted && !isRunEnded && Time.timeScale > 0f && (GameController.I == null || GameController.I.IsRunLive);
     //必须满足：组件启用、已经开局、尚未结束、没有暂停，才允许计分
     [SerializeField]
     private GameBalanceConfig balanceConfig;

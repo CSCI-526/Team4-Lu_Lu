@@ -462,7 +462,7 @@ public class ArmRoot: MonoBehaviour {
     {
         if (Time.timeScale <= 0f
             || (GameController.I != null
-                && GameController.I.State != GameState.Playing)) {
+                && !GameController.I.IsRunLive)) {
             return;
         }//暂停或游戏结束后，不再摘水果
         if (!isReaching || reachFruit == null) {
