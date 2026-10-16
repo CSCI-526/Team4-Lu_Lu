@@ -65,7 +65,7 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 
 Stamina is the pressure that makes the ramp matter, and it couples three balance groups:
 
-- Drain: a steady timer plus a cost per distance climbed or orbited, upward costing more than sideways, so wandering is worse than climbing
+- Drain: a cost per distance climbed or orbited, upward costing more than sideways, so wandering is worse than climbing; there is no timer drain, standing still never costs stamina
 - Refill: bananas are the only real refill, apart from a slow recovery while the monkey rests
 - Supply: banana chance by height decides how often a refill is on offer
 

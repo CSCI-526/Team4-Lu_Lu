@@ -94,7 +94,7 @@ Every game balance number lives in one asset (how height becomes spawn chances i
 
 | Group | Fields | Read by |
 | --- | --- | --- |
-| Stamina | `maxStamina`, `staminaDecreaseAmount`, `staminaDecreaseIntervalS`, `staminaUpwardDrainPerU`, `staminaSidewayDrainPerU`, `fruitStaminaRestore` | `StaminaBarController` |
+| Stamina | `maxStamina`, `staminaUpwardDrainPerU`, `staminaSidewayDrainPerU`, `fruitStaminaRestore` | `StaminaBarController` |
 | Movement | `upSpeedU`, `downSpeedU`, `exhaustedSpeedMultiplier`, `idleStaminaRecoveryPerS` | `MonkeyPrefabRoot` |
 | Branch Hit | `hitStunDurationS`, `hitDropDistanceU`, `hitDropSpeedU` | `MonkeyPrefabRoot` |
 | Score | `pointsPerMeter`, `unitsPerMeter`, `scoreRewardPoints` | `ScoreManager` |
@@ -137,8 +137,7 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`, whic
 
 `StaminaBarController` is a singleton `Slider` that reads `GameBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `ExhaustedMoveAttempted`, which `MonkeyPrefabRoot` triggers through `NotifyMoveAttempt` while an input is held on an empty bar.
 
-- Timer Drain: a fixed amount every interval, as a coroutine started in `Start`; a tick is skipped while the monkey rests (`NotifyResting`, no move key held), so idle recovery is never undone by a lump drop
-- Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways
+- Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways; it is the only drain, nothing lowers the bar on a timer or while the monkey stands still
 - Restore: `AddStaminaByFruit` adds the per-banana amount, capped at the maximum ([Grab System](grab-doc.md#on-a-successful-grab))
 - Idle Recovery: `MonkeyPrefabRoot` adds `GameBalanceConfig.IdleStaminaRecoveryPerS` per second while no move key is pressed
 - Depletion: reaching 0 does not end the run: `MonkeyPrefabRoot` scales upward climb speed only by `GameBalanceConfig.ExhaustedSpeedMultiplier` until stamina is above 0 again
