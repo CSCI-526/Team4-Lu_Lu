@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 1641963984929784354}
   - component: {fileID: 1756673476927966057}
   - component: {fileID: 2796074396119240967}
+  - component: {fileID: 7156069852339571375}
   m_Layer: 5
   m_Name: StaminaBar
   m_TagString: Untagged
@@ -139,7 +140,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3c4b3c1423604954aa05bd4476b025d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StaminaBar
-  config: {fileID: 11400000, guid: a0a52087f5b94dc487b912f590bd2535, type: 2}
+  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+--- !u!114 &7156069852339571375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2002897558980733833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45370942b640434daf1161bc3d83ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StaminaBarAnimator
+  punchStrength: 0.15
+  punchDurationS: 0.25
+  shakeMagnitudePx: {x: 8, y: 4}
+  shakeDurationS: 0.3
+  shakeCooldownS: 0.2
 --- !u!1 &2089550947058290794
 GameObject:
   m_ObjectHideFlags: 0
@@ -309,7 +327,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.13710396, g: 0.745283, b: 0.42372245, a: 1}
+  m_Color: {r: 0.8962264, g: 0.85502553, b: 0.24096651, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

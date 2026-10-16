@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,7 +6,8 @@ using UnityEngine;
 /// Tracks which side of the character has fruit within reach, fed by 2
 /// <see cref="DetectionZone"/> children that forward their trigger events.
 /// Keeps every "FruitCollider" overlap per side, so ReachForLeft and
-/// ReachForRight hold with several fruits at once.
+/// ReachForRight hold with several fruits at once. Also relays which fruit a
+/// hand currently overlaps, so a release would grab it.
 /// </summary>
 public class UpwardFruitDetection: MonoBehaviour {
     // Public Members  #########################################################
@@ -22,7 +24,54 @@ public class UpwardFruitDetection: MonoBehaviour {
             ? DetectionSide.Right
             : DetectionSide.Left;
 
+    /// <summary>raised w/ (fruit, isInReach) when a fruit enters or leaves
+    /// the reach of both zones combined</summary>
+    public event Action<Collider, bool> FruitReachChanged;
+
+    /// <summary>fruit a hand overlaps now, so release grabs it, else null
+    /// </summary>
+    public Collider GrabbableFruit => grabbableFruit;
+
+    /// <summary>raised w/ (previous, current) when the grabbable fruit
+    /// changes</summary>
+    public event Action<Collider, Collider> GrabbableFruitChanged;
+
+    /// <summary>the single fruit a reach would aim at now, else null</summary>
+    public Collider ReachTarget => reachTarget;
+
+    /// <summary>raised w/ (previous, current) when the reach target changes
+    /// </summary>
+    public event Action<Collider, Collider> ReachTargetChanged;
+
     // Public Methods  #########################################################
+    /// <summary>
+    /// pins the reach target to <paramref name="fruit"/> while an arm reaches,
+    /// null to release the pin
+    /// </summary>
+    public void SetLockedTarget(Collider fruit) {
+        lockedTarget = fruit;
+        RefreshReachTarget();
+    }
+
+    /// <summary>
+    /// sets the fruit a hand overlaps, null for none; raises
+    /// <see cref="GrabbableFruitChanged"/> iff it differs
+    /// </summary>
+    public void SetGrabbableFruit(Collider fruit) {
+        if (fruit == grabbableFruit) {
+            return;
+        }
+
+        Collider previous = grabbableFruit;
+        grabbableFruit = fruit;
+        GrabbableFruitChanged?.Invoke(previous, fruit);
+    }
+
+    /// <returns>if <paramref name="fruit"/> sits in either zone</returns>
+    public bool IsFruitInReach(Collider fruit) {
+        return leftFruits.Contains(fruit) || rightFruits.Contains(fruit);
+    }
+
     /// <returns>newest fruit in reach on <paramref name="side"/>, else null
     /// </returns>
     public Collider GetNewestFruit(DetectionSide side) {
@@ -41,15 +90,20 @@ public class UpwardFruitDetection: MonoBehaviour {
     /// off inside a zone, whose trigger exit may never fire
     /// </summary>
     public void RemoveFruit(Collider fruit) {
-        bool hadLeft = leftFruits.Remove(fruit);
-        bool hadRight = rightFruits.Remove(fruit);
+        bool wasInReach = IsFruitInReach(fruit);
+        leftFruits.Remove(fruit);
+        rightFruits.Remove(fruit);
         fruitOrder.Remove(fruit);
-        if (hadLeft && leftFruits.Count == 0) {
-            LogReachChanged(DetectionSide.Left);
+        if (wasInReach) {
+            FruitReachChanged?.Invoke(fruit, false);
         }
-        if (hadRight && rightFruits.Count == 0) {
-            LogReachChanged(DetectionSide.Right);
+        if (fruit == grabbableFruit) {
+            SetGrabbableFruit(null);
         }
+        if (fruit == lockedTarget) {
+            lockedTarget = null;
+        }
+        RefreshReachTarget();
     }
 
     // Inspector Fields  #######################################################
@@ -122,11 +176,13 @@ public class UpwardFruitDetection: MonoBehaviour {
 
         HashSet<Collider> fruits =
             side == DetectionSide.Left ? leftFruits : rightFruits;
+        bool wasInReach = IsFruitInReach(other);
         if (fruits.Add(other)) {
             fruitOrder.Add(other);
-            if (fruits.Count == 1) {
-                LogReachChanged(side);
+            if (!wasInReach) {
+                FruitReachChanged?.Invoke(other, true);
             }
+            RefreshReachTarget();
         }
     }
 
@@ -135,9 +191,11 @@ public class UpwardFruitDetection: MonoBehaviour {
             side == DetectionSide.Left ? leftFruits : rightFruits;
         if (fruits.Remove(other)) {
             fruitOrder.Remove(other);
-            if (fruits.Count == 0) {
-                LogReachChanged(side);
+            // the other zone may still hold it
+            if (!IsFruitInReach(other)) {
+                FruitReachChanged?.Invoke(other, false);
             }
+            RefreshReachTarget();
         }
     }
 
@@ -151,14 +209,21 @@ public class UpwardFruitDetection: MonoBehaviour {
     // entry order across both sides, last is newest
     private readonly List<Collider> fruitOrder = new List<Collider>();
 
+    private Collider grabbableFruit;
+    private Collider reachTarget;
+    private Collider lockedTarget; // fruit an arm is reaching for, else null
+
     // Private Methods  ########################################################
-    private void LogReachChanged(DetectionSide side) {
-        bool reach = side == DetectionSide.Left ? ReachForLeft : ReachForRight;
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                $"UpwardFruitDetection:\treachFor{side} changed: {reach}",
-                this
-            );
+    // pinned fruit wins, else the one ArmRoot would pick on the reach side
+    private void RefreshReachTarget() {
+        Collider next =
+            lockedTarget != null ? lockedTarget : GetNewestFruit(ReachSide);
+        if (next == reachTarget) {
+            return;
         }
+
+        Collider previous = reachTarget;
+        reachTarget = next;
+        ReachTargetChanged?.Invoke(previous, next);
     }
 }
