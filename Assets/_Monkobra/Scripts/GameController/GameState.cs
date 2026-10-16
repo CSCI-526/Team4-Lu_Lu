@@ -4,7 +4,7 @@ public enum GameState {
     Tutorial,
 
     /// <summary>
-    /// Run is live but the monkey cannot lose, ends when
+    /// Run is live and the monkey can lose, ends when
     /// <see cref="GameController.EndStarterZone"/> is called, then
     /// becomes <see cref="Playing"/>.
     /// </summary>

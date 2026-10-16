@@ -44,7 +44,7 @@ public class GameController: MonoBehaviour {
     }
 
     public void LoseGame() {
-        if (State != GameState.Playing) {
+        if (!IsRunLive) {
             return;
         }
 

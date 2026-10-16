@@ -7,10 +7,13 @@ FIXME add very flow great cobra
 FIXME add balance
 
 Todo camera cool down efx during no stamina
+Todo camera shake when hit branch & falling cobra
 Todo grabbed banana -> stamina bar
 Todo great cobra indicator
 Todo falling snake indicator
 Fixme grab hand functional during mvmt
+
+Bug spider web fail to load & log warning
 -->
 
 
@@ -21,7 +24,7 @@ Fixme grab hand functional during mvmt
 ##### Erik
 
 - Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
-- `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score) but `LoseGame` is ignored until `GameController.EndStarterZone()` is called, then Playing begins; the collision trigger that calls it is not built yet
+- `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins; the collision trigger that calls it is not built yet
 
 ### Changed
 
