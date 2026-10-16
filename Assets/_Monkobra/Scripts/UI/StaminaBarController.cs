@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -131,10 +130,6 @@ public class StaminaBarController: MonoBehaviour {
         }
     }
 
-    private void Start() {
-        StartCoroutine(DecreaseStaminaOverTime());
-    }
-
     private void OnDestroy() {
         if (I == this) {
             I = null;
@@ -150,26 +145,4 @@ public class StaminaBarController: MonoBehaviour {
 
     // cached references  ------------------------------------------------------
     private Slider staminaSlider;
-
-    // private methods  ########################################################
-    private IEnumerator DecreaseStaminaOverTime() {
-        // an empty bar only slows the monkey, so the tick keeps running
-        while (true) {
-            yield return new WaitForSeconds(
-                balanceConfig.StaminaDecreaseIntervalS
-            );
-
-            // resting regains stamina, a lump drain would undo it
-            if (Time.time - lastRestTime <= REST_GRACE_S) {
-                continue;
-            }
-
-            currentStamina = Mathf.Max(
-                0f,
-                currentStamina - balanceConfig.StaminaDecreaseAmount
-            );
-
-            staminaSlider.value = currentStamina;
-        }
-    }
 }
