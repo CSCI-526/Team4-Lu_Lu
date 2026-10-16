@@ -19,7 +19,15 @@
 
 ### Removed
 
+##### Erik
+
+- `GameBalanceConfig` fields `staminaDecreaseAmount` & `staminaDecreaseIntervalS`, & `StaminaBarController.NotifyResting`, with the timer drain they served
+
 ### Fixed
+
+##### Erik
+
+- stamina bar no longer drops by a lump while moving, stunned, or just after releasing a key: the leftover 10-per-10-s timer drain is removed, so movement is the only drain
 
 ### Security
 
