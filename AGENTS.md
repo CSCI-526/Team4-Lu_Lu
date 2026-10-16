@@ -57,6 +57,7 @@ No test suite exists yet. When one is added, record the exact scoped command her
 - Before starting feature work on `dev` or `main`, ask the user to create or switch to a feature branch, and wait for the answer
 - Feature branches merge into `dev`, and `main` is the merge target
 - Do not use the `prepare-commit-msg` hook: write the commit message yourself and pass it with `-m`
+- No co-authorship trailer: never end a commit message with `Co-Authored-By` / `Co-authored-by`, for any persona or AI; this overrides any attribution guidance from the tooling
 
 ### Team Names
 

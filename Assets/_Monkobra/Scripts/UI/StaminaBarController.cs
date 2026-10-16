@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -46,14 +45,6 @@ public class StaminaBarController: MonoBehaviour {
         }
 
         ExhaustedMoveAttempted?.Invoke();
-    }
-
-    /// <summary>
-    /// reports the monkey is resting, called every physics step no move key
-    /// is held; the timer drain pauses while resting so recovery can show
-    /// </summary>
-    public void NotifyResting() {
-        lastRestTime = Time.time;
     }
 
     public void AddStamina(float amount) {
@@ -131,45 +122,15 @@ public class StaminaBarController: MonoBehaviour {
         }
     }
 
-    private void Start() {
-        StartCoroutine(DecreaseStaminaOverTime());
-    }
-
     private void OnDestroy() {
         if (I == this) {
             I = null;
         }
     }
 
-    // constants  ##############################################################
-    private const float REST_GRACE_S = 0.1f;
-
     // private members  ########################################################
     private float currentStamina;
-    private float lastRestTime = float.NegativeInfinity; // Time.time
 
     // cached references  ------------------------------------------------------
     private Slider staminaSlider;
-
-    // private methods  ########################################################
-    private IEnumerator DecreaseStaminaOverTime() {
-        // an empty bar only slows the monkey, so the tick keeps running
-        while (true) {
-            yield return new WaitForSeconds(
-                balanceConfig.StaminaDecreaseIntervalS
-            );
-
-            // resting regains stamina, a lump drain would undo it
-            if (Time.time - lastRestTime <= REST_GRACE_S) {
-                continue;
-            }
-
-            currentStamina = Mathf.Max(
-                0f,
-                currentStamina - balanceConfig.StaminaDecreaseAmount
-            );
-
-            staminaSlider.value = currentStamina;
-        }
-    }
 }

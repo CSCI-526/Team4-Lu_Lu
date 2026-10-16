@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: GameBalanceConfig
   m_EditorClassIdentifier: Assembly-CSharp::GameBalanceConfig
   maxStamina: 100
-  staminaDecreaseAmount: 10
-  staminaDecreaseIntervalS: 10
   staminaUpwardDrainPerU: 0.5
   staminaSidewayDrainPerU: 0.3
   fruitStaminaRestore: 35
