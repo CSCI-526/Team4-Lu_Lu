@@ -1,6 +1,12 @@
 # Monkobra CHANGELOG
 
-<!-- fixme: `Lv1Scene` ignores monitor aspect ratio: the camera is orthographic at a fixed size 10, so a wider monitor sees more world sideways & hazards sooner, & the Canvas Scaler is Constant Pixel Size, so UI does not follow resolution -->
+<!--
+TODO add protection zone
+TODO add tutorial like experience
+FIXME add very flow great cobra
+FIXME add balance
+-->
+
 
 ## [Unreleased]
 
