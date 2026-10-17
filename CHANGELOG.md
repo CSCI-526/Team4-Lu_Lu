@@ -6,6 +6,11 @@
 
 ### Added
 
+##### Belle Dai
+
+- keyboard-style tutorial controls in `Lv1Scene`: WASD cluster & wide Space key drawn from uGUI Images, w/ captions `Move`, `Grab Banana`, `Hold to reach, release to grab`
+- `MonkobraTutorial-SemiBold` UI font (Noto Sans TC subset, SIL OFL) so the tutorial renders in WebGL w/o system fonts
+
 ### Changed
 
 ##### Wenhai Dong
