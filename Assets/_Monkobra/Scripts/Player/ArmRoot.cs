@@ -543,9 +543,11 @@ public class ArmRoot: MonoBehaviour {
     }
 
     // turn the aim toward the locked fruit, shoulder and fruit both drift
-    // while held
+    // while held. A fruit switched off or destroyed is dropped, so release
+    // grabs nothing and the outline pin clears
     private void AimAtReachFruit() {
         if (reachFruit == null || !reachFruit.gameObject.activeInHierarchy) {
+            DropReachFruit();
             return;
         }
 
@@ -565,6 +567,18 @@ public class ArmRoot: MonoBehaviour {
                     0f
                 );
         SetAimWorld(aimDirection);
+    }
+
+    // the aimed fruit is gone: keep the reach, but with nothing to aim at
+    private void DropReachFruit() {
+        if (reachFruit == null && reportedFruit == null) {
+            return;
+        }
+        reachFruit = null;
+        if (UpwardFruitDetection.I != null) {
+            UpwardFruitDetection.I.SetLockedTarget(null);
+        }
+        ReportGrabbableFruit(null);
     }
 
     // track the fruit and stretch at a steady speed until released
