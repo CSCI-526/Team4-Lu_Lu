@@ -1,15 +1,9 @@
 # Monkobra CHANGELOG
 
 <!--
-Todo camera cool down efx during no stamina
-Todo camera shake when hit branch & falling cobra
-
-Todo great cobra indicator
-Todo falling snake indicator
-
-Todo grabbed banana -> stamina bar
-
 Bug spider web fail to load & log warning
+
+Todo more prefab (split lv1 scene)
 -->
 
 
@@ -24,6 +18,11 @@ Bug spider web fail to load & log warning
 
 ##### Erik
 
+- `CameraCoolDownEfx` on the main camera: each move attempt while stamina is below 10% pulses a URP Vignette blackdown and widens the field of view (zoom-out), easing both back; in two steps, lighter while stamina is low and stronger once the bar is empty. `Lv1Scene` gets a global Volume with a Vignette override
+- `CameraEfxConfig` asset: the camera efx tuning in one place, i.e. the vignette intensity & zoom-out of both cool-down steps, ease times, and the retrigger cooldown, was fields on `CameraCoolDownEfx`; the hit shake stays on its impulse sources
+- `CameraHitShakeEfx` on the main camera: a branch hit gives a light camera shake, a falling cobra hit a heavier one, each from its own `CinemachineImpulseSource`
+- `HitBranchDetection.I` singleton, `Hit` event carrying a `HitKind`, and a `ReportHit(Collider, HitKind)` overload
+- `StaminaBarController.lowStaminaFraction` (default 0.1): the stamina bar shake and the camera cool-down play on a move attempt below this share of max stamina, not only on an empty bar; it drives the efx only, an empty bar alone still slows the monkey, and it is not part of `GameBalanceConfig`
 - grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
 - Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
 - `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins
@@ -37,6 +36,8 @@ Bug spider web fail to load & log warning
 - the ramp curve is read above the starter zone exit trigger, not the player's start y; score & height display still measure from the start y
 - branch & banana curves in `GameBalanceConfig` retuned to start at difficulty 0
 - Great Cobra `startHeight` -5 → -10
+- `StaminaBarController.ExhaustedMoveAttempted` → `LowStaminaMoveAttempted`, raised through the new `IsLowStamina` check
+- `HitBranchDetection` only detects and reports hits; the camera shake moved to `CameraHitShakeEfx`, and the impulse source left the Monkey prefab
 - the commit rule in `AGENTS.md` lets agents commit w/ Unity running once the user confirms
 
 ##### Wenhai Dong

@@ -12,6 +12,14 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
+    /// <summary>
+    /// if stamina is below <c>lowStaminaFraction</c> of the max, empty
+    /// included; feeds the feedback efx only, never gameplay
+    /// </summary>
+    public bool IsLowStamina =>
+        balanceConfig != null
+        && currentStamina < lowStaminaFraction * MaxStamina;
+
     /// <returns>stamina ceiling from the balance config, 0 w/o a config
     /// </returns>
     public float MaxStamina =>
@@ -21,9 +29,10 @@ public class StaminaBarController: MonoBehaviour {
     public event Action FruitConsumed;
 
     /// <summary>
-    /// raised when the player tries to move while the bar is empty
+    /// raised when the player tries to move while stamina is low, see
+    /// <see cref="IsLowStamina"/>
     /// </summary>
-    public event Action ExhaustedMoveAttempted;
+    public event Action LowStaminaMoveAttempted;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -37,14 +46,14 @@ public class StaminaBarController: MonoBehaviour {
 
     /// <summary>
     /// reports a move input, called every physics step the player holds one;
-    /// raises <see cref="ExhaustedMoveAttempted"/> iff the bar is empty
+    /// raises <see cref="LowStaminaMoveAttempted"/> iff stamina is low
     /// </summary>
     public void NotifyMoveAttempt() {
-        if (HasStamina) {
+        if (!IsLowStamina) {
             return;
         }
 
-        ExhaustedMoveAttempted?.Invoke();
+        LowStaminaMoveAttempted?.Invoke();
     }
 
     public void AddStamina(float amount) {
@@ -87,6 +96,15 @@ public class StaminaBarController: MonoBehaviour {
     [SerializeField]
     [Tooltip("game balance tuning; stamina budget and drain rate")]
     private GameBalanceConfig balanceConfig;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "feedback efx (bar shake, camera cool-down) play on a move attempt "
+            + "below this fraction of max stamina; 0.1 = below 10%. Efx "
+            + "only, an empty bar alone slows the monkey"
+    )]
+    private float lowStaminaFraction = 0.1f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {

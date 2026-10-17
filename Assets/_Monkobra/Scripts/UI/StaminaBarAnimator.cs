@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// drives the stamina bar's feedback motion: a scale punch each time a fruit
-/// is consumed, a position shake when the player tries to move on an empty
+/// is consumed, a position shake when the player tries to move on a low
 /// bar. Reacts to <see cref="StaminaBarController"/> events, holds no stamina
 /// state itself
 /// </summary>
@@ -42,12 +42,12 @@ public class StaminaBarAnimator: MonoBehaviour {
 
     private void OnEnable() {
         controller.FruitConsumed += OnFruitConsumed;
-        controller.ExhaustedMoveAttempted += OnExhaustedMoveAttempted;
+        controller.LowStaminaMoveAttempted += OnLowStaminaMoveAttempted;
     }
 
     private void OnDisable() {
         controller.FruitConsumed -= OnFruitConsumed;
-        controller.ExhaustedMoveAttempted -= OnExhaustedMoveAttempted;
+        controller.LowStaminaMoveAttempted -= OnLowStaminaMoveAttempted;
         ResetPose();
     }
 
@@ -68,7 +68,7 @@ public class StaminaBarAnimator: MonoBehaviour {
     }
 
     // ignored while a shake runs or cools down, a held key calls every step
-    private void OnExhaustedMoveAttempted() {
+    private void OnLowStaminaMoveAttempted() {
         if (isShaking || Time.time < nextShakeTimeS) {
             return;
         }

@@ -186,7 +186,8 @@ public class MonkeyPrefabRoot: MonoBehaviour {
         // an empty stamina bar slows the monkey instead of ending the run
         StaminaBarController staminaBar = StaminaBarController.I;
         bool isExhausted = staminaBar != null && !staminaBar.HasStamina;
-        if (isExhausted && hasInput) {
+        // the controller decides if stamina is low enough for the efx
+        if (staminaBar != null && hasInput) {
             staminaBar.NotifyMoveAttempt();
         }
         float upSpeedScale = isExhausted
