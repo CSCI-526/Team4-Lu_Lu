@@ -1,8 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-TODO camera cool down efx during no stamina
-TODO camera shake when hit branch & falling cobra
+FIXME cooldown efx & progress bar shake below range
 
 TODO great cobra indicator
 TODO falling snake indicator
@@ -19,6 +18,9 @@ Bug spider web fail to load & log warning
 
 ##### Erik
 
+- `CameraCoolDownEfx` on the main camera: each move attempt on an empty stamina bar pulses a URP Vignette blackdown and widens the field of view (zoom-out), easing both back; tuned by peak intensity, FOV delta, ease times, and a retrigger cooldown. `Lv1Scene` gets a global Volume with a Vignette override
+- `CameraHitShakeEfx` on the main camera: a branch hit gives a light camera shake, a falling cobra hit a heavier one, each from its own `CinemachineImpulseSource`
+- `HitBranchDetection.I` singleton, `Hit` event carrying a `HitKind`, and a `ReportHit(Collider, HitKind)` overload
 - grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
 - Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
 - `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins
@@ -32,6 +34,7 @@ Bug spider web fail to load & log warning
 - the ramp curve is read above the starter zone exit trigger, not the player's start y; score & height display still measure from the start y
 - branch & banana curves in `GameBalanceConfig` retuned to start at difficulty 0
 - Great Cobra `startHeight` -5 → -10
+- `HitBranchDetection` only detects and reports hits; the camera shake moved to `CameraHitShakeEfx`, and the impulse source left the Monkey prefab
 - the commit rule in `AGENTS.md` lets agents commit w/ Unity running once the user confirms
 
 ##### Wenhai Dong

@@ -66,7 +66,7 @@ graph LR
   Cfg --> Arm
   Root --> Hit[HitBranchDetection]
   Hit -->|BranchHit| Root
-  Hit --> Shake[Cinemachine impulse]
+  Hit -->|Hit w/ kind| Shake[CameraHitShakeEfx]
   Zones[DetectionZone x2] --> Fruit[UpwardFruitDetection]
   Fruit --> Cam[CameraRigManager]
   Fruit --> Outline[FruitOutlineListener]
@@ -107,7 +107,9 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Player/UpwardFruitDetection` | singleton, reachable and grabbable fruit | [Grab](docs/grab-doc.md#detection) |
 | `Cameras/CameraRigManager` | swaps the three Cinemachine cameras | [Grab](docs/grab-doc.md#camera) |
 | `Cameras/CameraLookUp` | on the behind camera: tilts the aim point up while climbing | none |
-| `Player/HitBranchDetection` | branch sensor: raises `BranchHit`, shakes the camera; `ReportHit` applies the same drop for a hazard that touched the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
+| `Cameras/CameraHitShakeEfx` | on the main camera: fires a light impulse for a branch hit, a heavier one for a falling cobra hit | [Mobs](docs/mob-doc.md#hit-penalty) |
+| `Cameras/CameraCoolDownEfx` | on the main camera: vignette blackdown and zoom-out pulse on each empty-bar move attempt | [TDD](docs/monkobra-tdd.md#camera) |
+| `Player/HitBranchDetection` | singleton branch sensor: raises `BranchHit` and `Hit` (with a `HitKind`), shakes nothing itself; `ReportHit` applies the same drop for a hazard that touched the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
 | `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis; its `MinY` and `MaxY` are no longer read | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/DynamicTreeSegmentPrefabRoot` | places branches on a segment, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/DTSPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |

@@ -161,7 +161,12 @@ The test scenes have no `ScoreManager`.
 
 ## Camera
 
-Three Cinemachine cameras (behind, look-left, look-right) are swapped by priority, and a shake comes from a Cinemachine impulse source on the branch sensor. The swap rules are in the [Grab System](grab-doc.md#camera), the shake trigger in [Mobs](mob-doc.md#hit-penalty).
+Three Cinemachine cameras (behind, look-left, look-right) are swapped by priority. Every camera script sits on the main camera, next to the `CinemachineBrain`, and finds gameplay objects through their `I` singletons.
+
+- Hit shake: `CameraHitShakeEfx` reads `HitBranchDetection.I` and fires one of two `CinemachineImpulseSource` components on the camera by hit kind, light for a branch, heavy for a falling cobra. Amplitude and duration are tuned on the sources, and the strength a view feels also scales with its camera's impulse listener gain
+- Cool-down: `CameraCoolDownEfx` listens to `StaminaBarController.ExhaustedMoveAttempted` and pulses a URP Vignette on a global Volume plus a field-of-view widen on the live Cinemachine camera, easing both back to rest; a running pulse ignores repeats and a short cooldown follows
+
+The swap rules are in the [Grab System](grab-doc.md#camera), the hit trigger in [Mobs](mob-doc.md#hit-penalty).
 
 ## Input
 
