@@ -16,6 +16,12 @@ public class HitBranchDetection: MonoBehaviour {
     public event Action<Collider> BranchHit;
 
     /// <summary>
+    /// Raised with the hazard collider and what struck the monkey on every
+    /// hit, so camera efx can pick a shake per kind.
+    /// </summary>
+    public event Action<Collider, HitKind> Hit;
+
+    /// <summary>
     /// What struck the monkey; picks which camera shake plays.
     /// </summary>
     public enum HitKind {
@@ -64,6 +70,7 @@ public class HitBranchDetection: MonoBehaviour {
             Debug.Log($"HitBranchDetection:\thit {kind} {source.name}");
         }
         impulseSource.GenerateImpulse();
+        Hit?.Invoke(source, kind);
         BranchHit?.Invoke(source);
     }
 
