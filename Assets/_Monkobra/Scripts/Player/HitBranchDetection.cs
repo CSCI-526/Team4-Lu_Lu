@@ -10,6 +10,10 @@ using UnityEngine;
 [RequireComponent(typeof(CinemachineImpulseSource))]
 public class HitBranchDetection: MonoBehaviour {
     // Public Members  #########################################################
+    public static HitBranchDetection I {
+        get; private set;
+    }
+
     /// <summary>
     /// Raised with the branch collider whenever this trigger touches one.
     /// </summary>
@@ -52,7 +56,14 @@ public class HitBranchDetection: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        I = this;
         impulseSource = GetComponent<CinemachineImpulseSource>();
+    }
+
+    private void OnDestroy() {
+        if (I == this) {
+            I = null;
+        }
     }
 
     // Event Handlers  #########################################################
