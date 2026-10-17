@@ -1,13 +1,12 @@
 using System;
-using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
-/// Attach to a detection trigger collider; fires a camera shake whenever it
-/// touches a collider tagged <c>Branch</c>. Uses the
-/// <c>CinemachineImpulseSource</c> on the same object.
+/// Attach to a detection trigger collider; reports a hit whenever it touches
+/// a collider tagged <c>Branch</c>, or a hazard calls
+/// <see cref="ReportHit(Collider, HitKind)"/>. Only detects: the camera
+/// shake is <see cref="CameraHitShakeEfx"/>'s job.
 /// </summary>
-[RequireComponent(typeof(CinemachineImpulseSource))]
 public class HitBranchDetection: MonoBehaviour {
     // Public Members  #########################################################
     public static HitBranchDetection I {
@@ -26,7 +25,7 @@ public class HitBranchDetection: MonoBehaviour {
     public event Action<Collider, HitKind> Hit;
 
     /// <summary>
-    /// What struck the monkey; picks which camera shake plays.
+    /// What struck the monkey; camera efx picks a shake per kind.
     /// </summary>
     public enum HitKind {
         Branch,
@@ -36,7 +35,7 @@ public class HitBranchDetection: MonoBehaviour {
     // Public Methods  #########################################################
     /// <summary>
     /// Applies a branch hit from a hazard that touched another part of the
-    /// monkey, not this sensor: the same camera shake and
+    /// monkey, not this sensor: the same <see cref="Hit"/> and
     /// <see cref="BranchHit"/> as a sensor contact.
     /// </summary>
     /// <param name="source">the hazard's collider</param>
@@ -49,7 +48,8 @@ public class HitBranchDetection: MonoBehaviour {
     /// the monkey.
     /// </summary>
     /// <param name="source">the hazard's collider</param>
-    /// <param name="kind">the hazard type, picks the camera shake</param>
+    /// <param name="kind">the hazard type, raised with <see cref="Hit"/>
+    /// </param>
     public void ReportHit(Collider source, HitKind kind) {
         ApplyHit(source, kind);
     }
@@ -57,7 +57,6 @@ public class HitBranchDetection: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         I = this;
-        impulseSource = GetComponent<CinemachineImpulseSource>();
     }
 
     private void OnDestroy() {
@@ -80,14 +79,10 @@ public class HitBranchDetection: MonoBehaviour {
         if (Debug.isDebugBuild) {
             Debug.Log($"HitBranchDetection:\thit {kind} {source.name}");
         }
-        impulseSource.GenerateImpulse();
         Hit?.Invoke(source, kind);
         BranchHit?.Invoke(source);
     }
 
     // constants  ##############################################################
     private const string BRANCH_TAG = "Branch";
-
-    // cached references  ------------------------------------------------------
-    private CinemachineImpulseSource impulseSource;
 }
