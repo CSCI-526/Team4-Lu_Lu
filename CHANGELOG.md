@@ -21,9 +21,18 @@ Bug spider web fail to load & log warning
 
 - grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
 - Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
-- `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins; the collision trigger that calls it is not built yet
+- `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins
+- `StarterZoneExitRelay`: on a trigger collider, the monkey entering ends the starter zone
+- `RampedDifficultyService` `rampBase` field & `RampBaseYPosition`: the ramped difficulty starts at 0 at the y of the starter zone exit trigger, falling back to the player's start y while unassigned
 
 ### Changed
+
+##### Erik
+
+- the ramp curve is read above the starter zone exit trigger, not the player's start y; score & height display still measure from the start y
+- branch & banana curves in `GameBalanceConfig` retuned to start at difficulty 0
+- Great Cobra `startHeight` -5 → -10
+- the commit rule in `AGENTS.md` lets agents commit w/ Unity running once the user confirms
 
 ##### Wenhai Dong
 
