@@ -3,6 +3,13 @@ public enum GameState {
     /// <summary>Paused on the tutorial screen, any key starts the run.</summary>
     Tutorial,
 
+    /// <summary>
+    /// Run is live and the monkey can lose, ends when
+    /// <see cref="GameController.EndStarterZone"/> is called, then
+    /// becomes <see cref="Playing"/>.
+    /// </summary>
+    StarterZone,
+
     /// <summary>Run in progress, never paused, ends only on a loss.</summary>
     Playing,
 

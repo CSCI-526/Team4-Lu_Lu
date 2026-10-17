@@ -59,6 +59,8 @@ The chasing cobra is code-built geometry on one root: `CobraClimb` poses the bod
 - Coil: the body spans at least one full loop, and `Awake` clones the last segment until no gap along the coil exceeds `maxSegmentGapU`, so the monkey cannot slip through by orbiting
 - Look: a chain of rounded beads with small gaps, slightly tapered, a flat hooded head with primitive-sphere eyes, a raised neck, and a slow slither wave. The hit shape stays gapless even where the visual has gaps
 
+In the starter zone game state the cobra stays active and keeps orbiting, but its height is fixed: it does not climb until the state becomes Playing.
+
 The cobra's shape, orbit, coil, and slow-down values are fields on `CobraClimb`, set on the `GreatCobra` prefab.
 
 The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)) is above the cobra's base speed, so it can outrun the cobra, but only by spending stamina.

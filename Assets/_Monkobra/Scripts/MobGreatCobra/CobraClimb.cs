@@ -275,10 +275,18 @@ public class CobraClimb: MonoBehaviour {
         // always up, never held at the player's height and never down: the
         // coil climbs on into the monkey, and a monkey moving or dropping
         // down runs into it instead of pushing it
-        headHeight += currentClimbSpeed * Time.deltaTime;
+        // except in the starter zone: the cobra stays active & orbits, but
+        // holds its height until the zone ends
+        if (!IsInStarterZone) {
+            headHeight += currentClimbSpeed * Time.deltaTime;
+        }
 
         UpdateBody();
     }
+
+    private static bool IsInStarterZone =>
+        GameController.I != null
+        && GameController.I.State == GameState.StarterZone;
 
     private void OnDestroy() {
         if (playerSensor != null) {
