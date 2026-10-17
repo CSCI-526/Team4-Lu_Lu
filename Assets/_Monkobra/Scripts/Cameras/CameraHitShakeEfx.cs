@@ -2,18 +2,15 @@ using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
-/// Camera shake for monkey hits, kept apart from hit detection. Listens to
+/// Camera shake for monkey hits, kept apart from hit detection. Sits on the
+/// main camera, next to the <c>CinemachineImpulseListener</c>. Listens to
 /// <see cref="HitBranchDetection.Hit"/> and fires a light impulse for a
 /// branch, a heavier one for a falling cobra. Each kind has its own
-/// <see cref="CinemachineImpulseSource"/>, so amplitude and duration are
-/// tuned per kind in the Inspector.
+/// <see cref="CinemachineImpulseSource"/> on the same camera, so amplitude
+/// and duration are tuned per kind in the Inspector.
 /// </summary>
 public class CameraHitShakeEfx: MonoBehaviour {
     // Inspector Fields  #######################################################
-    [Tooltip("sensor that reports the hits")]
-    [SerializeField]
-    private HitBranchDetection hitSensor;
-
     [Tooltip("impulse for a branch hit, the lighter shake")]
     [SerializeField]
     private CinemachineImpulseSource lightSource;
@@ -25,12 +22,6 @@ public class CameraHitShakeEfx: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (hitSensor == null) {
-            Debug.LogWarning(
-                "CameraHitShakeEfx:\tmust assign Inspector Field: hitSensor",
-                this
-            );
-        }
         if (lightSource == null) {
             Debug.LogWarning(
                 "CameraHitShakeEfx:\tmust assign Inspector Field: "
@@ -47,16 +38,28 @@ public class CameraHitShakeEfx: MonoBehaviour {
         }
     }
 
-    private void OnEnable() {
-        if (hitSensor != null) {
-            hitSensor.Hit += OnHit;
+    // the sensor lives in the monkey, so it is read after every Awake ran
+    private void Start() {
+        sensor = HitBranchDetection.I;
+        if (sensor == null) {
+            Debug.LogError(
+                "CameraHitShakeEfx:\tfail to get singleton: "
+                    + "HitBranchDetection",
+                this
+            );
+            enabled = false;
+            return;
         }
+
+        sensor.Hit += OnHit;
     }
 
     private void OnDisable() {
-        if (hitSensor != null) {
-            hitSensor.Hit -= OnHit;
-        }
+        Unsubscribe();
+    }
+
+    private void OnDestroy() {
+        Unsubscribe();
     }
 
     // Event Handlers  #########################################################
@@ -75,6 +78,17 @@ public class CameraHitShakeEfx: MonoBehaviour {
 
         if (Debug.isDebugBuild) {
             Debug.Log($"CameraHitShakeEfx:\tshake {kind}", this);
+        }
+    }
+
+    // private members  ########################################################
+    private HitBranchDetection sensor;
+
+    // private methods  ########################################################
+    private void Unsubscribe() {
+        if (sensor != null) {
+            sensor.Hit -= OnHit;
+            sensor = null;
         }
     }
 }
