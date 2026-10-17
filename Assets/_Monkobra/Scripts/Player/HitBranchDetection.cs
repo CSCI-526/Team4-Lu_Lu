@@ -15,6 +15,14 @@ public class HitBranchDetection: MonoBehaviour {
     /// </summary>
     public event Action<Collider> BranchHit;
 
+    /// <summary>
+    /// What struck the monkey; picks which camera shake plays.
+    /// </summary>
+    public enum HitKind {
+        Branch,
+        FallingCobra,
+    }
+
     // Public Methods  #########################################################
     /// <summary>
     /// Applies a branch hit from a hazard that touched another part of the
@@ -23,7 +31,17 @@ public class HitBranchDetection: MonoBehaviour {
     /// </summary>
     /// <param name="source">the hazard's collider</param>
     public void ReportHit(Collider source) {
-        ApplyHit(source);
+        ApplyHit(source, HitKind.Branch);
+    }
+
+    /// <summary>
+    /// Same as <see cref="ReportHit(Collider)"/>, tagged with what struck
+    /// the monkey.
+    /// </summary>
+    /// <param name="source">the hazard's collider</param>
+    /// <param name="kind">the hazard type, picks the camera shake</param>
+    public void ReportHit(Collider source, HitKind kind) {
+        ApplyHit(source, kind);
     }
 
     // MonoBehaviour Lifecycle  ################################################
@@ -37,13 +55,13 @@ public class HitBranchDetection: MonoBehaviour {
             return;
         }
 
-        ApplyHit(other);
+        ApplyHit(other, HitKind.Branch);
     }
 
     // private methods  ########################################################
-    private void ApplyHit(Collider source) {
+    private void ApplyHit(Collider source, HitKind kind) {
         if (Debug.isDebugBuild) {
-            Debug.Log($"HitBranchDetection:\thit branch {source.name}");
+            Debug.Log($"HitBranchDetection:\thit {kind} {source.name}");
         }
         impulseSource.GenerateImpulse();
         BranchHit?.Invoke(source);
