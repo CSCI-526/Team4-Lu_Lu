@@ -81,6 +81,7 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - Push often: `git push -u origin <branch>` first, then `git push`
 - Unity running does not block a commit: the Editor buffers scene and prefab edits, so an open Editor can leave them out of the commit; if Unity is running, tell the user and ask for confirmation, then commit once they confirm
 - Finish: `git fetch origin`, update local `dev` (`git switch dev && git pull origin dev`), `git switch <branch>`, `git merge dev`; resolve conflicts yourself, and for scene or prefab conflicts you cannot reconcile safely, stop and ask the user
+- Scene, prefab, and asset conflicts: never hand-merge; run `UnityYAMLMerge.exe merge -p <base> <theirs> <ours> <merged>` (in `C:\Program Files\Unity\Hub\Editor\6000.3.22f1\Editor\Data\Tools\`) on the `git show :1:` / `:3:` / `:2:` versions, then copy the result over the file
 - After the merge: ask the user to reopen Unity and confirm the scene works before the final commit and push
 - Dev scenes: a personal copy of `Lv1Scene.unity` under `Assets/_Monkobra/Scenes/` is allowed for experiments; before the final merge the feature must exist in `Lv1Scene.unity`, never only in the personal scene
 - PR: `gh pr create --base dev`; nothing further is needed after the PR is created
