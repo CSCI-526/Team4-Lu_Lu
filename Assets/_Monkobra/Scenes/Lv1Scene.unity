@@ -1732,12 +1732,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4cb8ca24d725ac45bf8a02bdfa5891f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraCoolDownEfx
+  config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}
   volume: {fileID: 1931554831}
-  peakIntensity: 0.7
-  fovDeltaDeg: 12
-  easeInS: 0.1
-  easeOutS: 1.2
-  retriggerCooldownS: 0.5
 --- !u!1 &762143288
 GameObject:
   m_ObjectHideFlags: 0
