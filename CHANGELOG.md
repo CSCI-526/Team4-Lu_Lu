@@ -1,13 +1,13 @@
 # Monkobra CHANGELOG
 
 <!--
-Todo camera cool down efx during no stamina
-Todo camera shake when hit branch & falling cobra
+TODO camera cool down efx during no stamina
+TODO camera shake when hit branch & falling cobra
 
-Todo great cobra indicator
-Todo falling snake indicator
+TODO great cobra indicator
+TODO falling snake indicator
 
-Todo grabbed banana -> stamina bar
+TODO grabbed banana -> stamina bar
 
 Bug spider web fail to load & log warning
 -->
