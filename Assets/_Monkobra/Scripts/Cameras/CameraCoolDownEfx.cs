@@ -7,48 +7,30 @@ using UnityEngine.Rendering.Universal;
 /// Cool-down feedback on the whole view while stamina is low: a
 /// circular blackdown from the URP Vignette plus a zoom-out from widening
 /// the live <see cref="CinemachineCamera"/>'s field of view, both easing in
-/// and back out. Sits on the main camera, next to the
-/// <c>CinemachineBrain</c>. Pulses on every
-/// <see cref="StaminaBarController.LowStaminaMoveAttempted"/>, and both
+/// and back out. Two steps: a lighter one while stamina is low, a stronger
+/// one once the bar is empty, both tuned in <see cref="CameraEfxConfig"/>.
+/// Sits on the main camera, next to the <c>CinemachineBrain</c>. Pulses on
+/// every <see cref="StaminaBarController.LowStaminaMoveAttempted"/>, and both
 /// values return to rest when the pulse ends or this component is disabled.
 /// </summary>
 public class CameraCoolDownEfx: MonoBehaviour {
     // Inspector Fields  #######################################################
-    [Header("Vignette")]
+    [Tooltip("tuning for both cool-down steps and their timing")]
+    [SerializeField]
+    private CameraEfxConfig config;
+
     [Tooltip("global volume whose profile holds a Vignette override")]
     [SerializeField]
     private Volume volume;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    [Tooltip("vignette intensity at the pulse peak; 0 none, 1 full black edge")]
-    private float peakIntensity = 0.6f;
-
-    [Header("Zoom Out")]
-    [SerializeField]
-    [Tooltip("extra field of view at the pulse peak; deg")]
-    private float fovDeltaDeg = 12f;
-
-    [Header("Timing")]
-    [SerializeField]
-    [Tooltip("ease from rest to peak; s")]
-    private float easeInS = 0.1f;
-
-    [SerializeField]
-    [Tooltip("ease from peak back to rest; s")]
-    private float easeOutS = 0.4f;
-
-    [SerializeField]
-    [Tooltip("wait after a pulse ends before a low-stamina move may start "
-        + "the next; s")]
-    private float retriggerCooldownS = 0.2f;
 
     // Public Methods  #########################################################
     /// <summary>
     /// starts a pulse, or restarts a running one from rest weight
     /// </summary>
-    public void Pulse() {
-        if (vignette == null) {
+    /// <param name="isEmpty">whether to play the empty-bar step, the low
+    /// step otherwise</param>
+    public void Pulse(bool isEmpty) {
+        if (vignette == null || config == null) {
             return;
         }
 
@@ -62,17 +44,31 @@ public class CameraCoolDownEfx: MonoBehaviour {
                 baseFovDeg = fovCamera.Lens.FieldOfView;
             }
         }
+        level = isEmpty ? config.EmptyLevel : config.LowLevel;
+        isEmptyPulse = isEmpty;
         elapsedS = 0f;
         isPulsing = true;
         vignette.intensity.overrideState = true;
 
         if (Debug.isDebugBuild) {
-            Debug.Log("CameraCoolDownEfx:\tpulse", this);
+            Debug.Log(
+                $"CameraCoolDownEfx:\tpulse {(isEmpty ? "empty" : "low")}",
+                this
+            );
         }
     }
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        if (config == null) {
+            Debug.LogWarning(
+                "CameraCoolDownEfx:\tmust assign Inspector Field: config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
         brain = GetComponent<CinemachineBrain>();
         if (brain == null) {
             Debug.LogWarning(
@@ -132,31 +128,43 @@ public class CameraCoolDownEfx: MonoBehaviour {
         float weight = CalcWeight(elapsedS);
         vignette.intensity.value = Mathf.Lerp(
             baseIntensity,
-            peakIntensity,
+            level.VignetteIntensity,
             weight
         );
         if (fovCamera != null) {
-            fovCamera.Lens.FieldOfView = baseFovDeg + fovDeltaDeg * weight;
+            fovCamera.Lens.FieldOfView =
+                baseFovDeg + level.FovDeltaDeg * weight;
         }
 
-        if (elapsedS >= easeInS + easeOutS) {
+        if (elapsedS >= config.EaseInS + config.EaseOutS) {
             ResetPose();
-            nextPulseTimeS = Time.unscaledTime + retriggerCooldownS;
+            nextPulseTimeS = Time.unscaledTime + config.RetriggerCooldownS;
         }
     }
 
     // Event Handlers  #########################################################
-    // ignored while a pulse runs or cools down, a held key calls every step
+    // ignored while a pulse runs or cools down, a held key calls every step;
+    // a low pulse in flight steps up to the empty one once the bar empties,
+    // rising on from its current weight instead of dropping back to rest
     private void OnLowStaminaMoveAttempted() {
+        bool isEmpty = !staminaBar.HasStamina;
+        if (isPulsing && isEmpty && !isEmptyPulse) {
+            level = config.EmptyLevel;
+            isEmptyPulse = true;
+            elapsedS = Mathf.Min(elapsedS, config.EaseInS);
+            return;
+        }
         if (isPulsing || Time.unscaledTime < nextPulseTimeS) {
             return;
         }
 
-        Pulse();
+        Pulse(isEmpty);
     }
 
     // private members  ########################################################
     private bool isPulsing;
+    private bool isEmptyPulse;
+    private CameraEfxConfig.CoolDownLevel level;
     private float elapsedS;
     private float nextPulseTimeS;
     private float baseIntensity;
@@ -172,6 +180,8 @@ public class CameraCoolDownEfx: MonoBehaviour {
     // private methods  ########################################################
     // 0 at rest, 1 at the peak; smoothstep eases both slopes
     private float CalcWeight(float timeS) {
+        float easeInS = config.EaseInS;
+        float easeOutS = config.EaseOutS;
         float t = timeS < easeInS
             ? (easeInS > 0f ? timeS / easeInS : 1f)
             : 1f - (easeOutS > 0f ? (timeS - easeInS) / easeOutS : 1f);

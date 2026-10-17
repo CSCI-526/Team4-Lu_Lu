@@ -108,7 +108,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Cameras/CameraRigManager` | swaps the three Cinemachine cameras | [Grab](docs/grab-doc.md#camera) |
 | `Cameras/CameraLookUp` | on the behind camera: tilts the aim point up while climbing | none |
 | `Cameras/CameraHitShakeEfx` | on the main camera: fires a light impulse for a branch hit, a heavier one for a falling cobra hit | [Mobs](docs/mob-doc.md#hit-penalty) |
-| `Cameras/CameraCoolDownEfx` | on the main camera: vignette blackdown and zoom-out pulse on each low-stamina move attempt | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraCoolDownEfx` | on the main camera: vignette blackdown and zoom-out pulse on each low-stamina move attempt, a lighter step while low and a stronger one when empty | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraEfxConfig` | ScriptableObject of the camera efx tuning: both cool-down steps (vignette, zoom-out) and their timing | [TDD](docs/monkobra-tdd.md#camera) |
 | `Player/HitBranchDetection` | singleton branch sensor: raises `BranchHit` and `Hit` (with a `HitKind`), shakes nothing itself; `ReportHit` applies the same drop for a hazard that touched the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
 | `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis; its `MinY` and `MaxY` are no longer read | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/DynamicTreeSegmentPrefabRoot` | places branches on a segment, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
