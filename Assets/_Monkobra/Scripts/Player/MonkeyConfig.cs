@@ -34,6 +34,10 @@ public class MonkeyConfig: ScriptableObject {
     /// </returns>
     public float ReachExtendSpeedU => reachExtendSpeedU;
 
+    /// <returns>speed the held aim turns toward the fruit; deg/s, 0 snaps
+    /// to it</returns>
+    public float ReachAimSpeedDeg => reachAimSpeedDeg;
+
     /// <returns>if the linear drive target is negated to push the arm
     /// outward, the usual joint axis setup</returns>
     public bool InvertDriveAxis => invertDriveAxis;
@@ -80,6 +84,13 @@ public class MonkeyConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("arm stretch speed while interact is held; u/s")]
     private float reachExtendSpeedU = 4f;
+
+    [SerializeField]
+    [Tooltip(
+        "speed the arm turns toward the fruit while interact is held, in "
+            + "deg/s, 0 snaps to it"
+    )]
+    private float reachAimSpeedDeg = 360f;
 
     [SerializeField]
     [Tooltip("uncheck if an arm telescopes inward instead of outward")]
@@ -133,6 +144,7 @@ public class MonkeyConfig: ScriptableObject {
         maxAngleDeg = Mathf.Max(minAngleDeg, maxAngleDeg);
         strokeSpeedDeg = Mathf.Max(0f, strokeSpeedDeg);
         reachExtendSpeedU = Mathf.Max(0f, reachExtendSpeedU);
+        reachAimSpeedDeg = Mathf.Max(0f, reachAimSpeedDeg);
         armWidthU = Mathf.Max(0.001f, armWidthU);
         rotationSpeedDeg = Mathf.Max(0f, rotationSpeedDeg);
         accelerationU = Mathf.Max(0f, accelerationU);

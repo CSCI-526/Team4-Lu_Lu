@@ -668,6 +668,14 @@ MonoBehaviour:
   cobraHead: {fileID: 423716334}
   cobraMarker: {fileID: 1428035531}
   windowSizeY: 60
+  catchUpText: The cobra is speeding up!
+  catchUpStackFormat: ' x{0}'
+  catchUpColor: {r: 1, g: 0.2, b: 0.15, a: 1}
+  catchUpPulseHz: 3
+  catchUpFontScreenShare: 0.07
+  catchUpShowS: 1.5
+  catchUpFadeS: 0.5
+  catchUpScreenY: 0.65
 --- !u!4 &332351311 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7491037331942951093, guid: d7b7ba174e361a94b843e9a27ce78bba, type: 3}
@@ -1198,6 +1206,7 @@ Transform:
   m_Children:
   - {fileID: 762143289}
   - {fileID: 824126027}
+  - {fileID: 1700353540}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &463401526
@@ -2105,6 +2114,8 @@ MonoBehaviour:
   spawnRadiusU: 5.88
   minCobraSeparationU: 4
   maxPlacementAttempts: 20
+  ambushMinAboveBananaU: 3
+  ambushMaxAboveBananaU: 6
 --- !u!1 &825330269
 GameObject:
   m_ObjectHideFlags: 0
@@ -3086,6 +3097,72 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1700353539
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1700353540}
+  - component: {fileID: 1700353541}
+  - component: {fileID: 1700353542}
+  m_Layer: 0
+  m_Name: StarterZoneExitTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1700353540
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1700353539}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 15, z: 0}
+  m_LocalScale: {x: 50, y: 1, z: 50}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 428586741}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1700353541
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1700353539}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1700353542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1700353539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68c8edb89f4a9b74e9bc653eea55c266, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StarterZoneExitRelay
 --- !u!1 &1716142254
 GameObject:
   m_ObjectHideFlags: 0
@@ -3774,6 +3851,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RampedDifficultyService
   balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  rampBase: {fileID: 1700353540}
 --- !u!114 &2100000003
 MonoBehaviour:
   m_ObjectHideFlags: 0

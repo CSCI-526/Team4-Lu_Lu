@@ -9,9 +9,9 @@ using UnityEngine.InputSystem;
 /// the shoulder, so this transform is the hand.
 /// <para>
 /// Sweeps a climb stroke on move input, left and right alternating. Holding
-/// interact aims once at the newest fruit and stretches out along that line,
-/// releasing grabs the fruit iff the hand overlaps it then: too short or
-/// stretched past it is a miss.
+/// interact picks the newest fruit, keeps re-aiming at it every physics step
+/// and stretches out, releasing grabs the fruit iff the hand overlaps it
+/// then: too short or stretched past it is a miss.
 /// </para>
 /// <para>
 /// The <see cref="ConfigurableJoint"/> is authored in the Inspector, this
@@ -312,8 +312,9 @@ public class ArmRoot: MonoBehaviour {
         reachFruit = fruit;
         reachExtensionU = 0f;
         fruitDetection.SetLockedTarget(fruit);
-        // aim once, the arm then only stretches along that line
-        SetAimWorld(fruit.transform.position - ShoulderWorld);
+        // first aim snaps, DriveReach then turns toward the fruit while held
+        aimDirection = (fruit.transform.position - ShoulderWorld).normalized;
+        SetAimWorld(aimDirection);
         // a settled arm sleeps, a new drive target alone will not wake it
         if (body != null) {
             body.WakeUp();
@@ -335,6 +336,7 @@ public class ArmRoot: MonoBehaviour {
     private Collider reachFruit; // fruit the reach aims at
     private Collider reportedFruit; // fruit this arm reported as grabbable
     private float reachExtensionU; // commanded extension while held; u
+    private Vector3 aimDirection; // world direction the arm is commanded to
     private float cyclePhase; // 0..1, advances only while moving
     private float restLengthU;
 
@@ -462,7 +464,7 @@ public class ArmRoot: MonoBehaviour {
     {
         if (Time.timeScale <= 0f
             || (GameController.I != null
-                && GameController.I.State != GameState.Playing)) {
+                && !GameController.I.IsRunLive)) {
             return;
         }//暂停或游戏结束后，不再摘水果
         if (!isReaching || reachFruit == null) {
@@ -540,9 +542,48 @@ public class ArmRoot: MonoBehaviour {
         );
     }
 
-    // stretch at a steady speed along the locked aim, through the fruit,
-    // until released
+    // turn the aim toward the locked fruit, shoulder and fruit both drift
+    // while held. A fruit switched off or destroyed is dropped, so release
+    // grabs nothing and the outline pin clears
+    private void AimAtReachFruit() {
+        if (reachFruit == null || !reachFruit.gameObject.activeInHierarchy) {
+            DropReachFruit();
+            return;
+        }
+
+        Vector3 toFruit = reachFruit.transform.position - ShoulderWorld;
+        if (toFruit.sqrMagnitude <= Mathf.Epsilon) {
+            return;
+        }
+
+        float turnSpeedDeg = config.ReachAimSpeedDeg;
+        aimDirection =
+            turnSpeedDeg <= 0f
+                ? toFruit.normalized
+                : Vector3.RotateTowards(
+                    aimDirection,
+                    toFruit.normalized,
+                    turnSpeedDeg * Mathf.Deg2Rad * Time.fixedDeltaTime,
+                    0f
+                );
+        SetAimWorld(aimDirection);
+    }
+
+    // the aimed fruit is gone: keep the reach, but with nothing to aim at
+    private void DropReachFruit() {
+        if (reachFruit == null && reportedFruit == null) {
+            return;
+        }
+        reachFruit = null;
+        if (UpwardFruitDetection.I != null) {
+            UpwardFruitDetection.I.SetLockedTarget(null);
+        }
+        ReportGrabbableFruit(null);
+    }
+
+    // track the fruit and stretch at a steady speed until released
     private void DriveReach() {
+        AimAtReachFruit();
         reachExtensionU = Mathf.MoveTowards(
             reachExtensionU,
             joint.linearLimit.limit,

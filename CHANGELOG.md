@@ -1,6 +1,17 @@
 # Monkobra CHANGELOG
 
-<!-- fixme: `Lv1Scene` ignores monitor aspect ratio: the camera is orthographic at a fixed size 10, so a wider monitor sees more world sideways & hazards sooner, & the Canvas Scaler is Constant Pixel Size, so UI does not follow resolution -->
+<!--
+Todo camera cool down efx during no stamina
+Todo camera shake when hit branch & falling cobra
+
+Todo great cobra indicator
+Todo falling snake indicator
+
+Todo grabbed banana -> stamina bar
+
+Bug spider web fail to load & log warning
+-->
+
 
 ## [Unreleased]
 
@@ -11,7 +22,22 @@
 - keyboard-style tutorial controls in `Lv1Scene`: WASD cluster & wide Space key drawn from uGUI Images, w/ captions `Move`, `Grab Banana`, `Hold to reach, release to grab`
 - `MonkobraTutorial-SemiBold` UI font (Noto Sans TC subset, SIL OFL) so the tutorial renders in WebGL w/o system fonts
 
+##### Erik
+
+- grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
+- Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
+- `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins
+- `StarterZoneExitRelay`: on a trigger collider, the monkey entering ends the starter zone
+- `RampedDifficultyService` `rampBase` field & `RampBaseYPosition`: the ramped difficulty starts at 0 at the y of the starter zone exit trigger, falling back to the player's start y while unassigned
+
 ### Changed
+
+##### Erik
+
+- the ramp curve is read above the starter zone exit trigger, not the player's start y; score & height display still measure from the start y
+- branch & banana curves in `GameBalanceConfig` retuned to start at difficulty 0
+- Great Cobra `startHeight` -5 → -10
+- the commit rule in `AGENTS.md` lets agents commit w/ Unity running once the user confirms
 
 ##### Wenhai Dong
 

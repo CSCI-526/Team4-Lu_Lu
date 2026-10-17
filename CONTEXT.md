@@ -97,7 +97,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 
 | Script | Role | Detail |
 | --- | --- | --- |
-| `GameController/GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, Playing, Lost; `LoseGame()` takes no cause, analytics infers it | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `GameController/GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, StarterZone, Playing, Lost; `LoseGame()` takes no cause, analytics infers it | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
+| `GameController/StarterZoneExitRelay` | on a trigger collider GO: the monkey entering calls `EndStarterZone()` | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `GameController/GameBalanceConfig` | ScriptableObject holding every balance number | [Balance Design](docs/balance-doc.md) |
 | `Player/MonkeyPrefabRoot` | kinematic body: orbit, climb, stun, `IsHeld` | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/MonkeyConfig` | ScriptableObject of monkey tuning and input actions | [TDD](docs/monkobra-tdd.md#monkey-movement) |
@@ -121,7 +122,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `MobGreatCobra/CobraCollisions` | cobra contact calls `LoseGame` | [Mobs](docs/mob-doc.md#contact) |
 | `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment, attempts against a probability curve at the segment's ramped difficulty, some ambushing just above a banana | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `MobFallingCobra/FallingCobra` | dormant until the monkey is near (farther while it reaches for a banana), then warning, a constant fall that slides toward the monkey's angle, and a hit capsule that drops the monkey on any-part contact, at most twice per snake | [Mobs](docs/mob-doc.md#falling-cobra) |
-| `GameController/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the one climb baseline, and maps it to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [Balance Design](docs/balance-doc.md#difficulty-follows-height) |
+| `GameController/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the climb baseline, and maps any y above the `rampBase` trigger's y (`RampBaseYPosition`) to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [Balance Design](docs/balance-doc.md#difficulty-follows-height) |
 | `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: observes the game, fills a `SessionData` & the open `RunData`, and saves one markdown session file per launch to `persistentDataPath/Analytics/` on every run event, on a timer, and on quit or pause; samples height & stamina on an interval; F9 starts a new session, F10 saves a mock one | none |
 | `Analytics/RunData` | plain data of one run: stamps, timed samples of height & stamina, status (`InProgress`, `Lost`, `Interrupted`), end, death cause, scores; also `EventStamp`, `RunSample`, `RunStatus` | none |
 | `Analytics/DeathCause`, `Analytics/DeathCauseResolver` | static: infers a lost run's cause from its stamps: a branch hit or web encounter w/i `DeathCauseWindowS` before the loss, else `GreatCobra`; also the display names | [TDD](docs/monkobra-tdd.md#run-lifecycle) |

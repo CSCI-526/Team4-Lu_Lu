@@ -1288,7 +1288,7 @@ MonoBehaviour:
   - {fileID: 697809309729298994}
   - {fileID: 8282021799308646717}
   orbitRadius: 5.5
-  startHeight: -5
+  startHeight: -10
   climbSpeed: 3
   orbitSpeedDegrees: 45
   clockwise: 1
