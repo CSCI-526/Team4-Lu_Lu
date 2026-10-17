@@ -1,14 +1,13 @@
 # Monkobra CHANGELOG
 
 <!--
-FIXME add balance, especially need banana during diff = 0
-
 Todo camera cool down efx during no stamina
 Todo camera shake when hit branch & falling cobra
-Todo grabbed banana -> stamina bar
+
 Todo great cobra indicator
 Todo falling snake indicator
-Fixme grab hand functional during mvmt
+
+Todo grabbed banana -> stamina bar
 
 Bug spider web fail to load & log warning
 -->
@@ -20,6 +19,7 @@ Bug spider web fail to load & log warning
 
 ##### Erik
 
+- grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
 - Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
 - `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins; the collision trigger that calls it is not built yet
 
