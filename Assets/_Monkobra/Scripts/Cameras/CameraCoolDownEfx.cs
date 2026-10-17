@@ -4,12 +4,12 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Cool-down feedback on the whole view while the stamina bar is empty: a
+/// Cool-down feedback on the whole view while stamina is low: a
 /// circular blackdown from the URP Vignette plus a zoom-out from widening
 /// the live <see cref="CinemachineCamera"/>'s field of view, both easing in
 /// and back out. Sits on the main camera, next to the
 /// <c>CinemachineBrain</c>. Pulses on every
-/// <see cref="StaminaBarController.ExhaustedMoveAttempted"/>, and both
+/// <see cref="StaminaBarController.LowStaminaMoveAttempted"/>, and both
 /// values return to rest when the pulse ends or this component is disabled.
 /// </summary>
 public class CameraCoolDownEfx: MonoBehaviour {
@@ -39,7 +39,7 @@ public class CameraCoolDownEfx: MonoBehaviour {
     private float easeOutS = 0.4f;
 
     [SerializeField]
-    [Tooltip("wait after a pulse ends before an empty-bar move may start "
+    [Tooltip("wait after a pulse ends before a low-stamina move may start "
         + "the next; s")]
     private float retriggerCooldownS = 0.2f;
 
@@ -111,7 +111,7 @@ public class CameraCoolDownEfx: MonoBehaviour {
             return;
         }
 
-        staminaBar.ExhaustedMoveAttempted += OnExhaustedMoveAttempted;
+        staminaBar.LowStaminaMoveAttempted += OnLowStaminaMoveAttempted;
     }
 
     private void OnDisable() {
@@ -147,7 +147,7 @@ public class CameraCoolDownEfx: MonoBehaviour {
 
     // Event Handlers  #########################################################
     // ignored while a pulse runs or cools down, a held key calls every step
-    private void OnExhaustedMoveAttempted() {
+    private void OnLowStaminaMoveAttempted() {
         if (isPulsing || Time.unscaledTime < nextPulseTimeS) {
             return;
         }
@@ -192,7 +192,7 @@ public class CameraCoolDownEfx: MonoBehaviour {
 
     private void Unsubscribe() {
         if (staminaBar != null) {
-            staminaBar.ExhaustedMoveAttempted -= OnExhaustedMoveAttempted;
+            staminaBar.LowStaminaMoveAttempted -= OnLowStaminaMoveAttempted;
             staminaBar = null;
         }
     }

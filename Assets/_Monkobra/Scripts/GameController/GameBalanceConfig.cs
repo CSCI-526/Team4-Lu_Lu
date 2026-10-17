@@ -23,6 +23,10 @@ public class GameBalanceConfig: ScriptableObject {
     /// <returns>stamina restored per grabbed fruit</returns>
     public float FruitStaminaRestore => fruitStaminaRestore;
 
+    /// <returns>fraction of max stamina below which the low-stamina efx
+    /// play, 0~1</returns>
+    public float LowStaminaFraction => lowStaminaFraction;
+
     /// <returns>climb speed moving up; u/s</returns>
     public float UpSpeedU => upSpeedU;
 
@@ -161,6 +165,14 @@ public class GameBalanceConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("stamina restored per grabbed fruit, capped at max stamina")]
     private float fruitStaminaRestore = 30f;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "stamina bar shake and camera cool-down play on a move attempt "
+            + "below this fraction of max stamina; 0.1 = below 10%"
+    )]
+    private float lowStaminaFraction = 0.1f;
 
     [Header("Movement")]
     [SerializeField]
@@ -341,6 +353,7 @@ public class GameBalanceConfig: ScriptableObject {
         staminaUpwardDrainPerU = Mathf.Max(0f, staminaUpwardDrainPerU);
         staminaSidewayDrainPerU = Mathf.Max(0f, staminaSidewayDrainPerU);
         fruitStaminaRestore = Mathf.Max(0f, fruitStaminaRestore);
+        lowStaminaFraction = Mathf.Clamp01(lowStaminaFraction);
         upSpeedU = Mathf.Max(0f, upSpeedU);
         downSpeedU = Mathf.Max(0f, downSpeedU);
         exhaustedSpeedMultiplier = Mathf.Clamp01(exhaustedSpeedMultiplier);

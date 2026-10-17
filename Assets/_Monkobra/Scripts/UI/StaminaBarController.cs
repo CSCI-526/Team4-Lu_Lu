@@ -12,6 +12,14 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
+    /// <summary>
+    /// if stamina is below the config's low-stamina fraction of the max,
+    /// empty included
+    /// </summary>
+    public bool IsLowStamina =>
+        balanceConfig != null
+        && currentStamina < balanceConfig.LowStaminaFraction * MaxStamina;
+
     /// <returns>stamina ceiling from the balance config, 0 w/o a config
     /// </returns>
     public float MaxStamina =>
@@ -21,9 +29,10 @@ public class StaminaBarController: MonoBehaviour {
     public event Action FruitConsumed;
 
     /// <summary>
-    /// raised when the player tries to move while the bar is empty
+    /// raised when the player tries to move while stamina is low, see
+    /// <see cref="IsLowStamina"/>
     /// </summary>
-    public event Action ExhaustedMoveAttempted;
+    public event Action LowStaminaMoveAttempted;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -37,14 +46,14 @@ public class StaminaBarController: MonoBehaviour {
 
     /// <summary>
     /// reports a move input, called every physics step the player holds one;
-    /// raises <see cref="ExhaustedMoveAttempted"/> iff the bar is empty
+    /// raises <see cref="LowStaminaMoveAttempted"/> iff stamina is low
     /// </summary>
     public void NotifyMoveAttempt() {
-        if (HasStamina) {
+        if (!IsLowStamina) {
             return;
         }
 
-        ExhaustedMoveAttempted?.Invoke();
+        LowStaminaMoveAttempted?.Invoke();
     }
 
     public void AddStamina(float amount) {

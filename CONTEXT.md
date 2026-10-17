@@ -108,7 +108,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Cameras/CameraRigManager` | swaps the three Cinemachine cameras | [Grab](docs/grab-doc.md#camera) |
 | `Cameras/CameraLookUp` | on the behind camera: tilts the aim point up while climbing | none |
 | `Cameras/CameraHitShakeEfx` | on the main camera: fires a light impulse for a branch hit, a heavier one for a falling cobra hit | [Mobs](docs/mob-doc.md#hit-penalty) |
-| `Cameras/CameraCoolDownEfx` | on the main camera: vignette blackdown and zoom-out pulse on each empty-bar move attempt | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraCoolDownEfx` | on the main camera: vignette blackdown and zoom-out pulse on each low-stamina move attempt | [TDD](docs/monkobra-tdd.md#camera) |
 | `Player/HitBranchDetection` | singleton branch sensor: raises `BranchHit` and `Hit` (with a `HitKind`), shakes nothing itself; `ReportHit` applies the same drop for a hazard that touched the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
 | `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis; its `MinY` and `MaxY` are no longer read | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/DynamicTreeSegmentPrefabRoot` | places branches on a segment, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
@@ -135,7 +135,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |
 | `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |
-| `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while empty | [TDD](docs/monkobra-tdd.md#stamina) |
+| `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while stamina is low | [TDD](docs/monkobra-tdd.md#stamina) |
 | `UI/ScreensManager`, `UI/ProgressBarRoot`, `UI/ScoreDisplay`, `UI/HeightDisplayController`, `UI/LoseScreenController` | tutorial and lose panels, climb progress with the surge cue and red cobra marker, score label, climbed height label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/SpiderWebPrompt` | first-trap hint and escape bar | [Mobs](docs/mob-doc.md#trap-and-escape) |
 
