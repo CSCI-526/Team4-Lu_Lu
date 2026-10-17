@@ -1,11 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-TODO great cobra indicator
-TODO falling snake indicator
-
-TODO grabbed banana -> stamina bar
-
 Bug spider web fail to load & log warning
 
 Todo more prefab (split lv1 scene)
