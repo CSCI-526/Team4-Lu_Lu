@@ -137,7 +137,7 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`, whic
 
 ## Stamina
 
-`StaminaBarController` is a singleton `Slider` that reads `GameBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `LowStaminaMoveAttempted`, which `MonkeyPrefabRoot` triggers through `NotifyMoveAttempt` while an input is held and stamina is below `GameBalanceConfig.lowStaminaFraction` (10% by default) of the maximum.
+`StaminaBarController` is a singleton `Slider` that reads `GameBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `LowStaminaMoveAttempted`, which `MonkeyPrefabRoot` triggers through `NotifyMoveAttempt` while an input is held and stamina is below the `lowStaminaFraction` field of `StaminaBarController` (10% by default) of the maximum. That threshold is feedback only and sits outside `GameBalanceConfig`; only an empty bar changes movement.
 
 - Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways; it is the only drain, nothing lowers the bar on a timer or while the monkey stands still
 - Restore: `AddStaminaByFruit` adds the per-banana amount, capped at the maximum ([Grab System](grab-doc.md#on-a-successful-grab))

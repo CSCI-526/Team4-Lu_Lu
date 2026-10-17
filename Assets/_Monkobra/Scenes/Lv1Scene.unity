@@ -1733,11 +1733,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraCoolDownEfx
   volume: {fileID: 1931554831}
-  peakIntensity: 0.6
+  peakIntensity: 0.7
   fovDeltaDeg: 12
   easeInS: 0.1
-  easeOutS: 0.4
-  retriggerCooldownS: 0.2
+  easeOutS: 0.8
+  retriggerCooldownS: 0.3
 --- !u!1 &762143288
 GameObject:
   m_ObjectHideFlags: 0

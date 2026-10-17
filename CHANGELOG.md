@@ -21,7 +21,7 @@ Todo more prefab (split lv1 scene)
 - `CameraCoolDownEfx` on the main camera: each move attempt while stamina is below 10% pulses a URP Vignette blackdown and widens the field of view (zoom-out), easing both back; tuned by peak intensity, FOV delta, ease times, and a retrigger cooldown. `Lv1Scene` gets a global Volume with a Vignette override
 - `CameraHitShakeEfx` on the main camera: a branch hit gives a light camera shake, a falling cobra hit a heavier one, each from its own `CinemachineImpulseSource`
 - `HitBranchDetection.I` singleton, `Hit` event carrying a `HitKind`, and a `ReportHit(Collider, HitKind)` overload
-- `GameBalanceConfig.lowStaminaFraction` (default 0.1): the stamina bar shake and the camera cool-down play on a move attempt below this share of max stamina, not only on an empty bar
+- `StaminaBarController.lowStaminaFraction` (default 0.1): the stamina bar shake and the camera cool-down play on a move attempt below this share of max stamina, not only on an empty bar; it drives the efx only, an empty bar alone still slows the monkey, and it is not part of `GameBalanceConfig`
 - grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
 - Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
 - `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins

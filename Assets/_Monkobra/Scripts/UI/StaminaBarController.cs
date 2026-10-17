@@ -13,12 +13,12 @@ public class StaminaBarController: MonoBehaviour {
     public bool HasStamina => currentStamina > 0f;
 
     /// <summary>
-    /// if stamina is below the config's low-stamina fraction of the max,
-    /// empty included
+    /// if stamina is below <c>lowStaminaFraction</c> of the max, empty
+    /// included; feeds the feedback efx only, never gameplay
     /// </summary>
     public bool IsLowStamina =>
         balanceConfig != null
-        && currentStamina < balanceConfig.LowStaminaFraction * MaxStamina;
+        && currentStamina < lowStaminaFraction * MaxStamina;
 
     /// <returns>stamina ceiling from the balance config, 0 w/o a config
     /// </returns>
@@ -96,6 +96,15 @@ public class StaminaBarController: MonoBehaviour {
     [SerializeField]
     [Tooltip("game balance tuning; stamina budget and drain rate")]
     private GameBalanceConfig balanceConfig;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "feedback efx (bar shake, camera cool-down) play on a move attempt "
+            + "below this fraction of max stamina; 0.1 = below 10%. Efx "
+            + "only, an empty bar alone slows the monkey"
+    )]
+    private float lowStaminaFraction = 0.1f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
