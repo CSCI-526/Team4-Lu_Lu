@@ -1,8 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-BUG BUG too much branch in starter zone
-
 TODO great cobra indicator
 TODO falling snake indicator
 
