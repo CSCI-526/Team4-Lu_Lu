@@ -17,6 +17,11 @@ Bug spider web fail to load & log warning
 
 ### Added
 
+##### Belle Dai
+
+- keyboard-style tutorial controls in `Lv1Scene`: WASD cluster & wide Space key drawn from uGUI Images, w/ captions `Move`, `Grab Banana`, `Hold to reach, release to grab`
+- `MonkobraTutorial-SemiBold` UI font (Noto Sans TC subset, SIL OFL) so the tutorial renders in WebGL w/o system fonts
+
 ##### Erik
 
 - grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
