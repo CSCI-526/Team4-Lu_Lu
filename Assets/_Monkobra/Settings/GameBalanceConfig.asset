@@ -16,6 +16,7 @@ MonoBehaviour:
   staminaUpwardDrainPerU: 0.5
   staminaSidewayDrainPerU: 0.3
   fruitStaminaRestore: 35
+  lowStaminaFraction: 0.2
   upSpeedU: 6
   downSpeedU: 12
   exhaustedSpeedMultiplier: 0.2

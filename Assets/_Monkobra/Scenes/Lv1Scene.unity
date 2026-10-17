@@ -1458,8 +1458,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 567824735}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.005147263, y: 0.99968106, z: -0.009470453, w: 0.022838317}
-  m_LocalPosition: {x: -0.35504013, y: 2.2493973, z: 8.234935}
+  m_LocalRotation: {x: 0.014173588, y: 0.9752757, z: 0.18412715, w: -0.121382415}
+  m_LocalPosition: {x: -0.47033605, y: -1.9177848, z: 9.853978}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1550,7 +1550,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 65
+  field of view: 50
   orthographic: 0
   orthographic size: 10
   m_Depth: 0
@@ -1736,8 +1736,8 @@ MonoBehaviour:
   peakIntensity: 0.7
   fovDeltaDeg: 12
   easeInS: 0.1
-  easeOutS: 0.8
-  retriggerCooldownS: 0.3
+  easeOutS: 1.2
+  retriggerCooldownS: 0.5
 --- !u!1 &762143288
 GameObject:
   m_ObjectHideFlags: 0
@@ -3257,6 +3257,10 @@ PrefabInstance:
     - target: {fileID: 2002897558980733833, guid: 4f7b2e3d9df44034096d964cb9622089, type: 3}
       propertyPath: m_Name
       value: StaminaBar
+      objectReference: {fileID: 0}
+    - target: {fileID: 2796074396119240967, guid: 4f7b2e3d9df44034096d964cb9622089, type: 3}
+      propertyPath: lowStaminaFraction
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7914521894620063502, guid: 4f7b2e3d9df44034096d964cb9622089, type: 3}
       propertyPath: m_AnchorMax.y
