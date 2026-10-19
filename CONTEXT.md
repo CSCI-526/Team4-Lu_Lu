@@ -85,6 +85,8 @@ graph LR
   Web -->|TryTrap| Struggle[SpiderWebStruggle]
   Struggle -->|IsHeld| Root
   Struggle --> Prompt[SpiderWebPrompt]
+  Stamina -->|LowStaminaMoveAttempted| LowPrompt[LowStaminaPrompt]
+  Struggle -->|IsTrapped| LowPrompt
   Game -->|StateChanged| Analytics[AnalyticsManager]
   Score -->|BananaCollected| Analytics
   Hit -->|BranchHit| Analytics
@@ -137,8 +139,9 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |
 | `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |
 | `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while stamina is low | [TDD](docs/monkobra-tdd.md#stamina) |
-| `UI/ScreensManager`, `UI/ProgressBarRoot`, `UI/ScoreDisplay`, `UI/HeightDisplayController`, `UI/LoseScreenController` | tutorial panel (keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress with the surge cue and red cobra marker, score label, climbed height label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
+| `UI/ScreensManager`, `UI/ProgressBarRoot`, `UI/ScoreDisplay`, `UI/HeightDisplayController`, `UI/LoseScreenController` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress with the surge cue and red cobra marker, score label, climbed height label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/SpiderWebPrompt` | first-trap hint and escape bar | [Mobs](docs/mob-doc.md#trap-and-escape) |
+| `UI/LowStaminaPrompt` | first-low-stamina hint, once per scene load, on the event behind the bar shake and cool-down; hidden on a loss and while a web holds the monkey | [TDD](docs/monkobra-tdd.md#ui) |
 
 ## Known Gaps & Constraints
 

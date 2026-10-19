@@ -11,6 +11,12 @@ Todo more prefab (split lv1 scene)
 
 ### Added
 
+##### Yuqing Lu
+
+- tutorial goal line `Climb high. Eat bananas. Escape the cobra.` above the keys in `Lv1Scene`, in regular-weight LiberationSans at size 40, the largest text on the panel
+- white `Energy` label on the `StaminaBar` prefab, above the left end of the bar
+- `LowStaminaPrompt`: the first low-stamina feedback per scene load shows `Low energy — eat bananas before you slow down!` for `showDurationS` (4 s), on the same event as the bar shake & camera cool-down; hidden at once on a loss, & while a web holds the monkey, resuming after the escape
+
 ##### Belle Dai
 
 - keyboard-style tutorial controls in `Lv1Scene`: WASD cluster & wide Space key drawn from uGUI Images, w/ captions `Move`, `Grab Banana`, `Hold to reach, release to grab`
@@ -30,6 +36,10 @@ Todo more prefab (split lv1 scene)
 - `RampedDifficultyService` `rampBase` field & `RampBaseYPosition`: the ramped difficulty starts at 0 at the y of the starter zone exit trigger, falling back to the player's start y while unassigned
 
 ### Changed
+
+##### Yuqing Lu
+
+- tutorial keys & start prompt moved down 55 to make room for the goal line: `KeyboardControls` y 35 → -20, `Press` y -180 → -235
 
 ##### Erik
 
