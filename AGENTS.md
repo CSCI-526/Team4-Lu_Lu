@@ -40,7 +40,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - the export lives in `Monkobra/` at the repo root, never named `Build/` or `Builds/`, and is committed as-is
 - never hand-edit a file inside `Monkobra/`; re-export from Unity and re-commit instead
 - Compression Format stays `Disabled`: GitHub Pages cannot set the `Content-Encoding` header a compressed export needs
-- Development Build is off for the export that gets committed and pushed
+- Development Build is on for the WebGL profiles (`GithubPages`, `ItchIO`): the hack keys only run in a development build
 
 ## Code Style
 

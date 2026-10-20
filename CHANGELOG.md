@@ -37,9 +37,7 @@ bug spider web fail to load & log warning
 ##### Erik
 
 - analytics F9 & F10 keys moved to `HackShortcutConfig`, dev builds only
-
-> [!WARNING]
-> Dev keys (F1, F8, F9, F10) no longer work in release builds, incl. the GitHub Pages export; use a development build
+- WebGL build profiles (`GithubPages`, `ItchIO`) now build as development builds, so the dev keys work in the browser
 
 [1.0.0-alpha.2]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha...v1.0.0-alpha.2
 
