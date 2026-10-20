@@ -19,6 +19,7 @@ Read these `docs/` files when their topic arises:
 - [Grab System](docs/grab-doc.md): detection zones, arm reach, and the release check
 - [Balance Design](docs/balance-doc.md): why difficulty follows height, how hazards are rolled per segment, and why balance lives in one asset
 - [Gameplay Loop](docs/gameplay-loop-doc.md): the complete run loop, from climbing and hazards to the grab and the win or lose end
+- [Analytics](docs/analytics-doc.md): session reports, every recorded metric, and the tuning asset
 - [Build](docs/build-doc.md): the WebGL export, the three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) and their settings
 
 ## Layout & Naming
