@@ -19,7 +19,7 @@ bug spider web fail to load & log warning
 
 ### Security
 
-[unreleased]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v1.0.0-alpha...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha...dev
 
 
 
@@ -86,7 +86,7 @@ bug spider web fail to load & log warning
 
 - stamina bar dropping by a lump while moving, stunned, or after releasing a key
 
-[1.0.0-alpha]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v0.9.0...v1.0.0-alpha
+[1.0.0-alpha]: https://github.com/kami-lel/monkobra/compare/v0.9.0...v1.0.0-alpha
 
 
 
@@ -180,7 +180,7 @@ bug spider web fail to load & log warning
 - falling cobra warning starts red at once & pulses from that moment
 - falling cobra spawner works on the endless tree
 
-[0.9.0]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v0.1.1...v0.9.0
+[0.9.0]: https://github.com/kami-lel/monkobra/compare/v0.1.1...v0.9.0
 
 ## [0.1.1] - 2026-09-29
 
@@ -205,7 +205,7 @@ bug spider web fail to load & log warning
 - legacy arm drivers `MonkeyArm` & `HandHandler`, superseded by `ArmRoot`
 - unused reach tuning from `MonkeyConfig`
 
-[0.1.1]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v0.1.0...v0.1.1
+[0.1.1]: https://github.com/kami-lel/monkobra/compare/v0.1.0...v0.1.1
 
 ## [0.1.0] - 2026-09-28
 
@@ -227,4 +227,4 @@ bug spider web fail to load & log warning
 - scene singletons `GameController`, `TreeManager`
 - WebGL build served from `Monkobra/` via GitHub Pages
 
-[0.1.0]: https://github.com/CSCI-526/Team4-Lu_Lu/releases/tag/v0.1.0
+[0.1.0]: https://github.com/kami-lel/monkobra/releases/tag/v0.1.0
