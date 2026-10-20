@@ -1079,6 +1079,7 @@ MonoBehaviour:
   monkeyConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
   restartInputDelay: 0.5
   cobraNoClip: 0
+  hackShortcuts: {fileID: 11400000, guid: 6f67fb399ca4433b8cfe8ef24d234f71, type: 2}
 --- !u!4 &1091358618
 Transform:
   m_ObjectHideFlags: 0
