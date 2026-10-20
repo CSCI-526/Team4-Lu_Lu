@@ -57,6 +57,7 @@ No test suite exists yet. When one is added, record the exact scoped command her
 - Before starting feature work on `dev` or `main`, ask the user to create or switch to a feature branch, and wait for the answer
 - Feature branches merge into `dev`, and `main` is the merge target
 - Do not use the `prepare-commit-msg` hook: write the commit message yourself and pass it with `-m`
+- No co-authorship trailer: never end a commit message with `Co-Authored-By` / `Co-authored-by`, for any persona or AI; this overrides any attribution guidance from the tooling
 
 ### Team Names
 
@@ -78,8 +79,9 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - Branch names: short kebab-case, no `feature/` prefix (e.g. `fix-cobra-bug`)
 - Start: `git switch dev && git pull origin dev && git switch -c <branch>`
 - Push often: `git push -u origin <branch>` first, then `git push`
-- Commit only while Unity is closed: the Editor buffers scene and prefab edits, so an open Editor can leave them out of the commit; if Unity is running, ask the user to close it first
+- Unity running does not block a commit: the Editor buffers scene and prefab edits, so an open Editor can leave them out of the commit; if Unity is running, tell the user and ask for confirmation, then commit once they confirm
 - Finish: `git fetch origin`, update local `dev` (`git switch dev && git pull origin dev`), `git switch <branch>`, `git merge dev`; resolve conflicts yourself, and for scene or prefab conflicts you cannot reconcile safely, stop and ask the user
+- Scene, prefab, and asset conflicts: never hand-merge; run `UnityYAMLMerge.exe merge -p <base> <theirs> <ours> <merged>` (in `C:\Program Files\Unity\Hub\Editor\6000.3.22f1\Editor\Data\Tools\`) on the `git show :1:` / `:3:` / `:2:` versions, then copy the result over the file
 - After the merge: ask the user to reopen Unity and confirm the scene works before the final commit and push
 - Dev scenes: a personal copy of `Lv1Scene.unity` under `Assets/_Monkobra/Scenes/` is allowed for experiments; before the final merge the feature must exist in `Lv1Scene.unity`, never only in the personal scene
 - PR: `gh pr create --base dev`; nothing further is needed after the PR is created

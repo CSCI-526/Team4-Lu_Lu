@@ -20,8 +20,8 @@ graph TD
 ```
 
 1. a banana enters a side's detection zone and becomes reachable
-2. the player presses interact: the matching arm locks its aim at the newest banana on that side and the camera swings to that side
-3. while interact is held the arm stretches along the locked line
+2. the player presses interact: the matching arm locks onto the newest banana on that side and the camera swings to that side
+3. while interact is held the arm keeps re-aiming at the locked banana every physics step while it stretches
 4. on release, the grab succeeds only if the hand overlaps the banana at that instant
 
 ## Parts
@@ -53,8 +53,9 @@ graph TD
 `ArmRoot` has two modes on one `ConfigurableJoint`, and writes only the joint's drive targets, never its configuration.
 
 - Climb Mode: while move input is held the arm sweeps a stroke, the two arms half a cycle apart, and the linear axis is locked
-- Reach Mode: pressing interact on the matching side starts the reach. The aim is set once toward the fruit and then only stretches, at the configured speed, up to the joint's linear limit
+- Reach Mode: pressing interact on the matching side starts the reach. The locked fruit is chosen once, but the aim is re-pointed at it every physics step, so the arm follows the climb, turning at `ReachAimSpeedDeg` (0 snaps), while it stretches at the configured speed up to the joint's linear limit
 - Release: `TryGrabFruit` runs on release. It does nothing if the game is paused or over. The grab succeeds only if `Physics.ComputePenetration` finds the hand collider overlapping the aimed fruit at that instant
+- Lost Fruit: if the locked fruit is switched off or destroyed mid-hold, the arm drops it: the pin clears, no fruit counts as grabbable, and the release grabs nothing
 - Miss: a release before the hand reaches the fruit, or after it stretched past, grabs nothing. The log names it as too short or too long. The arm then pulls back, and the cost is time spent exposed
 - Grabbable Cue: while reaching, the arm reports the fruit under the hand through `SetGrabbableFruit`, so the outline can tell the player a release would grab it
 - Hand Contacts: only collisions on the hand collider count as the hand's, and the arm ignores collisions with the body's own colliders
@@ -84,7 +85,7 @@ Bananas come from branches, not their own spawner. `BranchWithScriptRoot` rolls 
 
 ## Tuning
 
-The reach extend speed is in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`.
+The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`.
 
 ## Known Gaps
 

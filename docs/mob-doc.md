@@ -28,7 +28,7 @@ A branch is a prefab (`Prefabs/Environment/BranchWithFruit`) holding a `Branch`-
 
 ### Hit Penalty
 
-1. `HitBranchDetection` sees the `Branch` collider, fires a Cinemachine impulse (camera shake), and raises `BranchHit`
+1. `HitBranchDetection` sees the `Branch` collider and raises `BranchHit` and `Hit` with a `HitKind` (`Branch` or `FallingCobra`); `CameraHitShakeEfx` on the main camera hears `Hit` and fires a light camera shake for a branch, a heavier one for a falling cobra
 2. `MonkeyPrefabRoot` ignores input for the stun time and drops the monkey a set distance at a set speed, then stops dead on the drop target
 3. a second hit during the stun is ignored, so overlapping branches cost one drop, not two
 4. the stun fall is involuntary, so it drains no movement stamina
@@ -59,6 +59,8 @@ The chasing cobra is code-built geometry on one root: `CobraClimb` poses the bod
 - Coil: the body spans at least one full loop, and `Awake` clones the last segment until no gap along the coil exceeds `maxSegmentGapU`, so the monkey cannot slip through by orbiting
 - Look: a chain of rounded beads with small gaps, slightly tapered, a flat hooded head with primitive-sphere eyes, a raised neck, and a slow slither wave. The hit shape stays gapless even where the visual has gaps
 
+In the starter zone game state the cobra stays active and keeps orbiting, but its height is fixed: it does not climb until the state becomes Playing.
+
 The cobra's shape, orbit, coil, and slow-down values are fields on `CobraClimb`, set on the `GreatCobra` prefab.
 
 The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)) is above the cobra's base speed, so it can outrun the cobra, but only by spending stamina.
@@ -88,7 +90,7 @@ Fall and chase speeds, the wake distance, and the ambush chance are in `Settings
 - Dormant: it hangs still, in its normal color, until the monkey is within the trigger distance (3D), or within the farther reach wake distance while either arm reaches for a banana, and the cobra is at or above the monkey's height, so a grab is the riskiest moment to stand under a cobra
 - Warning: it then pulses red against its green base for a short warning and has no hit shape
 - Fall: it clears the warning color, then drops at a constant speed with one capsule trigger tagged `Branch` covering the whole snake, while every segment collider is switched off. Each physics step it re-reads the monkey's angle about the tree and slides round the trunk toward it by the shortest arc at the horizontal speed, never overshooting, so it keeps tracking a monkey that orbits
-- Hit: any part of the snake touching any part of the monkey applies the usual shake, stun, and drop. The capsule is tagged `Branch`, so the monkey's branch sensor handles its own contact; a contact on the body, tail, or a hand calls `HitBranchDetection.ReportHit` for the same drop. After a hit the snake stops homing in and its hit capsule rests for the stun plus `fallingCobraRehitGraceS`, so the monkey can dodge sideways; a monkey still inside once it returns is dropped again, up to `fallingCobraMaxHits` drops per snake
+- Hit: any part of the snake touching any part of the monkey applies the heavy shake, stun, and drop. The capsule is tagged `Branch`, so the monkey's branch sensor handles its own contact; a contact on the body, tail, or a hand calls `HitBranchDetection.ReportHit` for the same drop. After a hit the snake stops homing in and its hit capsule rests for the stun plus `fallingCobraRehitGraceS`, so the monkey can dodge sideways; a monkey still inside once it returns is dropped again, up to `fallingCobraMaxHits` drops per snake
 - Off: after falling the max fall distance it switches itself off; the segment's restart destroys it later
 
 ## Spider Web
@@ -113,7 +115,7 @@ The curve is the only gate: webs appear wherever it is above 0, and the ramped d
 2. Held: `MonkeyPrefabRoot.IsHeld` freezes the body, which ignores input and any branch-hit fall, but is kept awake so the cobra's trigger still registers it. The body is also pulled in 3D to the web's hub (`PullTo`, `pullSpeedU` on `MonkeyPrefabRoot`); on escape it glides back onto its orbit ring at the height it was pulled to The interact action is disabled, which cancels a reach in progress and swings the camera back behind
 3. Struggle: each press of the escape action (Jump, Space) adds progress and pulses the web (squash and twist). Progress drains while idle
 4. Break Free: a full bar removes the web, unfreezes the body, and grants brief immunity to every web. Interact stays off until that immunity ends, so leftover presses do not fire a grab
-5. Prompt: `SpiderWebPrompt` shows a hint on the first trap per scene load and the escape bar on every trap, and hides both on escape or game over
+5. Prompt: `SpiderWebPrompt` shows a hint on the first trap per scene load and the escape bar on every trap, and hides both on escape or game over. A low-stamina hint on screen at the time steps aside until the escape ([UI](monkobra-tdd.md#ui))
 
 The escape progress per press, its decay while idle, and the immunity after escaping are fields on `SpiderWebStruggle`.
 

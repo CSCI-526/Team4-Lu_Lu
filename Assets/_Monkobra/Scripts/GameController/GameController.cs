@@ -17,6 +17,13 @@ public class GameController: MonoBehaviour {
     public event Action<GameState> StateChanged;
 
     /// <summary>
+    /// if the run is live, ie climbing and scoring work, whether or not the
+    /// monkey is still protected
+    /// </summary>
+    public bool IsRunLive =>
+        State == GameState.Playing || State == GameState.StarterZone;
+
+    /// <summary>
     /// whether cobra collisions are ignored entirely, a debug cheat; warns
     /// each time it is switched on
     /// </summary>
@@ -29,8 +36,14 @@ public class GameController: MonoBehaviour {
     }
 
     // Public Methods  #########################################################
+    public void EndStarterZone() {
+        if (State == GameState.StarterZone) {
+            SetState(GameState.Playing);
+        }
+    }
+
     public void LoseGame() {
-        if (State != GameState.Playing) {
+        if (!IsRunLive) {
             return;
         }
 
@@ -117,7 +130,7 @@ public class GameController: MonoBehaviour {
     private void OnAnyPressed(InputControl _) {
         anyPressSub = null;
         if (State == GameState.Tutorial) {
-            SetState(GameState.Playing);
+            SetState(GameState.StarterZone);
         }
     }
 
@@ -134,7 +147,8 @@ public class GameController: MonoBehaviour {
 
     private void SetState(GameState next) {
         State = next;
-        Time.timeScale = next == GameState.Playing ? 1f : 0f;
+        Time.timeScale = next == GameState.Playing
+            || next == GameState.StarterZone ? 1f : 0f;
 
         if (next == GameState.Lost) {
             lostTime = Time.unscaledTime;

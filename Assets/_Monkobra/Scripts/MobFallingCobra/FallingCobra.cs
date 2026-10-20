@@ -285,7 +285,10 @@ public class FallingCobra: MonoBehaviour {
         }
         RegisterHit();
         if (playerSensor != null) {
-            playerSensor.ReportHit(hitCollider);
+            playerSensor.ReportHit(
+                hitCollider,
+                HitBranchDetection.HitKind.FallingCobra
+            );
         }
     }
 

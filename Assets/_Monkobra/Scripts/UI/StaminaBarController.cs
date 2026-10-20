@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +12,14 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
+    /// <summary>
+    /// if stamina is below <c>lowStaminaFraction</c> of the max, empty
+    /// included; feeds the feedback efx only, never gameplay
+    /// </summary>
+    public bool IsLowStamina =>
+        balanceConfig != null
+        && currentStamina < lowStaminaFraction * MaxStamina;
+
     /// <returns>stamina ceiling from the balance config, 0 w/o a config
     /// </returns>
     public float MaxStamina =>
@@ -22,9 +29,10 @@ public class StaminaBarController: MonoBehaviour {
     public event Action FruitConsumed;
 
     /// <summary>
-    /// raised when the player tries to move while the bar is empty
+    /// raised when the player tries to move while stamina is low, see
+    /// <see cref="IsLowStamina"/>
     /// </summary>
-    public event Action ExhaustedMoveAttempted;
+    public event Action LowStaminaMoveAttempted;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -38,22 +46,14 @@ public class StaminaBarController: MonoBehaviour {
 
     /// <summary>
     /// reports a move input, called every physics step the player holds one;
-    /// raises <see cref="ExhaustedMoveAttempted"/> iff the bar is empty
+    /// raises <see cref="LowStaminaMoveAttempted"/> iff stamina is low
     /// </summary>
     public void NotifyMoveAttempt() {
-        if (HasStamina) {
+        if (!IsLowStamina) {
             return;
         }
 
-        ExhaustedMoveAttempted?.Invoke();
-    }
-
-    /// <summary>
-    /// reports the monkey is resting, called every physics step no move key
-    /// is held; the timer drain pauses while resting so recovery can show
-    /// </summary>
-    public void NotifyResting() {
-        lastRestTime = Time.time;
+        LowStaminaMoveAttempted?.Invoke();
     }
 
     public void AddStamina(float amount) {
@@ -97,6 +97,15 @@ public class StaminaBarController: MonoBehaviour {
     [Tooltip("game balance tuning; stamina budget and drain rate")]
     private GameBalanceConfig balanceConfig;
 
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "feedback efx (bar shake, camera cool-down) play on a move attempt "
+            + "below this fraction of max stamina; 0.1 = below 10%. Efx "
+            + "only, an empty bar alone slows the monkey"
+    )]
+    private float lowStaminaFraction = 0.1f;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -131,45 +140,15 @@ public class StaminaBarController: MonoBehaviour {
         }
     }
 
-    private void Start() {
-        StartCoroutine(DecreaseStaminaOverTime());
-    }
-
     private void OnDestroy() {
         if (I == this) {
             I = null;
         }
     }
 
-    // constants  ##############################################################
-    private const float REST_GRACE_S = 0.1f;
-
     // private members  ########################################################
     private float currentStamina;
-    private float lastRestTime = float.NegativeInfinity; // Time.time
 
     // cached references  ------------------------------------------------------
     private Slider staminaSlider;
-
-    // private methods  ########################################################
-    private IEnumerator DecreaseStaminaOverTime() {
-        // an empty bar only slows the monkey, so the tick keeps running
-        while (true) {
-            yield return new WaitForSeconds(
-                balanceConfig.StaminaDecreaseIntervalS
-            );
-
-            // resting regains stamina, a lump drain would undo it
-            if (Time.time - lastRestTime <= REST_GRACE_S) {
-                continue;
-            }
-
-            currentStamina = Mathf.Max(
-                0f,
-                currentStamina - balanceConfig.StaminaDecreaseAmount
-            );
-
-            staminaSlider.value = currentStamina;
-        }
-    }
 }

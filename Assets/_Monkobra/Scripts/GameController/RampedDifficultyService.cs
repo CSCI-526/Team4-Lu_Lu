@@ -15,6 +15,14 @@ public class RampedDifficultyService: MonoBehaviour {
     // highest CurrentPlayerClimbedYDistance so far, never below 0; world u
     public float HighestPlayerClimbedYDistance { get; private set; }
 
+    /// <summary>
+    /// World y where the ramp sits at 0: the y of the starter zone exit
+    /// trigger, falling back to <see cref="PlayerGameStartYPosition"/> while
+    /// none is assigned. Climbed height for score and display is unaffected.
+    /// </summary>
+    public float RampBaseYPosition =>
+        rampBase != null ? rampBase.position.y : PlayerGameStartYPosition;
+
     // Public Methods
     /// <summary>
     /// Height of <paramref name="y"/> above the player's game start y, the
@@ -29,17 +37,18 @@ public class RampedDifficultyService: MonoBehaviour {
     }
 
     /// <summary>
-    /// Samples the ramp curve at the height climbed since game start.
+    /// Samples the ramp curve at the height above
+    /// <see cref="RampBaseYPosition"/>.
     /// </summary>
-    /// <param name="y">player y position; world u</param>
+    /// <param name="y">any y position; world u</param>
     /// <returns>ramped difficulty, clamped to 0~1</returns>
     public float GetRampedValueFromYPosition(float y) {
         if (balanceConfig == null) {
             return 0f;
         }
-        float climbedY = GetClimbedYDistance(y);
+        float rampedY = y - RampBaseYPosition;
         return Mathf.Clamp01(
-            balanceConfig.RampedDifficultyCurve.Evaluate(climbedY)
+            balanceConfig.RampedDifficultyCurve.Evaluate(rampedY)
         );
     }
 
@@ -48,12 +57,21 @@ public class RampedDifficultyService: MonoBehaviour {
     [Tooltip("game balance tuning; ramp curve")]
     private GameBalanceConfig balanceConfig;
 
+    [SerializeField]
+    [Tooltip("starter zone exit trigger; its y is where the ramp starts at 0")]
+    private Transform rampBase;
+
     // MonoBehaviour Lifecycle
     private void Awake() {
         if (balanceConfig == null) {
             Debug.LogError(
                 "RampedDifficulty:\tmust assign Inspector Field: "
                 + "balanceConfig", this);
+        }
+        if (rampBase == null) {
+            Debug.LogWarning(
+                "RampedDifficulty:\tmust assign Inspector Field: rampBase, "
+                + "ramp starts at player start y", this);
         }
 
         if (I != null && I != this) {
