@@ -41,12 +41,13 @@ monkobra/
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
 │   │   ├── Scenes/    Lv1Scene
-│   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, Scoring/, UI/
+│   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, Scoring/, UI/
+│   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
 │   │   ├── Prefabs/   Environment/, Mob/, Player/, UI/
 │   │   ├── Materials/ Environment/, Mob/, Player/
 │   │   ├── Input/     InputSystem_Actions
 │   │   ├── Shaders/   Environment/FruitOutline (inverted-hull Shader Graph)
-│   │   └── Settings/  GameBalanceConfig, Mob/ placement, _Shared/ URP assets and MonkeyConfig
+│   │   └── Settings/  GameBalanceConfig, Analytics/, HackShortcuts/, Mob/ placement, _Shared/ URP assets and MonkeyConfig
 │   ├── TextMesh Pro/  imported TMP essentials, not authored
 │   └── Readme.asset   Unity template leftover
 ├── Monkobra/          committed WebGL export served by GitHub Pages
@@ -128,13 +129,16 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment against a probability curve at its ramped difficulty, some ambushing just above a banana | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `MobFallingCobra/FallingCobra` | dormant until the monkey is near (farther while it reaches for a banana), then warning, a constant fall that slides toward the monkey's angle, and a hit capsule that drops the monkey on any-part contact, at most twice per snake | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `GameController/RampedDifficultyService` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the climb baseline, and maps any y above the `rampBase` trigger's y (`RampBaseYPosition`) to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `GameBalanceConfig` | [Balance Design](docs/balance-doc.md#difficulty-follows-height) |
-| `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: observes the game, fills `SessionData` & the open `RunData`, saves one markdown session file per launch to `persistentDataPath/Analytics/` on run events, a timer, and quit or pause; samples height & stamina; F9 new session, F10 mock save | none |
+| `Analytics/AnalyticsManager` | scene-placed singleton kept across reloads: observes the game, fills `SessionData` & the open `RunData`, saves one markdown session file per launch to `persistentDataPath/Analytics/` on run events, a timer, and quit or pause; samples height & stamina; dev keys from `HackShortcutConfig`: restart session, mock save, download report (`DownloadReport`) | [TDD](docs/monkobra-tdd.md#analytics) |
 | `Analytics/RunData` | plain data of one run: stamps, timed samples of height & stamina, status (`InProgress`, `Lost`, `Interrupted`), end, death cause, scores; also `EventStamp`, `RunSample`, `RunStatus` | none |
 | `Analytics/DeathCause`, `Analytics/DeathCauseResolver` | static: infers a lost run's cause from its stamps: a branch hit or web encounter w/i `DeathCauseWindowS` before the loss, else `GreatCobra`; also the display names | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `Analytics/MockAnalyticsGenerator` | static: builds a fully mocked `SessionData` & saves it as `0<stamp>-mock.md` beside the real files, live session untouched | none |
-| `Analytics/AnalyticsConfig` | ScriptableObject (`Settings/Analytics/AnalyticsConfig.asset`): every analytics tuning value, ie keys, intervals, death cause window | none |
+| `Analytics/AnalyticsConfig` | ScriptableObject (`Settings/Analytics/AnalyticsConfig.asset`): every analytics tuning value, ie sample & autosave intervals, death cause window | none |
 | `Analytics/SessionData` | plain data of one session: title, app version, runs | none |
 | `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry with Mermaid graphs & the whole session file with a summary of `Lost` runs, writes the file | none |
+| `Analytics/WebDownload` | static: hands a text file to the browser through `Plugins/WebGL/Download.jslib`; false outside a WebGL player | [TDD](docs/monkobra-tdd.md#analytics) |
+| `HackShortcuts/HackShortcutConfig`, `HackShortcuts/HackAction` | ScriptableObject (`Settings/HackShortcuts/HackShortcutConfig.asset`): every dev/hack key with its action & help line; `IsActive` is true in development builds only; read by `AnalyticsManager` & `GameController` | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
+| `HackShortcuts/HackShortcutHelp` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself outside a development build | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |
 | `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |
