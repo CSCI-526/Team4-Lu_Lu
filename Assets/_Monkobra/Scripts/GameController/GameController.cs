@@ -71,6 +71,11 @@ public class GameController: MonoBehaviour {
     [Tooltip("debug cheat: cobra collisions never kill the monkey")]
     private bool cobraNoClip;
 
+    [SerializeField]
+    [Tooltip("dev/hack keys, its no-clip key works in a development build "
+        + "only")]
+    private HackShortcutConfig hackShortcuts;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -104,6 +109,8 @@ public class GameController: MonoBehaviour {
     }
 
     private void Update() {
+        UpdateNoClipKey();
+
         if (State != GameState.Lost || InteractAction == null) {
             return;
         }
@@ -135,6 +142,28 @@ public class GameController: MonoBehaviour {
     }
 
     // private methods  ########################################################
+    // dev/hack key toggling the no-clip cheat
+    private void UpdateNoClipKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        Key noClipKey = hackShortcuts.GetKey(HackAction.NoClip);
+        if (
+            keyboard == null
+            || noClipKey == Key.None
+            || !keyboard[noClipKey].wasPressedThisFrame
+        ) {
+            return;
+        }
+
+        CobraNoClip = !CobraNoClip;
+        if (Debug.isDebugBuild) {
+            Debug.Log("GameController:\tcobra no clip " + CobraNoClip, this);
+        }
+    }
+
     private void WarnIfCobraNoClip() {
         if (cobraNoClip) {
             Debug.LogWarning(

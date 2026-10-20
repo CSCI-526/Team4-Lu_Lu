@@ -21,6 +21,8 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 
 Gamepad: left stick or D-pad moves, the north button grabs, the south button breaks free of a web.
 
+Dev keys (development builds and the Editor only): F1 toggles the cobra no-clip cheat, F8 downloads the analytics session report, F9 starts a new analytics session, F10 saves a mock session. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts).
+
 ## Getting Started
 
 Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `Lv1Scene` and press Play. The game also runs in the browser from the WebGL export served by GitHub Pages; the builds are described in [Build](docs/build-doc.md).

@@ -88,7 +88,22 @@ Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and the 
 
 ## Analytics
 
-`AnalyticsManager` is a scene-placed singleton kept across reloads. It observes the run (`GameController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchDetection.BranchHit`, `SpiderWebTrap.Encountered`), fills a `SessionData` of `RunData` entries, and `AnalyticsMarkdownWriter` renders it to one markdown file per launch under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Keys, sample and autosave intervals, and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`.
+`AnalyticsManager` is a scene-placed singleton kept across reloads. It observes the run (`GameController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchDetection.BranchHit`, `SpiderWebTrap.Encountered`), fills a `SessionData` of `RunData` entries, and `AnalyticsMarkdownWriter` renders it to one markdown file per launch under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
+
+A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB filesystem), so the download key renders the session in memory and `WebDownload` hands it to the browser through `Plugins/WebGL/Download.jslib`. A run still open is rendered as it stands and keeps recording. Elsewhere the same key saves the session file and logs its path.
+
+## Hack Shortcuts
+
+Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.asset`, an instance of the `HackShortcutConfig` ScriptableObject: a list of entries, each a `HackAction`, a key, and a one-line description. Consumers look a key up with `GetKey(HackAction)` and skip it unless `HackShortcutConfig.IsActive`, ie a development build or the Editor, so none of them work in a release build.
+
+| Key | Action | Read by |
+| --- | --- | --- |
+| F1 | toggle `GameController.CobraNoClip` | `GameController` |
+| F8 | download the analytics session report | `AnalyticsManager` |
+| F9 | close the analytics session and open a new file | `AnalyticsManager` |
+| F10 | save a mock analytics session file | `AnalyticsManager` |
+
+`HackShortcutHelp` on a TMP text writes these lines from the asset in `Awake`, and hides its object outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
 
 ## Game Balance
 

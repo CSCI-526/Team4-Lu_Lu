@@ -19,19 +19,27 @@ bug spider web fail to load & log warning
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha.2...dev
 
+## [1.0.0-alpha.2] - 2026-10-19
 
+### Added
 
+##### Erik
 
+- `HackShortcutConfig` asset: all dev keys in one place, dev builds only
+- F8 downloads the analytics session report in the browser (WebGL dev build)
+- F1 toggles the cobra no-clip cheat
+- `HackShortcutHelp`: TMP text listing the dev keys, placed on the `Lv1Scene` canvas
 
+### Changed
 
+##### Erik
 
+- analytics F9 & F10 keys moved to `HackShortcutConfig`, dev builds only
+- WebGL build profiles (`GithubPages`, `ItchIO`) now build as development builds, so the dev keys work in the browser
 
-
-
-
-
+[1.0.0-alpha.2]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha...v1.0.0-alpha.2
 
 ## [1.0.0-alpha] - 2026-10-19
 
