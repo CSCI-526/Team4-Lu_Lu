@@ -9,7 +9,51 @@ bug spider web fail to load & log warning
 
 ### Added
 
+##### Yuqing Lu
+
+- tutorial goal line `Climb high. Eat bananas. Escape the cobra.` above the keys in `Lv1Scene`, in regular-weight LiberationSans at size 40, the largest text on the panel
+- white `Energy` label on the `StaminaBar` prefab, above the left end of the bar
+- `LowStaminaPrompt`: the first low-stamina feedback per scene load shows `Low energy — eat bananas before you slow down!` for `showDurationS` (4 s), on the same event as the bar shake & camera cool-down; hidden at once on a loss, & while a web holds the monkey, resuming after the escape
+
+##### Belle Dai
+
+- keyboard-style tutorial controls in `Lv1Scene`: WASD cluster & wide Space key drawn from uGUI Images, w/ captions `Move`, `Grab Banana`, `Hold to reach, release to grab`
+- `MonkobraTutorial-SemiBold` UI font (Noto Sans TC subset, SIL OFL) so the tutorial renders in WebGL w/o system fonts
+
+##### Erik
+
+- `CameraCoolDownEfx` on the main camera: each move attempt while stamina is below 10% pulses a URP Vignette blackdown and widens the field of view (zoom-out), easing both back; in two steps, lighter while stamina is low and stronger once the bar is empty. `Lv1Scene` gets a global Volume with a Vignette override
+- `CameraEfxConfig` asset: the camera efx tuning in one place, i.e. the vignette intensity & zoom-out of both cool-down steps, ease times, and the retrigger cooldown, was fields on `CameraCoolDownEfx`; the hit shake stays on its impulse sources
+- `CameraHitShakeEfx` on the main camera: a branch hit gives a light camera shake, a falling cobra hit a heavier one, each from its own `CinemachineImpulseSource`
+- `HitBranchDetection.I` singleton, `Hit` event carrying a `HitKind`, and a `ReportHit(Collider, HitKind)` overload
+- `StaminaBarController.lowStaminaFraction` (default 0.1): the stamina bar shake and the camera cool-down play on a move attempt below this share of max stamina, not only on an empty bar; it drives the efx only, an empty bar alone still slows the monkey, and it is not part of `GameBalanceConfig`
+- grab arm tracks its banana while interact is held: it re-aims every physics step, turning at `MonkeyConfig.reachAimSpeedDeg` (deg/s, 0 snaps), was aimed once on the press; a banana switched off or destroyed mid-hold is dropped, so the release grabs nothing
+- Great Cobra holds its height in the starter zone: it stays active and orbits but does not climb until Playing begins
+- `StarterZone` game state between Tutorial and Playing: the run is live (climb, grab, score, lose) until `GameController.EndStarterZone()` is called, then Playing begins
+- `StarterZoneExitRelay`: on a trigger collider, the monkey entering ends the starter zone
+- `RampedDifficultyService` `rampBase` field & `RampBaseYPosition`: the ramped difficulty starts at 0 at the y of the starter zone exit trigger, falling back to the player's start y while unassigned
+
 ### Changed
+
+##### Yuqing Lu
+
+- tutorial keys & start prompt moved down 55 to make room for the goal line: `KeyboardControls` y 35 → -20, `Press` y -180 → -235
+
+##### Erik
+
+- the ramp curve is read above the starter zone exit trigger, not the player's start y; score & height display still measure from the start y
+- branch & banana curves in `GameBalanceConfig` retuned to start at difficulty 0
+- Great Cobra `startHeight` -5 → -10
+- `StaminaBarController.ExhaustedMoveAttempted` → `LowStaminaMoveAttempted`, raised through the new `IsLowStamina` check
+- `HitBranchDetection` only detects and reports hits; the camera shake moved to `CameraHitShakeEfx`, and the impulse source left the Monkey prefab
+- the commit rule in `AGENTS.md` lets agents commit w/ Unity running once the user confirms
+
+##### Wenhai Dong
+
+- web builds lock to 720p: both build profiles (and the project default) use a 1280×720 canvas, was 1920×1080, which overflowed smaller laptop screens
+- `Lv1Scene` Canvas Scaler: Scale With Screen Size at a 1280×720 reference (match 0.5), was Constant Pixel Size, so the UI keeps its size on Mac Retina, 4K, and Windows alike
+- `Lv1Scene` UI resized and repositioned for 720p (the 1080p layout scaled by 2/3): score & height top-left, stamina bar bottom-left, tutorial, lose screen, and web prompt centered; the climb progress bar is now anchored to the right-middle edge instead of 484 px up from the bottom-right corner, so it no longer runs off short screens
+- web builds use a new `FitWindow` WebGL template instead of Unity's `Default`: the game keeps 16:9, scales to fit any browser window with black bars, and renders at the screen's real pixel density, so it shows in full on small laptops and stays sharp on Retina & 4K; both build profiles and the project default use it
 
 ### Deprecated
 
