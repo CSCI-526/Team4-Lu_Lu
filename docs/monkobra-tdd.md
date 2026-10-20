@@ -211,7 +211,7 @@ The tutorial in `Lv1Scene` uses editable uGUI Images under `TutorialScreen/Keybo
 
 ## Build and Deploy
 
-The only build is the WebGL export made from the Editor into `Monkobra/` and committed. Compression is disabled and the Default template is used, because GitHub Pages cannot set response headers. The steps and the required Player Settings are in [Build](build-doc.md).
+The only build is the WebGL export made from the Editor into `Monkobra/` and committed. Compression is disabled, because GitHub Pages cannot set response headers, and the `FitWindow` template keeps the game 16:9 at any window size. The steps and the required Player Settings are in [Build](build-doc.md).
 
 ## Known Gaps
 
