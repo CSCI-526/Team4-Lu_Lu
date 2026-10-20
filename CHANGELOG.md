@@ -21,6 +21,18 @@ bug spider web fail to load & log warning
 
 [unreleased]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v1.0.0-alpha...dev
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## [1.0.0-alpha] - 2026-10-19
 
 ### Added
@@ -75,6 +87,18 @@ bug spider web fail to load & log warning
 - stamina bar dropping by a lump while moving, stunned, or after releasing a key
 
 [1.0.0-alpha]: https://github.com/CSCI-526/Team4-Lu_Lu/compare/v0.9.0...v1.0.0-alpha
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## [0.9.0] - 2026-10-12
 
