@@ -2,8 +2,6 @@
 
 <!--
 Bug spider web fail to load & log warning
-
-Todo more prefab (split lv1 scene)
 -->
 
 
