@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.InputSystem;
 
 /// <summary>
 /// Shared tuning for <see cref="AnalyticsManager"/>: sampling, saving, and
-/// how a death cause is inferred.
+/// how a death cause is inferred. Hack keys live in
+/// <see cref="HackShortcutConfig"/>.
 /// </summary>
 [CreateAssetMenu(
     fileName = "AnalyticsConfig",
@@ -12,12 +12,6 @@ using UnityEngine.InputSystem;
 )]
 public class AnalyticsConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>key that forces a new session file</returns>
-    public Key RestartSessionKey => restartSessionKey;
-
-    /// <returns>key that saves a mock session file, for layout checks</returns>
-    public Key MockSessionKey => mockSessionKey;
-
     /// <returns>seconds b/t run samples of height & stamina while a run is
     /// playing</returns>
     public float SampleIntervalS => sampleIntervalS;
@@ -31,15 +25,6 @@ public class AnalyticsConfig: ScriptableObject {
     public float DeathCauseWindowS => deathCauseWindowS;
 
     // Inspector Fields  #######################################################
-    [Header("Session")]
-    [SerializeField]
-    [Tooltip("forces a new session file")]
-    private Key restartSessionKey = Key.F9;
-
-    [SerializeField]
-    [Tooltip("saves a mock session file, the live session is untouched")]
-    private Key mockSessionKey = Key.F10;
-
     [Header("Sampling")]
     [SerializeField]
     [FormerlySerializedAs("staminaSampleIntervalS")]

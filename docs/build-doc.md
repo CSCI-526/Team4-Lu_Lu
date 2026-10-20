@@ -45,6 +45,10 @@ Steps:
 
 Limits: 1,000 files, 240 characters per path, 500 MB total, 200 MB per file.
 
+## Dev Keys
+
+The hack keys (F1 no-clip, F8 report download, F9 and F10 analytics, see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)) run only when `Debug.isDebugBuild` is true. The GitHub Pages export keeps Development Build off, so it has none of them. To download the analytics report from a browser, build WebGL with Development Build on, and serve it locally or upload it as a draft on itch.io. The browser needs focus on the game canvas when F8 is pressed.
+
 ## Windows
 
 Location: `builds/Monkobra v0.9.0+Win`

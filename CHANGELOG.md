@@ -9,7 +9,17 @@ bug spider web fail to load & log warning
 
 ### Added
 
+##### Erik
+
+- `HackShortcutConfig` asset: every dev key in one place w/ a help line each, working in development builds only
+- F8 downloads the analytics session report in the browser (WebGL development build); F1 toggles the cobra no-clip cheat
+- `HackShortcutHelp`: fills a TMP text with one line per dev key, placed on the `Lv1Scene` canvas
+
 ### Changed
+
+##### Erik
+
+- analytics F9 & F10 keys moved from `AnalyticsConfig` to `HackShortcutConfig`, and now work in development builds only
 
 ### Deprecated
 
