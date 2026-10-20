@@ -1,7 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug spider web fail to load & log warning
+bug spider web fail to load & log warning
 -->
 
 
