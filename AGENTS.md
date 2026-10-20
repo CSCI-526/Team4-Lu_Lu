@@ -46,6 +46,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 
 - Unity code follows the `coder-unity-engine` skill conventions
 - Keep gameplay tuning values (stamina drain, grab restore, cobra speed) in serialized fields, never hard-coded
+- Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive`; never hard-code a dev key or let one run in a release build
 
 ## Testing Instructions
 
@@ -94,5 +95,5 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - Update the [Game Design Document](docs/monkobra-gdd.md) when design intent shifts, ie pillars, the core twist, resources, or win and lose rules; read it before changing how a mechanic is meant to feel
 - Update [Mobs](docs/mob-doc.md) when a cobra, branch, or web changes how it spawns, moves, or reacts to a touch, and the [Grab System](docs/grab-doc.md) when detection, reach, or release rules change
 - Update [Build](docs/build-doc.md) when the export steps, folder, or required Player Settings change
-- Update the [Technical Design Document](docs/monkobra-tdd.md) when the architecture, run lifecycle, tuning assets, input bindings, or conventions change
+- Update the [Technical Design Document](docs/monkobra-tdd.md) when the architecture, run lifecycle, tuning assets, input bindings, hack shortcuts, or conventions change
 - Update this file when commands or conventions change
