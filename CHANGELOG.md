@@ -9,17 +9,7 @@ bug spider web fail to load & log warning
 
 ### Added
 
-##### Erik
-
-- `HackShortcutConfig` asset: every dev key in one place w/ a help line each, working in development builds only
-- F8 downloads the analytics session report in the browser (WebGL development build); F1 toggles the cobra no-clip cheat
-- `HackShortcutHelp`: fills a TMP text with one line per dev key, placed on the `Lv1Scene` canvas
-
 ### Changed
-
-##### Erik
-
-- analytics F9 & F10 keys moved from `AnalyticsConfig` to `HackShortcutConfig`, and now work in development builds only
 
 ### Deprecated
 
@@ -29,19 +19,29 @@ bug spider web fail to load & log warning
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha.2...dev
 
+## [1.0.0-alpha.2] - 2026-10-19
 
+### Added
 
+##### Erik
 
+- `HackShortcutConfig` asset: all dev keys in one place, dev builds only
+- F8 downloads the analytics session report in the browser (WebGL dev build)
+- F1 toggles the cobra no-clip cheat
+- `HackShortcutHelp`: TMP text listing the dev keys, placed on the `Lv1Scene` canvas
 
+### Changed
 
+##### Erik
 
+- analytics F9 & F10 keys moved to `HackShortcutConfig`, dev builds only
 
+> [!WARNING]
+> Dev keys (F1, F8, F9, F10) no longer work in release builds, incl. the GitHub Pages export; use a development build
 
-
-
-
+[1.0.0-alpha.2]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha...v1.0.0-alpha.2
 
 ## [1.0.0-alpha] - 2026-10-19
 
