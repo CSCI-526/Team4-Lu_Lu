@@ -12,8 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b7e1c5a9d2f4e6a8c0b1d3f5a7e9c24, type: 3}
   m_Name: AnalyticsConfig
   m_EditorClassIdentifier: Assembly-CSharp::AnalyticsConfig
-  restartSessionKey: 102
-  mockSessionKey: 103
   sampleIntervalS: 2
   autosaveIntervalS: 10
   deathCauseWindowS: 2
