@@ -68,6 +68,7 @@ bug spider web fail to load & log warning
 - Great Cobra starts lower (-5 → -10)
 - low stamina, not only empty, now triggers move-attempt feedback
 - `Lv1Scene` split into prefabs, easing scene merges
+- Mobile render profile now renders at full scale (1.0, was 0.8), matching the PC profile
 
 ##### Wenhai Dong
 
