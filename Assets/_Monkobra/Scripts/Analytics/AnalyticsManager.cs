@@ -102,6 +102,28 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// hands the session report to the browser as a download; elsewhere it
+    /// saves the session file instead. A run still open is rendered as it
+    /// stands and keeps recording.
+    /// </summary>
+    public void DownloadReport() {
+        string text = AnalyticsMarkdownWriter.BuildSession(session);
+        string filename = "0" + session.StartClock.ToString(
+            "yyyy-MM-dd_HH_mm_ss",
+            CultureInfo.InvariantCulture
+        ) + ".md";
+        if (WebDownload.SaveText(filename, text)) {
+            return;
+        }
+
+        if (SaveSession()) {
+            Debug.Log("Analytics:\treport saved " + SessionFilePath, this);
+        } else {
+            Debug.LogWarning("Analytics:\tfail to save report", this);
+        }
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("shared analytics tuning")]
@@ -201,6 +223,14 @@ public class AnalyticsManager: MonoBehaviour {
                 this
             );
             StartNewSession();
+        }
+
+        Key downloadKey = hackShortcuts.GetKey(HackAction.DownloadReport);
+        if (
+            downloadKey != Key.None
+            && keyboard[downloadKey].wasPressedThisFrame
+        ) {
+            DownloadReport();
         }
 
         Key mockKey = hackShortcuts.GetKey(HackAction.MockSession);
