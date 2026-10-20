@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 /// Writes playtest analytics to a markdown file per session. A session is one
 /// game launch: the file opens with an h1 timestamp, and every game over
 /// appends one run entry. Scene restarts keep the same session, and the
-/// <see cref="AnalyticsConfig.RestartSessionKey"/> forces a fresh file
+/// <see cref="HackAction.RestartSession"/> key forces a fresh file
 /// mid-launch.
 /// <para>
 /// Attach to a root GameObject of the first scene. It is kept across scene
@@ -107,6 +107,10 @@ public class AnalyticsManager: MonoBehaviour {
     [Tooltip("shared analytics tuning")]
     private AnalyticsConfig config;
 
+    [SerializeField]
+    [Tooltip("dev/hack keys, they only work in a development build")]
+    private HackShortcutConfig hackShortcuts;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (I != null && I != this) {
@@ -149,22 +153,7 @@ public class AnalyticsManager: MonoBehaviour {
             }
         }
 
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null) {
-            return;
-        }
-
-        if (keyboard[config.RestartSessionKey].wasPressedThisFrame) {
-            Debug.LogWarning(
-                "Analytics:\trestart session key pressed, closing session "
-                    + SessionFilePath,
-                this
-            );
-            StartNewSession();
-        }
-        if (keyboard[config.MockSessionKey].wasPressedThisFrame) {
-            SaveMockSession();
-        }
+        UpdateHackKeys();
     }
 
     // covers Play mode stop in the Editor
@@ -187,6 +176,37 @@ public class AnalyticsManager: MonoBehaviour {
         SpiderWebTrap.Encountered -= OnWebEncountered;
         Observe(null, null, null);
         I = null;
+    }
+
+    // Private Helpers  ########################################################
+    // dev/hack keys, off outside a development build
+    private void UpdateHackKeys() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null) {
+            return;
+        }
+
+        Key restartKey = hackShortcuts.GetKey(HackAction.RestartSession);
+        if (
+            restartKey != Key.None
+            && keyboard[restartKey].wasPressedThisFrame
+        ) {
+            Debug.LogWarning(
+                "Analytics:\trestart session key pressed, closing session "
+                    + SessionFilePath,
+                this
+            );
+            StartNewSession();
+        }
+
+        Key mockKey = hackShortcuts.GetKey(HackAction.MockSession);
+        if (mockKey != Key.None && keyboard[mockKey].wasPressedThisFrame) {
+            SaveMockSession();
+        }
     }
 
     // Event Handlers  #########################################################
