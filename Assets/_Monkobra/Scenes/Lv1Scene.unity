@@ -288,7 +288,6 @@ Transform:
   m_Children:
   - {fileID: 7808786385842667138}
   - {fileID: 8510962960014555773}
-  - {fileID: 1700353540}
   - {fileID: 354198431}
   - {fileID: 3635617223177171820}
   m_Father: {fileID: 0}
