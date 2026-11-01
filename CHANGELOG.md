@@ -4,7 +4,6 @@
 Hack need to verify: slippery is working
 
 Fixme Pan: UI mpv
-Todo Dong: Pause screen
 Todo Dong: boss fight
 Todo Pan: 数字显示和蛇的距离
 Todo Yuqing: 抓取椰子，往下扔，蛇往下掉
@@ -30,6 +29,10 @@ bug spider web fail to load & log warning
 - Great Cobra exit boost: extra climb speed for a while after the monkey leaves the starting zone, w/ center warning "Run! The Great Cobra is chasing you!"; `cobraExitBoostSpeedU` & `cobraExitBoostDurationS` in `GameBalanceConfig`
 - `MovementConfig` asset: climb speed builds up along 2 curves (up, down) of how long the key is held, instead of a fixed acceleration
 - `startingZoneBranchClearRadiusU` in `GameBalanceConfig`: branch clearance round the monkey before the run is playing
+
+##### Wenhai Dong
+
+- pause: Esc or P pauses or resumes a live run (starting zone or playing), and R restarts it from the pause; time freezes, audio pauses, and a `PauseScreen` panel ("Paused", "Press Esc or P to Resume", "Press R to Restart") covers the screen; `GameController.IsPaused`, `SetPaused`, and `PauseChanged`, with the panel toggled by `PauseScreenWidget`
 
 ### Changed
 
