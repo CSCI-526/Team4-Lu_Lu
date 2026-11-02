@@ -3,11 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Countdown (ie Frozen 7s) and a shrinking bar for the great cobra's coconut
-/// freeze, blinking in the last seconds. A passive view: its object starts
-/// inactive in the prefab and <see cref="CoconutManager"/> turns it on only
-/// while the cobra is frozen in a run, so it needs no show or hide logic of
-/// its own. Put it on a prefab nested straight under the HUD canvas.
+/// Countdown (ie Cobra Frozen: 7s) and a shrinking bar for the great cobra's
+/// coconut freeze, blinking in the last seconds. A passive view: its object
+/// starts inactive in the prefab and <see cref="CoconutManager"/> turns it on
+/// only while the cobra is frozen in a run, so it needs no show or hide logic
+/// of its own. Put it on a prefab nested straight under the HUD canvas.
 /// </summary>
 public class FreezeTimerWidget: MonoBehaviour {
     // Inspector Fields  #######################################################
@@ -26,7 +26,7 @@ public class FreezeTimerWidget: MonoBehaviour {
     [Header("Look")]
     [SerializeField]
     [Tooltip("countdown text, {0} is the whole seconds left")]
-    private string timerFormat = "Frozen {0}s";
+    private string timerFormat = "Cobra Frozen: {0}s";
 
     [SerializeField]
     [Tooltip("countdown & bar color")]
