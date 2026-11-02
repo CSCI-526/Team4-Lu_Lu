@@ -14,6 +14,10 @@ using UnityEngine.Serialization;
 /// </summary>
 public class FruitOutlineListener: MonoBehaviour {
     // Inspector Fields  #######################################################
+    [SerializeField]
+    [Tooltip("object whose child meshes get outlined; empty = this object")]
+    private Transform meshRoot;
+
     [Header("Outline Materials")]
     [SerializeField]
     [Tooltip("outline while fruit sits in a detection zone")]
@@ -50,7 +54,8 @@ public class FruitOutlineListener: MonoBehaviour {
             );
         }
 
-        meshes = GetComponentsInChildren<MeshRenderer>(true);
+        Transform meshSearchRoot = meshRoot != null ? meshRoot : transform;
+        meshes = meshSearchRoot.GetComponentsInChildren<MeshRenderer>(true);
         plainMats = new Material[meshes.Length][];
         reachableMats = new Material[meshes.Length][];
         grabbableMats = new Material[meshes.Length][];

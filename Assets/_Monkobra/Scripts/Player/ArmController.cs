@@ -49,6 +49,45 @@ public class ArmController: MonoBehaviour {
     public float CurrentLengthU =>
         Vector3.Distance(ShoulderWorld, transform.position);
 
+    // Public Methods  #########################################################
+    /// <summary>
+    /// Sends the hand up to a point above the shoulder and leaves it there:
+    /// the joint and every collision are off, so the arm stretches past its
+    /// reach and catches on nothing. Once the body is pulled up to that point,
+    /// the arm is back at its rest length.
+    /// </summary>
+    /// <param name="leapDistanceU">height the body is about to rise; u</param>
+    /// <param name="extendS">time the hand takes to get there; s</param>
+    public void BeginLeapReach(float leapDistanceU, float extendS) {
+        if (body == null) {
+            return;
+        }
+
+        isLeapReaching = true;
+        body.isKinematic = true;
+        body.detectCollisions = false;
+        handContacts.Clear();
+        leapAnchor =
+            ShoulderWorld + Vector3.up * (leapDistanceU + restLengthU);
+        leapHandSpeedU =
+            Vector3.Distance(transform.position, leapAnchor)
+            / Mathf.Max(extendS, Time.fixedDeltaTime);
+    }
+
+    /// <summary>Hands the arm back to its joint and to physics.</summary>
+    public void EndLeapReach() {
+        if (!isLeapReaching) {
+            return;
+        }
+
+        isLeapReaching = false;
+        if (body != null) {
+            body.isKinematic = false;
+            body.detectCollisions = true;
+            body.WakeUp();
+        }
+    }
+
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
@@ -153,6 +192,8 @@ public class ArmController: MonoBehaviour {
         }
         monkeyRoot = joint.connectedBody != null
             ? joint.connectedBody.GetComponent<MonkeyController>() : null;
+        leapController = monkeyRoot != null
+            ? monkeyRoot.GetComponent<PineappleLeapController>() : null;
 
         reachZMotion = joint.zMotion;
         Vector3 outward = transform.position - ShoulderWorld;
@@ -257,12 +298,25 @@ public class ArmController: MonoBehaviour {
             InteractAction.action.Disable();
         }
         EndReach();
+        EndLeapReach();
         // no physics reports while disabled, stale contacts never clear
         handContacts.Clear();
     }
 
     private void FixedUpdate() {
         if (joint == null || config == null) {
+            return;
+        }
+
+        if (isLeapReaching) {
+            body.MovePosition(
+                Vector3.MoveTowards(
+                    body.position,
+                    leapAnchor,
+                    leapHandSpeedU * Time.fixedDeltaTime
+                )
+            );
+            StretchVisual();
             return;
         }
 
@@ -298,6 +352,10 @@ public class ArmController: MonoBehaviour {
     // Event Handlers  #########################################################
     // detection singleton picks the side, only the matching arm reaches
     private void OnInteractPerformed(InputAction.CallbackContext context) {
+        if (isLeapReaching) {
+            return;
+        }
+
         UpwardFruitSensor fruitDetection = UpwardFruitSensor.I;
         if (fruitDetection == null) {
             Debug.LogError(
@@ -350,6 +408,9 @@ public class ArmController: MonoBehaviour {
     private Vector3 aimDirection; // world direction the arm is commanded to
     private float cyclePhase; // 0..1, advances only while moving
     private float restLengthU;
+    private bool isLeapReaching; // hand sent up by a leap, joint out of play
+    private Vector3 leapAnchor; // world pos the hand rises to in a leap
+    private float leapHandSpeedU; // speed of the hand to its anchor; u/s
 
     // authored linear motion, restored on reach
     private ConfigurableJointMotion reachZMotion =
@@ -411,6 +472,7 @@ public class ArmController: MonoBehaviour {
     private Rigidbody body;
     private ConfigurableJoint joint;
     private MonkeyController monkeyRoot;
+    private PineappleLeapController leapController;
 
     // Private Methods  ########################################################
     // arm brushing the torso would shove the body and report the monkey as a
@@ -502,6 +564,26 @@ public class ArmController: MonoBehaviour {
             }
             return;
         }
+        // read before the pickup switches the fruit off
+        Vector3 fruitCentre = fruit.bounds.center;
+        FruitFlyOnGrab flyOnGrab =
+            fruit.GetComponentInParent<FruitFlyOnGrab>();
+        bool isLeapFruit = fruit.GetComponentInParent<LeapOnGrab>() != null;
+
+        // e.g. a web's forced release: the fruit stays, nothing starts
+        if (
+            isLeapFruit
+            && (leapController == null || !leapController.CanBegin)
+        ) {
+            if (Debug.isDebugBuild) {
+                Debug.Log(
+                    "ArmController:\tleap refused, " + fruit.name + " stays",
+                    this
+                );
+            }
+            return;
+        }
+
         //成功摘到后，交给 ScorePickup 处理
         ScorePickup pickup = fruit.GetComponentInParent<ScorePickup>();
         if (pickup != null) {
@@ -510,7 +592,11 @@ public class ArmController: MonoBehaviour {
             }
         } else {
             // Existing fruit without a score component keeps its old behavior.
-            fruit.gameObject.SetActive(false);
+            // the collider may sit on a child, the model beside it goes too
+            GameObject fruitRoot = flyOnGrab != null
+                ? flyOnGrab.gameObject
+                : fruit.gameObject;
+            fruitRoot.SetActive(false);
         }
         // a disabled collider may never raise its trigger exit
         UpwardFruitSensor fruitDetection = UpwardFruitSensor.I;
@@ -525,10 +611,33 @@ public class ArmController: MonoBehaviour {
         }
 
         // a coconut is kept to freeze the cobra, it restores no stamina
-        if (pickup != null && pickup.Kind == PickupKind.Coconut) {
-            return;
+        bool restoresStamina =
+            pickup == null || pickup.Kind != PickupKind.Coconut;
+        System.Action onArrived = null;
+        if (restoresStamina) {
+            onArrived = RestoreStaminaByFruit;
         }
 
+        // the restore lands with the flown sprite, at once w/o the effect
+        FruitFlyEffect flyEffect = FruitFlyEffect.I;
+        if (flyEffect != null) {
+            bool hasFlyOnGrab = flyOnGrab != null;
+            flyEffect.Play(
+                fruitCentre,
+                hasFlyOnGrab ? flyOnGrab.Target : FruitFlyTarget.EnergyBar,
+                hasFlyOnGrab ? flyOnGrab.Sprite : null,
+                onArrived
+            );
+        } else if (restoresStamina) {
+            RestoreStaminaByFruit();
+        }
+
+        if (isLeapFruit) {
+            leapController.Begin();
+        }
+    }
+
+    private void RestoreStaminaByFruit() {
         StaminaBarController staminaBar = StaminaBarController.I;
         if (staminaBar != null) {
             staminaBar.AddStaminaByFruit();

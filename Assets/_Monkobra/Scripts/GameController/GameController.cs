@@ -17,6 +17,30 @@ public class GameController: MonoBehaviour {
     public event Action<GameState> StateChanged;
 
     /// <summary>
+    /// if the run is paused: time is frozen and the pause screen is up, while
+    /// <see cref="State"/> keeps its live value, so resuming is not a new
+    /// state change
+    /// </summary>
+    public bool IsPaused {
+        get; private set;
+    }
+
+    /// <summary>raised with the new value each time the pause toggles</summary>
+    public event Action<bool> PauseChanged;
+
+    /// <summary>
+    /// if a pineapple leap is under way: hazards leave the monkey alone, while
+    /// <see cref="State"/> keeps its live value, so a leap is no state change
+    /// </summary>
+    public bool IsLeaping {
+        get; private set;
+    }
+
+    /// <summary>raised with the new value each time a leap starts or ends
+    /// </summary>
+    public event Action<bool> LeapChanged;
+
+    /// <summary>
     /// if the run is live, ie climbing and scoring work, whether or not the
     /// monkey is still protected
     /// </summary>
@@ -52,6 +76,44 @@ public class GameController: MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// pauses or resumes the run; a pause is ignored unless the run is live
+    /// </summary>
+    public void SetPaused(bool isPaused) {
+        if (isPaused == IsPaused || (isPaused && !IsRunLive)) {
+            return;
+        }
+
+        IsPaused = isPaused;
+        ApplyTimeScale();
+        AudioListener.pause = isPaused;
+        PauseChanged?.Invoke(isPaused);
+
+        if (Debug.isDebugBuild) {
+            Debug.Log("GameController:\tpaused " + isPaused, this);
+        }
+    }
+
+    /// <summary>
+    /// starts or ends a leap; a start is ignored unless the run is live, and
+    /// ends the starting zone, as a leap may carry the monkey past its exit
+    /// </summary>
+    public void SetLeaping(bool isLeaping) {
+        if (isLeaping == IsLeaping || (isLeaping && !IsRunLive)) {
+            return;
+        }
+
+        IsLeaping = isLeaping;
+        if (isLeaping) {
+            EndStartingZone();
+        }
+        LeapChanged?.Invoke(isLeaping);
+
+        if (Debug.isDebugBuild) {
+            Debug.Log("GameController:\tleaping " + isLeaping, this);
+        }
+    }
+
     public void LoseGame() {
         if (!IsRunLive) {
             return;
@@ -70,14 +132,24 @@ public class GameController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("shared input tuning, its interact action restarts the scene on "
-        + "the lose screen")]
-    private MonkeyConfig monkeyConfig;
-
-    [SerializeField]
     [Min(0f)]
     [Tooltip("unscaled seconds the lose screen ignores restart input")]
     private float restartInputDelay = 0.5f;
+
+    [SerializeField]
+    [Tooltip("toggles the pause while the run is live, the Player/Pause "
+        + "action (Esc or P)")]
+    private InputActionReference pauseAction;
+
+    [SerializeField]
+    [Tooltip("restarts the run from the lose screen, the "
+        + "Player/RestartAfterLose action (R or Space)")]
+    private InputActionReference restartAfterLoseAction;
+
+    [SerializeField]
+    [Tooltip("restarts the run from the pause screen, the "
+        + "Player/RestartDuringPause action (R)")]
+    private InputActionReference restartDuringPauseAction;
 
     [SerializeField]
     [Tooltip("debug cheat: cobra collisions never kill the monkey")]
@@ -91,16 +163,26 @@ public class GameController: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (monkeyConfig == null) {
+        if (pauseAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign Inspector Field: Monkey Config",
+                "GameController:\tmust assign Inspector Field: Pause Action",
                 this
             );
-        } else if (monkeyConfig.InteractAction == null) {
+        }
+
+        if (restartAfterLoseAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign MonkeyConfig field: "
-                    + "interactAction",
-                monkeyConfig
+                "GameController:\tmust assign Inspector Field: "
+                    + "Restart After Lose Action",
+                this
+            );
+        }
+
+        if (restartDuringPauseAction == null) {
+            Debug.LogError(
+                "GameController:\tmust assign Inspector Field: "
+                    + "Restart During Pause Action",
+                this
             );
         }
 
@@ -120,10 +202,23 @@ public class GameController: MonoBehaviour {
         anyPressSub = InputSystem.onAnyButtonPress.CallOnce(OnAnyPressed);
     }
 
+    private void OnEnable() {
+        pauseAction?.action.Enable();
+        restartAfterLoseAction?.action.Enable();
+        restartDuringPauseAction?.action.Enable();
+    }
+
+    private void OnDisable() {
+        pauseAction?.action.Disable();
+        restartAfterLoseAction?.action.Disable();
+        restartDuringPauseAction?.action.Disable();
+    }
+
     private void Update() {
         UpdateNoClipKey();
+        UpdatePauseKey();
 
-        if (State != GameState.Lost || InteractAction == null) {
+        if (State != GameState.Lost || restartAfterLoseAction == null) {
             return;
         }
 
@@ -131,8 +226,8 @@ public class GameController: MonoBehaviour {
             return;
         }
 
-        if (InteractAction.action.WasPressedThisFrame()) {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        if (restartAfterLoseAction.action.WasPressedThisFrame()) {
+            ReloadScene();
         }
     }
 
@@ -142,6 +237,7 @@ public class GameController: MonoBehaviour {
         if (I == this) {
             I = null;
             Time.timeScale = 1f;
+            AudioListener.pause = false;
         }
     }
 
@@ -154,6 +250,43 @@ public class GameController: MonoBehaviour {
     }
 
     // private methods  ########################################################
+    // the pause key toggles the pause; outside a live run it does nothing.
+    // The key that starts the run from the tutorial must not also pause it.
+    // While paused, the pause restart key reloads the scene for a fresh run
+    private void UpdatePauseKey() {
+        if (
+            IsPaused
+            && restartDuringPauseAction != null
+            && restartDuringPauseAction.action.WasPressedThisFrame()
+        ) {
+            if (Debug.isDebugBuild) {
+                Debug.Log("GameController:\trestart from pause", this);
+            }
+            ReloadScene();
+            return;
+        }
+
+        if (
+            pauseAction == null
+            || !pauseAction.action.WasPressedThisFrame()
+            || Time.frameCount == stateChangedFrame
+        ) {
+            return;
+        }
+
+        SetPaused(!IsPaused);
+    }
+
+    // a fresh run; OnDestroy resets the time scale and audio for the new scene
+    private static void ReloadScene() {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // frozen outside a live run and during a pause
+    private void ApplyTimeScale() {
+        Time.timeScale = IsRunLive && !IsPaused ? 1f : 0f;
+    }
+
     // dev/hack key toggling the no-clip cheat
     private void UpdateNoClipKey() {
         if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
@@ -188,15 +321,17 @@ public class GameController: MonoBehaviour {
 
     private void SetState(GameState next) {
         State = next;
-        Time.timeScale = next == GameState.Playing
-            || next == GameState.StartingZone ? 1f : 0f;
+        stateChangedFrame = Time.frameCount;
+        // a state change always ends a pause
+        if (IsPaused) {
+            IsPaused = false;
+            AudioListener.pause = false;
+            PauseChanged?.Invoke(false);
+        }
+        ApplyTimeScale();
 
         if (next == GameState.Lost) {
             lostTime = Time.unscaledTime;
-            // a web trap may have paused interact; restart needs it live
-            if (InteractAction != null) {
-                InteractAction.action.Enable();
-            }
         }
 
         StateChanged?.Invoke(next);
@@ -205,7 +340,5 @@ public class GameController: MonoBehaviour {
     // private members  ########################################################
     private IDisposable anyPressSub;
     private float lostTime;
-
-    private InputActionReference InteractAction =>
-        monkeyConfig != null ? monkeyConfig.InteractAction : null;
+    private int stateChangedFrame = -1; // frame of the last SetState
 }

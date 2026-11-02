@@ -131,6 +131,11 @@ public class SpiderWebTrap: MonoBehaviour {
             return;
         }
 
+        // a leap passes through, not even an encounter for analytics
+        if (GameController.I != null && GameController.I.IsLeaping) {
+            return;
+        }
+
         Rigidbody otherBody = other.attachedRigidbody;
         if (
             otherBody == null

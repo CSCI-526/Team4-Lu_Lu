@@ -37,7 +37,8 @@ public class StaminaBarController: MonoBehaviour {
     // Public Methods  #########################################################
     /// <summary>
     /// restores the per-fruit amount from <see cref="GameBalanceConfig"/>,
-    /// called when an arm grabs a fruit
+    /// called when a grabbed fruit's flight lands on its target, see
+    /// <see cref="FruitFlyEffect"/>
     /// </summary>
     public void AddStaminaByFruit() {
         AddStamina(balanceConfig.FruitStaminaRestore);
