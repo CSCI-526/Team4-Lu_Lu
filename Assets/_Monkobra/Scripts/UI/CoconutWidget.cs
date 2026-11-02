@@ -8,9 +8,11 @@ using UnityEngine.UI;
 /// the progress bar: a coconut icon w/ the count (ie x2), hidden until the
 /// first coconut of the scene, then kept and dimmed at x0. While the cobra is
 /// frozen, a countdown (ie Frozen 7s) and a shrinking bar sit under it, and
-/// blink in the last seconds. Short center messages teach the double-tap on
-/// the first coconut, confirm a use, refuse one while already frozen, and
-/// warn when the cobra moves again.
+/// blink in the last seconds. Until the first coconut use of the session, a
+/// short how-to sits in the same spot instead, and flashes whenever the
+/// cobra surges while coconuts are in hand. Short center messages teach the
+/// double-tap on the first coconut, confirm a use, refuse one while already
+/// frozen, and warn when the cobra moves again.
 /// <para>
 /// Reads <see cref="CoconutInventory.I"/>, its cobra and
 /// <see cref="FruitFlyEffect.I"/> in Start; put it on an always active Canvas
@@ -45,6 +47,13 @@ public class CoconutWidget: MonoBehaviour {
             + "the time left, so keep its pivot on its left edge"
     )]
     private Graphic timerBar;
+
+    [SerializeField]
+    [Tooltip(
+        "how-to under the count, shown until the first coconut use of the "
+            + "session; may share the timer's spot, the two never show at once"
+    )]
+    private TMP_Text useHintLabel;
 
     [Header("Count")]
     [SerializeField]
@@ -88,6 +97,20 @@ public class CoconutWidget: MonoBehaviour {
     [Min(0.1f)]
     [Tooltip("blinks per s near the end")]
     private float endingBlinkHz = 4f;
+
+    [Header("Use Hint")]
+    [SerializeField]
+    [Tooltip("how-to text under the count")]
+    private string useHintText = "Double-tap Space";
+
+    [SerializeField]
+    [Tooltip("how-to flash color while the cobra surges")]
+    private Color useHintFlashColor = new Color(1f, 0.6f, 0.15f, 1f);
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("how-to flashes this long on each cobra surge; s")]
+    private float useHintFlashS = 2f;
 
     [Header("Center Messages")]
     [SerializeField]
@@ -168,12 +191,23 @@ public class CoconutWidget: MonoBehaviour {
                 this
             );
         }
+        if (useHintLabel == null) {
+            Debug.LogWarning(
+                "CoconutWidget:\tmust assign Inspector Field: useHintLabel",
+                this
+            );
+        }
 
         if (icon != null) {
             iconBaseColor = icon.color;
         }
         if (countLabel != null) {
             countBaseColor = countLabel.color;
+        }
+        if (useHintLabel != null) {
+            useHintBaseColor = useHintLabel.color;
+            useHintLabel.text = useHintText;
+            useHintLabel.gameObject.SetActive(false);
         }
         if (panel != null) {
             panel.SetActive(false);
@@ -195,11 +229,13 @@ public class CoconutWidget: MonoBehaviour {
         }
         inventory.CountChanged += OnCountChanged;
         inventory.FreezeRefused += OnFreezeRefused;
+        inventory.Used += OnUsed;
 
         cobra = inventory.Cobra;
         if (cobra != null) {
             cobra.Frozen += OnFrozen;
             cobra.Thawed += OnThawed;
+            cobra.CatchUpStarted += OnCatchUpStarted;
         }
 
         flyEffect = FruitFlyEffect.I;
@@ -217,10 +253,12 @@ public class CoconutWidget: MonoBehaviour {
         if (inventory != null) {
             inventory.CountChanged -= OnCountChanged;
             inventory.FreezeRefused -= OnFreezeRefused;
+            inventory.Used -= OnUsed;
         }
         if (cobra != null) {
             cobra.Frozen -= OnFrozen;
             cobra.Thawed -= OnThawed;
+            cobra.CatchUpStarted -= OnCatchUpStarted;
         }
         if (flyEffect != null) {
             flyEffect.Arrived -= OnFlightArrived;
@@ -234,7 +272,17 @@ public class CoconutWidget: MonoBehaviour {
 
         UpdatePop();
         UpdateTimer(isPlaying);
+        UpdateUseHint(isPlaying);
         UpdateMessage(isPlaying);
+    }
+
+    // a session is one app run: restarts reload the scene, statics stay;
+    // reset on Play too, for an Editor w/o domain reload
+    [RuntimeInitializeOnLoadMethod(
+        RuntimeInitializeLoadType.SubsystemRegistration
+    )]
+    private static void ResetSession() {
+        hasUsedThisSession = false;
     }
 
     // Event Handlers  #########################################################
@@ -244,7 +292,10 @@ public class CoconutWidget: MonoBehaviour {
             if (panel != null) {
                 panel.SetActive(true);
             }
-            ShowMessage(firstCoconutText, frozenColor, firstCoconutShowS);
+            // a player who used one already this session knows how
+            if (!hasUsedThisSession) {
+                ShowMessage(firstCoconutText, frozenColor, firstCoconutShowS);
+            }
         }
 
         if (countLabel != null) {
@@ -289,7 +340,18 @@ public class CoconutWidget: MonoBehaviour {
         ShowMessage(thawedText, endingColor, messageShowS);
     }
 
+    private void OnUsed() {
+        hasUsedThisSession = true;
+    }
+
+    // the moment a coconut helps most, so the how-to calls for attention
+    private void OnCatchUpStarted(int stacks) {
+        useHintFlashEndTime = Time.time + useHintFlashS;
+    }
+
     // private members  ########################################################
+    private static bool hasUsedThisSession; // a coconut was used since launch
+
     private CoconutInventory inventory;
     private CobraMotor cobra;
     private FruitFlyEffect flyEffect;
@@ -297,6 +359,8 @@ public class CoconutWidget: MonoBehaviour {
     private int shownCount; // count on the label
     private Color iconBaseColor = Color.white;
     private Color countBaseColor = Color.white;
+    private Color useHintBaseColor = Color.white;
+    private float useHintFlashEndTime; // Time.time the how-to stops flashing
     private float popEndTime; // Time.time the icon pop is over
     private TextMeshProUGUI messageLabel;
     private Color messageColor;
@@ -353,6 +417,35 @@ public class CoconutWidget: MonoBehaviour {
             timerBar.rectTransform.localScale = new Vector3(fraction, 1f, 1f);
             timerBar.color = color;
         }
+    }
+
+    // how-to while coconuts are in hand and none was used yet this session,
+    // flashing after a cobra surge
+    private void UpdateUseHint(bool isPlaying) {
+        if (useHintLabel == null) {
+            return;
+        }
+
+        bool show = isPlaying
+            && !hasUsedThisSession
+            && inventory != null
+            && inventory.Count > 0
+            && (cobra == null || !cobra.IsFrozen);
+        if (useHintLabel.gameObject.activeSelf != show) {
+            useHintLabel.gameObject.SetActive(show);
+        }
+        if (!show) {
+            return;
+        }
+
+        Color color = useHintBaseColor;
+        if (Time.time < useHintFlashEndTime) {
+            // 0~1 pulse, frozen with the game clock
+            float pulse = 0.5f + 0.5f
+                * Mathf.Sin(Time.time * endingBlinkHz * 2f * Mathf.PI);
+            color = Color.Lerp(useHintBaseColor, useHintFlashColor, pulse);
+        }
+        useHintLabel.color = color;
     }
 
     private void SetTimerVisible(bool isVisible) {
