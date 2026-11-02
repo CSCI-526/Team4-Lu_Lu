@@ -43,8 +43,7 @@ public class CoconutInventory: MonoBehaviour {
     public CobraMotor Cobra => cobra;
 
     /// <summary>
-    /// Raised w/ the new count whenever it changes: a pickup, a use, or the
-    /// hack key.
+    /// Raised w/ the new count whenever it changes: a pickup or a use.
     /// </summary>
     public event Action<int> CountChanged;
 
@@ -69,10 +68,6 @@ public class CoconutInventory: MonoBehaviour {
     [Tooltip("monkey tuning; its Interact action is the double-tap key")]
     private MonkeyConfig monkeyConfig;
 
-    [SerializeField]
-    [Tooltip("dev/hack keys; GiveCoconut adds one, dev builds only")]
-    private HackShortcutConfig hackShortcuts;
-
     [Header("Input Guards")]
     [SerializeField]
     [Min(0f)]
@@ -96,13 +91,6 @@ public class CoconutInventory: MonoBehaviour {
             Debug.LogWarning(
                 "CoconutInventory:\tmust assign Inspector Field: "
                     + "monkeyConfig, w/ an Interact action",
-                this
-            );
-        }
-        if (hackShortcuts == null) {
-            Debug.LogWarning(
-                "CoconutInventory:\tmust assign Inspector Field: "
-                    + "hackShortcuts",
                 this
             );
         }
@@ -162,7 +150,6 @@ public class CoconutInventory: MonoBehaviour {
     }
 
     private void Update() {
-        UpdateGiveCoconutKey();
         UpdateDoubleTap();
     }
 
@@ -293,30 +280,5 @@ public class CoconutInventory: MonoBehaviour {
         }
         return struggle == null
             || (!struggle.IsTrapped && !struggle.IsProtected);
-    }
-
-    // dev/hack key adding one coconut, so the freeze is testable at once
-    private void UpdateGiveCoconutKey() {
-        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
-            return;
-        }
-
-        Keyboard keyboard = Keyboard.current;
-        Key giveKey = hackShortcuts.GetKey(HackAction.GiveCoconut);
-        if (
-            keyboard == null
-            || giveKey == Key.None
-            || !keyboard[giveKey].wasPressedThisFrame
-        ) {
-            return;
-        }
-
-        SetCount(count + 1);
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                "CoconutInventory:\thack coconut, " + count + " now",
-                this
-            );
-        }
     }
 }

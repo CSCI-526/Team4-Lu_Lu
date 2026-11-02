@@ -104,7 +104,7 @@ A rare fruit from higher up, kept instead of eaten: it scores more than a banana
 - Refused: a double-tap does nothing outside `GameState.Playing`, while paused, while a web holds the monkey, or within `webEscapeGraceS` of an escape, so mashing out of a web never spends one; while the cobra is already frozen nothing is spent and "Cobra is already frozen" shows
 - HUD: `CoconutWidget` on `InGameHUD/TopRightAnchor/CoconutHUD`, left of the progress bar, shows the icon and count from the first coconut on, dimmed at x0. Until the first use of the session a "Double-tap Space" hint sits under it, flashing when the cobra surges; while frozen a countdown and a shrinking bar take that spot. Center messages, above the cobra warning, teach the double-tap on the first coconut, confirm a freeze, refuse a second one, and announce the thaw
 
-For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 on every segment. The F3 [hack key](monkobra-tdd.md#hack-shortcuts) adds a coconut at once.
+For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 on every segment. The F3 [hack key](monkobra-tdd.md#hack-shortcuts) spawns a branch bearing a coconut straight above the monkey.
 
 ## Fruit Fly
 

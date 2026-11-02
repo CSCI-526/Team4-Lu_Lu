@@ -25,7 +25,7 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 
 Gamepad: left stick or D-pad moves, the north button grabs (a double-tap spends a coconut), the south button breaks free of a web.
 
-Dev keys (development builds and the Editor only): F1 toggles the cobra no-clip cheat, F2 spawns a pineapple branch above the monkey, F3 gives a coconut, F8 downloads the analytics session report, F9 starts a new analytics session, F10 saves a mock session. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
+Dev keys (development builds and the Editor only): F1 toggles the cobra no-clip cheat, F2 spawns a pineapple branch above the monkey, F3 spawns a coconut branch above the monkey, F8 downloads the analytics session report, F9 starts a new analytics session, F10 saves a mock session. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
 
 ## Getting Started
 
@@ -35,7 +35,7 @@ Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6,
 
 Coconuts appear only from Height 150, on about one segment in ten, so a normal run meets few of them. For a quick check either:
 
-- press F3 (fn+F3 on a Mac laptop) during Play to get a coconut at once, then double-tap Space to freeze the cobra
+- press F3 (fn+F3 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to freeze the cobra
 - select `Envs/CoconutSystem` in the scene, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 (Test Start Height U) on every segment (Test Spawn Chance 1)
 
 The real values live in the Coconut group of `Settings/GameBalanceConfig.asset`, see the [Grab System](docs/grab-doc.md#coconut).

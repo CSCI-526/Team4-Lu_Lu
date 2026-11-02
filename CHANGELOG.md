@@ -1,6 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
+Bug analytic record banana in starting zone run
 Hack need to verify: slippery is working
 Fixme replace banana model
 Hack organize & split game balance config
@@ -44,7 +45,7 @@ bug spider web fail to load & log warning
 - coconut use: a quick double-tap of Interact spends one to freeze the great cobra for `cobraFreezeDurationS` (`CoconutInventory`, `CobraMotor.TryFreeze`); refused while paused, trapped in a web or just out of one, & while already frozen; the cobra turns light blue while frozen (`CobraFreezeTint`)
 - coconut HUD (`CoconutWidget` on the `CoconutHUD` prefab in `InGameHUD/TopRightAnchor`): count, freeze countdown & bar, a "Double-tap Space" hint until the first use of the session, & center messages
 - coconut analytics: pickups, uses & coconut score per run in the session report
-- F3 dev key: gives a coconut (`HackAction.GiveCoconut`); `CoconutSpawner` test override for coconuts from Height 5 on every segment
+- F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`); `CoconutSpawner` test override for coconuts from Height 5 on every segment
 - whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
 
 ### Changed

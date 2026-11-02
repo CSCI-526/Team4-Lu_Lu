@@ -88,7 +88,7 @@ Drawn from the `Lost` runs only.
 Each event list is a table of its time since the run start; banana, coconut, and branch rows also carry the height `y`.
 
 - Banana Count: bananas collected, with the stamina curve (Stamina vs Time) under it
-- Coconut Count: coconuts collected, from `ScoreManager.CoconutCollected`; the F3 hack coconut is not counted
+- Coconut Count: coconuts collected, from `ScoreManager.CoconutCollected`
 - Coconut Used: coconuts spent on a cobra freeze, from `CoconutInventory.Used`; a double-tap refused while the cobra is already frozen is not counted
 - Web Encounter: times the monkey touched a spider web
 - Branch Hit: times the monkey's branch sensor met a branch; the falling cobra counts here too

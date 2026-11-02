@@ -106,7 +106,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | --- | --- | --- |
 | F1 | toggle `GameController.CobraNoClip` | `GameController` |
 | F2 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
-| F3 | add one coconut | `CoconutInventory` |
+| F3 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | F8 | download the analytics session report | `AnalyticsManager` |
 | F9 | close the analytics session and open a new file | `AnalyticsManager` |
 | F10 | save a mock analytics session file | `AnalyticsManager` |

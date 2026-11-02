@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// On the monkey: its hack key spawns a branch bearing a pineapple, straight
-/// above the monkey at a fixed height. Belongs to no segment, so it stays put
+/// On the monkey: its hack keys spawn a branch bearing a pineapple or a
+/// coconut, straight above the monkey at a fixed height. Belongs to no
+/// segment, so it stays put
 /// when the tree recycles.
 /// </summary>
 public class HackPineappleSpawner: MonoBehaviour {
@@ -15,6 +16,10 @@ public class HackPineappleSpawner: MonoBehaviour {
     [SerializeField]
     [Tooltip("branch prefab to spawn, same one the tree segments use")]
     private BranchController branchPrefab;
+
+    [SerializeField]
+    [Tooltip("coconut hung on the coconut branch's stem")]
+    private GameObject coconutPrefab;
 
     [SerializeField]
     [Tooltip("gives branch's distance from trunk axis")]
@@ -42,6 +47,13 @@ public class HackPineappleSpawner: MonoBehaviour {
                 this
             );
         }
+        if (coconutPrefab == null) {
+            Debug.LogWarning(
+                "HackPineappleSpawner:\tmust assign Inspector Field: "
+                    + "coconutPrefab",
+                this
+            );
+        }
         if (placementConfig == null) {
             Debug.LogWarning(
                 "HackPineappleSpawner:\tmust assign Inspector Field: "
@@ -63,19 +75,28 @@ public class HackPineappleSpawner: MonoBehaviour {
         }
 
         Keyboard keyboard = Keyboard.current;
-        Key spawnKey = hackShortcuts.GetKey(HackAction.SpawnPineapple);
+        if (keyboard == null) {
+            return;
+        }
+        Key pineappleKey = hackShortcuts.GetKey(HackAction.SpawnPineapple);
         if (
-            keyboard != null
-            && spawnKey != Key.None
-            && keyboard[spawnKey].wasPressedThisFrame
+            pineappleKey != Key.None
+            && keyboard[pineappleKey].wasPressedThisFrame
         ) {
-            SpawnBranch();
+            SpawnBranch(false);
+        }
+        Key coconutKey = hackShortcuts.GetKey(HackAction.SpawnCoconut);
+        if (
+            coconutKey != Key.None
+            && keyboard[coconutKey].wasPressedThisFrame
+        ) {
+            SpawnBranch(true);
         }
     }
 
     // private methods  ########################################################
     // branch grows from trunk axis, parent of monkey's orbit, at monkey's angle
-    private void SpawnBranch() {
+    private void SpawnBranch(bool isCoconut) {
         Vector3 axis = transform.parent.position;
         Vector3 outward = transform.position - axis;
         outward.y = 0f;
@@ -92,11 +113,19 @@ public class HackPineappleSpawner: MonoBehaviour {
             position,
             Quaternion.LookRotation(outward)
         );
-        branch.Initialize(0f, 1f);
+        if (isCoconut) {
+            // bare branch first, then the coconut on its stem tip
+            branch.Initialize(0f, 0f);
+            branch.TryHangFruit(coconutPrefab, null);
+        } else {
+            branch.Initialize(0f, 1f);
+        }
 
         if (Debug.isDebugBuild) {
             Debug.Log(
-                $"HackPineappleSpawner:\tpineapple branch at y {position.y}",
+                "HackPineappleSpawner:\t"
+                    + (isCoconut ? "coconut" : "pineapple")
+                    + $" branch at y {position.y}",
                 this
             );
         }

@@ -30,4 +30,4 @@ MonoBehaviour:
     description: spawn pineapple
   - action: 5
     key: 96
-    description: give a coconut
+    description: spawn coconut
