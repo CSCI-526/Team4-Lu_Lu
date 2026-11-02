@@ -14,4 +14,8 @@ public enum HackAction {
     /// <summary>saves a mock analytics session file, for layout checks
     /// </summary>
     MockSession,
+
+    /// <summary>adds one coconut to <see cref="CoconutInventory"/>, to test
+    /// the cobra freeze w/o climbing to the coconuts</summary>
+    GiveCoconut,
 }
