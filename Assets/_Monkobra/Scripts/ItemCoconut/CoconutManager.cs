@@ -5,8 +5,10 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Coconuts the monkey carries this run, and their use. Each coconut that
 /// <see cref="ScoreManager"/> scores adds one; a quick double-tap on the
-/// Interact action (Space, E or gamepad North, the grab key) uses one to
-/// freeze the great cobra through <see cref="CobraMotor.TryFreeze"/>, for
+/// Interact action (Space, E or gamepad North, the grab key) throws one: a
+/// <see cref="CoconutProjectile"/> falls from the monkey, and when it hits
+/// the cobra or has fallen its full distance the great cobra freezes through
+/// <see cref="CobraMotor.TryFreeze"/>, for
 /// <see cref="GameBalanceConfig.CobraFreezeDurationS"/>.
 /// <para>
 /// A tap is a press held no longer than
@@ -100,6 +102,16 @@ public class CoconutManager: MonoBehaviour {
     [Tooltip("monkey tuning; its Interact action is the double-tap key")]
     private MonkeyConfig monkeyConfig;
 
+    [SerializeField]
+    [Tooltip("coconut model that falls from the monkey when one is used")]
+    private CoconutProjectile projectilePrefab;
+
+    [Header("Throw")]
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("the coconut starts this far below the monkey; u")]
+    private float throwStartBelowU = 1.5f;
+
     [Header("Input Guards")]
     [SerializeField]
     [Min(0f)]
@@ -123,6 +135,13 @@ public class CoconutManager: MonoBehaviour {
             Debug.LogWarning(
                 "CoconutManager:\tmust assign Inspector Field: "
                     + "monkeyConfig, w/ an Interact action",
+                this
+            );
+        }
+        if (projectilePrefab == null) {
+            Debug.LogWarning(
+                "CoconutManager:\tmust assign Inspector Field: "
+                    + "projectilePrefab, a used coconut freezes at once",
                 this
             );
         }
@@ -174,6 +193,7 @@ public class CoconutManager: MonoBehaviour {
 
         GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYER_TAG);
         if (playerObject != null) {
+            player = playerObject.transform;
             struggle = playerObject.GetComponent<SpiderWebStruggle>();
         }
         if (struggle != null) {
@@ -266,6 +286,8 @@ public class CoconutManager: MonoBehaviour {
     private CobraMotor cobra;
     private CoconutWidget coconutHud; // its object is the HUD root
     private FreezeTimerWidget freezeHud; // its object is the HUD root
+    private Transform player;
+    private CoconutProjectile flyingCoconut; // thrown, not yet landed
     private SpiderWebStruggle struggle;
     private ScoreManager scoreManager;
     private float escapeGraceEndTime; // Time.time taps count again
@@ -345,7 +367,8 @@ public class CoconutManager: MonoBehaviour {
         TryUseCoconut();
     }
 
-    // uses one coconut iff the run allows it and the cobra is free to freeze
+    // throws one coconut iff the run allows it and the cobra is free to
+    // freeze; the freeze starts when the coconut lands, see OnCoconutLanded
     private void TryUseCoconut() {
         if (count <= 0 || cobra == null || !CanUseNow()) {
             return;
@@ -354,18 +377,49 @@ public class CoconutManager: MonoBehaviour {
             FreezeRefused?.Invoke();
             return;
         }
-        if (!cobra.TryFreeze(balanceConfig.CobraFreezeDurationS)) {
+        // one in the air at a time, the next double-tap is not spent
+        if (flyingCoconut != null) {
             return;
         }
 
         SetCount(count - 1);
         hasUsedThisSession = true;
         Used?.Invoke();
+
+        if (projectilePrefab == null || player == null) {
+            OnCoconutLanded(false);
+            return;
+        }
+        flyingCoconut = Instantiate(
+            projectilePrefab,
+            player.position + Vector3.down * throwStartBelowU,
+            Quaternion.identity
+        );
+        flyingCoconut.Launch(
+            balanceConfig.CoconutThrowSpeedU,
+            balanceConfig.CoconutThrowDistanceU,
+            OnCoconutLanded
+        );
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "CoconutManager:\tcoconut used, cobra frozen for "
-                    + balanceConfig.CobraFreezeDurationS + " s, " + count
-                    + " left",
+                "CoconutManager:\tcoconut thrown, " + count + " left",
+                this
+            );
+        }
+    }
+
+    // the coconut hit the cobra or fell its full distance: the freeze starts
+    private void OnCoconutLanded(bool isHit) {
+        flyingCoconut = null;
+        if (cobra == null) {
+            return;
+        }
+        bool isFrozenNow = cobra.TryFreeze(balanceConfig.CobraFreezeDurationS);
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "CoconutManager:\tcoconut landed, "
+                    + (isHit ? "hit the cobra" : "missed")
+                    + ", cobra frozen: " + isFrozenNow,
                 this
             );
         }

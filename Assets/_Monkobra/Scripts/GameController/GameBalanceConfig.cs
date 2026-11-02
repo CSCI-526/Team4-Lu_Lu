@@ -190,6 +190,13 @@ public class GameBalanceConfig: ScriptableObject {
     /// reach; s</returns>
     public float CoconutTapMaxHoldS => coconutTapMaxHoldS;
 
+    /// <returns>how fast a thrown coconut falls; u per s</returns>
+    public float CoconutThrowSpeedU => coconutThrowSpeedU;
+
+    /// <returns>how far a thrown coconut falls b4 it freezes the cobra
+    /// w/o a hit; u</returns>
+    public float CoconutThrowDistanceU => coconutThrowDistanceU;
+
     // Inspector Fields  #######################################################
     public float SlipSlideDistanceU => slipSlideDistanceU;
     public float SlipAnticipationS => slipAnticipationS;
@@ -498,6 +505,19 @@ public class GameBalanceConfig: ScriptableObject {
     )]
     private float coconutTapMaxHoldS = 0.2f;
 
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("how fast a thrown coconut falls straight down; u per s")]
+    private float coconutThrowSpeedU = 30f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "a thrown coconut freezes the cobra on a hit, or once it has fallen "
+            + "this far; u"
+    )]
+    private float coconutThrowDistanceU = 25f;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         slipSlideDistanceU = Mathf.Max(0f, slipSlideDistanceU);
@@ -551,5 +571,7 @@ public class GameBalanceConfig: ScriptableObject {
         cobraFreezeDurationS = Mathf.Max(0f, cobraFreezeDurationS);
         coconutDoubleTapWindowS = Mathf.Max(0.05f, coconutDoubleTapWindowS);
         coconutTapMaxHoldS = Mathf.Max(0.05f, coconutTapMaxHoldS);
+        coconutThrowSpeedU = Mathf.Max(0.1f, coconutThrowSpeedU);
+        coconutThrowDistanceU = Mathf.Max(0f, coconutThrowDistanceU);
     }
 }

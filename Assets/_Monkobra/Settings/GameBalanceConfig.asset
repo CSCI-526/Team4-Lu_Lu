@@ -346,3 +346,5 @@ MonoBehaviour:
   cobraFreezeDurationS: 10
   coconutDoubleTapWindowS: 0.35
   coconutTapMaxHoldS: 0.2
+  coconutThrowSpeedU: 30
+  coconutThrowDistanceU: 25
