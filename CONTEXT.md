@@ -50,7 +50,7 @@ monkobra/
 │   │   ├── Materials/ Environment/, Mob/, Player/
 │   │   ├── Input/     InputSystem_Actions
 │   │   ├── Shaders/   Environment/FruitOutline (inverted-hull Shader Graph)
-│   │   └── Settings/  GameBalanceConfig, MovementConfig, Analytics/, HackShortcuts/, Mob/ placement, _Shared/ URP assets and MonkeyConfig
+│   │   └── Settings/  GameBalanceConfig, MovementConfig, PineappleLeapConfig, Analytics/, HackShortcuts/, Mob/ placement, _Shared/ URP assets and MonkeyConfig
 │   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed
 │   ├── TextMesh Pro/  imported TMP essentials, not authored
@@ -94,6 +94,9 @@ graph LR
   Arm -->|TryCollect| Pickup[ScorePickup]
   Arm -->|Play| Fly[FruitFlyEffect]
   Fly -->|on landing| Stamina
+  Arm -->|LeapOnGrab fruit| Leap[PineappleLeapController]
+  Leap -->|IsHeld, PullTo| Root
+  Leap -->|SetLeaping| Game
   Pickup --> Score[ScoreManager]
   Score --> ScoreUI[ScoreWidget]
   Cobra[CobraSensor] --> Game[GameController]
@@ -128,6 +131,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Player/MonkeyController` | kinematic body: orbit, climb, stun, `IsHeld` | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/MonkeyConfig` | ScriptableObject of monkey tuning and input actions | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/MovementConfig` | ScriptableObject of the climb: held-time speed curves up and down, exhausted multiplier, idle stamina recovery | [TDD](docs/monkobra-tdd.md#monkey-movement) |
+| `Player/PineappleLeapController` | on the monkey root: runs a leap after a pineapple grab, hands up, pull, landing grace; sets `GameController.IsLeaping` | [Grab](docs/grab-doc.md#pineapple-leap) |
+| `Player/PineappleLeapConfig` | ScriptableObject (`Settings/PineappleLeapConfig.asset`): a pineapple leap's distance and speed curve | [Grab](docs/grab-doc.md#pineapple-leap) |
 | `Player/ArmController` | one arm: climb stroke, reach, release check | [Grab](docs/grab-doc.md#reach-and-release) |
 | `Player/DetectionZoneRelay` | side-tagged trigger forwarding enter and exit | [Grab](docs/grab-doc.md#detection) |
 | `Player/UpwardFruitSensor` | singleton, reachable and grabbable fruit; the target and reach side follow the fruit closest to the monkey, re-picked every physics step | [Grab](docs/grab-doc.md#detection) |
@@ -143,9 +148,10 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Environment/TreeSegmentController` | places branches on a segment, skipping spots w/i `startingZoneBranchClearRadiusU` of the monkey before the run is playing, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/DTSPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/BranchFruitPlacementConfig` | ScriptableObject of branch placement | [Mobs](docs/mob-doc.md#placement) |
-| `Environment/BranchController` | decides whether a branch bears a banana | [Grab](docs/grab-doc.md#fruit-supply) |
-| `Environment/FruitOutlineListener` | two-tier banana outline | [Grab](docs/grab-doc.md#feedback) |
-| `Environment/FruitFlyOnGrab` | on a fruit: its fly target and sprite; the `Coconut` and `RubberFruit` prefabs carry one, the banana none | [Grab](docs/grab-doc.md#fruit-fly) |
+| `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit | [Grab](docs/grab-doc.md#fruit-supply) |
+| `Environment/FruitOutlineListener` | two-tier fruit outline, on the object holding the fruit's collider | [Grab](docs/grab-doc.md#feedback) |
+| `Environment/FruitFlyOnGrab` | on a fruit's root: its fly target and sprite; the `Coconut` and `Pineapple` prefabs carry one, the banana none | [Grab](docs/grab-doc.md#fruit-fly) |
+| `Environment/LeapOnGrab` | marks a fruit whose grab starts a leap | [Grab](docs/grab-doc.md#pineapple-leap) |
 | `MobSpiderWeb/SpiderWebSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, rolls webs on that segment's trunk against a probability curve at its ramped difficulty | [Mobs](docs/mob-doc.md#placement-1) |
 | `MobSpiderWeb/SpiderWebTrap` | web prefab root with one deepened trigger box | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `MobSpiderWeb/SpiderWebStruggle` | on the monkey: trap state, escape bar, immunity | [Mobs](docs/mob-doc.md#trap-and-escape) |
@@ -164,6 +170,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry with Mermaid graphs & the whole session file with a summary of `Lost` runs, writes the file | none |
 | `Analytics/WebDownload` | static: hands a text file to the browser through `Plugins/WebGL/Download.jslib`; false outside a WebGL player | [TDD](docs/monkobra-tdd.md#analytics) |
 | `HackShortcuts/HackShortcutConfig`, `HackShortcuts/HackAction` | ScriptableObject (`Settings/HackShortcuts/HackShortcutConfig.asset`): every dev/hack key with its action & help line; `IsActive` is true in development builds only; read by `AnalyticsManager` & `GameController` | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
+| `HackShortcuts/HackPineappleSpawner` | on the monkey: its hack key spawns a branch bearing a pineapple straight above the monkey, belonging to no segment | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `HackShortcuts/HackShortcutPanel` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself outside a development build | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `Scoring/ScoreManager` | singleton, distance and reward score | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |

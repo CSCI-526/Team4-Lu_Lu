@@ -246,6 +246,10 @@ public class FallingCobraController: MonoBehaviour {
         if (!isInitialized || player == null) {
             return;
         }
+        // a leap wakes no cobra on its way past
+        if (GameController.I != null && GameController.I.IsLeaping) {
+            return;
+        }
         Vector3 position = transform.position;
         if (position.y < player.position.y) {
             return;
@@ -267,7 +271,7 @@ public class FallingCobraController: MonoBehaviour {
     public void TryHit(Collider other) {
         if (other == null || state != State.Falling || !hitCollider.enabled
             || GameController.I == null || !GameController.I.IsRunLive
-            || Time.timeScale <= 0f) {
+            || GameController.I.IsLeaping || Time.timeScale <= 0f) {
             return;
         }
         HitBranchSensor sensor = other.GetComponent<HitBranchSensor>();

@@ -1,24 +1,35 @@
 using UnityEngine;
 
 /// <summary>
-/// Prefab root for one branch. Decides on <see cref="Initialize"/> whether
-/// this branch bears a banana, disabling the Banana + Banana Stem children when
-/// it does not, or scaling/repositioning them into place when it does.
+/// Prefab root for one branch. Decides on <see cref="Initialize"/> which fruit
+/// this branch bears: a pineapple, a banana, or none. A branch w/o fruit
+/// disables the Banana + Banana Stem children; one w/ fruit scales the stem
+/// and places the fruit on it.
 /// </summary>
 public class BranchController: MonoBehaviour {
     // Public Methods  #########################################################
     /// <summary>
-    /// Rolls whether this branch bears a banana, then shows or hides the
-    /// banana children. Called once by the spawner after the branch is placed.
+    /// Rolls this branch's fruit, pineapple first, then shows or hides the
+    /// fruit children. Called once by the spawner after the branch is placed.
     /// </summary>
     /// <param name="bananaProbability">chance of a banana; 0~1</param>
-    public void Initialize(float bananaProbability) {
+    /// <param name="pineappleProbability">chance of a pineapple; 0~1</param>
+    public void Initialize(
+        float bananaProbability,
+        float pineappleProbability
+    ) {
         if (banana == null || bananaStem == null) {
             return;
         }
 
-        if (Random.value < bananaProbability) {
-            AttachBanana();
+        if (
+            pineapplePrefab != null
+            && Random.value < pineappleProbability
+        ) {
+            PlaceFruitOnStem();
+            AttachPineapple();
+        } else if (Random.value < bananaProbability) {
+            PlaceFruitOnStem();
         } else {
             banana.SetActive(false);
             bananaStem.SetActive(false);
@@ -31,8 +42,12 @@ public class BranchController: MonoBehaviour {
     private GameObject banana;
 
     [SerializeField]
-    [Tooltip("banana stem child; scaled w/ banana")]
+    [Tooltip("banana stem child; scaled w/ fruit")]
     private GameObject bananaStem;
+
+    [SerializeField]
+    [Tooltip("pineapple spawned at banana's spot on stem")]
+    private GameObject pineapplePrefab;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -50,6 +65,13 @@ public class BranchController: MonoBehaviour {
                 this
             );
         }
+        if (pineapplePrefab == null) {
+            Debug.LogWarning(
+                "BranchController:\t"
+                    + "must assign Inspector Field: pineapplePrefab",
+                this
+            );
+        }
     }
 
     // constants  ##############################################################
@@ -58,7 +80,8 @@ public class BranchController: MonoBehaviour {
     private const float BANANA_Y_OFFSET = -.2f;
 
     // private methods  ########################################################
-    private void AttachBanana() {
+    // scale stem, carry banana child to its tip at random turn
+    private void PlaceFruitOnStem() {
         Vector3 stemBasePosition = bananaStem.transform.localPosition;
         Vector3 bananaBaseOffset =
             banana.transform.localPosition - stemBasePosition;
@@ -80,5 +103,18 @@ public class BranchController: MonoBehaviour {
             Random.Range(0f, 360f),
             0f
         );
+    }
+
+    // pineapple takes the placed banana's pose; banana stays off
+    private void AttachPineapple() {
+        GameObject pineapple = Instantiate(
+            pineapplePrefab,
+            banana.transform.parent
+        );
+        pineapple.transform.SetLocalPositionAndRotation(
+            banana.transform.localPosition,
+            banana.transform.localRotation
+        );
+        banana.SetActive(false);
     }
 }

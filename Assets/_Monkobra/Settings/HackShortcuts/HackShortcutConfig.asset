@@ -25,3 +25,6 @@ MonoBehaviour:
   - action: 3
     key: 103
     description: mock session
+  - action: 4
+    key: 95
+    description: spawn pineapple

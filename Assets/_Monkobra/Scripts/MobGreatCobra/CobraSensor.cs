@@ -36,6 +36,11 @@ public class CobraSensor: MonoBehaviour {
             return;
         }
 
+        // a leap passes through every hazard
+        if (GameController.I.IsLeaping) {
+            return;
+        }
+
         if (Debug.isDebugBuild) {
             Debug.Log(
                 $"CobraSensor:\tplayer caught via {other.name}, "

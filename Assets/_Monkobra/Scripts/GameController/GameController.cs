@@ -29,6 +29,18 @@ public class GameController: MonoBehaviour {
     public event Action<bool> PauseChanged;
 
     /// <summary>
+    /// if a pineapple leap is under way: hazards leave the monkey alone, while
+    /// <see cref="State"/> keeps its live value, so a leap is no state change
+    /// </summary>
+    public bool IsLeaping {
+        get; private set;
+    }
+
+    /// <summary>raised with the new value each time a leap starts or ends
+    /// </summary>
+    public event Action<bool> LeapChanged;
+
+    /// <summary>
     /// if the run is live, ie climbing and scoring work, whether or not the
     /// monkey is still protected
     /// </summary>
@@ -79,6 +91,26 @@ public class GameController: MonoBehaviour {
 
         if (Debug.isDebugBuild) {
             Debug.Log("GameController:\tpaused " + isPaused, this);
+        }
+    }
+
+    /// <summary>
+    /// starts or ends a leap; a start is ignored unless the run is live, and
+    /// ends the starting zone, as a leap may carry the monkey past its exit
+    /// </summary>
+    public void SetLeaping(bool isLeaping) {
+        if (isLeaping == IsLeaping || (isLeaping && !IsRunLive)) {
+            return;
+        }
+
+        IsLeaping = isLeaping;
+        if (isLeaping) {
+            EndStartingZone();
+        }
+        LeapChanged?.Invoke(isLeaping);
+
+        if (Debug.isDebugBuild) {
+            Debug.Log("GameController:\tleaping " + isLeaping, this);
         }
     }
 

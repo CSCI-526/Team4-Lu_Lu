@@ -89,7 +89,7 @@ public class FruitFlyEffect: MonoBehaviour {
 
     [SerializeField]
     [Tooltip(
-        "monkey, the rubber fruit's target; empty finds the MonkeyController "
+        "monkey, the pineapple's target; empty finds the MonkeyController "
             + "at Start"
     )]
     private Transform monkeyTarget;

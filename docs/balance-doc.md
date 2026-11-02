@@ -19,6 +19,7 @@ graph LR
   Climb -->|ramp curve| Ramp[Ramped difficulty 0~1]
   Ramp -->|branch curve| Branch[Branch chance]
   Ramp -->|banana curve| Banana[Banana chance]
+  Ramp -->|pineapple curve| Pineapple[Pineapple chance]
   Ramp -->|web curve| Web[Web chance]
   Ramp -->|falling cobra curve| Fall[Falling cobra chance]
 ```
@@ -49,7 +50,7 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 - Attempts Are A Ceiling: the attempt count is the most a segment can hold, and the chance says how often it gets there; the expected count is attempts times chance
 - Why Attempts: a fixed count of small independent rolls gives natural variety segment to segment without any hazard clumping to a quota
 - Why The Middle: a segment is one difficulty step, not a gradient, so every hazard in it shares the same value and a segment reads as one coherent chunk of the climb
-- Bananas Differ: they are not rolled per segment; each generated branch rolls once, at its own height, whether it bears one. Branch density and banana supply are therefore both difficulty-linked but tuned apart
+- Fruit Differs: it is not rolled per segment; each generated branch rolls at its own height, pineapple first, then banana, so it bears 1 fruit or none. Branch density and fruit supply are therefore both difficulty-linked but tuned apart, and each pineapple rolled slightly lowers the banana supply
 - Order Matters: branches are placed first, then webs and falling cobras answer `BranchesGenerated`, so late hazards can keep clear of what already stands
 - A Roll Can Place Nothing: webs and falling cobras are skipped when no clear spot is found, so the curve gives the chance of trying, not a guarantee
 
@@ -59,7 +60,7 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 
 - Why One Asset: balance questions cross systems, since stamina drain, banana supply, and climb speed together decide how long a run lasts; one file keeps them in view together and rules out a second, forgotten copy of a number
 - Readers Hold The Reference: each consumer has a `balanceConfig` field pointing at the same asset, so there is no global to trip over, and a test scene can swap in another asset
-- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm and orbit in `MonkeyConfig`, branch geometry in `BranchFruitPlacementConfig`, web and falling cobra spawn geometry on their spawners
+- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm and orbit in `MonkeyConfig`, branch geometry in `BranchFruitPlacementConfig`, the pineapple leap's distance and speed curve in `PineappleLeapConfig`, web and falling cobra spawn geometry on their spawners
 
 ## The Stamina Loop
 

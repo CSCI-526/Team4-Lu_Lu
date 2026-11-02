@@ -77,6 +77,7 @@ public class MonkeyController: MonoBehaviour {
         if (!isActiveAndEnabled || balanceConfig == null || isHeld
             || IsStunned || IsSlipping || Time.time < slipImmuneUntil
             || GameController.I == null || !GameController.I.IsRunLive
+            || GameController.I.IsLeaping
             || Time.timeScale <= 0f || !IsMovingOnTrunk) {
             return false;
         }
@@ -95,8 +96,27 @@ public class MonkeyController: MonoBehaviour {
     /// back onto its orbit ring, keeping the height it was pulled to.
     /// </summary>
     public void PullTo(Vector3 worldPos) {
+        PullTo(worldPos, pullSpeedU);
+    }
+
+    /// <summary>
+    /// Same as <see cref="PullTo(Vector3)"/>, at its own speed.
+    /// </summary>
+    /// <param name="worldPos">world pos to slide to</param>
+    /// <param name="speedU">speed of the slide; u/s</param>
+    public void PullTo(Vector3 worldPos, float speedU) {
         pullTarget = worldPos;
+        activePullSpeedU = speedU;
         hasPullTarget = true;
+    }
+
+    /// <returns>if the held body has arrived at its pull target</returns>
+    public bool HasReachedPullTarget =>
+        hasPullTarget && body != null && body.position == pullTarget;
+
+    /// <summary>Ends any branch-hit stun and its fall at once.</summary>
+    public void ClearStun() {
+        stunEndTime = 0f;
     }
 
     // Inspector Fields  #######################################################
@@ -227,7 +247,7 @@ public class MonkeyController: MonoBehaviour {
                         Vector3.MoveTowards(
                             body.position,
                             pullTarget,
-                            pullSpeedU * Time.fixedDeltaTime
+                            activePullSpeedU * Time.fixedDeltaTime
                         )
                     );
                 }
@@ -417,6 +437,7 @@ public class MonkeyController: MonoBehaviour {
     private bool isHeld; // body frozen in place, see IsHeld
     private Vector3 pullTarget; // world pos the held body slides to
     private bool hasPullTarget; // whether the held body is being pulled
+    private float activePullSpeedU; // speed of the current pull; u/s
     private bool isReturning; // whether the body glides back onto its ring
 
     private bool IsStunned => Time.time < stunEndTime;

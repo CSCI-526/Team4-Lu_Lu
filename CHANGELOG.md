@@ -2,12 +2,13 @@
 
 <!--
 Hack need to verify: slippery is working
+Fixme replace banana & coconut models
+Hack organize & split game balance config
 
 Fixme Pan: UI mpv
 Todo Dong: boss fight
 Todo Pan: 数字显示和蛇的距离
 Todo Yuqing: 抓取椰子，往下扔，蛇往下掉
-Todo Erik 橡胶果实（手臂伸长，跳过一节）
 Todo Pan 排行榜（假的）
 
 bug spider web fail to load & log warning
@@ -28,9 +29,11 @@ bug spider web fail to load & log warning
 - Great Cobra exit boost: extra climb speed for a while after the monkey leaves the starting zone, w/ center warning "Run! The Great Cobra is chasing you!"; `cobraExitBoostSpeedU` & `cobraExitBoostDurationS` in `GameBalanceConfig`
 - `MovementConfig` asset: climb speed builds up along 2 curves (up, down) of how long the key is held, instead of a fixed acceleration
 - `startingZoneBranchClearRadiusU` in `GameBalanceConfig`: branch clearance round the monkey before the run is playing
-- fruit fly: a grabbed fruit's sprite flies from its screen spot to a target (`FruitFlyEffect`, `FruitFlyConfig` asset): banana to the stamina bar, coconut to a top-right anchor for a future counter, rubber fruit to the monkey; per-fruit target & sprite via `FruitFlyOnGrab`
-- `Coconut` & `RubberFruit` placeholder fruit prefabs, banana-shaped, no score, not spawned yet
-- fruit UI sprites (banana, coconut, pineapple for rubber fruit) in `Sprites/UI/`, shown in flights at 3x size (`sizePx` 192 in `FruitFlyConfig`); sources credited in `CREDITS.md`
+- fruit fly: a grabbed fruit's sprite flies from its screen spot to a target (`FruitFlyEffect`, `FruitFlyConfig` asset): banana to the stamina bar, coconut to a top-right anchor for a future counter, pineapple to the monkey; per-fruit target & sprite via `FruitFlyOnGrab`
+- `Coconut` placeholder fruit prefab, banana-shaped, no score, not spawned yet
+- pineapple: a branch may bear one instead of a banana (`pineappleSpawnProbabilityCurve` in `GameBalanceConfig`); grabbing it raises both hands & pulls the monkey up a set height, w/ hazards off for the leap & a short landing grace (`PineappleLeapController`, `GameController.IsLeaping`, `PineappleLeapConfig` asset)
+- F2 dev key: spawns a pineapple branch straight above the monkey (`HackPineappleSpawner`)
+- fruit UI sprites (banana, coconut, pineapple) in `Sprites/UI/`, shown in flights at 3x size (`sizePx` 192 in `FruitFlyConfig`); sources credited in `CREDITS.md`
 
 ##### Wenhai Dong
 

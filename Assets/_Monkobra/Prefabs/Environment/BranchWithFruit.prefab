@@ -724,6 +724,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   banana: {fileID: 1759736754899777978}
   bananaStem: {fileID: 7275201964349085657}
+  pineapplePrefab: {fileID: 1759736754899777978, guid: f4d75ef4edde4017b6dada89164f1099, type: 3}
   bananaSpawnProbability: 0.15
 --- !u!114 &880000000000000001
 MonoBehaviour:
