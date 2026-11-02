@@ -54,7 +54,7 @@ public class LeaderboardWidget: MonoBehaviour {
     private string[] rivalNames = {
         "FasterThanUrMom", "BananaKing", "BananaQueen", "PeelMeDaddy",
         "SwingKing", "1stMonkey", "Ceasar", "Minion",
-        "BranchBuddy", "Stupid Ape", "CSCI526", "Nanaba"
+        "BranchBuddy", "StupidApe", "CSCI526", "Nanaba"
     };
 
     // MonoBehaviour Lifecycle  ################################################
