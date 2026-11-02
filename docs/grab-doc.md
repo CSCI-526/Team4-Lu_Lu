@@ -34,7 +34,7 @@ graph TD
 | `Player/UpwardFruitSensor` | singleton (`I`) that keeps the reachable fruit per side, picks the reach side, and relays the grabbable fruit |
 | `Player/ArmController` | one arm: hand-over-hand climb stroke, or the reach and the release check |
 | `Player/MonkeyConfig` | reach speed, stroke tuning, and the interact action both arms and the camera read |
-| `Cameras/CameraRigManager` | swaps the behind, look-left, and look-right Cinemachine cameras |
+| `Cameras/CameraRigManager` | swaps the behind, look-left, look-right, and look-down Cinemachine cameras |
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
@@ -123,7 +123,7 @@ For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test O
 
 ## Camera
 
-`CameraRigManager` owns three Cinemachine cameras. The behind view is the default. While interact is held it switches to look-right if only the right side has fruit, else look-left, even with no fruit. Releasing returns to behind. A swap raises the chosen camera's priority above the other two and the `CinemachineBrain` on the main camera blends. If a web traps the monkey, the interact action is disabled, which counts as a release for the camera too.
+`CameraRigManager` owns four Cinemachine cameras. The behind view is the default. While interact is held it switches to look-right if only the right side has fruit, else look-left, even with no fruit. Releasing returns to behind. For `coconutLookDownS` after a coconut is thrown, the look-down view takes over from behind to follow the fall, and yields to look-left or look-right while interact is held. A swap raises the chosen camera's priority above the others and the `CinemachineBrain` on the main camera blends. If a web traps the monkey, the interact action is disabled, which counts as a release for the camera too.
 
 ## Feedback
 

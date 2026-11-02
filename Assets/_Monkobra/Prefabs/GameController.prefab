@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::CoconutManager
   balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
-  inputActions: {fileID: 11400000, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   useCoconutActionPath: Player/UseCoconut
   projectilePrefab: {fileID: 3193414950012080867, guid: a7152f7943c4475b9c75ec098acb3658, type: 3}
   throwStartBelowU: 1.5
