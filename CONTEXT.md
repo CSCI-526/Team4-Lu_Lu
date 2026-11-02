@@ -68,10 +68,10 @@ monkobra/
 | --- | --- |
 | `Cameras` | the three Cinemachine cameras |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
-| `Environment/Envs` | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`, `CoconutInventory`) |
+| `Environment/Envs` | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Systems/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
-| `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`HeightDisplay`, `ScoreHUD`), the pause hint, `FruitFlyLayer`, `TopRightAnchor` holding `CoconutHUD`), `LowStaminaPrompt`, `HackShortcutHelp`, `SpiderWebPrompt`, `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
+| `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`HeightDisplay`, `ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage`, `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt`, `HackShortcutHelp`, `SpiderWebPrompt`, `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
 Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `Cameras` tracking target) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
 
@@ -109,10 +109,11 @@ graph LR
   CobraSpawner --> FallCobra[FallingCobraController]
   Segment -->|BranchesGenerated| CoconutSpawner[CoconutSpawner]
   CoconutSpawner -->|TryHangFruit| Branch[BranchController]
-  Score -->|CoconutCollected| Coconuts[CoconutInventory]
-  Coconuts -->|TryFreeze| CobraMotor[CobraMotor]
+  Score -->|CoconutCollected| Coconuts[CoconutManager]
+  Coconuts -->|throws| Projectile[CoconutProjectile]
+  Projectile -->|hit or distance, TryFreeze| CobraMotor[CobraMotor]
   CobraMotor -->|Frozen, Thawed| Tint[CobraFreezeTint]
-  Coconuts --> CoconutUI[CoconutWidget]
+  Coconuts --> CoconutUI[CoconutWidget, FreezeTimerWidget, CoconutMessageWidget]
   Spawner --> Web[SpiderWebTrap]
   Web -->|TryTrap| Struggle[SpiderWebStruggle]
   Struggle -->|IsHeld| Root
@@ -166,7 +167,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `MobGreatCobra/CobraMotor` | chasing cobra path, coil, look, and balance-driven base speed with a stacking mistake surge (raises `CatchUpStarted`) and a timed boost on leaving the starting zone (raises `ChaseStarted`); `TryFreeze` holds it still for a coconut (raises `Frozen`, `Thawed`) | [Mobs](docs/mob-doc.md#cobra) |
 | `MobGreatCobra/CobraFreezeTint` | next to `CobraMotor` on the `GreatCobra` prefab: tints the body light blue while frozen, blinking near the end, eyes untouched | [Mobs](docs/mob-doc.md#coconut-freeze) |
 | `ItemCoconut/CoconutSpawner` | on `Envs/CoconutSystem`: on each `BranchesGenerated`, hangs at most one coconut per segment above `coconutStartHeightU` on a bare branch, clear of branches, fruit, and webs; Use Test Override for a low start height | [Grab](docs/grab-doc.md#coconut) |
-| `ItemCoconut/CoconutInventory` | singleton on `Envs/CoconutSystem`: counts the run's coconuts, spends one on a double-tap of Interact to call `CobraMotor.TryFreeze` | [Grab](docs/grab-doc.md#coconut) |
+| `ItemCoconut/CoconutManager` | singleton on the `GameController` prefab: counts the run's coconuts, throws one on a double-tap of Interact, starts `CobraMotor.TryFreeze` when it lands, relays the cobra's freeze events, and switches the coconut HUD roots on (they start inactive) | [Grab](docs/grab-doc.md#coconut) |
+| `ItemCoconut/CoconutProjectile` | the thrown coconut (`Prefabs/Environment/CoconutProjectile`): falls straight down, ends on touching the cobra or after a fixed distance | [Grab](docs/grab-doc.md#coconut) |
 | `MobGreatCobra/CobraSensor` | cobra contact calls `LoseGame` | [Mobs](docs/mob-doc.md#contact) |
 | `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment against a probability curve at its ramped difficulty, some ambushing just above a banana | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `MobFallingCobra/FallingCobraController` | dormant until the monkey is near (farther while it reaches for a banana), then warning, a constant fall that slides toward the monkey's angle, and a hit capsule that drops the monkey on any-part contact, at most twice per snake | [Mobs](docs/mob-doc.md#falling-cobra) |
@@ -179,7 +181,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Analytics/SessionData` | plain data of one session: title, app version, runs | none |
 | `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry with Mermaid graphs & the whole session file with a summary of `Lost` runs, writes the file | none |
 | `Analytics/WebDownload` | static: hands a text file to the browser through `Plugins/WebGL/Download.jslib`; false outside a WebGL player | [TDD](docs/monkobra-tdd.md#analytics) |
-| `HackShortcuts/HackShortcutConfig`, `HackShortcuts/HackAction` | ScriptableObject (`Settings/HackShortcuts/HackShortcutConfig.asset`): every dev/hack key with its action & help line; `IsActive` is true in development builds only; read by `AnalyticsManager`, `GameController` & `CoconutInventory` | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
+| `HackShortcuts/HackShortcutConfig`, `HackShortcuts/HackAction` | ScriptableObject (`Settings/HackShortcuts/HackShortcutConfig.asset`): every dev/hack key with its action & help line; `IsActive` is true in development builds only; read by `AnalyticsManager`, `GameController` & `HackPineappleSpawner` | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `HackShortcuts/HackPineappleSpawner` | on the monkey: its F2 and F3 hack keys spawn a branch bearing a pineapple or a coconut straight above the monkey, belonging to no segment | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `HackShortcuts/HackShortcutPanel` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself outside a development build | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `Scoring/ScoreManager` | singleton, distance and reward score, each pickup scored and counted by its `PickupKind` | [TDD](docs/monkobra-tdd.md#score) |
@@ -189,7 +191,9 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `UI/FruitFlyEffect`, `UI/FruitFlyTarget` | singleton on `InGameHUD/FruitFlyLayer`: flies a grabbed fruit's sprite to the stamina bar, a top-right anchor, or the monkey, then runs the grab's arrival callback | [Grab](docs/grab-doc.md#fruit-fly) |
 | `UI/FruitFlyConfig` | ScriptableObject (`Settings/FruitFlyConfig.asset`): flight duration, look, and easing | [Grab](docs/grab-doc.md#fruit-fly) |
 | `UI/ScreensManager`, `UI/ProgressBarWidget`, `UI/ScoreWidget`, `UI/HeightDisplayWidget`, `UI/LoseScreen` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress with the surge and chase-start warnings and red cobra marker, score label, climbed height label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
-| `UI/CoconutWidget` | on `InGameHUD/TopRightAnchor/CoconutHUD`: coconut count, freeze countdown & bar, a double-tap hint until the first use of the session, and coconut center messages | [Grab](docs/grab-doc.md#coconut) |
+| `UI/CoconutWidget` | on `InGameHUD/CoconutHUD`, inactive until the first coconut: icon, count, and a double-tap hint until the first use of the session | [Grab](docs/grab-doc.md#coconut) |
+| `UI/FreezeTimerWidget` | on the `FreezeTimerHUD` prefab under `_UI`, inactive except while the cobra is frozen: countdown and shrinking bar | [Grab](docs/grab-doc.md#coconut) |
+| `UI/CoconutMessageWidget` | on `InGameHUD/CoconutMessage`: the center prompts for the first coconut, a freeze, a refused freeze, and the thaw | [Grab](docs/grab-doc.md#coconut) |
 | `UI/SpiderWebWidget` | first-trap hint and escape bar | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `UI/PauseScreenWidget` | pause panel, shown while `GameController.IsPaused` (Esc or P; R restarts), toggled on `PauseChanged` | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/LowStaminaWidget` | first-low-stamina hint, once per scene load, on the event behind the bar shake and cool-down; hidden on a loss and while a web holds the monkey | [TDD](docs/monkobra-tdd.md#ui) |

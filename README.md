@@ -35,7 +35,7 @@ Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6,
 
 Coconuts appear only from Height 150, on about one segment in ten, so a normal run meets few of them. For a quick check either:
 
-- press F3 (fn+F3 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to freeze the cobra
+- press F3 (fn+F3 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra
 - select `Envs/CoconutSystem` in the scene, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 (Test Start Height U) on every segment (Test Spawn Chance 1)
 
 The real values live in the Coconut group of `Settings/GameBalanceConfig.asset`, see the [Grab System](docs/grab-doc.md#coconut).

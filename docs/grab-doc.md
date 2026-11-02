@@ -94,15 +94,15 @@ For a quick test press the [hack key](monkobra-tdd.md#hack-shortcuts) that spawn
 
 ## Coconut
 
-A rare fruit from higher up, kept instead of eaten: it scores more than a banana, restores no stamina, and is spent to freeze the great cobra.
+A rare fruit from higher up, kept instead of eaten: it scores more than a banana, restores no stamina, and is thrown to freeze the great cobra.
 
 - Supply: `CoconutSpawner` on `Envs/CoconutSystem` rolls once per segment, only for branches above `coconutStartHeightU`, the climbed height shown as the HUD Height, against `coconutSpawnChancePerSegment`, so a segment bears at most one. It hangs the `Coconut` prefab on a bare branch through `BranchController.TryHangFruit`, its top pivot on the stem's lower tip, and skips a spot whose grab volume would touch another branch, any fruit, or a web; webs rolled later keep clear of it by its `FruitCollider` tag
 - Grab: the same reach and release as a banana, with its own outline materials; its `ScorePickup` is of kind `Coconut`, so `ScoreManager` adds `CoconutRewardPoints` (`scoreRewardPoints` times `coconutScoreMultiplier`) and raises `CoconutCollected` instead of counting a banana
 - No Stamina: `ArmController` gives a coconut's flight no restore, so its sprite flies to the counter and only pops the icon
-- Count: `CoconutInventory` adds one per `CoconutCollected`; the count lives in the scene, so a restart's reload empties it
-- Use: a double-tap of Interact (Space, E, or the gamepad north button) spends one and calls `CobraMotor.TryFreeze` for `cobraFreezeDurationS`, see [Mobs](mob-doc.md#coconut-freeze). A tap is a press held at most `coconutTapMaxHoldS`, so a held reach never counts, and both presses must fall within `coconutDoubleTapWindowS`. The inventory only polls the action, so a tap near fruit reaches like any short press and grabs only fruit already under the hand
+- Count: `CoconutManager` (on the `GameController` prefab) adds one per `CoconutCollected`; the count lives in the scene, so a restart's reload empties it
+- Use: a double-tap of Interact (Space, E, or the gamepad north button) spends one and throws it: a `CoconutProjectile` falls straight down from just below the monkey at `coconutThrowSpeedU`, and when it touches the cobra or has fallen `coconutThrowDistanceU` the manager calls `CobraMotor.TryFreeze` for `cobraFreezeDurationS`, so the freeze starts at the landing, not at the tap, see [Mobs](mob-doc.md#coconut-freeze). One coconut flies at a time, and a pause holds it in the air. A tap is a press held at most `coconutTapMaxHoldS`, so a held reach never counts, and both presses must fall within `coconutDoubleTapWindowS`. The manager only polls the action, so a tap near fruit reaches like any short press and grabs only fruit already under the hand
 - Refused: a double-tap does nothing outside `GameState.Playing`, while paused, while a web holds the monkey, or within `webEscapeGraceS` of an escape, so mashing out of a web never spends one; while the cobra is already frozen nothing is spent and "Cobra is already frozen" shows
-- HUD: `CoconutWidget` on `InGameHUD/TopRightAnchor/CoconutHUD`, left of the progress bar, shows the icon and count from the first coconut on, dimmed at x0. Until the first use of the session a "Double-tap Space" hint sits under it, flashing when the cobra surges; while frozen a countdown and a shrinking bar take that spot. Center messages, above the cobra warning, teach the double-tap on the first coconut, confirm a freeze, refuse a second one, and announce the thaw
+- HUD: every part starts inactive in its prefab and an owner switches it on, since a script on an inactive object never runs. `CoconutManager` switches on `InGameHUD/CoconutHUD` (`CoconutWidget`: icon, count, dimmed at x0, and a "Double-tap Space" hint under it, flashing when the cobra surges, until the first use of the session) at the first coconut of the scene, and the `FreezeTimerHUD` prefab under `_UI` (`FreezeTimerWidget`: countdown and shrinking bar) only while the cobra is frozen in a run. `CoconutMessageWidget` on `InGameHUD/CoconutMessage` stays active and shows the center prompts, above the cobra warning: the double-tap teaching on the first coconut, the freeze, a refused second one, and the thaw. The widgets are passive views reading the manager
 
 For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 on every segment. The F3 [hack key](monkobra-tdd.md#hack-shortcuts) spawns a branch bearing a coconut straight above the monkey.
 
@@ -113,7 +113,7 @@ For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test O
 | Target | Fruit | Flies To |
 | --- | --- | --- |
 | `EnergyBar` | banana (no `FruitFlyOnGrab`) | the `StaminaBar` |
-| `TopRightCounter` | `Coconut` | `TopRightAnchor`, which holds the coconut counter (`CoconutHUD`) |
+| `TopRightCounter` | `Coconut` | the icon of `CoconutHUD` |
 | `Monkey` | `Pineapple` | the monkey, found as the `MonkeyController` at start |
 
 - Per Frame: the target's screen point is re-read every frame, so a punching bar or a moving camera never strands the sprite

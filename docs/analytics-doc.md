@@ -13,8 +13,8 @@ How the game records playtests: one markdown report per game launch, with a reco
 ```mermaid
 graph LR
   Game[GameController] -->|StateChanged| AM[AnalyticsManager]
-  Score[ScoreManager] -->|BananaCollected, CoconutCollected| AM
-  Coconut[CoconutInventory] -->|Used| AM
+  Score[ScoreManager] -->|BananaCollected| AM
+  Coconut[CoconutManager] -->|Collected, Used| AM
   Hit[HitBranchDetection] -->|BranchHit| AM
   Web[SpiderWebTrap] -->|Encountered| AM
   AM --> Data[SessionData and RunData]
@@ -88,8 +88,8 @@ Drawn from the `Lost` runs only.
 Each event list is a table of its time since the run start; banana, coconut, and branch rows also carry the height `y`.
 
 - Banana Count: bananas collected, with the stamina curve (Stamina vs Time) under it
-- Coconut Count: coconuts collected, from `ScoreManager.CoconutCollected`
-- Coconut Used: coconuts spent on a cobra freeze, from `CoconutInventory.Used`; a double-tap refused while the cobra is already frozen is not counted
+- Coconut Count: coconuts collected, from `CoconutManager.Collected`
+- Coconut Used: coconuts thrown, from `CoconutManager.Used`, stamped at the throw, not at the landing; a double-tap refused while the cobra is already frozen is not counted
 - Web Encounter: times the monkey touched a spider web
 - Branch Hit: times the monkey's branch sensor met a branch; the falling cobra counts here too
 

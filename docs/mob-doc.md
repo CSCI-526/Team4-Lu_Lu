@@ -80,7 +80,7 @@ The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)
 
 ### Coconut Freeze
 
-`CobraMotor.TryFreeze`, called by `CoconutInventory` when the player spends a coconut ([Grab System](grab-doc.md#coconut)), holds the whole cobra still for `cobraFreezeDurationS` (`GameBalanceConfig`): no climb, no orbit, no slither wave.
+`CobraMotor.TryFreeze`, called by `CoconutManager` when a thrown coconut lands, on the cobra or after its fixed fall ([Grab System](grab-doc.md#coconut)), holds the whole cobra still for `cobraFreezeDurationS` (`GameBalanceConfig`): no climb, no orbit, no slither wave.
 
 - Start: the running mistake surge and the zone exit boost are cleared and the climb speed drops to 0, so after the freeze the cobra eases back up at `cobraSpeedChangeRateU`
 - During: mistakes add no surge and raise no `CatchUpStarted`, so no warning shows; the base speed and the slow-down near the monkey resume at the thaw
