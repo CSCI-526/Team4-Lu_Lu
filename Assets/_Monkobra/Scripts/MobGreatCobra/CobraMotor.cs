@@ -9,7 +9,9 @@ using UnityEngine.Serialization;
 /// difficulty. Each mistake of the monkey (a branch or
 /// falling cobra hit, or a web) makes it surge for a while, and mistakes
 /// stack, faster and longer, possibly past the monkey's own speed; tuned in
-/// <see cref="GameBalanceConfig"/>. The body
+/// <see cref="GameBalanceConfig"/>. The one exception to never stopping: a
+/// used coconut freezes the whole cobra for a while, see
+/// <see cref="TryFreeze"/>. The body
 /// wraps at least one full loop as a corkscrew with no gap round the trunk, so
 /// a monkey dropping onto the cobra's height cannot slip past it by orbiting.
 /// Segments are laid along the coil as a chain of rounded beads with small
@@ -35,6 +37,54 @@ public class CobraMotor: MonoBehaviour {
     /// starts chasing, for a short warning.
     /// </summary>
     public event Action ChaseStarted;
+
+    /// <returns>if a coconut holds the cobra still right now</returns>
+    public bool IsFrozen => isFrozen;
+
+    /// <returns>freeze time left, 0 when not frozen; s</returns>
+    public float FreezeRemainingS =>
+        isFrozen ? Mathf.Max(0f, freezeEndTime - Time.time) : 0f;
+
+    /// <returns>full length of the running or last freeze; s</returns>
+    public float FreezeDurationS => freezeDurationS;
+
+    /// <summary>
+    /// Raised when a freeze starts, with its length; s.
+    /// </summary>
+    public event Action<float> Frozen;
+
+    /// <summary>
+    /// Raised when a freeze runs out and the cobra moves again.
+    /// </summary>
+    public event Action Thawed;
+
+    // Public Methods  #########################################################
+    /// <summary>
+    /// Holds the whole cobra still for <paramref name="durationS"/>: no
+    /// climbing, orbiting or slithering. Clears the running surge and the
+    /// starting zone exit boost, and mistakes made while frozen add no surge.
+    /// Afterwards the climb eases back up from a standstill. Contact still
+    /// ends the run, see <see cref="CobraSensor"/>.
+    /// </summary>
+    /// <returns>if the freeze started; false while already frozen, so a
+    /// freeze never stacks or resets</returns>
+    public bool TryFreeze(float durationS) {
+        if (!isActiveAndEnabled || isFrozen || durationS <= 0f) {
+            return false;
+        }
+
+        isFrozen = true;
+        freezeDurationS = durationS;
+        freezeEndTime = Time.time + durationS;
+
+        surgeStacks = 0;
+        isCatchingUp = false;
+        exitBoostEndTime = 0f;
+        currentClimbSpeed = 0f;
+
+        Frozen?.Invoke(durationS);
+        return true;
+    }
 
     // Inspector Fields  #######################################################
     [Header("References")]
@@ -231,6 +281,16 @@ public class CobraMotor: MonoBehaviour {
             }
         }
 
+        if (isFrozen) {
+            if (Time.time < freezeEndTime) {
+                // the whole body holds still, slither wave included
+                frozenTimeS += Time.deltaTime;
+                return;
+            }
+            isFrozen = false;
+            Thawed?.Invoke();
+        }
+
         headAngle += Direction * orbitSpeedDegrees * Time.deltaTime;
 
         StartExitBoostOnZoneExit();
@@ -345,6 +405,10 @@ public class CobraMotor: MonoBehaviour {
     private float exitBoostEndTime; // Time.time the zone exit boost ends
     private GameState lastGameState; // state seen on the previous Update
     private float nextCountedHitTime; // Time.time b4 which hits add nothing
+    private bool isFrozen; // held still by a coconut
+    private float freezeEndTime; // Time.time the running freeze ends
+    private float freezeDurationS; // length of the running or last freeze; s
+    private float frozenTimeS; // total time spent frozen, kept off the wave; s
     private HitBranchSensor playerSensor;
     private SpiderWebStruggle playerStruggle;
     private Transform player;
@@ -445,11 +509,13 @@ public class CobraMotor: MonoBehaviour {
         StartSurge();
     }
 
-    // each mistake adds a stack and surge time, both capped by the config
+    // each mistake adds a stack and surge time, both capped by the config;
+    // a frozen cobra ignores mistakes
     private void StartSurge() {
         if (
             balanceConfig == null
             || balanceConfig.CobraSurgePerMistakeS <= 0f
+            || isFrozen
         ) {
             return;
         }
@@ -642,7 +708,9 @@ public class CobraMotor: MonoBehaviour {
         float angleStep = SegmentAngleStepDeg;
         float heightStep = SegmentHeightStepU;
         float arcStep = SegmentArcStepU;
-        float wavePhase = Time.time * waveSpeedHz * 2f * Mathf.PI;
+        // time spent frozen is skipped, so the wave resumes where it stopped
+        float wavePhase =
+            (Time.time - frozenTimeS) * waveSpeedHz * 2f * Mathf.PI;
 
         // the coil sits lower by the neck lift, so the raised head tip is
         // what reaches headHeight

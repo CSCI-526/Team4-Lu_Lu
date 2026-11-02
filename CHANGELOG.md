@@ -1,14 +1,14 @@
 # Monkobra CHANGELOG
 
 <!--
+Bug analytic record banana in starting zone run
 Hack need to verify: slippery is working
-Fixme replace banana & coconut models
+Fixme replace banana model
 Hack organize & split game balance config
 
 Fixme Pan: UI mpv
 Todo Dong: boss fight
 Todo Pan: 数字显示和蛇的距离
-Todo Yuqing: 抓取椰子，往下扔，蛇往下掉
 Todo Pan 排行榜（假的）
 
 bug spider web fail to load & log warning
@@ -29,15 +29,27 @@ bug spider web fail to load & log warning
 - Great Cobra exit boost: extra climb speed for a while after the monkey leaves the starting zone, w/ center warning "Run! The Great Cobra is chasing you!"; `cobraExitBoostSpeedU` & `cobraExitBoostDurationS` in `GameBalanceConfig`
 - `MovementConfig` asset: climb speed builds up along 2 curves (up, down) of how long the key is held, instead of a fixed acceleration
 - `startingZoneBranchClearRadiusU` in `GameBalanceConfig`: branch clearance round the monkey before the run is playing
-- fruit fly: a grabbed fruit's sprite flies from its screen spot to a target (`FruitFlyEffect`, `FruitFlyConfig` asset): banana to the stamina bar, coconut to a top-right anchor for a future counter, pineapple to the monkey; per-fruit target & sprite via `FruitFlyOnGrab`
+- fruit fly: a grabbed fruit's sprite flies from its screen spot to a target (`FruitFlyEffect`, `FruitFlyConfig` asset): banana to the stamina bar, coconut to the icon of the coconut HUD, pineapple to the monkey; per-fruit target & sprite via `FruitFlyOnGrab`
 - `Coconut` placeholder fruit prefab, banana-shaped, no score, not spawned yet
 - pineapple: a branch may bear one instead of a banana (`pineappleSpawnProbabilityCurve` in `GameBalanceConfig`); grabbing it raises both hands & pulls the monkey up a set height, w/ hazards off for the leap & a short landing grace (`PineappleLeapController`, `GameController.IsLeaping`, `PineappleLeapConfig` asset)
 - F2 dev key: spawns a pineapple branch straight above the monkey (`HackPineappleSpawner`)
 - fruit UI sprites (banana, coconut, pineapple) in `Sprites/UI/`, shown in flights at 3x size (`sizePx` 192 in `FruitFlyConfig`); sources credited in `CREDITS.md`
+- coconut throw: a double-tap throws one, the `UseCoconut` action of the Input Actions asset (MultiTap on Space, E & gamepad North), listened to by `CoconutManager`; a coconut model (`CoconutProjectile`) falls from the monkey at `coconutThrowSpeedU`, & the great cobra freezes on touching it or after `coconutThrowDistanceU`, not at the tap; works in the starting zone too
+- look-down camera: `CameraLookDown` goes live for `coconutLookDownS` after a throw to follow the fall, under look-left/look-right while Interact is held (`CameraRigManager`)
+- F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`)
 
 ##### Wenhai Dong
 
 - pause: Esc or P pauses or resumes a live run (starting zone or playing), and R restarts it from the pause; time freezes, audio pauses, and a `PauseScreen` panel ("Paused", "Press Esc or P to Resume", "Press R to Restart") covers the screen; `GameController.IsPaused`, `SetPaused`, and `PauseChanged`, with the panel toggled by `PauseScreenWidget`
+
+##### Yuqing Lu
+
+- coconut: a rare fruit from Height 150 (`coconutStartHeightU`, `coconutSpawnChancePerSegment` in `GameBalanceConfig`, at most one per segment) hung on a bare branch's stem tip, clear of other branches, fruit & webs (`CoconutSpawner`, `BranchController.TryHangFruit`); grabbed like a banana, it scores `scoreRewardPoints` x `coconutScoreMultiplier` & restores no stamina
+- coconut use: a quick double-tap spends one to freeze the great cobra for `cobraFreezeDurationS` (`CobraMotor.TryFreeze`); refused while paused, trapped in a web or just out of one, & while already frozen; the cobra turns light blue while frozen (`CobraFreezeTint`)
+- coconut HUD: count, freeze countdown & bar, a "Double-tap Space" hint until the first use of the session, & center messages
+- coconut analytics: pickups, uses & coconut score per run in the session report
+- `CoconutSpawner` test override for coconuts from Height 5 on every segment
+- whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
 
 ### Changed
 
@@ -54,6 +66,15 @@ bug spider web fail to load & log warning
 - Global Volume profile moved from `Scenes/Lv1Scene/` to `Settings/`
 - stamina restore & bar punch land when the grabbed fruit's flight arrives, not at the grab; score still counts at the grab
 - `InGameHUD` now nested in `_UI`, holding `ProgressBar`, `StaminaBar`, `ScoreHeight` & the pause hint; no visual change
+- `CoconutManager` on the `GameController` prefab centralizes the coconut count, the throw & the HUD switching; the analytics report reads coconut pickups & uses from it
+- `TopRightAnchor` and the coconut `Panel` removed: `CoconutHUD` sits straight under `InGameHUD`; the freeze countdown & bar split out of `CoconutWidget` into `FreezeTimerWidget`, the center prompts into `CoconutMessageWidget`
+
+##### Yuqing Lu
+
+- `Coconut` prefab: from banana-shaped placeholder to the coconut item: whole coconut model under a top pivot, `ScorePickup` of kind `Coconut`, `CoconutReachable` & `CoconutGrabbable` outlines, green flight sprite
+- `ScoreManager` scores & counts each pickup by its `PickupKind`; `ScorePickup` gains a kind, banana by default
+- `ArmController` gives a coconut's flight no stamina restore
+- analytics report splits the reward score into banana & coconut score
 
 ### Deprecated
 
@@ -65,6 +86,7 @@ bug spider web fail to load & log warning
 
 ##### Erik
 
+- `devYuqingCoconutScene` personal dev scene, the coconut work lives in `Lv1Scene`
 - `SlipTestScene` dev scene, after slippery bark landed in `Lv1Scene`
 - `upSpeedU` & `downSpeedU` (`GameBalanceConfig`), replaced by the `MovementConfig` curves; `accelerationU` (`MonkeyConfig`)
 - orphan `GoalText` object in `Lv1Scene` (never drawn, no parent Canvas) and its mention in the TDD

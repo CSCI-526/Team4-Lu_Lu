@@ -28,3 +28,6 @@ MonoBehaviour:
   - action: 4
     key: 95
     description: spawn pineapple
+  - action: 5
+    key: 96
+    description: spawn coconut

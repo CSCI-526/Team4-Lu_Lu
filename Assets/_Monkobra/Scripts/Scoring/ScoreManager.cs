@@ -8,25 +8,41 @@ public class ScoreManager: MonoBehaviour {
     public long DistanceScore { get; private set; }
     public long RewardScore { get; private set; }
     public int BananaCollectedCount { get; private set; }
+    public int CoconutCollectedCount { get; private set; }
+    // part of RewardScore that came from coconuts
+    public long CoconutRewardScore { get; private set; }
     public double HighestClimbedMeters => highestClimbedUnits / unitsPerMeter;
     public bool IsRunEnded => isRunEnded;
     public event Action<long> ScoreChanged;
     // raised once per banana pickup that scored
     public event Action BananaCollected;
+    // raised once per coconut pickup that scored
+    public event Action CoconutCollected;
 
     //必须满足：组件启用、已经开局、尚未结束、没有暂停，才允许计分
     public bool CanScore => isActiveAndEnabled && hasStarted && !isRunEnded && Time.timeScale > 0f && (GameController.I == null || GameController.I.IsRunLive);
 
     // Public Methods  #########################################################
     //添加水果等奖励分
-    public bool TryAddReward() {
+    public bool TryAddReward(PickupKind kind = PickupKind.Banana) {
         if (!CanScore) {
             return false;
         }
 
         long oldScore = TotalScore;
+        if (kind == PickupKind.Coconut) {
+            // a coconut is worth a multiple of the banana points
+            long coconutPoints = Math.Min((long)balanceConfig.CoconutRewardPoints, long.MaxValue - TotalScore);
+            RewardScore += coconutPoints;
+            CoconutRewardScore += coconutPoints;
+            CoconutCollectedCount++;
+            NotifyIfChanged(oldScore);
+            CoconutCollected?.Invoke();
+            return true;
+        }
+
         RewardScore += Math.Min((long)balanceConfig.ScoreRewardPoints, long.MaxValue - TotalScore);
-        // every reward is a banana pickup
+        // every other reward is a banana pickup
         BananaCollectedCount++;
         NotifyIfChanged(oldScore);
         BananaCollected?.Invoke();
@@ -82,6 +98,8 @@ public class ScoreManager: MonoBehaviour {
         DistanceScore = 0;
         RewardScore = 0;
         BananaCollectedCount = 0;
+        CoconutCollectedCount = 0;
+        CoconutRewardScore = 0;
         isRunEnded = GameController.I != null
             && GameController.I.State == GameState.Lost;
         hasStarted = true;

@@ -4,9 +4,15 @@ using UnityEngine;
 /// Prefab root for one branch. Decides on <see cref="Initialize"/> which fruit
 /// this branch bears: a pineapple, a banana, or none. A branch w/o fruit
 /// disables the Banana + Banana Stem children; one w/ fruit scales the stem
-/// and places the fruit on it.
+/// and places the fruit on it. Another spawner may later hang a fruit of its
+/// own on a bare branch, see <see cref="TryHangFruit"/>.
 /// </summary>
 public class BranchController: MonoBehaviour {
+    // Public Members  #########################################################
+    /// <returns>if this branch bears no fruit, so another spawner may hang
+    /// one on it w/ <see cref="TryHangFruit"/></returns>
+    public bool IsBare => bananaStem != null && !bananaStem.activeSelf;
+
     // Public Methods  #########################################################
     /// <summary>
     /// Rolls this branch's fruit, pineapple first, then shows or hides the
@@ -34,6 +40,43 @@ public class BranchController: MonoBehaviour {
             banana.SetActive(false);
             bananaStem.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// Hangs <paramref name="fruitPrefab"/> on this bare branch: the stem
+    /// comes back, scaled as for any fruit, and the fruit's pivot sits on the
+    /// stem's lower tip, turned like a banana. So the fruit prefab keeps its
+    /// pivot where it attaches, ie its top. For fruit rolled outside
+    /// <see cref="Initialize"/>, e.g. the coconut. Call at most once per
+    /// branch.
+    /// </summary>
+    /// <param name="fruitPrefab">fruit to hang</param>
+    /// <param name="isSpotClear">asked w/ the stem tip, where the fruit's
+    /// pivot goes, b4 anything shows; false leaves the branch bare</param>
+    /// <returns>the new fruit, null if the branch bears one already or the
+    /// spot is refused</returns>
+    public GameObject TryHangFruit(
+        GameObject fruitPrefab,
+        System.Predicate<Vector3> isSpotClear
+    ) {
+        if (!IsBare || banana == null || fruitPrefab == null) {
+            return null;
+        }
+
+        // posed while the stem is still off, so a refusal shows nothing
+        PlaceFruitOnStem();
+        Vector3 stemTip = StemTipPosition;
+        if (isSpotClear != null && !isSpotClear(stemTip)) {
+            return null;
+        }
+
+        bananaStem.SetActive(true);
+        GameObject fruit = Instantiate(fruitPrefab, banana.transform.parent);
+        fruit.transform.SetPositionAndRotation(
+            stemTip,
+            banana.transform.rotation
+        );
+        return fruit;
     }
 
     // Inspector Fields  #######################################################
@@ -78,6 +121,10 @@ public class BranchController: MonoBehaviour {
     private const float STEM_Y_SCALE_MIN = 0.5f;
     private const float STEM_Y_SCALE_MAX = 2.0f;
     private const float BANANA_Y_OFFSET = -.2f;
+
+    // lower end of the stem: a capsule, 2 u long at scale 1 on its local y
+    private Vector3 StemTipPosition =>
+        bananaStem.transform.TransformPoint(Vector3.down);
 
     // private methods  ########################################################
     // scale stem, carry banana child to its tip at random turn

@@ -3,7 +3,8 @@ using UnityEngine;
 /// <summary>
 /// Single home for the game balance knobs: stamina budget, climb speeds,
 /// branch-hit penalty, score rules, branch generation, spider web
-/// generation, falling cobras and the great cobra's catch-up.
+/// generation, falling cobras, the great cobra's catch-up and the coconut
+/// item.
 /// </summary>
 [CreateAssetMenu(
     fileName = "GameBalanceConfig",
@@ -159,6 +160,34 @@ public class GameBalanceConfig: ScriptableObject {
     /// but used while the starting zone lasts</returns>
     public float StartingZoneExhaustedSpeedMultiplier =>
         startingZoneExhaustedSpeedMultiplier;
+
+    /// <returns>coconuts start hanging on branches once the monkey's climbed
+    /// height (the HUD Height) reaches this; u</returns>
+    public float CoconutStartHeightU => coconutStartHeightU;
+
+    /// <returns>chance 0~1 that a segment above the start height grows one
+    /// coconut on a bare branch</returns>
+    public float CoconutSpawnChancePerSegment => coconutSpawnChancePerSegment;
+
+    /// <returns>coconut points as a multiple of
+    /// <see cref="ScoreRewardPoints"/></returns>
+    public float CoconutScoreMultiplier => coconutScoreMultiplier;
+
+    /// <returns>points awarded per coconut: <see cref="ScoreRewardPoints"/>
+    /// times <see cref="CoconutScoreMultiplier"/>, rounded</returns>
+    public int CoconutRewardPoints => Mathf.RoundToInt(
+        scoreRewardPoints * coconutScoreMultiplier
+    );
+
+    /// <returns>how long a used coconut freezes the great cobra; s</returns>
+    public float CobraFreezeDurationS => cobraFreezeDurationS;
+
+    /// <returns>how fast a thrown coconut falls; u per s</returns>
+    public float CoconutThrowSpeedU => coconutThrowSpeedU;
+
+    /// <returns>how far a thrown coconut falls b4 it freezes the cobra
+    /// w/o a hit; u</returns>
+    public float CoconutThrowDistanceU => coconutThrowDistanceU;
 
     // Inspector Fields  #######################################################
     public float SlipSlideDistanceU => slipSlideDistanceU;
@@ -428,6 +457,46 @@ public class GameBalanceConfig: ScriptableObject {
     [Tooltip("how long the starting zone exit boost lasts; s")]
     private float cobraExitBoostDurationS = 5f;
 
+    [Header("Coconut")]
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "coconuts appear once the climbed height (the HUD Height) reaches "
+            + "this; u"
+    )]
+    private float coconutStartHeightU = 150f;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "chance a segment above the start height grows one coconut on a "
+            + "bare branch; 0.1 = about 1 per 100 u"
+    )]
+    private float coconutSpawnChancePerSegment = 0.1f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("coconut points = score reward points x this")]
+    private float coconutScoreMultiplier = 2f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("how long a used coconut freezes the great cobra; s")]
+    private float cobraFreezeDurationS = 10f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("how fast a thrown coconut falls straight down; u per s")]
+    private float coconutThrowSpeedU = 30f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "a thrown coconut freezes the cobra on a hit, or once it has fallen "
+            + "this far; u"
+    )]
+    private float coconutThrowDistanceU = 25f;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         slipSlideDistanceU = Mathf.Max(0f, slipSlideDistanceU);
@@ -473,5 +542,13 @@ public class GameBalanceConfig: ScriptableObject {
         cobraSpeedChangeRateU = Mathf.Max(0.01f, cobraSpeedChangeRateU);
         cobraExitBoostSpeedU = Mathf.Max(0f, cobraExitBoostSpeedU);
         cobraExitBoostDurationS = Mathf.Max(0f, cobraExitBoostDurationS);
+        coconutStartHeightU = Mathf.Max(0f, coconutStartHeightU);
+        coconutSpawnChancePerSegment = Mathf.Clamp01(
+            coconutSpawnChancePerSegment
+        );
+        coconutScoreMultiplier = Mathf.Max(0f, coconutScoreMultiplier);
+        cobraFreezeDurationS = Mathf.Max(0f, cobraFreezeDurationS);
+        coconutThrowSpeedU = Mathf.Max(0.1f, coconutThrowSpeedU);
+        coconutThrowDistanceU = Mathf.Max(0f, coconutThrowDistanceU);
     }
 }

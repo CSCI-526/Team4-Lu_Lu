@@ -48,6 +48,8 @@ graph LR
   Monkey --> Grab[Grab System]
   Grab --> Stamina[StaminaBarController]
   Grab --> Score[ScoreManager]
+  Score -->|coconut| Coconut[CoconutManager]
+  Coconut -->|freeze| Mobs
   Mobs[Mobs] -->|touch| Monkey
   Mobs -->|cobra contact| Game[GameController]
   Stamina -->|empty| Monkey
@@ -104,6 +106,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | --- | --- | --- |
 | F1 | toggle `GameController.CobraNoClip` | `GameController` |
 | F2 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
+| F3 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | F8 | download the analytics session report | `AnalyticsManager` |
 | F9 | close the analytics session and open a new file | `AnalyticsManager` |
 | F10 | save a mock analytics session file | `AnalyticsManager` |
@@ -125,9 +128,10 @@ Every game balance number lives in one asset (how height becomes spawn chances i
 | Spider Web | `webAttemptCount`, `webSpawnProbabilityCurve` | `SpiderWebSpawner` |
 | Falling Cobra | `fallingCobraAttemptCount`, `fallingCobraSpawnProbabilityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU`, `fallingCobraReachWakeDistanceU`, `fallingCobraBananaAmbushChance`, `fallingCobraRehitGraceS`, `fallingCobraMaxHits` | `FallingCobraSpawner`, `FallingCobraController` |
 | Great Cobra | `cobraBaseSpeedCurve`, `cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraMaxSurgeSpeedU`, `cobraExitBoostSpeedU`, `cobraExitBoostDurationS`, `cobraSpeedChangeRateU` | `CobraMotor` |
+| Coconut | `coconutStartHeightU`, `coconutSpawnChancePerSegment`, `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutSpawner`, `ScoreManager`, `CoconutManager` |
 
-- Wiring: each reader holds a `GameBalanceConfig` inspector field (`balanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `FallingCobraSpawner`, and `CobraMotor` on the `GreatCobra` prefab), all pointing at the same asset
-- Not Balance: the arm stroke and reach, orbit speed, deceleration, and input actions stay in `MonkeyConfig`; climb build-up, exhaustion, and idle recovery are in `MovementConfig`; the leap's distance and speed curve are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab
+- Wiring: each reader holds a `GameBalanceConfig` inspector field (`balanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `FallingCobraSpawner`, `CoconutSpawner`, `CoconutManager`, and `CobraMotor` on the `GreatCobra` prefab), all pointing at the same asset
+- Not Balance: the arm stroke and reach, orbit speed, deceleration, and input actions stay in `MonkeyConfig`; climb build-up, exhaustion, and idle recovery are in `MovementConfig`; the leap's distance and speed curve are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab; coconut clearance and the test override stay on `CoconutSpawner`, and the web escape grace and the throw start offset on `CoconutManager`
 - Retired: `GameConfig`, `ScoreConfig`, and `ScoreReward` were folded into `GameBalanceConfig` and removed
 - Suffixes: `U` is world units, `S` is seconds, `Deg` is degrees, `PerU` is per world unit travelled
 
@@ -173,7 +177,7 @@ All values live in `Settings/GameBalanceConfig.asset`.
 `ScoreManager` (singleton `I`, on the `GameController` object) keeps two scores and notifies the UI when the total changes.
 
 - Distance Score: whole meters of the highest point climbed, read from `RampedDifficultyManager.CurrentPlayerClimbedYDistance`, refreshed every frame (player y minus the y at game start), times points per meter. Only a new high counts, so falling and re-climbing earns nothing
-- Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups
+- Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups. A coconut's `ScorePickup` (kind `Coconut`) adds `CoconutRewardPoints` instead, kept in `CoconutRewardScore`, counted in `CoconutCollectedCount`, and raises `CoconutCollected`
 - Gate: `CanScore` is true only after start, before `EndRun`, while unpaused, and while the game is not over
 - Display: `ScoreWidget` shows the total on the HUD and on the lose panel
 
@@ -183,7 +187,7 @@ The test scenes have no `ScoreManager`.
 
 ## Camera
 
-Three Cinemachine cameras (behind, look-left, look-right) are swapped by priority. Every camera script sits on the main camera, next to the `CinemachineBrain`, and finds gameplay objects through their `I` singletons.
+Four Cinemachine cameras (behind, look-left, look-right, look-down) are swapped by priority. Every camera script sits on the main camera, next to the `CinemachineBrain`, and finds gameplay objects through their `I` singletons.
 
 - Hit shake: `CameraHitShakeFeedback` reads `HitBranchSensor.I` and fires one of two `CinemachineImpulseSource` components on the camera by hit kind, light for a branch, heavy for a falling cobra. Amplitude and duration are tuned on the sources, and the strength a view feels also scales with its camera's impulse listener gain
 - Cool-down: `CameraCoolDownFeedback` listens to `StaminaBarController.LowStaminaMoveAttempted` and pulses a URP Vignette on a global Volume plus a field-of-view widen on the live Cinemachine camera, easing both back to rest. It has two steps: a lighter one while stamina is below the low fraction, a stronger one once the bar is empty, and a low pulse in flight steps up when the bar empties. Both steps and the timing live in the `CameraEfxConfig` asset (the hit shake stays on its two impulse sources, since Cinemachine owns those values). A running pulse ignores repeats and a short cooldown follows
@@ -195,7 +199,7 @@ The swap rules are in the [Grab System](grab-doc.md#camera), the hit trigger in 
 One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. Pause (Esc or P), `RestartAfterLose` (R or Space), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
 
 - Move: shared by the body and both arms through `MonkeyConfig`
-- Interact: the grab, read by both arms and the camera rig
+- Interact: the grab, read by both arms and the camera rig; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
 - Jump: the web escape press, read by `SpiderWebStruggle`
 - Collision: Space is bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped
 
@@ -204,7 +208,8 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 | Element | Script | Shows |
 | --- | --- | --- |
 | Stamina Bar | `UI/StaminaBarController` | current stamina, under an `Energy` label |
-| Fruit Fly | `UI/FruitFlyEffect` | a grabbed fruit's sprite flying to the bar, the top-right anchor, or the monkey ([Grab System](grab-doc.md#fruit-fly)) |
+| Fruit Fly | `UI/FruitFlyEffect` | a grabbed fruit's sprite flying to the bar, the coconut counter, or the monkey ([Grab System](grab-doc.md#fruit-fly)) |
+| Coconut | `UI/CoconutWidget`, `UI/FreezeTimerWidget`, `UI/CoconutMessageWidget` | count and double-tap hint; freeze countdown & bar; coconut center messages, all switched on by `CoconutManager` ([Grab System](grab-doc.md#coconut)) |
 | Climb Progress | `UI/ProgressBarWidget` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is |
 | Score | `UI/ScoreWidget` | total score, on the HUD and the lose panel |
 | Height | `UI/HeightDisplayWidget` | height climbed since game start, in world units |
@@ -214,7 +219,7 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 | Low Stamina Prompt | `UI/LowStaminaWidget` | first-low-stamina hint, once per scene load, below the screen center |
 | Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", "Press Esc or P to Resume", and "Press R to Restart" while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
-The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, and `FruitFlyLayer` (drawn last, above the bars); the prompts and `Screens` stay direct children of `_UI`, drawn above it.
+The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage`, and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on.
 
 `LowStaminaWidget` sits on an always-active Canvas child and toggles only its TMP label. The first `StaminaBarController.LowStaminaMoveAttempted` since the scene loaded, the event behind the bar shake and the camera cool-down, shows the hint for `showDurationS`; the script then drops its subscription, and nothing is static, so a reload brings the hint back. A loss hides it at once. While `SpiderWebStruggle.IsTrapped` it is hidden and its countdown waits, so it never shares the screen with the web prompt, and the rest plays after the escape; a held monkey reports no move attempts, so a trap can only cut in on a hint already showing. The label sits below the screen center, clear of the web prompt and the catch-up warning above it and of the vignette's dark edges; the Canvas has no render camera, so it draws as an overlay the vignette never darkens.
 

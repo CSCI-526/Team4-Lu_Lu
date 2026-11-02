@@ -1,5 +1,59 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1421609915132758382
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1329808230544208411}
+  - component: {fileID: 3796959497687899329}
+  m_Layer: 0
+  m_Name: FruitFlyLayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1329808230544208411
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1421609915132758382}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6435943854550387371}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3796959497687899329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1421609915132758382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 311cef52de1f4b828cabfe1802b39273, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FruitFlyEffect
+  config: {fileID: 11400000, guid: f33cb58ec267fbf4db82c94ea7896373, type: 2}
+  energyBarTarget: {fileID: 8958653195840749016}
+  topRightCounterTarget: {fileID: 7371595690722461253}
+  monkeyTarget: {fileID: 0}
+  defaultSprite: {fileID: 21300000, guid: add613f41614c454a8c3e58331889ab9, type: 3}
+  showsBlankSprite: 1
 --- !u!1 &4983302662091871951
 GameObject:
   m_ObjectHideFlags: 0
@@ -92,7 +146,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 35
+  m_fontSize: 37.5
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -169,6 +223,8 @@ RectTransform:
   - {fileID: 8958653195840749016}
   - {fileID: 3919547260980896912}
   - {fileID: 4477732712774965560}
+  - {fileID: 5448816970781773506}
+  - {fileID: 5433824067133939896}
   - {fileID: 1329808230544208411}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -177,6 +233,33 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1001 &765901078420128078
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6435943854550387371}
+    m_Modifications:
+    - target: {fileID: 4158256758022693655, guid: 2eb67e7b2c3ee4836aaf996a8b0e85e4, type: 3}
+      propertyPath: m_Name
+      value: CoconutHUD
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2eb67e7b2c3ee4836aaf996a8b0e85e4, type: 3}
+--- !u!224 &5448816970781773506 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4701495036129529740, guid: 2eb67e7b2c3ee4836aaf996a8b0e85e4, type: 3}
+  m_PrefabInstance: {fileID: 765901078420128078}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &7371595690722461253 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6072739754853935781, guid: 2eb67e7b2c3ee4836aaf996a8b0e85e4, type: 3}
+  m_PrefabInstance: {fileID: 765901078420128078}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1478972190583030992
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -511,7 +594,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4934769001973583696, guid: 86e9fb4cf5a39a444a19db948dd08ed2, type: 3}
   m_PrefabInstance: {fileID: 8223244391492463552}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1421609915132758382
+--- !u!1 &8049879365642028121
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -519,85 +602,54 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1329808230544208411}
-  - component: {fileID: 3796959497687899329}
+  - component: {fileID: 5433824067133939896}
+  - component: {fileID: 5718554549476155434}
   m_Layer: 0
-  m_Name: FruitFlyLayer
+  m_Name: CoconutMessage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &1329808230544208411
+--- !u!224 &5433824067133939896
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1421609915132758382}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2321030414507203874}
-  m_Father: {fileID: 6435943854550387371}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &3796959497687899329
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1421609915132758382}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 311cef52de1f4b828cabfe1802b39273, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FruitFlyEffect
-  config: {fileID: 11400000, guid: f33cb58ec267fbf4db82c94ea7896373, type: 2}
-  energyBarTarget: {fileID: 8958653195840749016}
-  topRightCounterTarget: {fileID: 2321030414507203874}
-  monkeyTarget: {fileID: 0}
-  defaultSprite: {fileID: 21300000, guid: add613f41614c454a8c3e58331889ab9, type: 3}
-  showsBlankSprite: 1
---- !u!1 &5159658396932236253
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2321030414507203874}
-  m_Layer: 0
-  m_Name: TopRightAnchor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &2321030414507203874
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5159658396932236253}
+  m_GameObject: {fileID: 8049879365642028121}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1329808230544208411}
+  m_Father: {fileID: 6435943854550387371}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -60, y: -80}
-  m_SizeDelta: {x: 40, y: 40}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5718554549476155434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8049879365642028121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da1683ec39eb44d99d5d1407435a17a9, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CoconutMessageWidget
+  firstCoconutText: Coconut! Double-tap Space to freeze the cobra
+  frozenFormat: Cobra frozen for {0}s!
+  refusedText: Cobra is already frozen
+  thawedText: The cobra is moving again!
+  frozenColor: {r: 0.55, g: 0.85, b: 1, a: 1}
+  endingColor: {r: 1, g: 0.6, b: 0.15, a: 1}
+  messageFontScreenShare: 0.05
+  messageShowS: 2
+  firstCoconutShowS: 3.5
+  messageFadeS: 0.5
+  messageScreenY: 0.76

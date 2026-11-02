@@ -53,13 +53,16 @@ graph TD
   Reach -->|miss| Exposed[Time lost, cobra closes in]
   Restore --> Climb
   Exposed --> Climb
+  Climb -->|cobra close, coconut kept| Freeze[Double-tap: cobra frozen]
+  Freeze --> Climb
   Climb -->|cobra contact| Lose[Lose]
 ```
 
 ## Resources and Pressures
 
 - Stamina: the survival resource, drained by time and by movement, restored by grabbing or slowly by resting, and an empty bar slows the monkey instead of ending the run
-- The Cobra: a pressure that never relents, it climbs nonstop, surges after each mistake, and ends the run on any contact
+- The Cobra: a pressure that never relents, it climbs nonstop unless a coconut freezes it for a while, surges after each mistake, and ends the run on any contact
+- Coconuts: a rare resource found higher up, kept instead of eaten, and spent with a quick double-tap to freeze the cobra and buy distance
 - Height: both the goal and the measure of progress, the tree is endless, so the run is a race for the highest point
 - Attention: the hidden resource, since every grab spends focus that dodging would otherwise use
 
@@ -73,8 +76,9 @@ graph TD
 | Branch Hit | punishes careless movement without ending the run | camera shake, brief loss of control, a drop down the trunk |
 | Cobra Chase | constant pursuit from below, its coil wraps the trunk so orbiting or dropping into it is as fatal as being caught from behind | any contact with the cobra's body ends the run |
 | Falling Cobra | a hazard from above that rewards watching the branches | warns, then falls, with the same penalty as a branch hit |
+| Coconut | a rare, higher-up fruit kept as a panic button, so a good grab can be cashed in when the cobra is close | scores double a banana and restores no stamina; a double-tap freezes the cobra for a while, but its coil stays fatal |
 | Spider Web | a forced stop that lets the cobra gain ground, and a clash with the grab since reaching is locked while stuck | holds the monkey until rapid presses fill an escape bar, then brief immunity from further webs |
-| Score | rewards height and risk | points per meter climbed and a bonus per banana grabbed |
+| Score | rewards height and risk | points per meter climbed and a bonus per banana or coconut grabbed |
 
 ## Win and Lose
 

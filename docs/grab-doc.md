@@ -17,7 +17,7 @@ graph TD
   Arm -->|overlap| Pickup[ScorePickup.TryCollect]
   Pickup --> Score[ScoreManager]
   Arm -->|overlap| Fly[FruitFlyEffect.Play]
-  Fly -->|on landing| Stamina[StaminaBarController.AddStaminaByFruit]
+  Fly -->|on landing, not a coconut| Stamina[StaminaBarController.AddStaminaByFruit]
   Arm -->|LeapOnGrab fruit| Leap[PineappleLeapController.Begin]
 ```
 
@@ -34,7 +34,7 @@ graph TD
 | `Player/UpwardFruitSensor` | singleton (`I`) that keeps the reachable fruit per side, picks the reach side, and relays the grabbable fruit |
 | `Player/ArmController` | one arm: hand-over-hand climb stroke, or the reach and the release check |
 | `Player/MonkeyConfig` | reach speed, stroke tuning, and the interact action both arms and the camera read |
-| `Cameras/CameraRigManager` | swaps the behind, look-left, and look-right Cinemachine cameras |
+| `Cameras/CameraRigManager` | swaps the behind, look-left, look-right, and look-down Cinemachine cameras |
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
@@ -69,10 +69,10 @@ graph TD
 
 ## On a Successful Grab
 
-1. `ScorePickup.TryCollect` refuses if the game is over, paused, or the fruit was already collected. Otherwise it hands its reward to `ScoreManager` once and switches the fruit off. A fruit with no `ScorePickup` is just switched off, from the object holding its `FruitFlyOnGrab` when it has one, so a model beside the collider goes too
+1. `ScorePickup.TryCollect` refuses if the game is over, paused, or the fruit was already collected. Otherwise it hands its reward to `ScoreManager` once, scored and counted by its `PickupKind`, a banana or a coconut, and switches the fruit off. A fruit with no `ScorePickup` is just switched off, from the object holding its `FruitFlyOnGrab` when it has one, so a model beside the collider goes too
 2. every collider of that fruit is removed from the detection sets
 3. `FruitFlyEffect.I.Play` launches the fruit's sprite from where the fruit sat, see [Fruit Fly](#fruit-fly)
-4. on landing, `StaminaBarController.I.AddStaminaByFruit` restores stamina, capped at the maximum, and works from empty too; its `FruitConsumed` punches the bar. With no effect in the scene the restore runs at once
+4. on landing, `StaminaBarController.I.AddStaminaByFruit` restores stamina, capped at the maximum, and works from empty too; its `FruitConsumed` punches the bar. With no effect in the scene the restore runs at once. A coconut restores nothing, see [Coconut](#coconut)
 
 Score lands at the grab (step 1), stamina one flight later. A fruit with `LeapOnGrab` also starts a leap at the grab, see [Pineapple Leap](#pineapple-leap).
 
@@ -92,6 +92,20 @@ A pineapple restores stamina like a banana but scores no fruit reward and no ban
 
 For a quick test press the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns a pineapple branch straight above the monkey.
 
+## Coconut
+
+A rare fruit from higher up, kept instead of eaten: it scores more than a banana, restores no stamina, and is thrown to freeze the great cobra.
+
+- Supply: `CoconutSpawner` on `Envs/CoconutSystem` rolls once per segment, only for branches above `coconutStartHeightU`, the climbed height shown as the HUD Height, against `coconutSpawnChancePerSegment`, so a segment bears at most one. It hangs the `Coconut` prefab on a bare branch through `BranchController.TryHangFruit`, its top pivot on the stem's lower tip, and skips a spot whose grab volume would touch another branch, any fruit, or a web; webs rolled later keep clear of it by its `FruitCollider` tag
+- Grab: the same reach and release as a banana, with its own outline materials; its `ScorePickup` is of kind `Coconut`, so `ScoreManager` adds `CoconutRewardPoints` (`scoreRewardPoints` times `coconutScoreMultiplier`) and raises `CoconutCollected` instead of counting a banana
+- No Stamina: `ArmController` gives a coconut's flight no restore, so its sprite flies to the counter and only pops the icon
+- Count: `CoconutManager` (on the `GameController` prefab) adds one per `CoconutCollected`; the count lives in the scene, so a restart's reload empties it
+- Use: the `UseCoconut` input action, a double-tap of Space, E, or the gamepad north button, spends one and throws it: a `CoconutProjectile` falls straight down from just below the monkey at `coconutThrowSpeedU`, and when it touches the cobra or has fallen `coconutThrowDistanceU` the manager calls `CobraMotor.TryFreeze` for `cobraFreezeDurationS`, so the freeze starts at the landing, not at the tap, see [Mobs](mob-doc.md#coconut-freeze). One coconut flies at a time, and a pause holds it in the air. `UseCoconut` is an action of the Input Actions asset with a MultiTap interaction (2 taps, each press short, the gap between them short), so its timing and keys are edited in the asset, and a held reach never completes it. `CoconutManager` enables the action and listens to its `performed` event; the grab (`Interact`) is a separate action on the same keys, so a tap near fruit reaches like any short press and grabs only fruit already under the hand
+- Refused: a double-tap does nothing outside a live run (the starting zone counts, the tutorial and the lose screen do not), while paused, while a web holds the monkey, or within `webEscapeGraceS` of an escape, so mashing out of a web never spends one; while the cobra is already frozen nothing is spent and "Cobra is already frozen" shows
+- HUD: every part starts inactive in its prefab and an owner switches it on, since a script on an inactive object never runs. `CoconutManager` switches on `InGameHUD/CoconutHUD` (`CoconutWidget`: icon, count, dimmed at x0, and a "Double-tap Space" hint under it, flashing when the cobra surges, until the first use of the session) at the first coconut of the scene, and the `FreezeTimerHUD` prefab under `_UI` (`FreezeTimerWidget`: countdown and shrinking bar) only while the cobra is frozen in a run. `CoconutMessageWidget` on `InGameHUD/CoconutMessage` stays active and shows the center prompts, above the cobra warning: the double-tap teaching on the first coconut, the freeze, a refused second one, and the thaw. The widgets are passive views reading the manager
+
+For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 on every segment. The F3 [hack key](monkobra-tdd.md#hack-shortcuts) spawns a branch bearing a coconut straight above the monkey.
+
 ## Fruit Fly
 
 `FruitFlyEffect` (singleton `I`) sits on `FruitFlyLayer`, a full-stretch child of `InGameHUD`, and flies a semi-transparent pooled `Image` from the fruit's screen point to its target.
@@ -99,18 +113,17 @@ For a quick test press the [hack key](monkobra-tdd.md#hack-shortcuts) that spawn
 | Target | Fruit | Flies To |
 | --- | --- | --- |
 | `EnergyBar` | banana (no `FruitFlyOnGrab`) | the `StaminaBar` |
-| `TopRightCounter` | `Coconut` | `TopRightAnchor`, standing in for a counter not built yet |
+| `TopRightCounter` | `Coconut` | the icon of `CoconutHUD` |
 | `Monkey` | `Pineapple` | the monkey, found as the `MonkeyController` at start |
 
 - Per Frame: the target's screen point is re-read every frame, so a punching bar or a moving camera never strands the sprite
 - Time: the flight runs on scaled time, so a pause freezes it
 - Run End: a loss drops every flight without its callback, and a restart reloads the scene, so a cut flight never restores into the next run
 - Sprite: a fruit's `FruitFlyOnGrab` may name one; otherwise the effect's default, and a blank square while none is set
-- Placeholder: `Coconut` under `Prefabs/Environment/` is the banana's shape without `ScorePickup`, so grabbing one restores stamina but scores nothing; nothing spawns it yet, drop it in by hand in Play mode
 
 ## Camera
 
-`CameraRigManager` owns three Cinemachine cameras. The behind view is the default. While interact is held it switches to look-right if only the right side has fruit, else look-left, even with no fruit. Releasing returns to behind. A swap raises the chosen camera's priority above the other two and the `CinemachineBrain` on the main camera blends. If a web traps the monkey, the interact action is disabled, which counts as a release for the camera too.
+`CameraRigManager` owns four Cinemachine cameras. The behind view is the default. While interact is held it switches to look-right if only the right side has fruit, else look-left, even with no fruit. Releasing returns to behind. For `coconutLookDownS` after a coconut is thrown, the look-down view takes over from behind to follow the fall, and yields to look-left or look-right while interact is held. A swap raises the chosen camera's priority above the others and the `CinemachineBrain` on the main camera blends. If a web traps the monkey, the interact action is disabled, which counts as a release for the camera too.
 
 ## Feedback
 
@@ -125,16 +138,16 @@ The listener sits on the object holding the fruit's collider and outlines the me
 
 ## Fruit Supply
 
-Fruit comes from branches, not its own spawner, and a branch bears 1 fruit or none. `BranchController` rolls in `Initialize`, called by the segment after placing it: first the pineapple chance, then the banana chance, each from its difficulty curve. A hit keeps the stem, scales it between 0.5x and 2x, and turns the fruit randomly; a pineapple is spawned at the banana's spot on the stem and the banana child switched off. With no fruit both banana and stem are disabled. Branch density by height is in [Mobs](mob-doc.md#placement).
+Fruit comes from branches, not its own spawner, and a branch bears 1 fruit or none. `BranchController` rolls in `Initialize`, called by the segment after placing it: first the pineapple chance, then the banana chance, each from its difficulty curve. A hit keeps the stem, scales it between 0.5x and 2x, and turns the fruit randomly; a pineapple is spawned at the banana's spot on the stem and the banana child switched off. With no fruit both banana and stem are disabled. Coconuts come later, from their own spawner, onto such bare branches, see [Coconut](#coconut). Branch density by height is in [Mobs](mob-doc.md#placement).
 
 ## Tuning
 
-The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`. The pineapple chance curve (`pineappleSpawnProbabilityCurve`), the time the hands take to rise (`pineappleArmExtendS`), and the landing grace (`pineappleLandGraceS`) are there too; the leap distance and speed curve are in `Settings/PineappleLeapConfig.asset`. The fruit flight's duration, look, and easing are in `Settings/FruitFlyConfig.asset`; its duration also delays the stamina restore.
+The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`. The pineapple chance curve (`pineappleSpawnProbabilityCurve`), the time the hands take to rise (`pineappleArmExtendS`), and the landing grace (`pineappleLandGraceS`) are there too; the leap distance and speed curve are in `Settings/PineappleLeapConfig.asset`. The fruit flight's duration, look, and easing are in `Settings/FruitFlyConfig.asset`; its duration also delays the stamina restore. The coconut's start height, chance per segment, score multiplier, freeze time, and double-tap timing are in the Coconut group of `Settings/GameBalanceConfig.asset`.
 
 ## Known Gaps
 
 - `ArmController` carries a fixme to split it into several systems
 - A miss costs no stamina, only exposure
 - Scenes without a `ScoreManager` restore stamina on a grab but score nothing, see [Score](monkobra-tdd.md#score)
-- The coconut has no effect beyond its flight
+- A double-tap near fruit briefly reaches, like any short press, before the coconut is spent
 - A leap may land overlapping a web or a falling cobra: both act normally once the grace ends if the monkey is still inside

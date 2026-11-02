@@ -610,6 +610,14 @@ public class ArmController: MonoBehaviour {
             }//一个水果即使有多个碰撞体，摘掉后也会一起从检测列表移除，避免留下已经不存在的目标
         }
 
+        // a coconut is kept to freeze the cobra, it restores no stamina
+        bool restoresStamina =
+            pickup == null || pickup.Kind != PickupKind.Coconut;
+        System.Action onArrived = null;
+        if (restoresStamina) {
+            onArrived = RestoreStaminaByFruit;
+        }
+
         // the restore lands with the flown sprite, at once w/o the effect
         FruitFlyEffect flyEffect = FruitFlyEffect.I;
         if (flyEffect != null) {
@@ -618,9 +626,9 @@ public class ArmController: MonoBehaviour {
                 fruitCentre,
                 hasFlyOnGrab ? flyOnGrab.Target : FruitFlyTarget.EnergyBar,
                 hasFlyOnGrab ? flyOnGrab.Sprite : null,
-                RestoreStaminaByFruit
+                onArrived
             );
-        } else {
+        } else if (restoresStamina) {
             RestoreStaminaByFruit();
         }
 
