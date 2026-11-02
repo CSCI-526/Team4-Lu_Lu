@@ -77,6 +77,7 @@ public class MonkeyController: MonoBehaviour {
         if (!isActiveAndEnabled || balanceConfig == null || isHeld
             || IsStunned || IsSlipping || Time.time < slipImmuneUntil
             || GameController.I == null || !GameController.I.IsRunLive
+            || GameController.I.IsLeaping
             || Time.timeScale <= 0f || !IsMovingOnTrunk) {
             return false;
         }
