@@ -3,6 +3,7 @@
 <!--
 Hack need to verify: slippery is working
 Fixme replace banana & coconut models
+Hack organize & split game balance config
 
 Fixme Pan: UI mpv
 Todo Dong: boss fight
