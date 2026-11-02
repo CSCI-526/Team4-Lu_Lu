@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8241266462330125146
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6900914528548741697}
+  - component: {fileID: 9169890331978143285}
+  - component: {fileID: 4804774815613941698}
+  m_Layer: 0
+  m_Name: CoconutSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6900914528548741697
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8241266462330125146}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9169890331978143285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8241266462330125146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 535d0797761ff4494aa0fb36db8f4b00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoconutSpawner
+  coconutPrefab: {fileID: 5604785938746913506, guid: 2e274b242ab549eb97b5aaa18a820401, type: 3}
+  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  clearanceU: 0.2
+  useTestOverride: 0
+  testStartHeightU: 5
+  testSpawnChance: 1
+--- !u!114 &4804774815613941698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8241266462330125146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 020eca9c4269c428dbc4a58ae33e619d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoconutInventory
+  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  monkeyConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
+  hackShortcuts: {fileID: 11400000, guid: 6f67fb399ca4433b8cfe8ef24d234f71, type: 2}
+  webEscapeGraceS: 1.5
