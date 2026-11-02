@@ -18,7 +18,8 @@ public class PineappleLeapController: MonoBehaviour {
         phase is Phase.Idle or Phase.Grace
         && monkey != null
         && !monkey.IsHeld
-        && balanceConfig != null;
+        && balanceConfig != null
+        && leapConfig != null;
 
     // Public Methods  #########################################################
     /// <summary>Starts the leap, unless <see cref="CanBegin"/> is false.
@@ -37,7 +38,7 @@ public class PineappleLeapController: MonoBehaviour {
         monkey.IsHeld = true;
         foreach (ArmController arm in arms) {
             arm.BeginLeapReach(
-                balanceConfig.PineappleLeapDistanceU,
+                leapConfig.DistanceU,
                 balanceConfig.PineappleArmExtendS
             );
         }
@@ -48,8 +49,12 @@ public class PineappleLeapController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("game balance tuning; leap distance, speed and timing")]
+    [Tooltip("game balance tuning; hand rise and landing grace timing")]
     private GameBalanceConfig balanceConfig;
+
+    [SerializeField]
+    [Tooltip("leap distance and speed curve")]
+    private PineappleLeapConfig leapConfig;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -58,6 +63,13 @@ public class PineappleLeapController: MonoBehaviour {
             Debug.LogWarning(
                 "PineappleLeapController:\tmust assign Inspector Field: "
                     + "balanceConfig",
+                this
+            );
+        }
+        if (leapConfig == null) {
+            Debug.LogWarning(
+                "PineappleLeapController:\tmust assign Inspector Field: "
+                    + "leapConfig",
                 this
             );
         }
@@ -83,6 +95,8 @@ public class PineappleLeapController: MonoBehaviour {
             case Phase.Pull:
                 if (monkey.HasReachedPullTarget) {
                     Land();
+                } else {
+                    PullAtCurveSpeed();
                 }
                 break;
             case Phase.Grace:
@@ -92,6 +106,10 @@ public class PineappleLeapController: MonoBehaviour {
                 break;
         }
     }
+
+    // constants  ##############################################################
+    // a curve reaching 0 must still finish the leap
+    private const float MIN_PULL_SPEED_U = 0.5f;
 
     // private types  ##########################################################
     private enum Phase {
@@ -104,6 +122,8 @@ public class PineappleLeapController: MonoBehaviour {
     // private members  ########################################################
     private Phase phase = Phase.Idle;
     private float phaseEndTime; // Time.time ending a timed phase
+    private float pullStartTime; // Time.time the pull started
+    private Vector3 pullTarget; // world pos the body is pulled to
 
     // cached references  ------------------------------------------------------
     private MonkeyController monkey;
@@ -112,14 +132,20 @@ public class PineappleLeapController: MonoBehaviour {
     // private methods  ########################################################
     private void StartPull() {
         phase = Phase.Pull;
-        monkey.PullTo(
-            monkey.transform.position
-                + Vector3.up * balanceConfig.PineappleLeapDistanceU,
-            balanceConfig.PineappleLeapSpeedU
-        );
+        pullStartTime = Time.time;
+        pullTarget =
+            monkey.transform.position + Vector3.up * leapConfig.DistanceU;
+        PullAtCurveSpeed();
         if (Debug.isDebugBuild) {
             Debug.Log("PineappleLeapController:\tpull started", this);
         }
+    }
+
+    private void PullAtCurveSpeed() {
+        float speedU = leapConfig.SpeedCurve.Evaluate(
+            Time.time - pullStartTime
+        );
+        monkey.PullTo(pullTarget, Mathf.Max(speedU, MIN_PULL_SPEED_U));
     }
 
     // control returns here; hazards stay off until the grace ends

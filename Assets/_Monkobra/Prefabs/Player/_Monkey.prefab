@@ -266,6 +266,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::PineappleLeapController
   balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  leapConfig: {fileID: 11400000, guid: 2c96f1a7b3e84d05a7d4e50c18b6f372, type: 2}
 --- !u!114 &-8657935869639358425
 MonoBehaviour:
   m_ObjectHideFlags: 0
