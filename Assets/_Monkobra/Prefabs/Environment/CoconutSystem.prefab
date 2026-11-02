@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6900914528548741697}
   - component: {fileID: 9169890331978143285}
-  - component: {fileID: 4804774815613941698}
   m_Layer: 0
   m_Name: CoconutSystem
   m_TagString: Untagged
@@ -51,18 +50,3 @@ MonoBehaviour:
   useTestOverride: 0
   testStartHeightU: 5
   testSpawnChance: 1
---- !u!114 &4804774815613941698
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8241266462330125146}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 020eca9c4269c428dbc4a58ae33e619d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CoconutManager
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
-  monkeyConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
-  webEscapeGraceS: 1.5

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8303485971119836938}
   - component: {fileID: 7414378922096876825}
   - component: {fileID: 1544209386470739513}
+  - component: {fileID: 5415272717504592885}
   m_Layer: 0
   m_Name: GameController
   m_TagString: GameController
@@ -110,3 +111,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RampedDifficultyService
   balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   rampBase: {fileID: 0}
+--- !u!114 &5415272717504592885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732386835657357497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 020eca9c4269c428dbc4a58ae33e619d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CoconutManager
+  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  monkeyConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
+  webEscapeGraceS: 1.5

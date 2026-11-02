@@ -34,6 +34,7 @@ RectTransform:
   - {fileID: 6875958253773938729}
   - {fileID: 8845512933196607513}
   - {fileID: 7351313222525312606}
+  - {fileID: 2401701466447199649}
   - {fileID: 890844872762535560}
   - {fileID: 4092152543420476225}
   m_Father: {fileID: 0}
@@ -627,4 +628,26 @@ PrefabInstance:
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7600611358258637667, guid: 0c7e51910f689f743a71f52059b6824f, type: 3}
   m_PrefabInstance: {fileID: 5886473870680506402}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &8822145055541499358
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3684193395341352233}
+    m_Modifications:
+    - target: {fileID: 2417445946199558659, guid: e45dbb5ad585482c897bd12583038cf3, type: 3}
+      propertyPath: m_Name
+      value: FreezeTimerHUD
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e45dbb5ad585482c897bd12583038cf3, type: 3}
+--- !u!224 &2401701466447199649 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2704974959411911580, guid: e45dbb5ad585482c897bd12583038cf3, type: 3}
+  m_PrefabInstance: {fileID: 8822145055541499358}
   m_PrefabAsset: {fileID: 0}
