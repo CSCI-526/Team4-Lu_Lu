@@ -24,6 +24,9 @@ graph TD
   Banana -->|yes| Grab[Hold to reach, release to grab]
   Grab -->|hit| Restore[Stamina restored, points gained]
   Grab -->|miss| Cost
+  Grab -->|hit, pineapple| Leap[Pulled up a set height, hazards off]
+  Leap -.-> Stamina
+  Leap --> Climb
   Restore -.-> Stamina
   Restore --> Climb
 
@@ -45,7 +48,7 @@ graph TD
 2. read the hazards ahead: branches, falling cobras, and spider webs
 3. spot a banana in a side's detection zone and decide whether the pause is worth it
 4. hold interact to reach, release when the hand overlaps the banana
-5. a hit restores stamina and scores points, a miss only costs time spent exposed
+5. a hit restores stamina and scores points, a miss only costs time spent exposed; a pineapple scores no fruit points but also pulls the monkey up a set height, past every hazard on the way
 6. repeat until the cobra touches the monkey
 
 ## Pressures

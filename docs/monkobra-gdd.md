@@ -69,6 +69,7 @@ graph TD
 | --- | --- | --- |
 | Climb and Circle | free vertical movement and circling of the trunk, the main way to dodge | climbing costs the most stamina, circling less, descending none |
 | Banana Grab | hold-and-release timing as its own skill check | a hit restores stamina and scores points, a miss wastes time |
+| Pineapple Leap | a rare branch fruit that trades the same grab risk for a burst of escape | a hit restores stamina, then both hands shoot up and pull the monkey past a set height, untouchable by hazards on the way |
 | Branch Hit | punishes careless movement without ending the run | camera shake, brief loss of control, a drop down the trunk |
 | Cobra Chase | constant pursuit from below, its coil wraps the trunk so orbiting or dropping into it is as fatal as being caught from behind | any contact with the cobra's body ends the run |
 | Falling Cobra | a hazard from above that rewards watching the branches | warns, then falls, with the same penalty as a branch hit |
