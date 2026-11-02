@@ -78,9 +78,20 @@ The cobra's shape, orbit, coil, and slow-down values are fields on `CobraMotor`,
 
 The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)) is above the cobra's base speed, so it can outrun the cobra, but only by spending stamina.
 
+### Coconut Freeze
+
+`CobraMotor.TryFreeze`, called by `CoconutInventory` when the player spends a coconut ([Grab System](grab-doc.md#coconut)), holds the whole cobra still for `cobraFreezeDurationS` (`GameBalanceConfig`): no climb, no orbit, no slither wave.
+
+- Start: the running mistake surge and the zone exit boost are cleared and the climb speed drops to 0, so after the freeze the cobra eases back up at `cobraSpeedChangeRateU`
+- During: mistakes add no surge and raise no `CatchUpStarted`, so no warning shows; the base speed and the slow-down near the monkey resume at the thaw
+- Refused: a freeze while one runs is refused and spends nothing, so freezes never stack or reset
+- Contact: unchanged, a frozen coil is as fatal as a moving one
+- Look: `CobraFreezeTint` beside `CobraMotor` tints the body light blue, blinking back in the last seconds, and leaves the eyes black; the coconut counter shows the countdown
+- Events: `Frozen` (with the length) and `Thawed`; falling cobras are never frozen
+
 ### Contact
 
-`CobraSensor` runs on trigger enter and on trigger stay, so a monkey already inside the coil when an overlap begins is still caught. Any counted part calls `GameController.LoseGame()`, which runs once per run.
+`CobraSensor` runs on trigger enter and on trigger stay, so a monkey already inside the coil when an overlap begins is still caught. Any counted part calls `GameController.LoseGame()`, which runs once per run, also while a coconut freezes the cobra.
 
 ## Falling Cobra
 
@@ -92,7 +103,7 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 
 - Count: a fixed `fallingCobraAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `fallingCobraSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
 - Spot: a cobra hangs on a ring of `spawnRadiusU` about the segment's pivot, on the trunk axis, at a random angle and a random height that keeps the whole snake inside its segment. A spot too close to another cobra of the segment is retried, then skipped
-- Banana Ambush: with `fallingCobraBananaAmbushChance` (`GameBalanceConfig`) a cobra instead hangs at the angle of one banana of its segment, `ambushMinAboveBananaU` to `ambushMaxAboveBananaU` above it (on the spawner); with no banana, or no room above it inside the segment, it falls back to a random spot. The pick goes by the `FruitCollider` tag, so a pineapple can be ambushed too
+- Banana Ambush: with `fallingCobraBananaAmbushChance` (`GameBalanceConfig`) a cobra instead hangs at the angle of one banana of its segment, `ambushMinAboveBananaU` to `ambushMaxAboveBananaU` above it (on the spawner); with no banana, or no room above it inside the segment, it falls back to a random spot. The pick goes by the `FruitCollider` tag, so a pineapple or a coconut can be ambushed too
 - Cleanup: cobras are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous cobras too
 - Concurrency: several can be live at once, one roll per segment; frequency follows climb height and the curve, not a clock
 
