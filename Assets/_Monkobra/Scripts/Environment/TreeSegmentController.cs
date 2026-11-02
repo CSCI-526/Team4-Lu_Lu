@@ -219,10 +219,15 @@ public class TreeSegmentController: MonoBehaviour {
             branchRotation
         );
 
-        // banana chance follows the difficulty at the branch's own height
+        // fruit chances follow the difficulty at the branch's own height
+        float rampedDifficulty =
+            GetRampedDifficulty(branch.transform.position.y);
         float bananaProbability = Mathf.Clamp01(
-            balanceConfig.BananaSpawnProbabilityCurve.Evaluate(
-                GetRampedDifficulty(branch.transform.position.y)
+            balanceConfig.BananaSpawnProbabilityCurve.Evaluate(rampedDifficulty)
+        );
+        float pineappleProbability = Mathf.Clamp01(
+            balanceConfig.PineappleSpawnProbabilityCurve.Evaluate(
+                rampedDifficulty
             )
         );
         BranchController branchRoot =
@@ -234,7 +239,7 @@ public class TreeSegmentController: MonoBehaviour {
                 this
             );
         } else {
-            branchRoot.Initialize(bananaProbability);
+            branchRoot.Initialize(bananaProbability, pineappleProbability);
         }
     }
 

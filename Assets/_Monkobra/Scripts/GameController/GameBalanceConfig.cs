@@ -64,6 +64,11 @@ public class GameBalanceConfig: ScriptableObject {
     public AnimationCurve BananaSpawnProbabilityCurve =>
         bananaSpawnProbabilityCurve;
 
+    /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that a generated
+    /// branch bears a pineapple, rolled before the banana</returns>
+    public AnimationCurve PineappleSpawnProbabilityCurve =>
+        pineappleSpawnProbabilityCurve;
+
     /// <returns>web creation attempts rolled per segment</returns>
     public int WebAttemptCount => webAttemptCount;
 
@@ -285,6 +290,14 @@ public class GameBalanceConfig: ScriptableObject {
     )]
     private AnimationCurve bananaSpawnProbabilityCurve =
         AnimationCurve.Linear(0f, 0f, 1f, 1f);
+
+    [SerializeField]
+    [Tooltip(
+        "x: ramped difficulty 0~1; y: chance 0~1 that a generated branch "
+            + "bears a pineapple, rolled before the banana"
+    )]
+    private AnimationCurve pineappleSpawnProbabilityCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 0.1f);
 
     [Header("Spider Web")]
     [SerializeField]
