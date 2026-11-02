@@ -80,13 +80,13 @@ Score lands at the grab (step 1), stamina one flight later.
 | --- | --- | --- |
 | `EnergyBar` | banana (no `FruitFlyOnGrab`) | the `StaminaBar` |
 | `TopRightCounter` | `Coconut` | `TopRightAnchor`, standing in for a counter not built yet |
-| `Monkey` | `RubberFruit` | the monkey, found as the `MonkeyController` at start |
+| `Monkey` | `Pineapple` | the monkey, found as the `MonkeyController` at start |
 
 - Per Frame: the target's screen point is re-read every frame, so a punching bar or a moving camera never strands the sprite
 - Time: the flight runs on scaled time, so a pause freezes it
 - Run End: a loss drops every flight without its callback, and a restart reloads the scene, so a cut flight never restores into the next run
 - Sprite: a fruit's `FruitFlyOnGrab` may name one; otherwise the effect's default, and a blank square while none is set
-- Placeholders: `Coconut` and `RubberFruit` under `Prefabs/Environment/` are the banana's shape without `ScorePickup`, so grabbing one restores stamina but scores nothing; nothing spawns them yet, drop them in by hand in Play mode
+- Placeholders: `Coconut` and `Pineapple` under `Prefabs/Environment/` are the banana's shape without `ScorePickup`, so grabbing one restores stamina but scores nothing; nothing spawns them yet, drop them in by hand in Play mode
 
 ## Camera
 
@@ -114,4 +114,4 @@ The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snap
 - `ArmController` carries a fixme to split it into several systems
 - A miss costs no stamina, only exposure
 - Scenes without a `ScoreManager` restore stamina on a grab but score nothing, see [Score](monkobra-tdd.md#score)
-- No art yet for the fruit flights: every sprite is the blank default square, and the coconut and rubber fruit have no effect beyond their flight
+- No art yet for the fruit flights: every sprite is the blank default square, and the coconut and pineapple have no effect beyond their flight
