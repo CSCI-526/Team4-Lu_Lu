@@ -1183,6 +1183,7 @@ GameObject:
   - component: {fileID: 913739487020719601}
   - component: {fileID: 6249276083926267768}
   - component: {fileID: 260591372920793710}
+  - component: {fileID: 8905241843726439098}
   m_Layer: 0
   m_Name: CobraPrototype
   m_TagString: Untagged
@@ -1264,7 +1265,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9829221b635be4cfba4313900241db4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CobraClimb
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   pathCenter: {fileID: 7335942435961454440}
   bodySegments:
   - {fileID: 4063569279546901762}
@@ -1287,6 +1287,7 @@ MonoBehaviour:
   - {fileID: 8817812591395748306}
   - {fileID: 697809309729298994}
   - {fileID: 8282021799308646717}
+  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   orbitRadius: 5.5
   startHeight: -10
   climbSpeed: 3
@@ -1362,6 +1363,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6ae36fedd2504b6ea10582ae7f7267a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CobraCollision
+--- !u!114 &8905241843726439098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4188837230728434888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d23fb90cfc24dd4ae177fad96919e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CobraFreezeTint
+  frozenColor: {r: 0.6, g: 0.85, b: 1, a: 1}
+  tintStrength: 0.75
+  endingWarnS: 3
+  endingBlinkHz: 4
 --- !u!1 &4297489686701924141
 GameObject:
   m_ObjectHideFlags: 0
