@@ -30,6 +30,7 @@ bug spider web fail to load & log warning
 - `startingZoneBranchClearRadiusU` in `GameBalanceConfig`: branch clearance round the monkey before the run is playing
 - fruit fly: a grabbed fruit's sprite flies from its screen spot to a target (`FruitFlyEffect`, `FruitFlyConfig` asset): banana to the stamina bar, coconut to a top-right anchor for a future counter, rubber fruit to the monkey; per-fruit target & sprite via `FruitFlyOnGrab`
 - `Coconut` & `RubberFruit` placeholder fruit prefabs, banana-shaped, no score, not spawned yet
+- fruit UI sprites (banana, coconut, pineapple for rubber fruit) in `Sprites/UI/`, shown in flights at 3x size (`sizePx` 192 in `FruitFlyConfig`); sources credited in `CREDITS.md`
 
 ##### Wenhai Dong
 
