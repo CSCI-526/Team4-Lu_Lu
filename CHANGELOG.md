@@ -2,6 +2,7 @@
 
 <!--
 Hack need to verify: slippery is working
+Fixme replace banana & coconut models
 
 Fixme Pan: UI mpv
 Todo Dong: boss fight

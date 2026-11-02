@@ -128,7 +128,7 @@ GameObject:
   - component: {fileID: 880000000000000002}
   - component: {fileID: 7052468613854869901}
   m_Layer: 0
-  m_Name: RubberFruit
+  m_Name: Pineapple
   m_TagString: FruitCollider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
