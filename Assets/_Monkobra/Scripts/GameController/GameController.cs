@@ -100,24 +100,24 @@ public class GameController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("shared input tuning, its interact action restarts the scene on "
-        + "the lose screen")]
-    private MonkeyConfig monkeyConfig;
-
-    [SerializeField]
     [Min(0f)]
     [Tooltip("unscaled seconds the lose screen ignores restart input")]
     private float restartInputDelay = 0.5f;
 
     [SerializeField]
-    [Tooltip("toggles the pause while the run is live")]
-    private InputAction pauseAction =
-        CreateButton("Pause", "<Keyboard>/escape", "<Keyboard>/p");
+    [Tooltip("toggles the pause while the run is live, the Player/Pause "
+        + "action (Esc or P)")]
+    private InputActionReference pauseAction;
 
     [SerializeField]
-    [Tooltip("restarts the run from the pause screen")]
-    private InputAction pauseRestartAction =
-        CreateButton("Pause Restart", "<Keyboard>/r");
+    [Tooltip("restarts the run from the lose screen, the "
+        + "Player/RestartAfterLose action (R or Space)")]
+    private InputActionReference restartAfterLoseAction;
+
+    [SerializeField]
+    [Tooltip("restarts the run from the pause screen, the "
+        + "Player/RestartDuringPause action (R)")]
+    private InputActionReference restartDuringPauseAction;
 
     [SerializeField]
     [Tooltip("debug cheat: cobra collisions never kill the monkey")]
@@ -131,16 +131,26 @@ public class GameController: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (monkeyConfig == null) {
+        if (pauseAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign Inspector Field: Monkey Config",
+                "GameController:\tmust assign Inspector Field: Pause Action",
                 this
             );
-        } else if (monkeyConfig.InteractAction == null) {
+        }
+
+        if (restartAfterLoseAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign MonkeyConfig field: "
-                    + "interactAction",
-                monkeyConfig
+                "GameController:\tmust assign Inspector Field: "
+                    + "Restart After Lose Action",
+                this
+            );
+        }
+
+        if (restartDuringPauseAction == null) {
+            Debug.LogError(
+                "GameController:\tmust assign Inspector Field: "
+                    + "Restart During Pause Action",
+                this
             );
         }
 
@@ -161,20 +171,22 @@ public class GameController: MonoBehaviour {
     }
 
     private void OnEnable() {
-        pauseAction?.Enable();
-        pauseRestartAction?.Enable();
+        pauseAction?.action.Enable();
+        restartAfterLoseAction?.action.Enable();
+        restartDuringPauseAction?.action.Enable();
     }
 
     private void OnDisable() {
-        pauseAction?.Disable();
-        pauseRestartAction?.Disable();
+        pauseAction?.action.Disable();
+        restartAfterLoseAction?.action.Disable();
+        restartDuringPauseAction?.action.Disable();
     }
 
     private void Update() {
         UpdateNoClipKey();
         UpdatePauseKey();
 
-        if (State != GameState.Lost || InteractAction == null) {
+        if (State != GameState.Lost || restartAfterLoseAction == null) {
             return;
         }
 
@@ -182,7 +194,7 @@ public class GameController: MonoBehaviour {
             return;
         }
 
-        if (InteractAction.action.WasPressedThisFrame()) {
+        if (restartAfterLoseAction.action.WasPressedThisFrame()) {
             ReloadScene();
         }
     }
@@ -208,12 +220,12 @@ public class GameController: MonoBehaviour {
     // private methods  ########################################################
     // the pause key toggles the pause; outside a live run it does nothing.
     // The key that starts the run from the tutorial must not also pause it.
-    // While paused, the restart key reloads the scene for a fresh run
+    // While paused, the pause restart key reloads the scene for a fresh run
     private void UpdatePauseKey() {
         if (
             IsPaused
-            && pauseRestartAction != null
-            && pauseRestartAction.WasPressedThisFrame()
+            && restartDuringPauseAction != null
+            && restartDuringPauseAction.action.WasPressedThisFrame()
         ) {
             if (Debug.isDebugBuild) {
                 Debug.Log("GameController:\trestart from pause", this);
@@ -224,7 +236,7 @@ public class GameController: MonoBehaviour {
 
         if (
             pauseAction == null
-            || !pauseAction.WasPressedThisFrame()
+            || !pauseAction.action.WasPressedThisFrame()
             || Time.frameCount == stateChangedFrame
         ) {
             return;
@@ -236,18 +248,6 @@ public class GameController: MonoBehaviour {
     // a fresh run; OnDestroy resets the time scale and audio for the new scene
     private static void ReloadScene() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    // a button action bound to each given control path
-    private static InputAction CreateButton(
-        string name,
-        params string[] bindings
-    ) {
-        var action = new InputAction(name, InputActionType.Button);
-        foreach (string binding in bindings) {
-            action.AddBinding(binding);
-        }
-        return action;
     }
 
     // frozen outside a live run and during a pause
@@ -300,10 +300,6 @@ public class GameController: MonoBehaviour {
 
         if (next == GameState.Lost) {
             lostTime = Time.unscaledTime;
-            // a web trap may have paused interact; restart needs it live
-            if (InteractAction != null) {
-                InteractAction.action.Enable();
-            }
         }
 
         StateChanged?.Invoke(next);
@@ -313,7 +309,4 @@ public class GameController: MonoBehaviour {
     private IDisposable anyPressSub;
     private float lostTime;
     private int stateChangedFrame = -1; // frame of the last SetState
-
-    private InputActionReference InteractAction =>
-        monkeyConfig != null ? monkeyConfig.InteractAction : null;
 }

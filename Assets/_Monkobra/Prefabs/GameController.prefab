@@ -48,8 +48,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86fb2bc84d004f242b0de1f8524ce0a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  monkeyConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
   restartInputDelay: 0.5
+  pauseAction: {fileID: -1960936080266752685, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  restartAfterLoseAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  restartDuringPauseAction: {fileID: -7918391114834055715, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   cobraNoClip: 0
   hackShortcuts: {fileID: 11400000, guid: 6f67fb399ca4433b8cfe8ef24d234f71, type: 2}
 --- !u!114 &107438663905873474

@@ -2,6 +2,7 @@
 
 <!--
 Hack need to verify: slippery is working
+Hack reorganize UI: add InGameHUD group
 
 Fixme Pan: UI mpv
 Todo Dong: boss fight
