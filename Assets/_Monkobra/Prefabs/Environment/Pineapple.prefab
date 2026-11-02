@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7720358008496615915}
   - component: {fileID: 880000000000000002}
   - component: {fileID: 7052468613854869901}
+  - component: {fileID: 880000000000000003}
   m_Layer: 0
   m_Name: Pineapple
   m_TagString: FruitCollider
@@ -84,6 +85,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FruitFlyOnGrab
   target: 2
   sprite: {fileID: 21300000, guid: 570857a8010fc8141a2174b2b4837eec, type: 3}
+--- !u!114 &880000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1759736754899777978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b7e1f4a9c2d4e60a8f15d27c6e09b34, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::LeapOnGrab
 --- !u!1 &2686832758968347058
 GameObject:
   m_ObjectHideFlags: 0

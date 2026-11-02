@@ -69,6 +69,18 @@ public class GameBalanceConfig: ScriptableObject {
     public AnimationCurve PineappleSpawnProbabilityCurve =>
         pineappleSpawnProbabilityCurve;
 
+    /// <returns>height a pineapple leap skips; u</returns>
+    public float PineappleLeapDistanceU => pineappleLeapDistanceU;
+
+    /// <returns>speed the body is pulled up in a leap; u/s</returns>
+    public float PineappleLeapSpeedU => pineappleLeapSpeedU;
+
+    /// <returns>time the hands take to rise before the pull; s</returns>
+    public float PineappleArmExtendS => pineappleArmExtendS;
+
+    /// <returns>time hazards stay off after a leap lands; s</returns>
+    public float PineappleLandGraceS => pineappleLandGraceS;
+
     /// <returns>web creation attempts rolled per segment</returns>
     public int WebAttemptCount => webAttemptCount;
 
@@ -298,6 +310,27 @@ public class GameBalanceConfig: ScriptableObject {
     )]
     private AnimationCurve pineappleSpawnProbabilityCurve =
         AnimationCurve.Linear(0f, 0f, 1f, 0.1f);
+
+    [Header("Pineapple Leap")]
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("height a pineapple leap skips; u")]
+    private float pineappleLeapDistanceU = 20f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("speed body is pulled up in a leap; u/s")]
+    private float pineappleLeapSpeedU = 40f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time hands take to rise b4 the pull; s")]
+    private float pineappleArmExtendS = 0.15f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time hazards stay off after a leap lands; s")]
+    private float pineappleLandGraceS = 0.5f;
 
     [Header("Spider Web")]
     [SerializeField]
