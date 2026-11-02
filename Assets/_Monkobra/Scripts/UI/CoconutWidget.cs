@@ -3,16 +3,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// HUD of the coconut item, top right, below the dev key help and left of the
-/// progress bar: a brown coconut icon w/ the count (ie x2), hidden until the
+/// HUD of the coconut item on the top-right anchor of the in-game HUD, where
+/// a grabbed coconut's sprite flies to (<see cref="FruitFlyTarget"/>), above
+/// the progress bar: a coconut icon w/ the count (ie x2), hidden until the
 /// first coconut of the scene, then kept and dimmed at x0. While the cobra is
 /// frozen, a countdown (ie Frozen 7s) and a shrinking bar sit under it, and
 /// blink in the last seconds. Short center messages teach the double-tap on
 /// the first coconut, confirm a use, refuse one while already frozen, and
 /// warn when the cobra moves again.
 /// <para>
-/// Reads <see cref="CoconutInventory.I"/> and its cobra in Start; put it on
-/// an always active Canvas child. The center message label is built at
+/// Reads <see cref="CoconutInventory.I"/>, its cobra and
+/// <see cref="FruitFlyEffect.I"/> in Start; put it on an always active Canvas
+/// child. The icon pops when a coconut's flight lands, or at once w/o the
+/// effect, and on every use. The center message label is built at
 /// runtime on the root canvas, like the cobra warning of
 /// <see cref="ProgressBarWidget"/>, but higher up so the two never overlap.
 /// </para>
@@ -25,7 +28,7 @@ public class CoconutWidget: MonoBehaviour {
     private GameObject panel;
 
     [SerializeField]
-    [Tooltip("coconut icon; dimmed at x0, pops on every count change")]
+    [Tooltip("coconut icon; dimmed at x0, pops on a landing or a use")]
     private Graphic icon;
 
     [SerializeField]
@@ -199,6 +202,11 @@ public class CoconutWidget: MonoBehaviour {
             cobra.Thawed += OnThawed;
         }
 
+        flyEffect = FruitFlyEffect.I;
+        if (flyEffect != null) {
+            flyEffect.Arrived += OnFlightArrived;
+        }
+
         // a count from b4 this Start, ie a hack key, still shows
         if (inventory.Count > 0) {
             OnCountChanged(inventory.Count);
@@ -213,6 +221,9 @@ public class CoconutWidget: MonoBehaviour {
         if (cobra != null) {
             cobra.Frozen -= OnFrozen;
             cobra.Thawed -= OnThawed;
+        }
+        if (flyEffect != null) {
+            flyEffect.Arrived -= OnFlightArrived;
         }
     }
 
@@ -248,7 +259,18 @@ public class CoconutWidget: MonoBehaviour {
                 WithAlpha(countBaseColor, countBaseColor.a * alpha);
         }
 
-        popEndTime = Time.time + popS;
+        // a pickup pops when its flown sprite lands, see OnFlightArrived
+        bool isPickup = count > shownCount;
+        shownCount = count;
+        if (!isPickup || flyEffect == null) {
+            Pop();
+        }
+    }
+
+    private void OnFlightArrived(FruitFlyTarget target) {
+        if (target == FruitFlyTarget.TopRightCounter) {
+            Pop();
+        }
     }
 
     private void OnFrozen(float durationS) {
@@ -270,7 +292,9 @@ public class CoconutWidget: MonoBehaviour {
     // private members  ########################################################
     private CoconutInventory inventory;
     private CobraMotor cobra;
+    private FruitFlyEffect flyEffect;
     private bool hasShownPanel;
+    private int shownCount; // count on the label
     private Color iconBaseColor = Color.white;
     private Color countBaseColor = Color.white;
     private float popEndTime; // Time.time the icon pop is over
@@ -285,7 +309,11 @@ public class CoconutWidget: MonoBehaviour {
         return color;
     }
 
-    // icon shrinks back from the pop scale after every count change
+    private void Pop() {
+        popEndTime = Time.time + popS;
+    }
+
+    // icon shrinks back from the pop scale after a landing or a use
     private void UpdatePop() {
         if (icon == null) {
             return;
