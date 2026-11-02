@@ -45,16 +45,16 @@ public class LeaderboardWidget: MonoBehaviour {
     [Header("Simulated Rivals")]
     [SerializeField, Min(0)]
     [Tooltip("lowest possible rival score, inclusive; read once per playtest")]
-    private int minRivalScore = 100;
+    private int minRivalScore = 500;
     [SerializeField, Min(0)]
     [Tooltip("highest possible rival score, inclusive; read once per playtest")]
-    private int maxRivalScore = 2400;
+    private int maxRivalScore = 5000;
     [SerializeField]
     [Tooltip("name pool; selected once, without duplicates, per playtest")]
     private string[] rivalNames = {
-        "BananaBandit", "TreeHopper", "CobraDodger", "JungleJumper",
-        "SwingKing", "BarkClimber", "LeafRunner", "MangoMischief",
-        "BranchBuddy", "VineRider", "CanopyKid", "GoldenBanana"
+        "FasterThanUrMom", "BananaKing", "BananaQueen", "PeelMeDaddy",
+        "SwingKing", "1stMonkey", "Ceasar", "Minion",
+        "BranchBuddy", "Stupid Ape", "CSCI526", "Nanaba"
     };
 
     // MonoBehaviour Lifecycle  ################################################
