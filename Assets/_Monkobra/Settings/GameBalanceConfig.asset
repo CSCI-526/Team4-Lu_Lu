@@ -296,3 +296,9 @@ MonoBehaviour:
   cobraSpeedChangeRateU: 6
   cobraExitBoostSpeedU: 3
   cobraExitBoostDurationS: 5
+  coconutStartHeightU: 150
+  coconutSpawnChancePerSegment: 0.1
+  coconutScoreMultiplier: 2
+  cobraFreezeDurationS: 10
+  coconutDoubleTapWindowS: 0.35
+  coconutTapMaxHoldS: 0.2
