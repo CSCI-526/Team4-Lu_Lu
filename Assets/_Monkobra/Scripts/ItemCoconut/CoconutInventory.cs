@@ -17,7 +17,8 @@ using UnityEngine.InputSystem;
 /// </para>
 /// <para>
 /// A coconut is only used while the run is <see cref="GameState.Playing"/>,
-/// unpaused, and the monkey is neither caught in a web nor just out of one.
+/// not paused (<see cref="GameController.IsPaused"/>), and the monkey is
+/// neither caught in a web nor just out of one.
 /// While the cobra is already frozen, nothing is used and
 /// <see cref="FreezeRefused"/> is raised. The count lives in this scene only,
 /// so a restart's reload empties it.
@@ -282,7 +283,8 @@ public class CoconutInventory: MonoBehaviour {
         }
         if (
             GameController.I != null
-            && GameController.I.State != GameState.Playing
+            && (GameController.I.State != GameState.Playing
+                || GameController.I.IsPaused)
         ) {
             return false;
         }
