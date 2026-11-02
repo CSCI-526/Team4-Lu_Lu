@@ -161,7 +161,7 @@ public static class SlipperyBarkSmokeCheck {
                 Require(body.position.y > minY + 0.03f,
                     "Held climb must already resume before regrip ends.");
                 Require(lateralTravel > 0.15f, "Circling must remain available during a slide.");
-                Require(GameController.I.State == GameState.StarterZone,
+                Require(GameController.I.State == GameState.StartingZone,
                     "Tutorial must remain inside the protected starter zone.");
                 InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W));
                 UpdateGameInput();
