@@ -29,9 +29,9 @@ using UnityEngine.InputSystem;
 /// <see cref="I"/> in their Start.
 /// </para>
 /// </summary>
-public class CoconutInventory: MonoBehaviour {
+public class CoconutManager: MonoBehaviour {
     // Public Members  #########################################################
-    public static CoconutInventory I {
+    public static CoconutManager I {
         get; private set;
     }
 
@@ -82,14 +82,14 @@ public class CoconutInventory: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (balanceConfig == null) {
             Debug.LogWarning(
-                "CoconutInventory:\tmust assign Inspector Field: "
+                "CoconutManager:\tmust assign Inspector Field: "
                     + "balanceConfig",
                 this
             );
         }
         if (monkeyConfig == null || monkeyConfig.InteractAction == null) {
             Debug.LogWarning(
-                "CoconutInventory:\tmust assign Inspector Field: "
+                "CoconutManager:\tmust assign Inspector Field: "
                     + "monkeyConfig, w/ an Interact action",
                 this
             );
@@ -97,7 +97,7 @@ public class CoconutInventory: MonoBehaviour {
 
         if (I != null && I != this) {
             Debug.LogWarning(
-                "CoconutInventory:\tduplicate instance, removing",
+                "CoconutManager:\tduplicate instance, removing",
                 this
             );
             Destroy(this);
@@ -109,7 +109,7 @@ public class CoconutInventory: MonoBehaviour {
         cobra = FindFirstObjectByType<CobraMotor>();
         if (cobra == null) {
             Debug.LogWarning(
-                "CoconutInventory:\tfail to find CobraMotor, coconuts "
+                "CoconutManager:\tfail to find CobraMotor, coconuts "
                     + "freeze nothing",
                 this
             );
@@ -128,7 +128,7 @@ public class CoconutInventory: MonoBehaviour {
         scoreManager = ScoreManager.I;
         if (scoreManager == null) {
             Debug.LogWarning(
-                "CoconutInventory:\tfail to get singleton: ScoreManager, "
+                "CoconutManager:\tfail to get singleton: ScoreManager, "
                     + "pickups are not counted",
                 this
             );
@@ -254,7 +254,7 @@ public class CoconutInventory: MonoBehaviour {
         Used?.Invoke();
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "CoconutInventory:\tcoconut used, cobra frozen for "
+                "CoconutManager:\tcoconut used, cobra frozen for "
                     + balanceConfig.CobraFreezeDurationS + " s, " + count
                     + " left",
                 this

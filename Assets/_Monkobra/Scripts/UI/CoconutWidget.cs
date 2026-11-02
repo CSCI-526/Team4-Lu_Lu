@@ -14,7 +14,7 @@ using UnityEngine.UI;
 /// double-tap on the first coconut, confirm a use, refuse one while already
 /// frozen, and warn when the cobra moves again.
 /// <para>
-/// Reads <see cref="CoconutInventory.I"/>, its cobra and
+/// Reads <see cref="CoconutManager.I"/>, its cobra and
 /// <see cref="FruitFlyEffect.I"/> in Start; put it on an always active Canvas
 /// child. The icon pops when a coconut's flight lands, or at once w/o the
 /// effect, and on every use. The center message label is built at
@@ -217,10 +217,10 @@ public class CoconutWidget: MonoBehaviour {
     }
 
     private void Start() {
-        inventory = CoconutInventory.I;
+        inventory = CoconutManager.I;
         if (inventory == null) {
             Debug.LogWarning(
-                "CoconutWidget:\tfail to get singleton: CoconutInventory, "
+                "CoconutWidget:\tfail to get singleton: CoconutManager, "
                     + "HUD stays hidden",
                 this
             );
@@ -352,7 +352,7 @@ public class CoconutWidget: MonoBehaviour {
     // private members  ########################################################
     private static bool hasUsedThisSession; // a coconut was used since launch
 
-    private CoconutInventory inventory;
+    private CoconutManager inventory;
     private CobraMotor cobra;
     private FruitFlyEffect flyEffect;
     private bool hasShownPanel;

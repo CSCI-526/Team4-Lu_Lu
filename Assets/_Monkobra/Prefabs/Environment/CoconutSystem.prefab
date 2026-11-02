@@ -62,7 +62,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 020eca9c4269c428dbc4a58ae33e619d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CoconutInventory
+  m_EditorClassIdentifier: Assembly-CSharp::CoconutManager
   balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   monkeyConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
   webEscapeGraceS: 1.5

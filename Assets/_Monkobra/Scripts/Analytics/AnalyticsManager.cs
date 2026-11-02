@@ -322,7 +322,7 @@ public class AnalyticsManager: MonoBehaviour {
     private GameController observedGame;
     private ScoreManager observedScore;
     private HitBranchSensor observedBranch;
-    private CoconutInventory observedCoconuts;
+    private CoconutManager observedCoconuts;
 
     // private methods  ########################################################
     private void ObserveScene() {
@@ -330,7 +330,7 @@ public class AnalyticsManager: MonoBehaviour {
             GameController.I,
             ScoreManager.I,
             FindFirstObjectByType<HitBranchSensor>(),
-            CoconutInventory.I
+            CoconutManager.I
         );
     }
 
@@ -338,7 +338,7 @@ public class AnalyticsManager: MonoBehaviour {
         GameController game,
         ScoreManager score,
         HitBranchSensor branch,
-        CoconutInventory coconuts
+        CoconutManager coconuts
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;
