@@ -28,6 +28,14 @@ using UnityEngine.InputSystem;
 /// are found at runtime, so no cross-prefab link is needed. Widgets read
 /// <see cref="I"/> in their Start.
 /// </para>
+/// <para>
+/// It also owns the coconut HUD roots, which start inactive in their prefabs
+/// (a script on an inactive object never runs, so no HUD can switch itself
+/// on): <see cref="CoconutWidget"/>'s object turns on at the first coconut of
+/// the scene and stays on, <see cref="FreezeTimerWidget"/>'s only while the
+/// cobra is frozen in a run. Both are found at runtime, inactive ones
+/// included.
+/// </para>
 /// </summary>
 public class CoconutManager: MonoBehaviour {
     // Public Members  #########################################################
@@ -42,10 +50,34 @@ public class CoconutManager: MonoBehaviour {
     /// </returns>
     public CobraMotor Cobra => cobra;
 
+    /// <returns>if a coconut was used since the app launched, so the how-to
+    /// is no longer needed</returns>
+    public static bool HasUsedThisSession => hasUsedThisSession;
+
     /// <summary>
     /// Raised w/ the new count whenever it changes: a pickup or a use.
     /// </summary>
     public event Action<int> CountChanged;
+
+    /// <summary>
+    /// Raised on each coconut scored, just b4 <see cref="CountChanged"/>.
+    /// </summary>
+    public event Action Collected;
+
+    /// <summary>
+    /// Relays <see cref="CobraMotor.Frozen"/> w/ the freeze time; s
+    /// </summary>
+    public event Action<float> Frozen;
+
+    /// <summary>
+    /// Relays <see cref="CobraMotor.Thawed"/>.
+    /// </summary>
+    public event Action Thawed;
+
+    /// <summary>
+    /// Relays <see cref="CobraMotor.CatchUpStarted"/> w/ its stack count.
+    /// </summary>
+    public event Action<int> CatchUpStarted;
 
     /// <summary>
     /// Raised once a coconut is used and the cobra froze.
@@ -113,6 +145,31 @@ public class CoconutManager: MonoBehaviour {
                     + "freeze nothing",
                 this
             );
+        } else {
+            cobra.Frozen += OnCobraFrozen;
+            cobra.Thawed += OnCobraThawed;
+            cobra.CatchUpStarted += OnCobraCatchUpStarted;
+        }
+
+        // HUD roots start inactive, so the lookup must include them
+        coconutHud = FindFirstObjectByType<CoconutWidget>(
+            FindObjectsInactive.Include
+        );
+        freezeHud = FindFirstObjectByType<FreezeTimerWidget>(
+            FindObjectsInactive.Include
+        );
+        if (coconutHud == null) {
+            Debug.LogWarning(
+                "CoconutManager:\tfail to find CoconutWidget, no coconut HUD",
+                this
+            );
+        }
+        if (freezeHud == null) {
+            Debug.LogWarning(
+                "CoconutManager:\tfail to find FreezeTimerWidget, no freeze "
+                    + "timer",
+                this
+            );
         }
 
         GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYER_TAG);
@@ -144,6 +201,11 @@ public class CoconutManager: MonoBehaviour {
         if (struggle != null) {
             struggle.Escaped -= OnEscaped;
         }
+        if (cobra != null) {
+            cobra.Frozen -= OnCobraFrozen;
+            cobra.Thawed -= OnCobraThawed;
+            cobra.CatchUpStarted -= OnCobraCatchUpStarted;
+        }
         if (I == this) {
             I = null;
         }
@@ -151,6 +213,16 @@ public class CoconutManager: MonoBehaviour {
 
     private void Update() {
         UpdateDoubleTap();
+        UpdateFreezeHud();
+    }
+
+    // a session is one app run: restarts reload the scene, statics stay;
+    // reset on Play too, for an Editor w/o domain reload
+    [RuntimeInitializeOnLoadMethod(
+        RuntimeInitializeLoadType.SubsystemRegistration
+    )]
+    private static void ResetSession() {
+        hasUsedThisSession = false;
     }
 
     // Editor Validation  ######################################################
@@ -160,7 +232,24 @@ public class CoconutManager: MonoBehaviour {
 
     // Event Handlers  #########################################################
     private void OnCoconutCollected() {
+        // the HUD goes on b4 its widget hears of the pickup
+        if (coconutHud != null && !coconutHud.gameObject.activeSelf) {
+            coconutHud.gameObject.SetActive(true);
+        }
+        Collected?.Invoke();
         SetCount(count + 1);
+    }
+
+    private void OnCobraFrozen(float durationS) {
+        Frozen?.Invoke(durationS);
+    }
+
+    private void OnCobraThawed() {
+        Thawed?.Invoke();
+    }
+
+    private void OnCobraCatchUpStarted(int stacks) {
+        CatchUpStarted?.Invoke(stacks);
     }
 
     private void OnEscaped() {
@@ -171,8 +260,12 @@ public class CoconutManager: MonoBehaviour {
     private const string PLAYER_TAG = "Player";
 
     // private members  ########################################################
+    private static bool hasUsedThisSession; // a coconut was used since launch
+
     private int count;
     private CobraMotor cobra;
+    private CoconutWidget coconutHud; // its object is the HUD root
+    private FreezeTimerWidget freezeHud; // its object is the HUD root
     private SpiderWebStruggle struggle;
     private ScoreManager scoreManager;
     private float escapeGraceEndTime; // Time.time taps count again
@@ -190,6 +283,21 @@ public class CoconutManager: MonoBehaviour {
         }
         count = next;
         CountChanged?.Invoke(count);
+    }
+
+    // freeze timer HUD is on only while the cobra is frozen in a run
+    private void UpdateFreezeHud() {
+        if (freezeHud == null) {
+            return;
+        }
+
+        bool isPlaying =
+            GameController.I == null
+            || GameController.I.State == GameState.Playing;
+        bool show = isPlaying && cobra != null && cobra.IsFrozen;
+        if (freezeHud.gameObject.activeSelf != show) {
+            freezeHud.gameObject.SetActive(show);
+        }
     }
 
     // press & release edges of the grab key, read after the Input System has
@@ -251,6 +359,7 @@ public class CoconutManager: MonoBehaviour {
         }
 
         SetCount(count - 1);
+        hasUsedThisSession = true;
         Used?.Invoke();
         if (Debug.isDebugBuild) {
             Debug.Log(

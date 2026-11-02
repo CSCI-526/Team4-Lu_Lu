@@ -345,12 +345,12 @@ public class AnalyticsManager: MonoBehaviour {
         }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
-            observedScore.CoconutCollected -= OnCoconutCollected;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit -= OnBranchHit;
         }
         if (observedCoconuts != null) {
+            observedCoconuts.Collected -= OnCoconutCollected;
             observedCoconuts.Used -= OnCoconutUsed;
         }
 
@@ -364,12 +364,12 @@ public class AnalyticsManager: MonoBehaviour {
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
-            observedScore.CoconutCollected += OnCoconutCollected;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit += OnBranchHit;
         }
         if (observedCoconuts != null) {
+            observedCoconuts.Collected += OnCoconutCollected;
             observedCoconuts.Used += OnCoconutUsed;
         }
     }
