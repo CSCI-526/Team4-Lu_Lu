@@ -421,6 +421,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3684193395341352233}
     m_Modifications:
+    - target: {fileID: 526056580632385780, guid: cc9c83435fe42ea438d53453bcdd4c58, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1733575319408275313, guid: cc9c83435fe42ea438d53453bcdd4c58, type: 3}
       propertyPath: m_fontSize
       value: 37.5
@@ -601,11 +605,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7600611358258637667, guid: 0c7e51910f689f743a71f52059b6824f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -100
+      value: -141.8
       objectReference: {fileID: 0}
     - target: {fileID: 7600611358258637667, guid: 0c7e51910f689f743a71f52059b6824f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -100
+      value: -262.4
       objectReference: {fileID: 0}
     - target: {fileID: 7600611358258637667, guid: 0c7e51910f689f743a71f52059b6824f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
