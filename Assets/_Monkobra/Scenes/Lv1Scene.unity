@@ -361,11 +361,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI
       objectReference: {fileID: 0}
-    - target: {fileID: 2299429278585128877, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
+    - target: {fileID: 5961900025797001521, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2299429278585128877, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
+    - target: {fileID: 5961900025797001521, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
@@ -373,7 +373,7 @@ PrefabInstance:
       propertyPath: struggle
       value: 
       objectReference: {fileID: 2508560055884056927}
-    - target: {fileID: 3466021592495599401, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
+    - target: {fileID: 9028611714819451317, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
       propertyPath: cobraHead
       value: 
       objectReference: {fileID: 423716334}
@@ -469,7 +469,7 @@ PrefabInstance:
       propertyPath: scoreManager
       value: 
       objectReference: {fileID: 5875065253668459043}
-    - target: {fileID: 8452477864711424669, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
+    - target: {fileID: 4042228155099696129, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
