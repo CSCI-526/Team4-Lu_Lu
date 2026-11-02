@@ -225,7 +225,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   pineappleLeapDistanceU: 20
-  pineappleLeapSpeedU: 40
+  pineappleLeapSpeedU: 16
   pineappleArmExtendS: 0.15
   pineappleLandGraceS: 0.5
   webAttemptCount: 3
