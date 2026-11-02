@@ -13,7 +13,8 @@ How the game records playtests: one markdown report per game launch, with a reco
 ```mermaid
 graph LR
   Game[GameController] -->|StateChanged| AM[AnalyticsManager]
-  Score[ScoreManager] -->|BananaCollected| AM
+  Score[ScoreManager] -->|BananaCollected, CoconutCollected| AM
+  Coconut[CoconutInventory] -->|Used| AM
   Hit[HitBranchDetection] -->|BranchHit| AM
   Web[SpiderWebTrap] -->|Encountered| AM
   AM --> Data[SessionData and RunData]
@@ -26,7 +27,7 @@ graph LR
 A session opens when the manager wakes, and a run follows the game state.
 
 1. `GameState.Playing` opens a new run, takes its first sample, and saves
-2. banana, web, and branch events are stamped into the open run, each followed by a save
+2. banana, coconut pickup, coconut use, web, and branch events are stamped into the open run, each followed by a save
 3. a timer samples height and stamina while the run plays, and autosaves
 4. `GameState.Lost` closes the run as `Lost`: the end, the score, and the death cause are filled in, then the file is saved
 5. a run cut short, ie Play mode stopped, a scene reload mid run, an application pause, or the restart key, is closed as `Interrupted`
@@ -79,13 +80,16 @@ Drawn from the `Lost` runs only.
 - Final Score: total score of the run
 - Score from Height: points earned by climbing
 - Score from Banana: points earned by bananas, shown as `unit * count = total` when every banana paid the same
-- Score Split: pie of height score against banana score
+- Score from Coconut: points earned by coconuts, kept apart from the banana points in `RunData.CoconutRewardScore`, shown the same way
+- Score Split: pie of height score against banana and coconut score
 
 ### Events
 
-Each event list is a table of its time since the run start; banana and branch rows also carry the height `y`.
+Each event list is a table of its time since the run start; banana, coconut, and branch rows also carry the height `y`.
 
 - Banana Count: bananas collected, with the stamina curve (Stamina vs Time) under it
+- Coconut Count: coconuts collected, from `ScoreManager.CoconutCollected`; the F3 hack coconut is not counted
+- Coconut Used: coconuts spent on a cobra freeze, from `CoconutInventory.Used`; a double-tap refused while the cobra is already frozen is not counted
 - Web Encounter: times the monkey touched a spider web
 - Branch Hit: times the monkey's branch sensor met a branch; the falling cobra counts here too
 

@@ -205,7 +205,7 @@ public class AnalyticsManager: MonoBehaviour {
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SpiderWebTrap.Encountered -= OnWebEncountered;
-        Observe(null, null, null);
+        Observe(null, null, null, null);
         I = null;
     }
 
@@ -280,6 +280,20 @@ public class AnalyticsManager: MonoBehaviour {
         SaveSession();
     }
 
+    private void OnCoconutCollected() {
+        if (currentRun != null) {
+            currentRun.Coconuts.Add(CreateStamp());
+            SaveSession();
+        }
+    }
+
+    private void OnCoconutUsed() {
+        if (currentRun != null) {
+            currentRun.CoconutsUsed.Add(CreateStamp());
+            SaveSession();
+        }
+    }
+
     private void OnWebEncountered(SpiderWebTrap _) {
         if (currentRun != null) {
             currentRun.Webs.Add(CreateStamp());
@@ -308,43 +322,55 @@ public class AnalyticsManager: MonoBehaviour {
     private GameController observedGame;
     private ScoreManager observedScore;
     private HitBranchSensor observedBranch;
+    private CoconutInventory observedCoconuts;
 
     // private methods  ########################################################
     private void ObserveScene() {
         Observe(
             GameController.I,
             ScoreManager.I,
-            FindFirstObjectByType<HitBranchSensor>()
+            FindFirstObjectByType<HitBranchSensor>(),
+            CoconutInventory.I
         );
     }
 
     private void Observe(
         GameController game,
         ScoreManager score,
-        HitBranchSensor branch
+        HitBranchSensor branch,
+        CoconutInventory coconuts
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;
         }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
+            observedScore.CoconutCollected -= OnCoconutCollected;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit -= OnBranchHit;
+        }
+        if (observedCoconuts != null) {
+            observedCoconuts.Used -= OnCoconutUsed;
         }
 
         observedGame = game;
         observedScore = score;
         observedBranch = branch;
+        observedCoconuts = coconuts;
 
         if (observedGame != null) {
             observedGame.StateChanged += OnGameStateChanged;
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
+            observedScore.CoconutCollected += OnCoconutCollected;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit += OnBranchHit;
+        }
+        if (observedCoconuts != null) {
+            observedCoconuts.Used += OnCoconutUsed;
         }
     }
 
@@ -417,6 +443,8 @@ public class AnalyticsManager: MonoBehaviour {
         run.TotalScore = scoreMgr != null ? scoreMgr.TotalScore : 0;
         run.HeightScore = scoreMgr != null ? scoreMgr.DistanceScore : 0;
         run.RewardScore = scoreMgr != null ? scoreMgr.RewardScore : 0;
+        run.CoconutRewardScore =
+            scoreMgr != null ? scoreMgr.CoconutRewardScore : 0;
 
         // the end sample needs the run to stay current for a moment
         currentRun = run;
