@@ -14,10 +14,11 @@ using UnityEngine;
 /// chance.
 /// </para>
 /// <para>
-/// A coconut hangs where the branch's banana would, on a branch whose banana
-/// was rolled off. A candidate is dropped if the coconut's grab volume
-/// overlaps another branch, any fruit or a web; out of candidates, the
-/// segment gets none.
+/// A coconut hangs on a bare branch through
+/// <see cref="BranchController.TryHangFruit"/>: the stem comes back and the
+/// coconut's pivot, its top, sits on the stem's tip. A candidate is dropped
+/// if the coconut's grab volume would overlap another branch, any fruit or a
+/// web; out of candidates, the segment gets none.
 /// </para>
 /// <para>
 /// Coconuts are children of their branch, so a restart's clear removes them
@@ -85,8 +86,9 @@ public class CoconutSpawner: MonoBehaviour {
             return;
         }
 
-        // the prefab's trigger, scaled by its root, as each coconut carries it
-        SphereCollider trigger = coconutPrefab.GetComponent<SphereCollider>();
+        // the prefab's trigger, scaled as each coconut carries it
+        SphereCollider trigger =
+            coconutPrefab.GetComponentInChildren<SphereCollider>(true);
         if (trigger == null) {
             Debug.LogWarning(
                 "CoconutSpawner:\tcoconutPrefab lacks a SphereCollider, "
@@ -95,9 +97,12 @@ public class CoconutSpawner: MonoBehaviour {
             );
             triggerRadiusU = FALLBACK_TRIGGER_RADIUS_U;
         } else {
-            Vector3 scale = coconutPrefab.transform.localScale;
+            Vector3 scale = trigger.transform.lossyScale;
             triggerRadiusU = trigger.radius
                 * Mathf.Max(scale.x, Mathf.Max(scale.y, scale.z));
+            // from the pivot, hung on the stem tip, down to the grab volume
+            triggerOffsetU = trigger.transform.TransformPoint(trigger.center)
+                - coconutPrefab.transform.position;
         }
 
         if (useTestOverride) {
@@ -151,6 +156,7 @@ public class CoconutSpawner: MonoBehaviour {
     private static CoconutSpawner listener; // the one spawner subscribed
 
     private float triggerRadiusU; // coconut grab volume, prefab scale applied
+    private Vector3 triggerOffsetU; // pivot to grab volume center, unturned
     private bool hasWarnedNoDifficulty; // missing service logged once
     private readonly List<ScorePickup> spawnedCoconuts = new();
     private readonly List<BranchController> candidates = new();
@@ -227,7 +233,7 @@ public class CoconutSpawner: MonoBehaviour {
         }
     }
 
-    // live branches of the segment w/o a banana, high enough for a coconut
+    // live branches of the segment w/o fruit, high enough for a coconut
     private void CollectCandidates(
         TreeSegmentController segment,
         RampedDifficultyManager difficulty
@@ -238,12 +244,11 @@ public class CoconutSpawner: MonoBehaviour {
             BranchController branch
             in segment.GetComponentsInChildren<BranchController>()
         ) {
-            if (HasBanana(branch)) {
+            if (!branch.IsBare) {
                 continue;
             }
-            float climbedU = difficulty.GetClimbedYDistance(
-                GetHangPosition(branch).y
-            );
+            float climbedU =
+                difficulty.GetClimbedYDistance(branch.transform.position.y);
             if (climbedU >= startHeightU) {
                 candidates.Add(branch);
             }
@@ -251,54 +256,26 @@ public class CoconutSpawner: MonoBehaviour {
     }
 
     private bool TrySpawnCoconut(BranchController branch) {
-        Vector3 position = GetHangPosition(branch);
-        if (!IsSpotClear(position, branch)) {
+        GameObject coconut = branch.TryHangFruit(
+            coconutPrefab.gameObject,
+            spot => IsSpotClear(spot, branch)
+        );
+        if (coconut == null) {
             return false;
         }
 
-        ScorePickup coconut = Instantiate(
-            coconutPrefab,
-            position,
-            branch.transform.rotation,
-            branch.transform
-        );
-        spawnedCoconuts.Add(coconut);
+        spawnedCoconuts.Add(coconut.GetComponent<ScorePickup>());
         return true;
     }
 
-    // the branch's banana pickup, switched off or not, else null
-    private static ScorePickup GetBanana(BranchController branch) {
-        foreach (
-            ScorePickup pickup
-            in branch.GetComponentsInChildren<ScorePickup>(true)
-        ) {
-            if (pickup.Kind == PickupKind.Banana) {
-                return pickup;
-            }
-        }
-        return null;
-    }
-
-    // a branch bears a banana iff its banana pickup is switched on
-    private static bool HasBanana(BranchController branch) {
-        ScorePickup banana = GetBanana(branch);
-        return banana != null && banana.gameObject.activeSelf;
-    }
-
-    // where the branch's banana hangs in the prefab, so the coconut sits on
-    // the same spot below the branch; the branch pivot if it has no banana
-    private static Vector3 GetHangPosition(BranchController branch) {
-        ScorePickup banana = GetBanana(branch);
-        return banana != null
-            ? banana.transform.position
-            : branch.transform.position;
-    }
-
-    private bool IsSpotClear(Vector3 position, BranchController ownBranch) {
+    // pivot is where the coconut's pivot would go; the fruit turns at
+    // random about y, so a sideways offset only widens the tested sphere
+    private bool IsSpotClear(Vector3 pivot, BranchController ownBranch) {
+        Vector3 sideways = new Vector3(triggerOffsetU.x, 0f, triggerOffsetU.z);
         // triggers too, fruit grab volumes and webs are ones
         Collider[] hits = Physics.OverlapSphere(
-            position,
-            triggerRadiusU + clearanceU,
+            pivot + Vector3.up * triggerOffsetU.y,
+            triggerRadiusU + sideways.magnitude + clearanceU,
             Physics.AllLayers,
             QueryTriggerInteraction.Collide
         );
