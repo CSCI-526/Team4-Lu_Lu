@@ -1,3 +1,4 @@
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,35 @@ public class ProgressBarWidget: MonoBehaviour {
     [SerializeField]
     [Tooltip("world-y span of the full bar, player pinned at top; u")]
     private float windowSizeY = 20f;
+
+    [Header("Distance Readout")]
+    [SerializeField]
+    [Tooltip("upright UI space shared by the distance label and bracket")]
+    private RectTransform distanceRoot;
+
+    [SerializeField]
+    private TMP_Text distanceLabel;
+
+    [SerializeField]
+    [Tooltip("background frame containing the distance text")]
+    private RectTransform distanceLabelFrame;
+
+    [SerializeField]
+    [Tooltip("bracket spanning the two marker centers")]
+    private RectTransform distanceBracket;
+
+    [SerializeField]
+    [Tooltip("uses the same units-per-meter conversion as the score")]
+    private GameBalanceConfig balanceConfig;
+
+    [SerializeField, Min(0f)]
+    [Tooltip("UI-space clearance; slide the snake left when faces get close")]
+    private float markerClearance = 48f;
+
+    [Header("Procedural UI Shapes")]
+    [SerializeField]
+    [Tooltip("circle and ellipse Images; share one circle generated at startup")]
+    private Image[] circleImages;
 
     [Header("Catch-Up Cue")]
     [SerializeField]
@@ -93,6 +123,30 @@ public class ProgressBarWidget: MonoBehaviour {
             windowSizeY = 1f;
         }
 
+        if (distanceRoot == null || distanceLabel == null
+            || distanceLabelFrame == null
+            || distanceBracket == null || balanceConfig == null) {
+            Debug.LogWarning(
+                "ProgressBarWidget:\tassign the distance UI and balanceConfig "
+                    + "from the matching ProgressBar prefab",
+                this
+            );
+        }
+
+        if (distanceLabel != null) {
+            distanceLabelRect = distanceLabelFrame != null
+                ? distanceLabelFrame
+                : distanceLabel.rectTransform;
+            distanceLabelOffset = distanceLabelRect.anchoredPosition.x;
+            distanceLabel.margin = Vector4.zero;
+            distanceLabel.text = "-- m";
+        }
+        if (distanceBracket != null) {
+            distanceBracketOffset = distanceBracket.anchoredPosition.x;
+        }
+
+        CreateCircleGraphics();
+
         if (cobraHead != null) {
             cobra = cobraHead.GetComponentInParent<CobraMotor>();
         }
@@ -116,9 +170,15 @@ public class ProgressBarWidget: MonoBehaviour {
             cobra.CatchUpStarted -= OnCatchUpStarted;
             cobra.ChaseStarted -= OnChaseStarted;
         }
+        if (circleSprite != null) {
+            Destroy(circleSprite);
+        }
+        if (circleTexture != null) {
+            Destroy(circleTexture);
+        }
     }
 
-    private void Update() {
+    private void LateUpdate() {
         if (!TryFindPlayer()) {
             return;
         }
@@ -164,6 +224,7 @@ public class ProgressBarWidget: MonoBehaviour {
 
     // constants  ##############################################################
     private const string PLAYER_TAG = "Player";
+    private const int CIRCLE_TEXTURE_SIZE = 128;
 
     // private members  ########################################################
     private Scrollbar progressBar;
@@ -177,7 +238,72 @@ public class ProgressBarWidget: MonoBehaviour {
     private TextMeshProUGUI catchUpLabel;
     private float catchUpHideTime; // Time.time the warning is gone
 
+    private RectTransform distanceLabelRect;
+    private float distanceLabelOffset;
+    private float distanceBracketOffset;
+    private int shownDecimeters = int.MinValue;
+
+    private Texture2D circleTexture;
+    private Sprite circleSprite;
+
     // private methods  ########################################################
+    // Every face circle/ellipse uses this one antialiased white sprite,
+    // tinted by its Image. No built-in sprite IDs or imported artwork needed.
+    private void CreateCircleGraphics() {
+        if (circleImages == null || circleImages.Length == 0) {
+            Debug.LogWarning(
+                "ProgressBarWidget:\tassign circleImages from the matching prefab",
+                this
+            );
+            return;
+        }
+
+        Color32[] pixels =
+            new Color32[CIRCLE_TEXTURE_SIZE * CIRCLE_TEXTURE_SIZE];
+        float center = (CIRCLE_TEXTURE_SIZE - 1) * 0.5f;
+        float radius = CIRCLE_TEXTURE_SIZE * 0.5f - 1f;
+        for (int y = 0; y < CIRCLE_TEXTURE_SIZE; y++) {
+            for (int x = 0; x < CIRCLE_TEXTURE_SIZE; x++) {
+                float dx = x - center;
+                float dy = y - center;
+                float alpha = Mathf.Clamp01(
+                    radius - Mathf.Sqrt(dx * dx + dy * dy)
+                );
+                pixels[y * CIRCLE_TEXTURE_SIZE + x] = new Color32(
+                    255, 255, 255, (byte)Mathf.RoundToInt(alpha * 255f)
+                );
+            }
+        }
+
+        circleTexture = new Texture2D(
+            CIRCLE_TEXTURE_SIZE, CIRCLE_TEXTURE_SIZE,
+            TextureFormat.RGBA32, false
+        );
+        circleTexture.name = "Monkobra UI Circle";
+        circleTexture.hideFlags = HideFlags.DontSave;
+        circleTexture.wrapMode = TextureWrapMode.Clamp;
+        circleTexture.filterMode = FilterMode.Bilinear;
+        circleTexture.SetPixels32(pixels);
+        circleTexture.Apply(false, false);
+
+        circleSprite = Sprite.Create(
+            circleTexture,
+            new Rect(0f, 0f, CIRCLE_TEXTURE_SIZE, CIRCLE_TEXTURE_SIZE),
+            new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect
+        );
+        circleSprite.name = "Monkobra UI Circle";
+        circleSprite.hideFlags = HideFlags.DontSave;
+        foreach (Image image in circleImages) {
+            if (image == null) {
+                continue;
+            }
+            image.overrideSprite = null;
+            image.sprite = circleSprite;
+            image.type = Image.Type.Simple;
+            image.preserveAspect = false;
+        }
+    }
+
     private bool TryFindPlayer() {
         if (player != null) {
             return true;
@@ -235,6 +361,59 @@ public class ProgressBarWidget: MonoBehaviour {
         cobraMarker.anchorMin = anchor;
         cobraMarker.anchorMax = anchor;
         cobraMarker.anchoredPosition = Vector2.zero;
+
+        UpdateDistanceReadout(gap);
+    }
+
+    // The bar clamps the cobra marker at its bottom, but the number always
+    // shows the full world-height gap, converted using the scoring config.
+    private void UpdateDistanceReadout(float gap) {
+        if (distanceRoot == null || distanceLabelRect == null
+            || distanceBracket == null || progressBar.handleRect == null) {
+            return;
+        }
+
+        float unitsPerMeter = balanceConfig != null
+            ? Mathf.Max(0.001f, balanceConfig.UnitsPerMeter)
+            : 1f;
+        int decimeters = Mathf.RoundToInt(gap / unitsPerMeter * 10f);
+        if (decimeters != shownDecimeters) {
+            shownDecimeters = decimeters;
+            distanceLabel.text = (decimeters * 0.1f).ToString(
+                "0.0", CultureInfo.InvariantCulture
+            ) + " m";
+        }
+
+        // Convert the actual marker centers into the upright readout's
+        // coordinates. The original bar is rotated 90 degrees and stretched.
+        RectTransform handle = progressBar.handleRect;
+        Vector3 monkeyPoint = distanceRoot.InverseTransformPoint(
+            handle.TransformPoint(handle.rect.center)
+        );
+        Vector3 cobraPoint = distanceRoot.InverseTransformPoint(
+            cobraMarker.TransformPoint(cobraMarker.rect.center)
+        );
+        float markerGap = Mathf.Abs(monkeyPoint.y - cobraPoint.y);
+        float sideStep = Mathf.Max(0f, markerClearance - markerGap);
+        cobraMarker.position -= distanceRoot.TransformVector(
+            new Vector3(sideStep, 0f, 0f)
+        );
+        cobraPoint.x -= sideStep;
+
+        float middleY = (monkeyPoint.y + cobraPoint.y) * 0.5f;
+
+        float leftmost = Mathf.Min(monkeyPoint.x, cobraPoint.x);
+        distanceLabelRect.anchoredPosition = new Vector2(
+            leftmost + distanceLabelOffset, middleY
+        );
+        distanceBracket.anchoredPosition = new Vector2(
+            leftmost + distanceBracketOffset, middleY
+        );
+        distanceBracket.gameObject.SetActive(markerGap >= markerClearance);
+        distanceBracket.sizeDelta = new Vector2(
+            distanceBracket.sizeDelta.x,
+            markerGap
+        );
     }
 
     // the marker flashes while the cobra catches up; the center warning
