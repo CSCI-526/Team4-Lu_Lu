@@ -91,7 +91,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2704974959411911580
 RectTransform:
   m_ObjectHideFlags: 0
@@ -127,7 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FreezeTimerWidget
   timerLabel: {fileID: 7703695524096752198}
   timerBar: {fileID: 2257962997467034558}
-  timerFormat: Frozen {0}s
+  timerFormat: 'Cobra Frozen: {0}s'
   frozenColor: {r: 0.55, g: 0.85, b: 1, a: 1}
   endingColor: {r: 1, g: 0.6, b: 0.15, a: 1}
   endingWarnS: 3
