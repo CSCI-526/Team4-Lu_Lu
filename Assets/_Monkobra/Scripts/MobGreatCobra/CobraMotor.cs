@@ -36,6 +36,34 @@ public class CobraMotor: MonoBehaviour {
     /// </summary>
     public event Action ChaseStarted;
 
+    /// <returns>if the cobra guards the boss arena from below instead of
+    /// chasing</returns>
+    public bool IsGuarding => isGuarding;
+
+    /// <summary>
+    /// Stops the chase for the boss fight: the head is set at
+    /// <paramref name="headWorldY"/> and held there for good, below the
+    /// arena, still circling the trunk, while surges are ignored. Now & then
+    /// its neck straightens and the head pokes straight up as a threat, fatal
+    /// only to a monkey lingering that low; the coil never climbs.
+    /// </summary>
+    public void StartGuard(float headWorldY) {
+        if (pathCenter == null) {
+            return;
+        }
+
+        isGuarding = true;
+        nextPeekTime = Time.time + UnityEngine.Random.Range(
+            peekIntervalRangeS.x, peekIntervalRangeS.y
+        );
+        surgeStacks = 0;
+        isCatchingUp = false;
+        guardHeadHeight = headWorldY - pathCenter.position.y;
+        headHeight = guardHeadHeight;
+        UpdateBody();
+    }
+
+
     // Inspector Fields  #######################################################
     [Header("References")]
     [SerializeField]
@@ -157,6 +185,26 @@ public class CobraMotor: MonoBehaviour {
     [Tooltip("eye diameter, eyes are skipped at 0; U")]
     private float eyeSizeU = 0.14f;
 
+    [Header("Boss Arena Guard")]
+    [SerializeField]
+    [Tooltip("least & most time between two peeks while guarding; s")]
+    private Vector2 peekIntervalRangeS = new Vector2(4f, 7f);
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("how high the head pokes straight up over the coil; u")]
+    private float peekRiseU = 3.5f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("length of neck, from the head, that straightens to poke up; u")]
+    private float peekNeckU = 3f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("peek: time up, held, & back down; s")]
+    private Vector3 peekTimesS = new Vector3(0.25f, 0.4f, 0.5f);
+
     [Header("Closing In")]
     [SerializeField]
     [FormerlySerializedAs("limitToPlayerHeight")]
@@ -232,6 +280,12 @@ public class CobraMotor: MonoBehaviour {
         }
 
         headAngle += Direction * orbitSpeedDegrees * Time.deltaTime;
+
+        if (isGuarding) {
+            UpdateGuard();
+            UpdateBody();
+            return;
+        }
 
         StartExitBoostOnZoneExit();
 
@@ -338,6 +392,10 @@ public class CobraMotor: MonoBehaviour {
 
     private float headAngle;
     private float headHeight;
+    private bool isGuarding; // holding below the boss arena, never chasing
+    private float nextPeekTime; // Time.time the next guard peek starts
+    private float guardPeek; // 0~1 how far the head pokes up right now
+    private float guardHeadHeight; // head height held while guarding
     private float currentClimbSpeed; // eased toward the target; u/s
     private bool isCatchingUp;
     private int surgeStacks; // mistakes stacked in the running surge
@@ -430,6 +488,9 @@ public class CobraMotor: MonoBehaviour {
     // one stun is one mistake: hits the monkey ignores while stunned, e.g.
     // a 2nd branch on the way down, add nothing
     private void OnMonkeyHit(Collider hazard) {
+        if (isGuarding) {
+            return;
+        }
         if (balanceConfig != null && Time.time < nextCountedHitTime) {
             return;
         }
@@ -442,7 +503,55 @@ public class CobraMotor: MonoBehaviour {
     // raised on every trap; its flag only says if it is the first trap of
     // the scene, so it is ignored here
     private void OnMonkeyTrapped(bool isFirstTrap) {
+        if (isGuarding) {
+            return;
+        }
         StartSurge();
+    }
+
+    // guarding: hold still below the arena, the head poking up now & then
+    private void UpdateGuard() {
+        float peek = 0f;
+        float t = Time.time - nextPeekTime;
+        float upS = peekTimesS.x;
+        float holdS = peekTimesS.y;
+        float downS = peekTimesS.z;
+        if (t >= 0f) {
+            if (t < upS) {
+                peek = Mathf.SmoothStep(0f, 1f, t / upS);
+            } else if (t < upS + holdS) {
+                peek = 1f;
+            } else if (t < upS + holdS + downS) {
+                peek = 1f - Mathf.SmoothStep(0f, 1f, (t - upS - holdS) / downS);
+            } else {
+                nextPeekTime = Time.time + UnityEngine.Random.Range(
+                    peekIntervalRangeS.x, peekIntervalRangeS.y
+                );
+            }
+        }
+        headHeight = guardHeadHeight;
+        guardPeek = peek;
+    }
+
+    // a peek straightens the first stretch of neck into a line pointing
+    // straight up from where it leaves the coil
+    private void ApplyGuardPeek(float arcStep) {
+        if (guardPeek <= 0f || segmentPositions.Length < 2) {
+            return;
+        }
+        int anchor = Mathf.Clamp(
+            Mathf.CeilToInt(peekNeckU / Mathf.Max(0.01f, arcStep)),
+            1,
+            segmentPositions.Length - 1
+        );
+        Vector3 root = segmentPositions[anchor];
+        for (int i = 0; i < anchor; i++) {
+            Vector3 straight = root
+                + Vector3.up * peekRiseU * (anchor - i) / anchor;
+            segmentPositions[i] = Vector3.Lerp(
+                segmentPositions[i], straight, guardPeek
+            );
+        }
     }
 
     // each mistake adds a stack and surge time, both capped by the config
@@ -662,6 +771,7 @@ public class CobraMotor: MonoBehaviour {
                 coilTopHeight - heightStep * i + lift + wave
             );
         }
+        ApplyGuardPeek(arcStep);
 
         for (int i = 0; i < bodySegments.Length; i++) {
             Transform segment = bodySegments[i];

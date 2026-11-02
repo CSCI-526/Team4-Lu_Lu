@@ -124,7 +124,7 @@ public class LowStaminaWidget: MonoBehaviour {
     // a loss freezes time, so the countdown would stall with the hint showing
     // through the half-transparent end panel
     private void OnStateChanged(GameState state) {
-        if (state != GameState.Lost) {
+        if (state != GameState.Lost && state != GameState.Won) {
             return;
         }
 

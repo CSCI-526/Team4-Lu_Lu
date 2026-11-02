@@ -99,6 +99,21 @@ public class MonkeyController: MonoBehaviour {
         hasPullTarget = true;
     }
 
+    /// <summary>
+    /// Caps the climb at <paramref name="worldY"/>, eg below the Cobra King:
+    /// however long up is held the body stops there, and one above it eases
+    /// down to it.
+    /// </summary>
+    public void SetHeightCeiling(float worldY) {
+        heightCeilingY = worldY;
+        hasHeightCeiling = true;
+    }
+
+    /// <summary>Lifts the cap set by <see cref="SetHeightCeiling"/>.</summary>
+    public void ClearHeightCeiling() {
+        hasHeightCeiling = false;
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("speed of the pull into a web and the glide back out; u/s")]
@@ -331,6 +346,16 @@ public class MonkeyController: MonoBehaviour {
             }
         }
 
+        // a ceiling stops the climb short, & eases a body above it down
+        if (hasHeightCeiling && nextY > heightCeilingY) {
+            nextY = Mathf.Max(
+                heightCeilingY,
+                Mathf.Min(nextY, transform.position.y)
+                    - CEILING_SETTLE_SPEED_U * Time.fixedDeltaTime
+            );
+            climbSpeedU = Mathf.Min(climbSpeedU, 0f);
+        }
+
         // the stun fall is involuntary and so is descending: only voluntary
         // upward and sideways travel costs stamina
         if (!isStunned && staminaBar != null) {
@@ -416,6 +441,9 @@ public class MonkeyController: MonoBehaviour {
     private float slipImmuneUntil;
     private bool isHeld; // body frozen in place, see IsHeld
     private Vector3 pullTarget; // world pos the held body slides to
+    private bool hasHeightCeiling;
+    private float heightCeilingY; // world y the climb stops at, if set
+    private const float CEILING_SETTLE_SPEED_U = 8f; // down to the cap; u/s
     private bool hasPullTarget; // whether the held body is being pulled
     private bool isReturning; // whether the body glides back onto its ring
 

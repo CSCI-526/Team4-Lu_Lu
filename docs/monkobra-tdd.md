@@ -64,7 +64,7 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 
 ## Run Lifecycle
 
-`GameController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event. A run only loses, it never wins.
+`GameController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event. A run ends in a loss, or in a win by defeating the Cobra King.
 
 ```mermaid
 stateDiagram-v2
@@ -73,6 +73,8 @@ stateDiagram-v2
   StartingZone --> Playing: EndStartingZone
   Playing --> Lost: LoseGame
   Lost --> [*]: interact, reload scene
+  Playing --> Won: WinGame, Cobra King defeated
+  Won --> [*]: interact, reload scene
 ```
 
 | State | Time Scale | Screen |
@@ -81,8 +83,11 @@ stateDiagram-v2
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, `RestartAfterLose` (R or Space) reloads the scene after `restartInputDelay` |
+| Won | 0 | the boss fight's victory panel, the same restart key reloads the scene |
 
 `LoseGame()` runs once, from StartingZone or Playing: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
+
+`WinGame()` runs once, from StartingZone or Playing, when the Cobra King is defeated ([Mobs](mob-doc.md#victory)): like `LoseGame` it settles the score, then enters Won, which freezes time; the boss fight shows its own victory panel, and the lose screen's restart key reloads the scene. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
 
 Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R or Space). Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
 
@@ -121,6 +126,7 @@ Every game balance number lives in one asset (how height becomes spawn chances i
 | Spider Web | `webAttemptCount`, `webSpawnProbabilityCurve` | `SpiderWebSpawner` |
 | Falling Cobra | `fallingCobraAttemptCount`, `fallingCobraSpawnProbabilityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU`, `fallingCobraReachWakeDistanceU`, `fallingCobraBananaAmbushChance`, `fallingCobraRehitGraceS`, `fallingCobraMaxHits` | `FallingCobraSpawner`, `FallingCobraController` |
 | Great Cobra | `cobraBaseSpeedCurve`, `cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraMaxSurgeSpeedU`, `cobraExitBoostSpeedU`, `cobraExitBoostDurationS`, `cobraSpeedChangeRateU` | `CobraMotor` |
+| Boss Fight | `bossTriggerHeightU`, `bossMaxHealth`, `bossCoconutDamage` | `BossFightController` |
 
 - Wiring: each reader holds a `GameBalanceConfig` inspector field (`balanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `FallingCobraSpawner`, and `CobraMotor` on the `GreatCobra` prefab), all pointing at the same asset
 - Not Balance: the arm stroke and reach, orbit speed, deceleration, and input actions stay in `MonkeyConfig`; climb build-up, exhaustion, and idle recovery are in `MovementConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab

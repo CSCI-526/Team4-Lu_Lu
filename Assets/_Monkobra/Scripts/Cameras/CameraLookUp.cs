@@ -16,6 +16,24 @@ using UnityEngine.InputSystem;
 /// </summary>
 [RequireComponent(typeof(CinemachineRotationComposer))]
 public class CameraLookUp: MonoBehaviour {
+    // Public Members  #########################################################
+    /// <summary>
+    /// Extra aim height added on top of the input tilt, eg to keep the boss
+    /// above the monkey in view; eased in & out; u
+    /// </summary>
+    public float ExtraAimOffsetU {
+        set => extraTargetU = value;
+    }
+
+    /// <summary>
+    /// Scale on the follow offset, 1 = normal; above 1 pulls the camera back
+    /// along its own direction to show more, eg during the boss fight; eased
+    /// in & out
+    /// </summary>
+    public float ViewDistanceScale {
+        set => distanceTargetScale = Mathf.Max(0.1f, value);
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("shared input tuning, supplies the move action")]
@@ -53,6 +71,11 @@ public class CameraLookUp: MonoBehaviour {
             );
         }
 
+        follow = GetComponent<CinemachineFollow>();
+        if (follow != null) {
+            baseFollowOffset = follow.FollowOffset;
+        }
+
         composer = GetComponent<CinemachineRotationComposer>();
         if (composer == null) {
             Debug.LogError(
@@ -85,9 +108,26 @@ public class CameraLookUp: MonoBehaviour {
             smoothTimeS
         );
 
+        extraOffsetU = Mathf.SmoothDamp(
+            extraOffsetU,
+            extraTargetU,
+            ref extraVelocityU,
+            settleSmoothTimeS
+        );
+
         Vector3 offset = composer.TargetOffset;
-        offset.y = offsetU;
+        offset.y = offsetU + extraOffsetU;
         composer.TargetOffset = offset;
+
+        distanceScale = Mathf.SmoothDamp(
+            distanceScale,
+            distanceTargetScale,
+            ref distanceVelocity,
+            settleSmoothTimeS
+        );
+        if (follow != null) {
+            follow.FollowOffset = baseFollowOffset * distanceScale;
+        }
     }
 
     // Editor Validation  ######################################################
@@ -101,7 +141,15 @@ public class CameraLookUp: MonoBehaviour {
     // private members  ########################################################
     private float offsetU; // current aim point height above target
     private float offsetVelocityU; // SmoothDamp state
+    private float extraTargetU; // extra aim height asked for, eg by the boss
+    private float extraOffsetU; // extra aim height, eased
+    private float extraVelocityU; // SmoothDamp state
+    private float distanceTargetScale = 1f; // follow offset scale asked for
+    private float distanceScale = 1f; // follow offset scale, eased
+    private float distanceVelocity; // SmoothDamp state
+    private Vector3 baseFollowOffset; // follow offset as authored
 
     // cached references  ------------------------------------------------------
     private CinemachineRotationComposer composer;
+    private CinemachineFollow follow; // optional, for the view distance
 }

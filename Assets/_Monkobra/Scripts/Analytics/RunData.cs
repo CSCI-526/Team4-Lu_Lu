@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public enum RunStatus {
     InProgress,
     Lost,
+    // the Cobra King defeated
+    Won,
     // cut short w/o a game over, e.g. Play mode stopped
     Interrupted
 }

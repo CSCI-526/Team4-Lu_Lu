@@ -139,6 +139,16 @@ public class GameBalanceConfig: ScriptableObject {
     /// s</returns>
     public float CobraExitBoostDurationS => cobraExitBoostDurationS;
 
+    /// <returns>height climbed since game start at which the boss fight
+    /// begins; u</returns>
+    public float BossTriggerHeightU => bossTriggerHeightU;
+
+    /// <returns>health of the Cobra King</returns>
+    public int BossMaxHealth => bossMaxHealth;
+
+    /// <returns>health a coconut takes off the Cobra King per hit</returns>
+    public int BossCoconutDamage => bossCoconutDamage;
+
     /// <returns>fraction 0~1 of <see cref="MaxStamina"/> the monkey starts
     /// the level with, spent in the starting zone</returns>
     public float StartingZoneStartStaminaFraction =>
@@ -398,6 +408,22 @@ public class GameBalanceConfig: ScriptableObject {
     [Tooltip("how long the starting zone exit boost lasts; s")]
     private float cobraExitBoostDurationS = 5f;
 
+    [Header("Boss Fight")]
+    [SerializeField]
+    [Tooltip(
+        "height climbed since game start at which the boss fight begins; "
+            + "kept low while testing; u"
+    )]
+    private float bossTriggerHeightU = 40f;
+
+    [SerializeField]
+    [Tooltip("health of the Cobra King")]
+    private int bossMaxHealth = 12;
+
+    [SerializeField]
+    [Tooltip("health a coconut takes off the Cobra King per hit")]
+    private int bossCoconutDamage = 1;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         slipSlideDistanceU = Mathf.Max(0f, slipSlideDistanceU);
@@ -443,5 +469,8 @@ public class GameBalanceConfig: ScriptableObject {
         cobraSpeedChangeRateU = Mathf.Max(0.01f, cobraSpeedChangeRateU);
         cobraExitBoostSpeedU = Mathf.Max(0f, cobraExitBoostSpeedU);
         cobraExitBoostDurationS = Mathf.Max(0f, cobraExitBoostDurationS);
+        bossTriggerHeightU = Mathf.Max(0f, bossTriggerHeightU);
+        bossMaxHealth = Mathf.Max(1, bossMaxHealth);
+        bossCoconutDamage = Mathf.Max(1, bossCoconutDamage);
     }
 }

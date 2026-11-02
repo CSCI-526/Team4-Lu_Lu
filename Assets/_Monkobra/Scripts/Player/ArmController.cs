@@ -529,6 +529,12 @@ public class ArmController: MonoBehaviour {
             }//一个水果即使有多个碰撞体，摘掉后也会一起从检测列表移除，避免留下已经不存在的目标
         }
 
+        // in the boss fight a grabbed coconut is thrown at the boss instead
+        BossFightController bossFight = BossFightController.I;
+        if (bossFight != null && bossFight.TryThrow(fruit, fruitCentre)) {
+            return;
+        }
+
         // the restore lands with the flown sprite, at once w/o the effect
         FruitFlyEffect flyEffect = FruitFlyEffect.I;
         if (flyEffect != null) {

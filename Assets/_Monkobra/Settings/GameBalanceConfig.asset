@@ -296,3 +296,6 @@ MonoBehaviour:
   cobraSpeedChangeRateU: 6
   cobraExitBoostSpeedU: 3
   cobraExitBoostDurationS: 5
+  bossTriggerHeightU: 40
+  bossMaxHealth: 12
+  bossCoconutDamage: 1

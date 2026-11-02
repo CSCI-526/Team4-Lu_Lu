@@ -82,6 +82,25 @@ public class GameController: MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Ends a live run as a win, eg the Cobra King defeated: the score
+    /// settles, time freezes and the restart key plays again.
+    /// </summary>
+    public void WinGame() {
+        if (!IsRunLive) {
+            return;
+        }
+
+        if (ScoreManager.I != null) {
+            ScoreManager.I.EndRun();
+        }
+
+        SetState(GameState.Won);
+        if (Debug.isDebugBuild) {
+            Debug.Log("GameController:\tgame won", this);
+        }
+    }
+
     public void LoseGame() {
         if (!IsRunLive) {
             return;
@@ -186,7 +205,8 @@ public class GameController: MonoBehaviour {
         UpdateNoClipKey();
         UpdatePauseKey();
 
-        if (State != GameState.Lost || restartAfterLoseAction == null) {
+        bool isOver = State == GameState.Lost || State == GameState.Won;
+        if (!isOver || restartAfterLoseAction == null) {
             return;
         }
 
@@ -298,7 +318,7 @@ public class GameController: MonoBehaviour {
         }
         ApplyTimeScale();
 
-        if (next == GameState.Lost) {
+        if (next == GameState.Lost || next == GameState.Won) {
             lostTime = Time.unscaledTime;
         }
 

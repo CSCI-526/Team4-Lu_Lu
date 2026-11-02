@@ -268,6 +268,8 @@ public class AnalyticsManager: MonoBehaviour {
             SaveSession();
         } else if (state == GameState.Lost) {
             CloseRun(RunStatus.Lost);
+        } else if (state == GameState.Won) {
+            CloseRun(RunStatus.Won);
         }
     }
 
