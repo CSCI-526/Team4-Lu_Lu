@@ -524,6 +524,11 @@ public class ArmController: MonoBehaviour {
             }//一个水果即使有多个碰撞体，摘掉后也会一起从检测列表移除，避免留下已经不存在的目标
         }
 
+        // a coconut is kept to freeze the cobra, it restores no stamina
+        if (pickup != null && pickup.Kind == PickupKind.Coconut) {
+            return;
+        }
+
         StaminaBarController staminaBar = StaminaBarController.I;
         if (staminaBar != null) {
             staminaBar.AddStaminaByFruit();
