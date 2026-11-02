@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FruitFlyConfig
   durationS: 0.5
   alpha: 0.6
-  sizePx: 64
+  sizePx: 192
   endScale: 0.6
   ease:
     serializedVersion: 2
