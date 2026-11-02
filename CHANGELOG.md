@@ -34,6 +34,9 @@ bug spider web fail to load & log warning
 - pineapple: a branch may bear one instead of a banana (`pineappleSpawnProbabilityCurve` in `GameBalanceConfig`); grabbing it raises both hands & pulls the monkey up a set height, w/ hazards off for the leap & a short landing grace (`PineappleLeapController`, `GameController.IsLeaping`, `PineappleLeapConfig` asset)
 - F2 dev key: spawns a pineapple branch straight above the monkey (`HackPineappleSpawner`)
 - fruit UI sprites (banana, coconut, pineapple) in `Sprites/UI/`, shown in flights at 3x size (`sizePx` 192 in `FruitFlyConfig`); sources credited in `CREDITS.md`
+- coconut throw: a double-tap throws one, the `UseCoconut` action of the Input Actions asset (MultiTap on Space, E & gamepad North), listened to by `CoconutManager`; a coconut model (`CoconutProjectile`) falls from the monkey at `coconutThrowSpeedU`, & the great cobra freezes on touching it or after `coconutThrowDistanceU`, not at the tap; works in the starting zone too
+- look-down camera: `CameraLookDown` goes live for `coconutLookDownS` after a throw to follow the fall, under look-left/look-right while Interact is held (`CameraRigManager`)
+- F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`)
 
 ##### Wenhai Dong
 
@@ -42,10 +45,10 @@ bug spider web fail to load & log warning
 ##### Yuqing Lu
 
 - coconut: a rare fruit from Height 150 (`coconutStartHeightU`, `coconutSpawnChancePerSegment` in `GameBalanceConfig`, at most one per segment) hung on a bare branch's stem tip, clear of other branches, fruit & webs (`CoconutSpawner`, `BranchController.TryHangFruit`); grabbed like a banana, it scores `scoreRewardPoints` x `coconutScoreMultiplier` & restores no stamina
-- coconut use: a double-tap throws one: the `UseCoconut` action of the Input Actions asset (MultiTap on Space, E & gamepad North), listened to by `CoconutManager`; a coconut model (`CoconutProjectile`) falls from the monkey at `coconutThrowSpeedU`, and on touching the cobra or after `coconutThrowDistanceU` the great cobra freezes for `cobraFreezeDurationS` (`CobraMotor.TryFreeze`); works in the starting zone too; refused while paused, trapped in a web or just out of one, & while already frozen; the cobra turns light blue while frozen (`CobraFreezeTint`)
-- coconut HUD, all parts inactive in their prefabs & switched on by `CoconutManager`: `CoconutHUD` in `InGameHUD` (icon, count, a "Double-tap Space" hint until the first use of the session) from the first coconut; `FreezeTimerHUD` prefab under `_UI` (countdown & bar) while the cobra is frozen; `CoconutMessage` (center prompts for the first coconut, a freeze, a refused freeze & the thaw)
+- coconut use: a quick double-tap spends one to freeze the great cobra for `cobraFreezeDurationS` (`CobraMotor.TryFreeze`); refused while paused, trapped in a web or just out of one, & while already frozen; the cobra turns light blue while frozen (`CobraFreezeTint`)
+- coconut HUD: count, freeze countdown & bar, a "Double-tap Space" hint until the first use of the session, & center messages
 - coconut analytics: pickups, uses & coconut score per run in the session report
-- F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`); `CoconutSpawner` test override for coconuts from Height 5 on every segment
+- `CoconutSpawner` test override for coconuts from Height 5 on every segment
 - whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
 
 ### Changed
@@ -63,14 +66,14 @@ bug spider web fail to load & log warning
 - Global Volume profile moved from `Scenes/Lv1Scene/` to `Settings/`
 - stamina restore & bar punch land when the grabbed fruit's flight arrives, not at the grab; score still counts at the grab
 - `InGameHUD` now nested in `_UI`, holding `ProgressBar`, `StaminaBar`, `ScoreHeight` & the pause hint; no visual change
+- `CoconutManager` on the `GameController` prefab centralizes the coconut count, the throw & the HUD switching; the analytics report reads coconut pickups & uses from it
+- `TopRightAnchor` and the coconut `Panel` removed: `CoconutHUD` sits straight under `InGameHUD`; the freeze countdown & bar split out of `CoconutWidget` into `FreezeTimerWidget`, the center prompts into `CoconutMessageWidget`
 
 ##### Yuqing Lu
 
 - `Coconut` prefab: from banana-shaped placeholder to the coconut item: whole coconut model under a top pivot, `ScorePickup` of kind `Coconut`, `CoconutReachable` & `CoconutGrabbable` outlines, green flight sprite
 - `ScoreManager` scores & counts each pickup by its `PickupKind`; `ScorePickup` gains a kind, banana by default
 - `ArmController` gives a coconut's flight no stamina restore
-- `CoconutManager` on the `GameController` prefab centralizes the coconut count, the throw & the HUD switching; the analytics report reads coconut pickups & uses from it
-- `TopRightAnchor` and the coconut `Panel` removed: `CoconutHUD` sits straight under `InGameHUD`; the freeze countdown & bar split out of `CoconutWidget` into `FreezeTimerWidget`, the center prompts into `CoconutMessageWidget`
 - analytics report splits the reward score into banana & coconut score
 
 ### Deprecated
@@ -81,12 +84,9 @@ bug spider web fail to load & log warning
 
 - falling cobras removed on hit
 
-##### Yuqing Lu
-
-- `devYuqingCoconutScene` personal dev scene, the coconut work lives in `Lv1Scene`
-
 ##### Erik
 
+- `devYuqingCoconutScene` personal dev scene, the coconut work lives in `Lv1Scene`
 - `SlipTestScene` dev scene, after slippery bark landed in `Lv1Scene`
 - `upSpeedU` & `downSpeedU` (`GameBalanceConfig`), replaced by the `MovementConfig` curves; `accelerationU` (`MonkeyConfig`)
 - orphan `GoalText` object in `Lv1Scene` (never drawn, no parent Canvas) and its mention in the TDD

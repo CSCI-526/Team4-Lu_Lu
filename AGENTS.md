@@ -53,6 +53,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - Unity code follows the `coder-unity-engine` skill conventions
 - Keep gameplay tuning values (stamina drain, grab restore, cobra speed) in serialized fields, never hard-coded
 - Line endings: keep a file's existing endings; `GameBalanceConfig.cs` is CRLF, so edit it in a way that preserves them
+- Gameplay input comes from actions of the Input Actions asset `InputSystem_Actions`, read through `InputAction` events or polling; timing such as a double-tap is an interaction on the action (`UseCoconut` is a MultiTap), never a hand-rolled key tracker in a script
 - Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive`; never hard-code a dev key or let one run in a release build
 
 ## Testing Instructions

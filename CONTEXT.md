@@ -66,7 +66,7 @@ monkobra/
 
 | Root Prefab | Nests |
 | --- | --- |
-| `Cameras` | the three Cinemachine cameras |
+| `Cameras` | the four Cinemachine cameras |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
 | `Environment/Envs` | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
