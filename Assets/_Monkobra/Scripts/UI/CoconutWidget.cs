@@ -120,12 +120,8 @@ public class CoconutWidget: MonoBehaviour {
         // the manager may wake after this widget when the prefab ships active
         TryBind();
 
-        bool isPlaying =
-            GameController.I == null
-            || GameController.I.State == GameState.Playing;
-
         UpdatePop();
-        UpdateUseHint(isPlaying);
+        UpdateUseHint(CoconutManager.IsRunLive);
     }
 
     // Event Handlers  #########################################################
@@ -230,12 +226,12 @@ public class CoconutWidget: MonoBehaviour {
 
     // how-to while coconuts are in hand and none was used yet this session,
     // flashing after a cobra surge
-    private void UpdateUseHint(bool isPlaying) {
+    private void UpdateUseHint(bool isRunLive) {
         if (useHintLabel == null) {
             return;
         }
 
-        bool show = isPlaying
+        bool show = isRunLive
             && !CoconutManager.HasUsedThisSession
             && manager != null
             && manager.Count > 0

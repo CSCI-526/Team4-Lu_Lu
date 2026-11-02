@@ -182,14 +182,6 @@ public class GameBalanceConfig: ScriptableObject {
     /// <returns>how long a used coconut freezes the great cobra; s</returns>
     public float CobraFreezeDurationS => cobraFreezeDurationS;
 
-    /// <returns>longest gap between the 2 presses of a double-tap that
-    /// uses a coconut; s</returns>
-    public float CoconutDoubleTapWindowS => coconutDoubleTapWindowS;
-
-    /// <returns>longest press that still counts as a tap, a longer one is a
-    /// reach; s</returns>
-    public float CoconutTapMaxHoldS => coconutTapMaxHoldS;
-
     /// <returns>how fast a thrown coconut falls; u per s</returns>
     public float CoconutThrowSpeedU => coconutThrowSpeedU;
 
@@ -493,19 +485,6 @@ public class GameBalanceConfig: ScriptableObject {
     private float cobraFreezeDurationS = 10f;
 
     [SerializeField]
-    [Min(0.05f)]
-    [Tooltip("longest gap between the 2 presses of a double-tap; s")]
-    private float coconutDoubleTapWindowS = 0.35f;
-
-    [SerializeField]
-    [Min(0.05f)]
-    [Tooltip(
-        "longest press that still counts as a tap; a longer one is a reach, "
-            + "never part of a double-tap; s"
-    )]
-    private float coconutTapMaxHoldS = 0.2f;
-
-    [SerializeField]
     [Min(0.1f)]
     [Tooltip("how fast a thrown coconut falls straight down; u per s")]
     private float coconutThrowSpeedU = 30f;
@@ -569,8 +548,6 @@ public class GameBalanceConfig: ScriptableObject {
         );
         coconutScoreMultiplier = Mathf.Max(0f, coconutScoreMultiplier);
         cobraFreezeDurationS = Mathf.Max(0f, cobraFreezeDurationS);
-        coconutDoubleTapWindowS = Mathf.Max(0.05f, coconutDoubleTapWindowS);
-        coconutTapMaxHoldS = Mathf.Max(0.05f, coconutTapMaxHoldS);
         coconutThrowSpeedU = Mathf.Max(0.1f, coconutThrowSpeedU);
         coconutThrowDistanceU = Mathf.Max(0f, coconutThrowDistanceU);
     }

@@ -4,23 +4,24 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Coconuts the monkey carries this run, and their use. Each coconut that
-/// <see cref="ScoreManager"/> scores adds one; a quick double-tap on the
-/// Interact action (Space, E or gamepad North, the grab key) throws one: a
-/// <see cref="CoconutProjectile"/> falls from the monkey, and when it hits
+/// <see cref="ScoreManager"/> scores adds one; the UseCoconut input action
+/// throws one: a <see cref="CoconutProjectile"/> falls from the monkey, and
+/// when it hits
 /// the cobra or has fallen its full distance the great cobra freezes through
 /// <see cref="CobraMotor.TryFreeze"/>, for
 /// <see cref="GameBalanceConfig.CobraFreezeDurationS"/>.
 /// <para>
-/// A tap is a press held no longer than
-/// <see cref="GameBalanceConfig.CoconutTapMaxHoldS"/>, so holding to reach
-/// never counts; a double-tap is 2 taps whose presses lie within
-/// <see cref="GameBalanceConfig.CoconutDoubleTapWindowS"/>. It only polls the
-/// action, never enables or disables it, so the grab works as before.
+/// UseCoconut is an action of the Input Actions asset: a double-tap (Space, E
+/// or gamepad North, the keys of the grab) set up there as a MultiTap
+/// interaction, so its timing and keys are edited in the asset, not here. A
+/// press held to reach never completes it. This enables the action while it
+/// is enabled itself, and listens to its performed event only.
 /// </para>
 /// <para>
-/// A coconut is only used while the run is <see cref="GameState.Playing"/>,
-/// not paused (<see cref="GameController.IsPaused"/>), and the monkey is
-/// neither caught in a web nor just out of one.
+/// A coconut is only used while the run is live (<see cref="IsRunLive"/>: the
+/// starting zone or playing), not paused
+/// (<see cref="GameController.IsPaused"/>), and the monkey is neither caught
+/// in a web nor just out of one.
 /// While the cobra is already frozen, nothing is used and
 /// <see cref="FreezeRefused"/> is raised. The count lives in this scene only,
 /// so a restart's reload empties it.
@@ -51,6 +52,11 @@ public class CoconutManager: MonoBehaviour {
     /// <returns>the great cobra a coconut freezes, null if none in scene
     /// </returns>
     public CobraMotor Cobra => cobra;
+
+    /// <returns>if the run is live, ie in the starting zone or playing, so the
+    /// coconut HUD and prompts work; true w/o a GameController</returns>
+    public static bool IsRunLive =>
+        GameController.I == null || GameController.I.IsRunLive;
 
     /// <returns>if a coconut was used since the app launched, so the how-to
     /// is no longer needed</returns>
@@ -95,12 +101,16 @@ public class CoconutManager: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
-    [Tooltip("game balance tuning; freeze time & double-tap timing")]
+    [Tooltip("game balance tuning; freeze time & throw")]
     private GameBalanceConfig balanceConfig;
 
     [SerializeField]
-    [Tooltip("monkey tuning; its Interact action is the double-tap key")]
-    private MonkeyConfig monkeyConfig;
+    [Tooltip("Input Actions asset that holds the coconut action")]
+    private InputActionAsset inputActions;
+
+    [SerializeField]
+    [Tooltip("map/name of the coconut action in that asset")]
+    private string useCoconutActionPath = "Player/UseCoconut";
 
     [SerializeField]
     [Tooltip("coconut model that falls from the monkey when one is used")]
@@ -131,10 +141,10 @@ public class CoconutManager: MonoBehaviour {
                 this
             );
         }
-        if (monkeyConfig == null || monkeyConfig.InteractAction == null) {
+        if (inputActions == null) {
             Debug.LogWarning(
                 "CoconutManager:\tmust assign Inspector Field: "
-                    + "monkeyConfig, w/ an Interact action",
+                    + "inputActions",
                 this
             );
         }
@@ -201,6 +211,32 @@ public class CoconutManager: MonoBehaviour {
         }
     }
 
+    private void OnEnable() {
+        if (inputActions == null) {
+            return;
+        }
+        useCoconutAction = inputActions.FindAction(useCoconutActionPath);
+        if (useCoconutAction == null) {
+            Debug.LogWarning(
+                "CoconutManager:\tfail to find input action: "
+                    + useCoconutActionPath,
+                this
+            );
+            return;
+        }
+        useCoconutAction.performed += OnUseCoconutPerformed;
+        useCoconutAction.Enable();
+    }
+
+    private void OnDisable() {
+        if (useCoconutAction == null) {
+            return;
+        }
+        useCoconutAction.performed -= OnUseCoconutPerformed;
+        useCoconutAction.Disable();
+        useCoconutAction = null;
+    }
+
     private void Start() {
         scoreManager = ScoreManager.I;
         if (scoreManager == null) {
@@ -232,7 +268,6 @@ public class CoconutManager: MonoBehaviour {
     }
 
     private void Update() {
-        UpdateDoubleTap();
         UpdateFreezeHud();
     }
 
@@ -272,6 +307,13 @@ public class CoconutManager: MonoBehaviour {
         CatchUpStarted?.Invoke(stacks);
     }
 
+    // a duplicate instance waits to be destroyed, it must not act
+    private void OnUseCoconutPerformed(InputAction.CallbackContext _) {
+        if (I == this) {
+            TryUseCoconut();
+        }
+    }
+
     private void OnEscaped() {
         escapeGraceEndTime = Time.time + webEscapeGraceS;
     }
@@ -291,12 +333,7 @@ public class CoconutManager: MonoBehaviour {
     private SpiderWebStruggle struggle;
     private ScoreManager scoreManager;
     private float escapeGraceEndTime; // Time.time taps count again
-
-    // double-tap detector  ----------------------------------------------------
-    private float pressStartTime; // Time.time the held press began
-    private float firstPressTime; // Time.time the 1st tap's press began
-    private bool hasFirstTap; // 1st tap done, waiting for the 2nd press
-    private bool isSecondPress; // the held press is the 2nd of a pair
+    private InputAction useCoconutAction;
 
     // private methods  ########################################################
     private void SetCount(int next) {
@@ -313,58 +350,10 @@ public class CoconutManager: MonoBehaviour {
             return;
         }
 
-        bool isPlaying =
-            GameController.I == null
-            || GameController.I.State == GameState.Playing;
-        bool show = isPlaying && cobra != null && cobra.IsFrozen;
+        bool show = IsRunLive && cobra != null && cobra.IsFrozen;
         if (freezeHud.gameObject.activeSelf != show) {
             freezeHud.gameObject.SetActive(show);
         }
-    }
-
-    // press & release edges of the grab key, read after the Input System has
-    // run this frame; a long hold or a late 2nd press starts over
-    private void UpdateDoubleTap() {
-        if (balanceConfig == null || monkeyConfig == null) {
-            return;
-        }
-        InputAction interact = monkeyConfig.InteractAction != null
-            ? monkeyConfig.InteractAction.action
-            : null;
-        if (interact == null) {
-            return;
-        }
-
-        float now = Time.time;
-        if (interact.WasPressedThisFrame()) {
-            pressStartTime = now;
-            float sinceFirstS = now - firstPressTime;
-            isSecondPress = hasFirstTap
-                && sinceFirstS <= balanceConfig.CoconutDoubleTapWindowS;
-            if (!isSecondPress) {
-                firstPressTime = now;
-                hasFirstTap = false;
-            }
-        }
-
-        if (!interact.WasReleasedThisFrame()) {
-            return;
-        }
-
-        bool isTap = now - pressStartTime <= balanceConfig.CoconutTapMaxHoldS;
-        if (!isTap) {
-            hasFirstTap = false;
-            isSecondPress = false;
-            return;
-        }
-        if (!isSecondPress) {
-            hasFirstTap = true;
-            return;
-        }
-
-        hasFirstTap = false;
-        isSecondPress = false;
-        TryUseCoconut();
     }
 
     // throws one coconut iff the run allows it and the cobra is free to
@@ -425,20 +414,13 @@ public class CoconutManager: MonoBehaviour {
         }
     }
 
-    // only mid-run, unpaused, and never while a web holds the monkey or just
-    // let go of it
+    // only mid-run (the starting zone counts), unpaused, and never while a
+    // web holds the monkey or just let go of it
     private bool CanUseNow() {
-        if (Time.timeScale <= 0f) {
-            return false;
-        }
-        if (
-            GameController.I != null
-            && (GameController.I.State != GameState.Playing
-                || GameController.I.IsPaused)
-        ) {
-            return false;
-        }
-        if (Time.time < escapeGraceEndTime) {
+        bool isPaused =
+            Time.timeScale <= 0f
+            || (GameController.I != null && GameController.I.IsPaused);
+        if (!IsRunLive || isPaused || Time.time < escapeGraceEndTime) {
             return false;
         }
         return struggle == null

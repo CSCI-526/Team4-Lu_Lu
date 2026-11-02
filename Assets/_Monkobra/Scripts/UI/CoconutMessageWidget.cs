@@ -108,10 +108,7 @@ public class CoconutMessageWidget: MonoBehaviour {
     }
 
     private void Update() {
-        bool isPlaying =
-            GameController.I == null
-            || GameController.I.State == GameState.Playing;
-        UpdateMessage(isPlaying);
+        UpdateMessage(CoconutManager.IsRunLive);
     }
 
     // Event Handlers  #########################################################
@@ -180,13 +177,13 @@ public class CoconutMessageWidget: MonoBehaviour {
     }
 
     // the message fades out at its end, and shows only during a run
-    private void UpdateMessage(bool isPlaying) {
+    private void UpdateMessage(bool isRunLive) {
         if (messageLabel == null) {
             return;
         }
 
         float remainingS = messageHideTime - Time.time;
-        bool show = isPlaying && remainingS > 0f;
+        bool show = isRunLive && remainingS > 0f;
         if (messageLabel.gameObject.activeSelf != show) {
             messageLabel.gameObject.SetActive(show);
         }
