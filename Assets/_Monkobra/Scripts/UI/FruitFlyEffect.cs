@@ -85,9 +85,7 @@ public class FruitFlyEffect: MonoBehaviour {
     private RectTransform topRightCounterTarget;
 
     [SerializeField]
-    [Tooltip(
-        "monkey to fly into, a property override on the scene instance"
-    )]
+    [Tooltip("monkey to fly into, empty finds the MonkeyController at Start")]
     private Transform monkeyTarget;
 
     [Header("Look")]
@@ -123,15 +121,10 @@ public class FruitFlyEffect: MonoBehaviour {
                 this
             );
         }
-        if (monkeyTarget == null) {
-            Debug.LogWarning(
-                "FruitFlyEffect:\tmust assign Inspector Field: monkeyTarget",
-                this
-            );
-        }
-        if (defaultSprite == null) {
-            Debug.LogWarning(
-                "FruitFlyEffect:\tmust assign Inspector Field: defaultSprite",
+        if (defaultSprite == null && Debug.isDebugBuild) {
+            Debug.Log(
+                "FruitFlyEffect:\tno defaultSprite, a fruit naming none flies "
+                    + (showsBlankSprite ? "a blank square" : "hidden"),
                 this
             );
         }
@@ -171,6 +164,20 @@ public class FruitFlyEffect: MonoBehaviour {
         if (GameController.I != null) {
             GameController.I.StateChanged -= OnStateChanged;
             GameController.I.StateChanged += OnStateChanged;
+        }
+
+        // the monkey lives in another prefab, look it up over a scene link
+        if (monkeyTarget == null) {
+            MonkeyController monkey = FindAnyObjectByType<MonkeyController>();
+            if (monkey != null) {
+                monkeyTarget = monkey.transform;
+            } else {
+                Debug.LogWarning(
+                    "FruitFlyEffect:\tfail to find MonkeyController, monkey "
+                        + "flights land in place",
+                    this
+                );
+            }
         }
     }
 
