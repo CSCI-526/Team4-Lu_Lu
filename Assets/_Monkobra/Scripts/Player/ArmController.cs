@@ -502,6 +502,11 @@ public class ArmController: MonoBehaviour {
             }
             return;
         }
+        // read before the pickup switches the fruit off
+        Vector3 fruitCentre = fruit.bounds.center;
+        FruitFlyOnGrab flyOnGrab =
+            fruit.GetComponentInParent<FruitFlyOnGrab>();
+
         //成功摘到后，交给 ScorePickup 处理
         ScorePickup pickup = fruit.GetComponentInParent<ScorePickup>();
         if (pickup != null) {
@@ -524,6 +529,22 @@ public class ArmController: MonoBehaviour {
             }//一个水果即使有多个碰撞体，摘掉后也会一起从检测列表移除，避免留下已经不存在的目标
         }
 
+        // the restore lands with the flown sprite, at once w/o the effect
+        FruitFlyEffect flyEffect = FruitFlyEffect.I;
+        if (flyEffect != null) {
+            bool hasFlyOnGrab = flyOnGrab != null;
+            flyEffect.Play(
+                fruitCentre,
+                hasFlyOnGrab ? flyOnGrab.Target : FruitFlyTarget.EnergyBar,
+                hasFlyOnGrab ? flyOnGrab.Sprite : null,
+                RestoreStaminaByFruit
+            );
+        } else {
+            RestoreStaminaByFruit();
+        }
+    }
+
+    private void RestoreStaminaByFruit() {
         StaminaBarController staminaBar = StaminaBarController.I;
         if (staminaBar != null) {
             staminaBar.AddStaminaByFruit();

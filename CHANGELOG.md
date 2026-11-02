@@ -2,13 +2,11 @@
 
 <!--
 Hack need to verify: slippery is working
-Hack reorganize UI: add InGameHUD group
 
 Fixme Pan: UI mpv
 Todo Dong: boss fight
 Todo Pan: 数字显示和蛇的距离
 Todo Yuqing: 抓取椰子，往下扔，蛇往下掉
-Todo Erik Raycasting/2d anime for gaining
 Todo Erik 橡胶果实（手臂伸长，跳过一节）
 Todo Pan 排行榜（假的）
 
@@ -30,6 +28,8 @@ bug spider web fail to load & log warning
 - Great Cobra exit boost: extra climb speed for a while after the monkey leaves the starting zone, w/ center warning "Run! The Great Cobra is chasing you!"; `cobraExitBoostSpeedU` & `cobraExitBoostDurationS` in `GameBalanceConfig`
 - `MovementConfig` asset: climb speed builds up along 2 curves (up, down) of how long the key is held, instead of a fixed acceleration
 - `startingZoneBranchClearRadiusU` in `GameBalanceConfig`: branch clearance round the monkey before the run is playing
+- fruit fly: a grabbed fruit's sprite flies from its screen spot to a target (`FruitFlyEffect`, `FruitFlyConfig` asset): banana to the stamina bar, coconut to a top-right anchor for a future counter, rubber fruit to the monkey; per-fruit target & sprite via `FruitFlyOnGrab`
+- `Coconut` & `RubberFruit` placeholder fruit prefabs, banana-shaped, no score, not spawned yet
 
 ##### Wenhai Dong
 
@@ -48,6 +48,8 @@ bug spider web fail to load & log warning
 - `AnalyticsManager` is now a component of the `GameController` prefab and no longer survives a scene reload, so each load starts a new session file
 - slippery bark scripts follow the Unity MonoBehaviour conventions: tooltips, assignment guard, section banners, 80 columns
 - Global Volume profile moved from `Scenes/Lv1Scene/` to `Settings/`
+- stamina restore & bar punch land when the grabbed fruit's flight arrives, not at the grab; score still counts at the grab
+- `InGameHUD` now nested in `_UI`, holding `ProgressBar`, `StaminaBar`, `ScoreHeight` & the pause hint; no visual change
 
 ### Deprecated
 
