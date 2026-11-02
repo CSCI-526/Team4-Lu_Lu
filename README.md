@@ -18,6 +18,9 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 | Left, Right or A, D | circle around the tree |
 | E or Space (hold and release) | reach out and grab a banana |
 | Space (press rapidly) | break free of a spider web |
+| Esc or P | pause or resume the run |
+| R (while paused) | restart the run |
+| R or Space (lose screen) | restart the run |
 
 Gamepad: left stick or D-pad moves, the north button grabs, the south button breaks free of a web.
 

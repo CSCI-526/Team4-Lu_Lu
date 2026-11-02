@@ -10,7 +10,11 @@ public enum GameState {
     /// </summary>
     StartingZone,
 
-    /// <summary>Run in progress, never paused, ends only on a loss.</summary>
+    /// <summary>
+    /// Run in progress, ends only on a loss. A pause
+    /// (<see cref="GameController.IsPaused"/>) freezes it without leaving
+    /// this state.
+    /// </summary>
     Playing,
 
     /// <summary>Run lost, the lose screen waits for a restart.</summary>
