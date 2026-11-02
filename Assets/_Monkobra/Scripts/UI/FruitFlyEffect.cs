@@ -81,11 +81,17 @@ public class FruitFlyEffect: MonoBehaviour {
 
     // Todo: point at the real top-right counter once it exists
     [SerializeField]
-    [Tooltip("top-right anchor, stands in for the future counter")]
+    [Tooltip(
+        "top-right anchor, the coconut's target, stands in for the future "
+            + "counter"
+    )]
     private RectTransform topRightCounterTarget;
 
     [SerializeField]
-    [Tooltip("monkey to fly into, empty finds the MonkeyController at Start")]
+    [Tooltip(
+        "monkey, the rubber fruit's target; empty finds the MonkeyController "
+            + "at Start"
+    )]
     private Transform monkeyTarget;
 
     [Header("Look")]

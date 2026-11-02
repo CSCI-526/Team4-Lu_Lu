@@ -1,8 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// on a fruit: where its sprite flies when an arm grabs it, and which sprite.
-/// A fruit without one flies the default sprite to the energy bar, see
+/// on a fruit: where its sprite flies when an arm grabs it, and which sprite;
+/// the coconut flies to the top-right counter, the rubber fruit to the
+/// monkey. A fruit without one, the banana, flies the default sprite to the
+/// energy bar, see
 /// <see cref="FruitFlyEffect"/>
 /// </summary>
 [DisallowMultipleComponent]
