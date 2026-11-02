@@ -592,7 +592,11 @@ public class ArmController: MonoBehaviour {
             }
         } else {
             // Existing fruit without a score component keeps its old behavior.
-            fruit.gameObject.SetActive(false);
+            // the collider may sit on a child, the model beside it goes too
+            GameObject fruitRoot = flyOnGrab != null
+                ? flyOnGrab.gameObject
+                : fruit.gameObject;
+            fruitRoot.SetActive(false);
         }
         // a disabled collider may never raise its trigger exit
         UpwardFruitSensor fruitDetection = UpwardFruitSensor.I;
