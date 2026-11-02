@@ -2,13 +2,12 @@
 
 <!--
 Hack need to verify: slippery is working
-Fixme replace banana & coconut models
+Fixme replace banana model
 Hack organize & split game balance config
 
 Fixme Pan: UI mpv
 Todo Dong: boss fight
 Todo Pan: 数字显示和蛇的距离
-Todo Yuqing: 抓取椰子，往下扔，蛇往下掉
 Todo Pan 排行榜（假的）
 
 bug spider web fail to load & log warning
@@ -39,6 +38,15 @@ bug spider web fail to load & log warning
 
 - pause: Esc or P pauses or resumes a live run (starting zone or playing), and R restarts it from the pause; time freezes, audio pauses, and a `PauseScreen` panel ("Paused", "Press Esc or P to Resume", "Press R to Restart") covers the screen; `GameController.IsPaused`, `SetPaused`, and `PauseChanged`, with the panel toggled by `PauseScreenWidget`
 
+##### Yuqing Lu
+
+- coconut: a rare fruit from Height 150 (`coconutStartHeightU`, `coconutSpawnChancePerSegment` in `GameBalanceConfig`, at most one per segment) hung on a bare branch's stem tip, clear of other branches, fruit & webs (`CoconutSpawner`, `BranchController.TryHangFruit`); grabbed like a banana, it scores `scoreRewardPoints` x `coconutScoreMultiplier` & restores no stamina
+- coconut use: a quick double-tap of Interact spends one to freeze the great cobra for `cobraFreezeDurationS` (`CoconutInventory`, `CobraMotor.TryFreeze`); refused while paused, trapped in a web or just out of one, & while already frozen; the cobra turns light blue while frozen (`CobraFreezeTint`)
+- coconut HUD (`CoconutWidget` on the `CoconutHUD` prefab in `InGameHUD/TopRightAnchor`): count, freeze countdown & bar, a "Double-tap Space" hint until the first use of the session, & center messages
+- coconut analytics: pickups, uses & coconut score per run in the session report
+- F3 dev key: gives a coconut (`HackAction.GiveCoconut`); `CoconutSpawner` test override for coconuts from Height 5 on every segment
+- whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
+
 ### Changed
 
 ##### Erik
@@ -54,6 +62,14 @@ bug spider web fail to load & log warning
 - Global Volume profile moved from `Scenes/Lv1Scene/` to `Settings/`
 - stamina restore & bar punch land when the grabbed fruit's flight arrives, not at the grab; score still counts at the grab
 - `InGameHUD` now nested in `_UI`, holding `ProgressBar`, `StaminaBar`, `ScoreHeight` & the pause hint; no visual change
+
+##### Yuqing Lu
+
+- `Coconut` prefab: from banana-shaped placeholder to the coconut item: whole coconut model under a top pivot, `ScorePickup` of kind `Coconut`, `CoconutReachable` & `CoconutGrabbable` outlines, green flight sprite
+- `ScoreManager` scores & counts each pickup by its `PickupKind`; `ScorePickup` gains a kind, banana by default
+- `ArmController` gives a coconut's flight no stamina restore
+- `TopRightAnchor` in `InGameHUD` moved left of the progress bar & enlarged to hold the coconut counter
+- analytics report splits the reward score into banana & coconut score
 
 ### Deprecated
 
