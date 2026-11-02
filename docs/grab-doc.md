@@ -16,7 +16,8 @@ graph TD
   Release[Interact released] --> Arm
   Arm -->|overlap| Pickup[ScorePickup.TryCollect]
   Pickup --> Score[ScoreManager]
-  Arm -->|overlap| Stamina[StaminaBarController.AddStaminaByFruit]
+  Arm -->|overlap| Fly[FruitFlyEffect.Play]
+  Fly -->|on landing| Stamina[StaminaBarController.AddStaminaByFruit]
 ```
 
 1. a banana enters a side's detection zone and becomes reachable
@@ -36,7 +37,9 @@ graph TD
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | decides whether a branch bears a banana |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
-| `UI/StaminaBarController` | `AddStaminaByFruit` restores stamina on a grab |
+| `UI/StaminaBarController` | `AddStaminaByFruit` restores stamina when a grab's flight lands |
+| `UI/FruitFlyEffect` | flies a grabbed fruit's sprite to its target, then calls back |
+| `Environment/FruitFlyOnGrab` | on a fruit: which target and sprite its flight uses |
 
 ## Detection
 
@@ -64,7 +67,26 @@ graph TD
 
 1. `ScorePickup.TryCollect` refuses if the game is over, paused, or the fruit was already collected. Otherwise it hands its reward to `ScoreManager` once and switches the fruit off. A fruit with no `ScorePickup` is just switched off
 2. every collider of that fruit is removed from the detection sets
-3. `StaminaBarController.I.AddStaminaByFruit` restores stamina, capped at the maximum, and works from empty too
+3. `FruitFlyEffect.I.Play` launches the fruit's sprite from where the fruit sat, see [Fruit Fly](#fruit-fly)
+4. on landing, `StaminaBarController.I.AddStaminaByFruit` restores stamina, capped at the maximum, and works from empty too; its `FruitConsumed` punches the bar. With no effect in the scene the restore runs at once
+
+Score lands at the grab (step 1), stamina one flight later.
+
+## Fruit Fly
+
+`FruitFlyEffect` (singleton `I`) sits on `FruitFlyLayer`, a full-stretch child of `InGameHUD`, and flies a semi-transparent pooled `Image` from the fruit's screen point to its target.
+
+| Target | Fruit | Flies To |
+| --- | --- | --- |
+| `EnergyBar` | banana (no `FruitFlyOnGrab`) | the `StaminaBar` |
+| `TopRightCounter` | `Coconut` | `TopRightAnchor`, standing in for a counter not built yet |
+| `Monkey` | `RubberFruit` | the monkey, found as the `MonkeyController` at start |
+
+- Per Frame: the target's screen point is re-read every frame, so a punching bar or a moving camera never strands the sprite
+- Time: the flight runs on scaled time, so a pause freezes it
+- Run End: a loss drops every flight without its callback, and a restart reloads the scene, so a cut flight never restores into the next run
+- Sprite: a fruit's `FruitFlyOnGrab` may name one; otherwise the effect's default, and a blank square while none is set
+- Placeholders: `Coconut` and `RubberFruit` under `Prefabs/Environment/` are the banana's shape without `ScorePickup`, so grabbing one restores stamina but scores nothing; nothing spawns them yet, drop them in by hand in Play mode
 
 ## Camera
 
@@ -85,10 +107,11 @@ Bananas come from branches, not their own spawner. `BranchController` rolls once
 
 ## Tuning
 
-The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`.
+The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`. The fruit flight's duration, look, and easing are in `Settings/FruitFlyConfig.asset`; its duration also delays the stamina restore.
 
 ## Known Gaps
 
 - `ArmController` carries a fixme to split it into several systems
 - A miss costs no stamina, only exposure
 - Scenes without a `ScoreManager` restore stamina on a grab but score nothing, see [Score](monkobra-tdd.md#score)
+- No art yet for the fruit flights: every sprite is the blank default square, and the coconut and rubber fruit have no effect beyond their flight

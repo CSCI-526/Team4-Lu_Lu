@@ -71,7 +71,7 @@ monkobra/
 | `Environment/Envs` | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Systems/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
-| `UI/UI` | the `Canvas`, `ScoreHeight` (`HeightDisplay`, `ScoreHUD`), `LowStaminaPrompt`, `HackShortcutHelp`, `StaminaBar`, `ProgressBar`, `SpiderWebPrompt`, `Screens` (`LoseScreen`, `TutorialScreen`) |
+| `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`HeightDisplay`, `ScoreHUD`), the pause hint, `FruitFlyLayer`), `LowStaminaPrompt`, `HackShortcutHelp`, `SpiderWebPrompt`, `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
 Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `Cameras` tracking target) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
 
@@ -92,6 +92,8 @@ graph LR
   Fruit --> Cam[CameraRigManager]
   Fruit --> Outline[FruitOutlineListener]
   Arm -->|TryCollect| Pickup[ScorePickup]
+  Arm -->|Play| Fly[FruitFlyEffect]
+  Fly -->|on landing| Stamina
   Pickup --> Score[ScoreManager]
   Score --> ScoreUI[ScoreWidget]
   Cobra[CobraSensor] --> Game[GameController]
@@ -143,6 +145,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Environment/BranchFruitPlacementConfig` | ScriptableObject of branch placement | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/BranchController` | decides whether a branch bears a banana | [Grab](docs/grab-doc.md#fruit-supply) |
 | `Environment/FruitOutlineListener` | two-tier banana outline | [Grab](docs/grab-doc.md#feedback) |
+| `Environment/FruitFlyOnGrab` | on a fruit: its fly target and sprite; the `Coconut` and `RubberFruit` prefabs carry one, the banana none | [Grab](docs/grab-doc.md#fruit-fly) |
 | `MobSpiderWeb/SpiderWebSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, rolls webs on that segment's trunk against a probability curve at its ramped difficulty | [Mobs](docs/mob-doc.md#placement-1) |
 | `MobSpiderWeb/SpiderWebTrap` | web prefab root with one deepened trigger box | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `MobSpiderWeb/SpiderWebStruggle` | on the monkey: trap state, escape bar, immunity | [Mobs](docs/mob-doc.md#trap-and-escape) |
@@ -166,6 +169,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Scoring/ScorePickup` | on a fruit: hands points over once | [Grab](docs/grab-doc.md#on-a-successful-grab) |
 | `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |
 | `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while stamina is low | [TDD](docs/monkobra-tdd.md#stamina) |
+| `UI/FruitFlyEffect`, `UI/FruitFlyTarget` | singleton on `InGameHUD/FruitFlyLayer`: flies a grabbed fruit's sprite to the stamina bar, a top-right anchor, or the monkey, then runs the grab's arrival callback | [Grab](docs/grab-doc.md#fruit-fly) |
+| `UI/FruitFlyConfig` | ScriptableObject (`Settings/FruitFlyConfig.asset`): flight duration, look, and easing | [Grab](docs/grab-doc.md#fruit-fly) |
 | `UI/ScreensManager`, `UI/ProgressBarWidget`, `UI/ScoreWidget`, `UI/HeightDisplayWidget`, `UI/LoseScreen` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress with the surge and chase-start warnings and red cobra marker, score label, climbed height label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/SpiderWebWidget` | first-trap hint and escape bar | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `UI/PauseScreenWidget` | pause panel, shown while `GameController.IsPaused` (Esc or P; R restarts), toggled on `PauseChanged` | [TDD](docs/monkobra-tdd.md#ui) |
