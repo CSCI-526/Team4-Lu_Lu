@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// Screen-space UI of the boss fight, built at runtime on the root Canvas
 /// (below the pause, tutorial and lose screens): the entry flash, the Cobra
 /// King's name and health bar, its speech bubble over the head, the first
-/// throw's key prompt over a coconut, damage numbers and the end banner.
+/// throw's key prompt over a banana, damage numbers and the end banner.
 /// Every piece is a plain uGUI Image or TMP label, no sprite needed.
 /// </summary>
 public class BossFightHud: MonoBehaviour {
@@ -208,7 +208,7 @@ public class BossFightHud: MonoBehaviour {
     private Vector2 speechOffset = new Vector2(0f, 90f);
 
     [SerializeField]
-    [Tooltip("prompt offset over the coconut, in canvas units")]
+    [Tooltip("prompt offset over the banana, in canvas units")]
     private Vector2 promptOffset = new Vector2(0f, 80f);
 
     [SerializeField]
@@ -312,7 +312,7 @@ public class BossFightHud: MonoBehaviour {
         Stretch(speechLabel.rectTransform);
         speechRect.gameObject.SetActive(false);
 
-        // key prompt: a keycap over the coconut and how to use it
+        // key prompt: a keycap over the banana and how to use it
         promptRect = CreateRect("Prompt", rootRect);
         promptRect.sizeDelta = new Vector2(220f, 90f);
         RectTransform keycap = CreateRect("Keycap", promptRect);

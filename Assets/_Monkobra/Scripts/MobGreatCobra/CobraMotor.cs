@@ -44,7 +44,7 @@ public class CobraMotor: MonoBehaviour {
     /// Stops the chase for the boss fight: the head is set at
     /// <paramref name="headWorldY"/> and held there for good, below the
     /// arena, still circling the trunk, while surges are ignored. Now & then
-    /// its neck straightens and the head pokes straight up as a threat, fatal
+    /// its neck lifts in a smooth curve and the head springs up as a threat, fatal
     /// only to a monkey lingering that low; the coil never climbs.
     /// </summary>
     public void StartGuard(float headWorldY) {
@@ -197,8 +197,13 @@ public class CobraMotor: MonoBehaviour {
 
     [SerializeField]
     [Min(0.1f)]
-    [Tooltip("length of neck, from the head, that straightens to poke up; u")]
-    private float peekNeckU = 3f;
+    [Tooltip("length of neck, from the head, that lifts to poke up; u")]
+    private float peekNeckU = 3.5f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("how far the lifting neck bows out from the trunk; u")]
+    private float peekCurlU = 0.8f;
 
     [SerializeField]
     [Min(0.01f)]
@@ -518,11 +523,14 @@ public class CobraMotor: MonoBehaviour {
         float downS = peekTimesS.z;
         if (t >= 0f) {
             if (t < upS) {
-                peek = Mathf.SmoothStep(0f, 1f, t / upS);
+                // springs up, overshooting a little before it settles
+                peek = EaseOutBack(t / upS);
             } else if (t < upS + holdS) {
-                peek = 1f;
+                // sways gently while it looks around
+                peek = 1f + 0.05f * Mathf.Sin((t - upS) * 9f);
             } else if (t < upS + holdS + downS) {
-                peek = 1f - Mathf.SmoothStep(0f, 1f, (t - upS - holdS) / downS);
+                float d = (t - upS - holdS) / downS;
+                peek = 1f - d * d * (3f - 2f * d);
             } else {
                 nextPeekTime = Time.time + UnityEngine.Random.Range(
                     peekIntervalRangeS.x, peekIntervalRangeS.y
@@ -533,8 +541,9 @@ public class CobraMotor: MonoBehaviour {
         guardPeek = peek;
     }
 
-    // a peek straightens the first stretch of neck into a line pointing
-    // straight up from where it leaves the coil
+    // a peek lifts the first stretch of neck off the coil in a smooth S:
+    // it bows out from the trunk, then rises, the head on top; the bend
+    // fades in along the neck, so it joins the coil without a kink
     private void ApplyGuardPeek(float arcStep) {
         if (guardPeek <= 0f || segmentPositions.Length < 2) {
             return;
@@ -545,13 +554,32 @@ public class CobraMotor: MonoBehaviour {
             segmentPositions.Length - 1
         );
         Vector3 root = segmentPositions[anchor];
+        Vector3 outward = root - pathCenter.position;
+        outward.y = 0f;
+        outward = outward.sqrMagnitude > 0.0001f
+            ? outward.normalized
+            : Vector3.forward;
+        float sway = Mathf.Sin(Time.time * 2.3f) * 0.25f * guardPeek;
+        Vector3 side = Vector3.Cross(Vector3.up, outward);
+
         for (int i = 0; i < anchor; i++) {
-            Vector3 straight = root
-                + Vector3.up * peekRiseU * (anchor - i) / anchor;
+            float s = (anchor - i) / (float)anchor; // 0 at the coil, 1 head
+            Vector3 raised = root
+                + Vector3.up * peekRiseU * guardPeek * Mathf.Pow(s, 1.15f)
+                + outward * peekCurlU * guardPeek * Mathf.Sin(s * Mathf.PI)
+                + side * sway * s * s;
+            float blend = Mathf.Clamp01(guardPeek) * (s * s * (3f - 2f * s));
             segmentPositions[i] = Vector3.Lerp(
-                segmentPositions[i], straight, guardPeek
+                segmentPositions[i], raised, Mathf.Clamp01(blend * 1.6f)
             );
         }
+    }
+
+    private static float EaseOutBack(float x) {
+        const float c1 = 1.4f;
+        const float c3 = c1 + 1f;
+        float m = x - 1f;
+        return 1f + c3 * m * m * m + c1 * m * m;
     }
 
     // each mistake adds a stack and surge time, both capped by the config

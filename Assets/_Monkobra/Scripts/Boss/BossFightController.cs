@@ -6,12 +6,13 @@ using UnityEngine;
 /// <see cref="GameBalanceConfig.BossTriggerHeightU"/> the screen flashes and
 /// the run enters the boss arena: the king coils round the tree top above,
 /// the great cobra stops chasing and guards below, and the spawners of webs,
-/// falling cobras and wet bark stop. Coconuts hang on the trunk in between; a
-/// grabbed one flies at the king's crown jewel by itself, so the fight uses
-/// only the grab the player already knows.
+/// falling cobras and wet bark stop. Banana branches grow on the trunk in
+/// between; a grabbed banana still feeds the monkey and is also thrown in an
+/// arc at the king's crown by itself, so the fight uses only the grab the
+/// player already knows.
 /// <para>
-/// The fight loops: the king rests, then attacks; a coconut hurts it at any
-/// time. Before the first hit it only rests, and the first coconut carries a
+/// The fight loops: the king rests, then attacks; a banana hurts it at any
+/// time. Before the first hit it only rests, and the first banana carries a
 /// key prompt and a dotted line to the jewel. Its attacks grow with each lost third of its health: a bite
 /// at a marked spot, a tail sweep through a marked ring (both fatal, both
 /// warned), and minions dropping on marked spots (a knock-down). A golden
@@ -40,49 +41,70 @@ public class BossFightController: MonoBehaviour {
     /// </returns>
     public bool IsInArena => phase != Phase.Waiting;
 
-    // Public Methods  #########################################################
     /// <summary>
-    /// Called by <see cref="ArmController"/> on a grab: a coconut of the
-    /// arena is thrown at the king, the golden banana gives its shield,
-    /// instead of either being eaten.
+    /// Called by <see cref="ArmController"/> on every grab: in the arena a
+    /// grabbed banana still feeds the monkey, & is thrown at the king too;
+    /// the golden banana gives its shield instead.
     /// </summary>
-    /// <returns>true if the grabbed fruit belonged to the arena</returns>
+    /// <returns>true if the grab was handled here, so the arm skips its own
+    /// fly-to-the-bar effect</returns>
     public bool TryThrow(Collider fruit, Vector3 from) {
-        if (phase != Phase.Fighting || fruit == null) {
+        if (phase != Phase.Fighting || fruit == null
+            || !fruit.CompareTag(FRUIT_TAG)) {
             return false;
         }
+
         int index = fruits.FindIndex(f => f.trigger == fruit);
-        if (index < 0) {
-            return false;
+        if (index >= 0) {
+            ArenaFruit picked = fruits[index];
+            if (picked.isGolden) {
+                HideGolden();
+                nextGoldenTime = Time.time + goldenIntervalS;
+                TakeGoldenBanana();
+                return true;
+            }
+            picked.respawnTime = Time.time
+                + bananaRespawnS * BananaRespawnScale;
+            fruits[index] = picked;
         }
 
-        ArenaFruit picked = fruits[index];
-        picked.root.SetActive(false);
-        picked.respawnTime = picked.isGolden
-            ? -1f
-            : Time.time + coconutRespawnS * CoconutRespawnScale;
-        fruits[index] = picked;
-
-        if (picked.isGolden) {
-            HideGolden();
-            nextGoldenTime = Time.time + goldenIntervalS;
-            TakeGoldenBanana();
-            return true;
+        // a banana on the tree's own branches flies too
+        StaminaBarController stamina = StaminaBarController.I;
+        if (stamina != null) {
+            stamina.AddStaminaByFruit();
         }
-
-        Transform projectile = CreatePrimitive(
-            PrimitiveType.Sphere, "ThrownCoconut",
-            Vector3.one * coconutRadiusU * 2f, coconutColor
-        ).transform;
-        projectile.position = from;
-        projectiles.Add(projectile);
+        LaunchBanana(fruit.gameObject, from);
         return true;
+    }
+
+    // a copy of the grabbed banana arcs up at the king, spinning, with a
+    // trail of fading dots, so the throw reads at a glance
+    private void LaunchBanana(GameObject source, Vector3 from) {
+        GameObject copy = Instantiate(source, transform, true);
+        // a bare look-alike: no scripts or colliders wake up on it
+        foreach (MonoBehaviour script in
+            copy.GetComponentsInChildren<MonoBehaviour>(true)) {
+            DestroyImmediate(script);
+        }
+        foreach (Collider part in copy.GetComponentsInChildren<Collider>(true)) {
+            DestroyImmediate(part);
+        }
+        copy.transform.position = from;
+        copy.transform.localScale = source.transform.lossyScale
+            * thrownBananaScale;
+        copy.SetActive(true);
+        projectiles.Add(new Projectile {
+            transform = copy.transform,
+            start = from,
+            ageS = 0f,
+            nextTrailS = 0f
+        });
     }
 
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
-    [Tooltip("balance numbers: trigger height, king health, coconut damage")]
+    [Tooltip("balance numbers: trigger height, king health, banana damage")]
     private GameBalanceConfig balanceConfig;
 
     [Header("Arena")]
@@ -187,12 +209,26 @@ public class BossFightController: MonoBehaviour {
     [Header("Minions (knock-down)")]
     [SerializeField]
     [Min(1)]
-    [Tooltip("small snakes dropped per minion attack")]
-    private int minionCount = 3;
+    [Tooltip("small snakes per wave, one of them left out as the gap")]
+    private int minionCount = 5;
 
     [SerializeField]
     [Tooltip("angle between neighbouring minions round the trunk; deg")]
-    private float minionSpreadDeg = 35f;
+    private float minionSpreadDeg = 28f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("delay between neighbouring minions in a wave, so the wave "
+        + "sweeps across; s")]
+    private float minionStaggerS = 0.18f;
+
+
+    [SerializeField]
+    [Min(1)]
+    [Tooltip("waves per minion attack, each re-aimed at the monkey w/ a new "
+        + "gap")]
+    private int minionWaves = 2;
+
 
     [SerializeField]
     [Tooltip("drop spots are marked this long before the minions fall; s")]
@@ -214,39 +250,48 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Min(0)]
     [Tooltip("webs on the trunk when the fight begins")]
-    private int webCount = 2;
+    private int webCount = 4;
 
     [SerializeField]
     [Min(0)]
     [Tooltip("webs added each time the king loses another third of its "
         + "health")]
-    private int websPerThird = 1;
+    private int websPerThird = 2;
+
+    [SerializeField]
+    [Tooltip("webs may hang this far below the entry, as low as a knocked-"
+        + "down monkey; u")]
+    private float webBelowEntryU = 4f;
+
+    [SerializeField]
+    [Tooltip("in the arena each escape press counts this many times the "
+        + "normal, so a web is shaken off within the king's attack gaps")]
+    private float webEscapeGainScale = 2f;
 
     [SerializeField]
     [Tooltip("webs keep this far round the trunk from any fruit; deg")]
     private float webFruitGapDeg = 25f;
 
 
-    [Header("Coconuts")]
+    [Header("Bananas")]
+    [SerializeField]
+    [Tooltip("the tree segments' banana branch prefab")]
+    private GameObject bananaBranchPrefab;
+
     [SerializeField]
     [Min(1)]
-    [Tooltip("coconuts hanging in the arena")]
-    private int coconutCount = 5;
+    [Tooltip("banana branches in the arena")]
+    private int bananaCount = 3;
 
     [SerializeField]
     [Min(0)]
-    [Tooltip("coconuts added each time the king loses another third of "
-        + "its health")]
-    private int coconutsPerThird = 2;
+    [Tooltip("banana branches added each time the king loses another third "
+        + "of its health")]
+    private int bananasPerThird = 1;
 
     [SerializeField]
-    [Tooltip("coconut grow-back time as a share of the normal, once 1 and "
-        + "2 thirds of the health are lost")]
-    private Vector2 coconutRespawnScaleByThird = new Vector2(0.75f, 0.5f);
-
-    [SerializeField]
-    [Tooltip("lowest & highest coconut height above the entry; u")]
-    private Vector2 coconutHeightRangeU = new Vector2(2f, 5.5f);
+    [Tooltip("lowest & highest banana height above the entry; u")]
+    private Vector2 fruitHeightRangeU = new Vector2(2f, 5.5f);
 
     [SerializeField]
     [Tooltip("radius of a fruit branch's root, as the tree segments' "
@@ -254,20 +299,46 @@ public class BossFightController: MonoBehaviour {
     private float branchRadiusU = 6.6f;
 
     [SerializeField]
-    [Tooltip("coconut radius; u")]
-    private float coconutRadiusU = 0.55f;
+    [Tooltip("a taken banana grows back on its branch after this; s")]
+    private float bananaRespawnS = 6f;
 
     [SerializeField]
-    [Tooltip("a thrown coconut grows back on its spot after this; s")]
-    private float coconutRespawnS = 6f;
+    [Tooltip("banana grow-back time as a share of the normal, once 1 and 2 "
+        + "thirds of the king's health are lost")]
+    private Vector2 bananaRespawnScaleByThird = new Vector2(0.75f, 0.5f);
+
+    [Header("Throw")]
+    [SerializeField]
+    [Tooltip("time a thrown banana takes to reach the crown; s")]
+    private float throwTimeS = 0.7f;
 
     [SerializeField]
-    [Tooltip("flight speed of a thrown coconut; u/s")]
-    private float throwSpeedU = 20f;
+    [Tooltip("how high the throw arcs over the straight line; u")]
+    private float throwArcU = 3f;
+
+    [SerializeField]
+    [Tooltip("thrown banana size as a share of the grabbed one")]
+    private float thrownBananaScale = 1.6f;
+
+    [SerializeField]
+    private Color trailColor = new Color(1f, 0.85f, 0.2f);
 
     [Header("Golden Banana")]
     [SerializeField]
-    [Tooltip("the golden banana first shows up this long into the fight; s")]
+    [Tooltip("outline material copied for the golden banana's thick border, "
+        + "eg the bananas' grabbable outline")]
+    private Material goldenOutlineMaterial;
+
+    [SerializeField]
+    private Color goldenOutlineColor = new Color(1f, 0.75f, 0f);
+
+    [SerializeField]
+    [Tooltip("golden banana outline width")]
+    private float goldenOutlineWidth = 0.25f;
+
+    [SerializeField]
+    [Tooltip("the golden banana first shows up this long after the first "
+        + "hit on the king; s")]
     private float goldenFirstDelayS = 8f;
 
     [SerializeField]
@@ -316,7 +387,7 @@ public class BossFightController: MonoBehaviour {
     [Header("Dotted Line")]
     [SerializeField]
     [Min(2)]
-    [Tooltip("dots from the first coconut to the jewel")]
+    [Tooltip("dots from the first banana to the crown")]
     private int dotCount = 12;
 
     [SerializeField]
@@ -324,11 +395,7 @@ public class BossFightController: MonoBehaviour {
     private float dotRadiusU = 0.12f;
 
     [Header("Colors")]
-    [SerializeField]
-    private Color coconutColor = new Color(0.42f, 0.25f, 0.1f);
 
-    [SerializeField]
-    private Color fruitTargetedColor = new Color(0.75f, 0.5f, 0.2f);
 
     [SerializeField]
     private Color goldenColor = new Color(1f, 0.82f, 0.15f);
@@ -339,11 +406,7 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     private Color warningDimColor = new Color(0.45f, 0.05f, 0.05f);
 
-    [SerializeField]
-    private Color branchColor = new Color(0.27f, 0.31f, 0.38f);
 
-    [SerializeField]
-    private Color stemColor = new Color(0.22f, 0.14f, 0.09f);
 
     [SerializeField]
     private Color minionColor = new Color(0.45f, 0.8f, 0.45f);
@@ -363,7 +426,8 @@ public class BossFightController: MonoBehaviour {
 
 
     [SerializeField]
-    private string finalThirdLine = "Minions, help me!";
+    [Tooltip("said once a game, the first time the minions come")]
+    private string minionCallLine = "Minions, help me!";
 
     [SerializeField]
     private string defeatLine = "Nooo... my crown!";
@@ -372,6 +436,11 @@ public class BossFightController: MonoBehaviour {
     [Tooltip("the same line is not repeated within this; s")]
     private float speechCooldownS = 4f;
 
+    [SerializeField]
+    [Tooltip("a key line, eg the minion call, holds the bubble this long; "
+        + "s")]
+    private float keyLineHoldS = 2.2f;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -379,6 +448,16 @@ public class BossFightController: MonoBehaviour {
             Debug.LogError(
                 "BossFightController:\tmust assign Inspector Field: "
                     + "balanceConfig",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        if (bananaBranchPrefab == null) {
+            Debug.LogError(
+                "BossFightController:\tmust assign Inspector Field: "
+                    + "bananaBranchPrefab",
                 this
             );
             enabled = false;
@@ -409,6 +488,9 @@ public class BossFightController: MonoBehaviour {
     }
 
     private void OnDisable() {
+        if (struggle != null) {
+            struggle.EscapeGainScale = 1f;
+        }
         if (monkeyController != null) {
             monkeyController.ClearHeightCeiling();
         }
@@ -494,6 +576,10 @@ public class BossFightController: MonoBehaviour {
         body.SetWeakSpotLit(true);
         SpawnFruits();
         SpawnWebs(webCount);
+        struggle = FindFirstObjectByType<SpiderWebStruggle>();
+        if (struggle != null) {
+            struggle.EscapeGainScale = webEscapeGainScale;
+        }
         BuildDots();
         BuildShieldRing();
 
@@ -566,32 +652,30 @@ public class BossFightController: MonoBehaviour {
 
     private void SpawnFruits() {
         float startAngle = AngleOf(monkey.position);
-        for (int i = 0; i < coconutCount; i++) {
+        for (int i = 0; i < bananaCount; i++) {
             // spread round the trunk, the first one right above the monkey
-            float t = coconutCount > 1 ? i / (coconutCount - 1f) : 0f;
+            float t = bananaCount > 1 ? i / (bananaCount - 1f) : 0f;
             AddFruit(
-                "ArenaCoconut" + i,
-                startAngle + i * 360f / coconutCount,
+                startAngle + i * 360f / bananaCount,
                 entryY + Mathf.Lerp(
-                    coconutHeightRangeU.x, coconutHeightRangeU.y, t
+                    fruitHeightRangeU.x, fruitHeightRangeU.y, t
                 ),
                 false
             );
         }
-        // the golden banana starts hidden & shows up now & then
-        goldenIndex = AddFruit("GoldenBanana", startAngle, entryY, true);
+        // the golden banana starts hidden & shows up once the fight is on
+        goldenIndex = AddFruit(startAngle, entryY, true);
         HideGolden();
-        nextGoldenTime = Time.time + goldenFirstDelayS;
     }
 
-    // extra coconuts at random spots round the trunk, kept apart
-    private void AddCoconuts(int count) {
+    // extra banana branches at random spots round the trunk
+    private void AddBananas(int count) {
         for (int i = 0; i < count; i++) {
-            float angle = Random.Range(0f, 360f);
-            float y = entryY + Random.Range(
-                coconutHeightRangeU.x, coconutHeightRangeU.y
+            AddFruit(
+                Random.Range(0f, 360f),
+                entryY + Random.Range(fruitHeightRangeU.x, fruitHeightRangeU.y),
+                false
             );
-            AddFruit("ArenaCoconut" + fruits.Count, angle, y, false);
         }
     }
 
@@ -607,7 +691,7 @@ public class BossFightController: MonoBehaviour {
                 if (IsNearFruit(angle)) {
                     continue;
                 }
-                float y = Random.Range(entryY + 0.5f, Mathf.Max(entryY + 1f, topY));
+                float y = Random.Range(entryY - webBelowEntryU, Mathf.Max(entryY + 1f, topY));
                 // never right on the monkey
                 bool isOnMonkey = Mathf.Abs(Mathf.DeltaAngle(
                     angle, AngleOf(monkey.position)
@@ -642,55 +726,76 @@ public class BossFightController: MonoBehaviour {
         return false;
     }
 
-    private float CoconutRespawnScale => Third >= 2
-        ? coconutRespawnScaleByThird.y
+    private float BananaRespawnScale => Third >= 2
+        ? bananaRespawnScaleByThird.y
         : Third >= 1
-            ? coconutRespawnScaleByThird.x
+            ? bananaRespawnScaleByThird.x
             : 1f;
 
     /// <returns>the new fruit's index in the fruit list</returns>
-    private int AddFruit(string fruitName, float angle, float y, bool isGolden) {
-        GameObject root = isGolden
-            ? CreatePrimitive(
-                PrimitiveType.Capsule, fruitName,
-                new Vector3(0.5f, 0.75f, 0.5f), goldenColor
-            )
-            : CreatePrimitive(
-                PrimitiveType.Sphere, fruitName,
-                Vector3.one * coconutRadiusU * 2f, coconutColor
-            );
-        GameObject[] stub = AddBranchStub(angle, y, out Vector3 fruitSpot);
-        root.transform.position = fruitSpot;
+    // a real banana branch, as the tree segments grow, always bearing; the
+    // golden one is the same banana tinted gold w/ a thick gold outline
+    private int AddFruit(float angle, float y, bool isGolden) {
+        GameObject branch = Instantiate(bananaBranchPrefab, transform);
+        PlaceBranch(branch.transform, angle, y);
+        BranchController controller = branch.GetComponent<BranchController>();
+        if (controller != null) {
+            controller.Initialize(1f);
+        }
+        ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
+        GameObject banana = pickup != null ? pickup.gameObject : branch;
         if (isGolden) {
-            root.transform.rotation = Quaternion.Euler(0f, -angle, 30f);
+            MakeGolden(banana);
         }
 
-        // the grab sensors look for a "FruitCollider" trigger
-        SphereCollider trigger = root.AddComponent<SphereCollider>();
-        trigger.isTrigger = true;
-        trigger.radius = 0.6f;
-        root.tag = FRUIT_TAG;
-
         fruits.Add(new ArenaFruit {
-            root = root,
-            trigger = trigger,
-            renderer = root.GetComponent<Renderer>(),
+            root = banana,
+            branch = branch,
+            trigger = banana.GetComponent<Collider>(),
             isGolden = isGolden,
-            stub = stub,
             respawnTime = -1f
         });
         return fruits.Count - 1;
     }
 
-    // Golden Banana Visits  ---------------------------------------------------
+    // the branch root sits on the segments' branch ring, its +z away from the
+    // trunk, high enough that the banana hangs about the given height
+    private void PlaceBranch(Transform branch, float angle, float fruitY) {
+        branch.SetPositionAndRotation(
+            PointOnTrunk(angle, fruitY + BANANA_HANG_U, branchRadiusU),
+            Quaternion.Euler(0f, 90f - angle, 0f)
+        );
+    }
+
+    private void MakeGolden(GameObject banana) {
+        // its own outline replaces the reach-target one
+        foreach (FruitOutlineListener listener in
+            banana.GetComponentsInChildren<FruitOutlineListener>(true)) {
+            Destroy(listener);
+        }
+        Material outline = null;
+        if (goldenOutlineMaterial != null) {
+            outline = new Material(goldenOutlineMaterial);
+            outline.SetColor(OUTLINE_COLOR, goldenOutlineColor);
+            outline.SetFloat(OUTLINE_WIDTH, goldenOutlineWidth);
+        }
+        foreach (Renderer part in banana.GetComponentsInChildren<Renderer>(true)) {
+            Material baseMaterial = part.sharedMaterial;
+            if (outline != null) {
+                part.sharedMaterials = new[] { baseMaterial, outline };
+            }
+            SetColor(part, goldenColor);
+        }
+    }
+
     // now & then the golden banana grows in sight, beside the monkey, for a
-    // short while
+    // short while; only once the first banana has hit the king
     private void UpdateGolden() {
-        if (goldenIndex < 0 || phase != Phase.Fighting) {
+        if (goldenIndex < 0 || phase != Phase.Fighting || !hasHit) {
             return;
         }
         ArenaFruit golden = fruits[goldenIndex];
-        if (golden.root.activeSelf) {
+        if (golden.branch.activeSelf) {
             if (Time.time >= goldenHideTime) {
                 HideGolden();
                 nextGoldenTime = Time.time + goldenIntervalS;
@@ -708,76 +813,25 @@ public class BossFightController: MonoBehaviour {
         float angle = AngleOf(monkey.position) + side * goldenSideDeg;
         float y = Mathf.Clamp(
             monkey.position.y + goldenAboveMonkeyU,
-            entryY + coconutHeightRangeU.x,
+            entryY + fruitHeightRangeU.x,
             body.LowestY - ceilingGapU - 0.5f
         );
-        golden.root.transform.position =
-            PlaceBranchStub(golden.stub, angle, y);
-        golden.root.transform.rotation = Quaternion.Euler(0f, -angle, 30f);
+        PlaceBranch(golden.branch.transform, angle, y);
+        golden.branch.SetActive(true);
         golden.root.SetActive(true);
-        foreach (GameObject part in golden.stub) {
-            part.SetActive(true);
-        }
         goldenHideTime = Time.time + goldenShowS;
-        hud.PopText("Golden banana!", golden.root.transform.position, goldenColor);
+        hud.PopText(
+            "Golden banana!", golden.root.transform.position, goldenColor
+        );
     }
 
     private void HideGolden() {
-        ArenaFruit golden = fruits[goldenIndex];
-        golden.root.SetActive(false);
-        foreach (GameObject part in golden.stub) {
-            part.SetActive(false);
-        }
+        fruits[goldenIndex].branch.SetActive(false);
     }
 
-    // the fruit grows on a branch like the bananas do: the same plank, set
-    // at the same radius & angle as a tree segment's BranchWithFruit, with
-    // the fruit hanging under its tip; tagged Branch, so it knocks the monkey
-    // down like any branch. It stays while the fruit grows back
-    private GameObject[] AddBranchStub(
-        float angle,
-        float fruitY,
-        out Vector3 fruitSpot
-    ) {
-        Transform root = new GameObject("FruitBranch").transform;
-        root.SetParent(transform, false);
 
-        GameObject plank = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        plank.name = "Branch";
-        plank.tag = BRANCH_TAG;
-        plank.transform.SetParent(root, false);
-        plank.transform.localRotation = BRANCH_LOCAL_ROTATION;
-        plank.transform.localScale = BRANCH_LOCAL_SCALE;
-        Renderer plankRenderer = plank.GetComponent<Renderer>();
-        if (body.PrimitiveMaterial != null) {
-            plankRenderer.sharedMaterial = body.PrimitiveMaterial;
-        }
-        SetColor(plankRenderer, branchColor);
 
-        GameObject stem = CreatePrimitive(
-            PrimitiveType.Cylinder, "FruitStem",
-            new Vector3(0.08f, 0.35f, 0.08f), stemColor
-        );
-        stem.transform.SetParent(root, false);
-        stem.transform.localPosition = FRUIT_LOCAL_SPOT + Vector3.up * 0.55f;
-
-        GameObject[] parts = { root.gameObject };
-        fruitSpot = PlaceBranchStub(parts, angle, fruitY);
-        return parts;
-    }
-
-    /// <returns>where the fruit hangs under the moved branch</returns>
-    private Vector3 PlaceBranchStub(GameObject[] parts, float angle, float fruitY) {
-        Transform root = parts[0].transform;
-        // the root's +z points away from the trunk
-        root.SetPositionAndRotation(
-            PointOnTrunk(angle, fruitY - FRUIT_LOCAL_SPOT.y, branchRadiusU),
-            Quaternion.Euler(0f, 90f - angle, 0f)
-        );
-        return root.TransformPoint(FRUIT_LOCAL_SPOT);
-    }
-
-    // dotted line from the first coconut to the jewel, until the 1st hit
+    // dotted line from the first banana to the crown, until the 1st hit
     private void BuildDots() {
         dots = new Transform[dotCount];
         for (int i = 0; i < dotCount; i++) {
@@ -1002,30 +1056,72 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // Minions: drop spots marked round the monkey, then small snakes fall
+    // Minions: waves of small snakes fall one after another across the
+    // monkey's side of the trunk, each wave leaving one gap to dodge into
     private void StartMinions() {
+        // the king calls its minions once a game, the first time they come
+        if (!hasCalledMinions) {
+            hasCalledMinions = true;
+            SayNow(minionCallLine, true);
+        }
+        waveIndex = 0;
+        StartWave();
+    }
+
+
+    private void StartWave() {
+        ClearMarkers();
         minions.Clear();
+        waveTimeS = 0f;
+        lockAngle = AngleOf(monkey.position);
+        lockY = monkey.position.y;
+
+        // a gap never at either end, & the sweep runs either way
+        int gap = Random.Range(1, Mathf.Max(2, minionCount - 1));
+        float direction = Random.value < 0.5f ? -1f : 1f;
+        float warn = minionWarnS * WarnScale;
+        int signAt = minionCount / 2 == gap ? gap + 1 : minionCount / 2;
+        int order = 0;
         for (int i = 0; i < minionCount; i++) {
             float angle = lockAngle
-                + (i - (minionCount - 1) * 0.5f) * minionSpreadDeg;
-            AddTrunkZone(
-                angle, lockY, minionHitRadiusU * 2f,
-                i == (minionCount - 1) / 2 ? "LOOK UP!" : null, false
-            );
-            minions.Add(new Minion { angle = angle, root = null });
+                + direction * (i - (minionCount - 1) * 0.5f) * minionSpreadDeg;
+            bool isGap = i == gap;
+            if (!isGap) {
+                // the same filling danger zone as the first version; one
+                // LOOK UP! sign for the whole wave, on a middle zone
+                AddTrunkZone(
+                    angle, lockY, minionHitRadiusU * 2f,
+                    i == signAt ? "LOOK UP!" : null, false
+                );
+            }
+            minions.Add(new Minion {
+                angle = angle,
+                root = null,
+                isDone = isGap,
+                dropDelayS = warn + order * minionStaggerS
+            });
+            if (!isGap) {
+                order++;
+            }
         }
     }
 
+
+
     private void UpdateMinions() {
+        waveTimeS += Time.deltaTime;
         float warn = minionWarnS * WarnScale;
-        if (attackTimeS < warn) {
-            UpdateMarkers(attackTimeS / warn, false);
-            return;
+        if (waveTimeS < warn) {
+            UpdateMarkers(waveTimeS / warn, false);
         }
         bool isAnyLeft = false;
         for (int i = 0; i < minions.Count; i++) {
             Minion minion = minions[i];
             if (minion.isDone) {
+                continue;
+            }
+            isAnyLeft = true;
+            if (waveTimeS < minion.dropDelayS) {
                 continue;
             }
             if (minion.root == null) {
@@ -1039,18 +1135,24 @@ public class BossFightController: MonoBehaviour {
             bool hasHit = (minion.root.position - monkey.position).magnitude
                 < minionHitRadiusU;
             if (hasHit) {
-                KnockDown(body.HeadCollider);
+                // a minion is a snake too: its touch is fatal, unless the
+                // gold shield takes it
+                LethalHit();
             }
             if (hasHit || minion.root.position.y < entryY - guardDepthU) {
                 Destroy(minion.root.gameObject);
                 minion.root = null;
                 minion.isDone = true;
-            } else {
-                isAnyLeft = true;
             }
             minions[i] = minion;
         }
-        if (!isAnyLeft) {
+        if (isAnyLeft) {
+            return;
+        }
+        waveIndex++;
+        if (waveIndex < minionWaves) {
+            StartWave();
+        } else {
             NextAttack();
         }
     }
@@ -1116,15 +1218,18 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // no butt during an attack round, so it never delays an attack
+    // any time the monkey gets too close the king shoves it off & says so:
+    // a head butt when its head is free, else at once
     private void StartPush() {
-        if (loop == Loop.Attack || body.IsStriking
-            || Time.time < nextPushTime) {
+        if (Time.time < nextPushTime) {
             return;
         }
         nextPushTime = Time.time + pushCooldownS;
-        // every butt says it, never held back by the speech cooldown
-        hud.Say(approachLine);
+        SayNow(approachLine, false);
+        if (body.IsStriking) {
+            KnockDown(body.HeadCollider);
+            return;
+        }
         body.StartStrike(monkey.position, pushWindUpS, () => {
             if (monkey.position.y > body.LowestY - pushRangeU - 1.5f) {
                 KnockDown(body.HeadCollider);
@@ -1175,34 +1280,98 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // Coconuts On The King  ---------------------------------------------------
+    // thrown bananas follow an arc onto the crown, then burst on impact
     private void UpdateProjectiles() {
         Vector3 target = body.WeakSpotPosition;
         for (int i = projectiles.Count - 1; i >= 0; i--) {
-            Transform projectile = projectiles[i];
-            projectile.position = Vector3.MoveTowards(
-                projectile.position,
-                target,
-                throwSpeedU * Time.deltaTime
-            );
-            projectile.Rotate(Vector3.right, 720f * Time.deltaTime);
-            if ((projectile.position - target).sqrMagnitude > 0.3f) {
+            Projectile thrown = projectiles[i];
+            if (thrown.transform == null) {
+                projectiles.RemoveAt(i);
                 continue;
             }
-            Destroy(projectile.gameObject);
+            thrown.ageS += Time.deltaTime;
+            float t = Mathf.Clamp01(thrown.ageS / throwTimeS);
+            Vector3 position = Vector3.Lerp(thrown.start, target, t)
+                + Vector3.up * Mathf.Sin(t * Mathf.PI) * throwArcU;
+            thrown.transform.position = position;
+            thrown.transform.Rotate(Vector3.forward, 900f * Time.deltaTime);
+
+            // a dot every few hundredths of a second marks the path
+            if (thrown.ageS >= thrown.nextTrailS) {
+                thrown.nextTrailS = thrown.ageS + 0.035f;
+                AddTrailDot(position);
+            }
+            projectiles[i] = thrown;
+            if (t < 1f) {
+                continue;
+            }
+            Destroy(thrown.transform.gameObject);
             projectiles.RemoveAt(i);
+            BurstAt(target);
             OnJewelHit();
+        }
+        UpdateSparks();
+    }
+
+    private void AddTrailDot(Vector3 position) {
+        Transform dot = CreatePrimitive(
+            PrimitiveType.Sphere, "TrailDot", Vector3.one * 0.22f, trailColor
+        ).transform;
+        dot.position = position;
+        sparks.Add(new Spark {
+            transform = dot,
+            velocity = Vector3.zero,
+            size = 0.22f,
+            ageS = 0f,
+            lifeS = 0.35f
+        });
+    }
+
+    // yellow cubes fly out where a banana lands
+    private void BurstAt(Vector3 position) {
+        for (int i = 0; i < 10; i++) {
+            Transform cube = CreatePrimitive(
+                PrimitiveType.Cube, "Burst", Vector3.one * 0.25f, trailColor
+            ).transform;
+            cube.position = position;
+            cube.rotation = Random.rotation;
+            sparks.Add(new Spark {
+                transform = cube,
+                velocity = Random.insideUnitSphere * 7f + Vector3.up * 2f,
+                size = 0.25f,
+                ageS = 0f,
+                lifeS = 0.6f
+            });
         }
     }
 
-    // a coconut on the jewel always hurts
+    private void UpdateSparks() {
+        for (int i = sparks.Count - 1; i >= 0; i--) {
+            Spark spark = sparks[i];
+            spark.ageS += Time.deltaTime;
+            if (spark.transform == null || spark.ageS >= spark.lifeS) {
+                if (spark.transform != null) {
+                    Destroy(spark.transform.gameObject);
+                }
+                sparks.RemoveAt(i);
+                continue;
+            }
+            spark.velocity += Physics.gravity * 0.5f * Time.deltaTime;
+            spark.transform.position += spark.velocity * Time.deltaTime;
+            spark.transform.localScale = Vector3.one * spark.size
+                * (1f - spark.ageS / spark.lifeS);
+            sparks[i] = spark;
+        }
+    }
+
+    // a banana on the crown always hurts
     private void OnJewelHit() {
         if (phase != Phase.Fighting) {
             return;
         }
 
         int lastThird = Third;
-        int damage = balanceConfig.BossCoconutDamage;
+        int damage = balanceConfig.BossBananaDamage;
         health = Mathf.Max(0, health - damage);
         body.FlashHit();
         hud.SetHealth(health / (float)balanceConfig.BossMaxHealth);
@@ -1215,14 +1384,12 @@ public class BossFightController: MonoBehaviour {
         if (!hasHit) {
             hasHit = true;
             Say(firstHitLine);
+            nextGoldenTime = Time.time + goldenFirstDelayS;
             StartRest();
         } else if (Third > lastThird) {
-            // each lost third: more coconuts to throw & a few more webs
-            AddCoconuts(coconutsPerThird);
+            // each lost third: more bananas to throw & more webs
+            AddBananas(bananasPerThird);
             SpawnWebs(websPerThird);
-            if (Third >= 2) {
-                Say(finalThirdLine);
-            }
         }
     }
 
@@ -1316,30 +1483,17 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // taken fruit grows back; the one the monkey would reach turns lighter
+    // a taken banana grows back on its branch
     private void UpdateFruits() {
-        Collider target = UpwardFruitSensor.I != null
-            ? UpwardFruitSensor.I.ReachTarget
-            : null;
         for (int i = 0; i < fruits.Count; i++) {
             ArenaFruit fruit = fruits[i];
-            if (!fruit.root.activeSelf) {
-                if (!fruit.isGolden && phase == Phase.Fighting
-                    && fruit.respawnTime >= 0f
-                    && Time.time >= fruit.respawnTime) {
-                    fruit.root.SetActive(true);
-                    fruit.respawnTime = -1f;
-                    fruits[i] = fruit;
-                }
+            if (fruit.isGolden || fruit.root.activeSelf
+                || fruit.respawnTime < 0f || Time.time < fruit.respawnTime) {
                 continue;
             }
-            Color baseColor = fruit.isGolden ? goldenColor : coconutColor;
-            SetColor(
-                fruit.renderer,
-                fruit.trigger == target
-                    ? Color.Lerp(baseColor, fruitTargetedColor, 0.6f)
-                    : baseColor
-            );
+            fruit.root.SetActive(true);
+            fruit.respawnTime = -1f;
+            fruits[i] = fruit;
         }
     }
 
@@ -1457,8 +1611,10 @@ public class BossFightController: MonoBehaviour {
             }
         }
         minions.Clear();
-        foreach (Transform projectile in projectiles) {
-            Destroy(projectile.gameObject);
+        foreach (Projectile thrown in projectiles) {
+            if (thrown.transform != null) {
+                Destroy(thrown.transform.gameObject);
+            }
         }
         projectiles.Clear();
     }
@@ -1467,8 +1623,19 @@ public class BossFightController: MonoBehaviour {
         if (line == lastLine && Time.time < nextSameLineTime) {
             return;
         }
+        SayNow(line, false);
+    }
+
+    // a key line holds the bubble for a while, so no other line cuts it off
+    private void SayNow(string line, bool isKeyLine) {
+        if (Time.time < keyLineEndTime) {
+            return;
+        }
         lastLine = line;
         nextSameLineTime = Time.time + speechCooldownS;
+        if (isKeyLine) {
+            keyLineEndTime = Time.time + keyLineHoldS;
+        }
         hud.Say(line);
     }
 
@@ -1525,14 +1692,12 @@ public class BossFightController: MonoBehaviour {
 
     // private members  ########################################################
     private const string FRUIT_TAG = "FruitCollider";
-    private const string BRANCH_TAG = "Branch";
-    // the BranchWithFruit prefab's plank & banana spot, under its root
-    private static readonly Quaternion BRANCH_LOCAL_ROTATION =
-        new Quaternion(-0.122787856f, 0.6963643f, -0.122787856f, 0.6963643f);
-    private static readonly Vector3 BRANCH_LOCAL_SCALE =
-        new Vector3(5f, 0.7f, 0.5f);
-    private static readonly Vector3 FRUIT_LOCAL_SPOT =
-        new Vector3(0f, -1f, 2.149f);
+    // the banana hangs about this far below its branch root; u
+    private const float BANANA_HANG_U = 1f;
+    private static readonly int OUTLINE_COLOR =
+        Shader.PropertyToID("_Outline_Color");
+    private static readonly int OUTLINE_WIDTH =
+        Shader.PropertyToID("_Outline_Width");
     private static readonly int BASE_COLOR = Shader.PropertyToID("_BaseColor");
     private static readonly int COLOR = Shader.PropertyToID("_Color");
 
@@ -1559,8 +1724,23 @@ public class BossFightController: MonoBehaviour {
         public Collider trigger;
         public Renderer renderer;
         public bool isGolden;
-        public GameObject[] stub; // its branch stub & stem
+        public GameObject branch; // the branch it grows on
         public float respawnTime; // Time.time it grows back, -1 if hanging
+    }
+
+    private struct Projectile {
+        public Transform transform;
+        public Vector3 start; // world point it was thrown from
+        public float ageS;
+        public float nextTrailS; // age the next trail dot drops at
+    }
+
+    private struct Spark {
+        public Transform transform;
+        public Vector3 velocity;
+        public float size;
+        public float ageS;
+        public float lifeS;
     }
 
     private struct Marker {
@@ -1574,7 +1754,8 @@ public class BossFightController: MonoBehaviour {
     private struct Minion {
         public float angle; // round the trunk; deg
         public Transform root; // null until it falls
-        public bool isDone;
+        public bool isDone; // fallen, or the wave's gap
+        public float dropDelayS; // wave time it starts to fall at
     }
 
     private Phase phase = Phase.Waiting;
@@ -1586,6 +1767,9 @@ public class BossFightController: MonoBehaviour {
     private float lockAngle; // monkey angle when the attack began; deg
     private float lockY; // monkey y when the attack began
     private bool biteStarted;
+    private int waveIndex; // minion wave under way
+    private bool hasCalledMinions; // the minion call was said this game
+    private float waveTimeS; // time into the minion wave
     private Vector3 biteSpot; // world point the running bite dives at
     private bool tailHit;
     private int health;
@@ -1601,12 +1785,14 @@ public class BossFightController: MonoBehaviour {
     private float coilBottomY; // world y of the king's coil
     private Vector3 trunkCenter;
     private string lastLine;
+    private float keyLineEndTime; // Time.time a key line stops holding
     private float nextSameLineTime;
     private float nextPushTime; // Time.time b4 which no new butt starts
     private Vector3 crownStart;
     private Vector3 crownStartScale;
     private readonly List<ArenaFruit> fruits = new List<ArenaFruit>();
-    private readonly List<Transform> projectiles = new List<Transform>();
+    private readonly List<Projectile> projectiles = new List<Projectile>();
+    private readonly List<Spark> sparks = new List<Spark>();
     private readonly List<Marker> markers = new List<Marker>();
     private readonly List<Minion> minions = new List<Minion>();
     private Transform[] tail;
@@ -1618,6 +1804,7 @@ public class BossFightController: MonoBehaviour {
     private BossFightHud hud;
     private Transform monkey;
     private MonkeyController monkeyController;
+    private SpiderWebStruggle struggle;
     private Transform crown;
     private CobraMotor greatCobra;
     private CameraLookUp cameraLookUp;

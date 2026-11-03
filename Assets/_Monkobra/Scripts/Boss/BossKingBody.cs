@@ -5,7 +5,7 @@ using UnityEngine;
 /// The Cobra King, built at runtime from Unity primitives only, kept simple
 /// and cute: a round bead coil wrapped round the tree top (its nest), a neck
 /// hanging down the trunk toward the monkey, and a big round head with two
-/// eyes and a small gold crown; thrown coconuts fly at the crown's front. The head
+/// eyes and a small gold crown; thrown bananas fly at the crown's front. The head
 /// turns round the trunk after the monkey and strikes down at a point:
 /// a butt or a bite. Once defeated it shatters into cubes and lets go of
 /// its crown.
@@ -356,7 +356,7 @@ public class BossKingBody: MonoBehaviour {
                 new Vector3(0.24f, 0.45f, 0.24f), crownColor, false, true
             );
         }
-        // the spot coconuts fly at, on the crown's front; kept invisible
+        // the spot thrown bananas fly at, on the crown's front; kept invisible
         weakSpot = CreatePart(
             PrimitiveType.Sphere, "Target", crown,
             new Vector3(0f, 0.12f, 0.72f), Vector3.one * 0.55f,

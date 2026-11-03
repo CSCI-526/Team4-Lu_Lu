@@ -133,16 +133,16 @@ Work in progress on the `add-boss-fight` branch, tested in `devWenhaiBossFightSc
 
 - Trigger: once the monkey has climbed `bossTriggerHeightU` (`GameBalanceConfig`, low while testing) in Playing, the screen flashes white and the run enters the boss arena
 - Arena: the king coils round the trunk `nestHeightU` above the entry, its neck and head hanging toward the monkey; the web, falling cobra and wet bark spawners stop, hazards above the entry and branches near the nest are cleared, and segments recycled during the fight lose their branches near the nest
-- Great Cobra: stops chasing and guards `guardDepthU` below the entry without climbing, still circling the trunk (`CobraMotor.StartGuard`); every `peekIntervalRangeS` the first `peekNeckU` of its neck straightens and the head pokes `peekRiseU` straight up as a threat, the coil staying put; contact stays fatal, so only a monkey lingering that low is at risk. A monkey more than `retreatLimitU` below the entry hears "Nowhere to run!"
+- Great Cobra: stops chasing and guards `guardDepthU` below the entry without climbing, still circling the trunk (`CobraMotor.StartGuard`); every `peekIntervalRangeS` the first `peekNeckU` of its neck lifts off the coil in a smooth curve, bowing `peekCurlU` out from the trunk, and the head springs `peekRiseU` up with a small overshoot and a gentle sway, the coil staying put; contact stays fatal, so only a monkey lingering that low is at risk. A monkey more than `retreatLimitU` below the entry hears "Nowhere to run!"
 - Keep Away: the monkey can never reach the king: `MonkeyController.SetHeightCeiling` caps its climb `ceilingGapU` below the king's chin however long up is held, and a monkey within `pushRangeU` of the cap gets butted down
-- King: built at runtime from Unity primitives, kept simple (`BossKingBody`): a round bead coil, neck, a big round head with two eyes and a small gold crown; coconuts fly at an invisible target on the crown's front
+- King: built at runtime from Unity primitives, kept simple (`BossKingBody`): a round bead coil, neck, a big round head with two eyes and a small gold crown; thrown bananas fly at an invisible target on the crown's front
 - Camera: in the arena `CameraLookUp.ViewDistanceScale` pulls the behind camera back to `cameraDistanceScale` times its distance, and `ExtraAimOffsetU` tilts it up by `cameraFocusShare` of the height to the king's head (at most `maxCameraFocusU`), kept low so a knocked-down monkey stays in view
 
 ### Fight Loop
 
-- Rest: a pause of `restS`, `restFinalS` in the last third. A coconut on the crown takes `bossCoconutDamage` off `bossMaxHealth` at any time, resting or attacking
-- Attack Round: two bites, plus the tail sweep between them once a third of the health is lost, plus minions first once two thirds are; warnings shrink to `finalWarnScale` in the last third, where the king calls "Minions, help me!"
-- First Hit: until it, the king only rests and the first coconut carries a `space` keycap prompt ("hold, then release") and a dotted line pulsing toward the crown; the first hit ("How dare you!") starts the loop
+- Rest: a pause of `restS`, `restFinalS` in the last third. A thrown banana on the crown takes `bossBananaDamage` off `bossMaxHealth` at any time, resting or attacking
+- Attack Round: two bites, plus the tail sweep between them once a third of the health is lost, plus minions first once two thirds are; warnings shrink to `finalWarnScale` in the last third. The first minion attack of a game opens with "Minions, help me!", said once a game
+- First Hit: until it, the king only rests and the first banana carries a `space` keycap prompt ("hold, then release") and a dotted line pulsing toward the crown; the first hit ("How dare you!") starts the loop
 
 ### Attacks
 
@@ -150,20 +150,20 @@ Work in progress on the `add-boss-fight` branch, tested in `devWenhaiBossFightSc
 | --- | --- | --- | --- |
 | Bite | a dark red disc on the trunk at the monkey's spot whose bright center fills it, and a red "!" sign reading BITE!, `biteWarnS` | fatal within `biteRadiusU` of the spot | orbit or climb off the disc |
 | Tail Sweep | a red band round the trunk at the monkey's height, growing to the swept height, and a "!" sign reading TAIL!, `sweepWarnS` | the tail loops the trunk in `sweepTimeS`, fatal within `sweepBandHalfU` of the ring | climb above or below the ring |
-| Minions | filling discs round the monkey and a "!" sign reading LOOK UP!, `minionWarnS` | small snakes fall on them, a knock-down | orbit off the discs |
-| Head Butt | the head rears back, `pushWindUpS` | a knock-down; a monkey at the ceiling or touching the king (`BossKingContact`) gets it, at most once per `pushCooldownS`, never during an attack round; every butt says "Stay away from me!" | stay below the ceiling |
+| Minions | `minionWaves` waves, each re-aimed at the monkey: filling danger zones on the trunk for `minionCount` - 1 drop spots spread `minionSpreadDeg` apart round it, one inner spot left empty as the gap, and one "!" sign reading LOOK UP! on a middle zone, `minionWarnS`; the first minion attack of a game holds "Minions, help me!" in the bubble | green minions appear under the king's coil and fall one after another (`minionStaggerS`), sweeping across; their touch is fatal, unless the gold shield takes it | orbit into the gap |
+| Head Butt | the head rears back, `pushWindUpS` | a knock-down; a monkey at the ceiling or touching the king (`BossKingContact`) gets it any time, at most once per `pushCooldownS`, with "Stay away from me!"; while the head is busy with a bite the shove lands at once | stay below the ceiling |
 
 Every warning sign is a red diamond with a white "!" and a word, built by `BossFightHud.AddWarning`, beating faster and growing as the hit nears. A knock-down is the usual stun and drop with the heavier shake (`HitBranchSensor.ReportHit`).
 
 ### Fruit
 
-- Fruit Branches: every coconut and the golden banana hang under the tip of a branch built like a tree segment's `BranchWithFruit` (same plank size and angle, root at `branchRadiusU`, fruit at the banana's spot), tagged `Branch`, so it knocks the monkey down like any branch
-- Coconuts: `coconutCount` brown spheres tagged `FruitCollider`, plus `coconutsPerThird` more at random spots each time the king loses a third of its health; the normal grab takes one and `ArmController` hands it to `BossFightController.TryThrow`, which flies it at the crown and grows it back after `coconutRespawnS`, shortened by `coconutRespawnScaleByThird` later in the fight. The fruit the monkey would reach turns lighter
-- Golden Banana: a gold capsule that shows up now & then (`goldenFirstDelayS`, then `goldenIntervalS` after each visit) beside the monkey, `goldenSideDeg` round the trunk and `goldenAboveMonkeyU` above it, under the ceiling, with a "Golden banana!" word, and vanishes after `goldenShowS`; grabbed, it refills stamina and raises a shield, gold armor on the monkey (a back plate, two shoulder pads and a helmet), that turns the next fatal hit into a knock-down ("Saved!"); none shows up while the shield is on
+- Banana Branches: `bananaCount` real `BranchWithFruit` prefabs, always bearing, on the segments' branch ring (`branchRadiusU`) round the trunk, plus `bananasPerThird` more at random spots each time the king loses a third of its health; tagged `Branch` as ever, so they knock the monkey down like any branch. A taken banana grows back after `bananaRespawnS`, shortened by `bananaRespawnScaleByThird` later in the fight
+- Throw: in the arena every grabbed banana, the arena's or the tree's own, still restores stamina and is also thrown: `ArmController` hands it to `BossFightController.TryThrow`, which flies a larger copy (`thrownBananaScale`) in an arc (`throwArcU`, `throwTimeS`) onto the crown, spinning and dropping a trail of yellow dots, and bursts it into yellow cubes on impact
+- Golden Banana: the same banana branch, its banana tinted gold with a thick gold outline (a copy of `goldenOutlineMaterial`); it first shows up `goldenFirstDelayS` after the first hit on the king, then `goldenIntervalS` after each visit, beside the monkey (`goldenSideDeg` round the trunk, `goldenAboveMonkeyU` above it, under the ceiling) with a "Golden banana!" word, and vanishes after `goldenShowS`; grabbed, it refills stamina and raises a shield, gold armor on the monkey (a back plate, two shoulder pads and a helmet), that turns the next fatal hit into a knock-down ("Saved!"); none shows up while the shield is on
 
 ### Spider Webs
 
-`webCount` webs (the segments' `SpiderWeb` prefab) hang on the trunk when the fight begins, `websPerThird` more with each lost third, kept `webFruitGapDeg` round the trunk from any coconut and never on the monkey. They trap and release as usual, with no extra protection from the king's attacks for now.
+`webCount` webs (the segments' `SpiderWeb` prefab) hang at random spots on the trunk when the fight begins, from `webBelowEntryU` below the entry up to just under the ceiling, `websPerThird` more with each lost third, kept `webFruitGapDeg` round the trunk from any banana and never on the monkey. They trap and release as usual, but in the arena each escape press counts `webEscapeGainScale` times (`SpiderWebStruggle.EscapeGainScale`), so mashing Space shakes a web off within the king's attack gaps; outside the arena the scale is back to 1.
 
 ### Victory
 

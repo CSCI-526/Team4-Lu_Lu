@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Single home for the game balance knobs: stamina budget, climb speeds,
@@ -146,8 +147,9 @@ public class GameBalanceConfig: ScriptableObject {
     /// <returns>health of the Cobra King</returns>
     public int BossMaxHealth => bossMaxHealth;
 
-    /// <returns>health a coconut takes off the Cobra King per hit</returns>
-    public int BossCoconutDamage => bossCoconutDamage;
+    /// <returns>health a thrown banana takes off the Cobra King per hit
+    /// </returns>
+    public int BossBananaDamage => bossBananaDamage;
 
     /// <returns>fraction 0~1 of <see cref="MaxStamina"/> the monkey starts
     /// the level with, spent in the starting zone</returns>
@@ -421,8 +423,9 @@ public class GameBalanceConfig: ScriptableObject {
     private int bossMaxHealth = 12;
 
     [SerializeField]
-    [Tooltip("health a coconut takes off the Cobra King per hit")]
-    private int bossCoconutDamage = 1;
+    [FormerlySerializedAs("bossCoconutDamage")]
+    [Tooltip("health a thrown banana takes off the Cobra King per hit")]
+    private int bossBananaDamage = 1;
 
     // Editor Validation  ######################################################
     private void OnValidate() {
@@ -471,6 +474,6 @@ public class GameBalanceConfig: ScriptableObject {
         cobraExitBoostDurationS = Mathf.Max(0f, cobraExitBoostDurationS);
         bossTriggerHeightU = Mathf.Max(0f, bossTriggerHeightU);
         bossMaxHealth = Mathf.Max(1, bossMaxHealth);
-        bossCoconutDamage = Mathf.Max(1, bossCoconutDamage);
+        bossBananaDamage = Mathf.Max(1, bossBananaDamage);
     }
 }

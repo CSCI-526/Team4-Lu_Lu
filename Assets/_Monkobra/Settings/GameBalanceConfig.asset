@@ -298,4 +298,4 @@ MonoBehaviour:
   cobraExitBoostDurationS: 5
   bossTriggerHeightU: 40
   bossMaxHealth: 12
-  bossCoconutDamage: 1
+  bossBananaDamage: 1
