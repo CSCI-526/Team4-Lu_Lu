@@ -136,7 +136,7 @@ Work in progress on the `add-boss-fight` branch, tested in `devWenhaiBossFightSc
 - Great Cobra: stops chasing and guards `guardDepthU` below the entry without climbing, still circling the trunk (`CobraMotor.StartGuard`); every `peekIntervalRangeS` the first `peekNeckU` of its neck lifts off the coil in a smooth curve, bowing `peekCurlU` out from the trunk, and the head springs `peekRiseU` up with a small overshoot and a gentle sway, the coil staying put; contact stays fatal, so only a monkey lingering that low is at risk. A monkey more than `retreatLimitU` below the entry hears "Nowhere to run!"
 - Keep Away: the monkey can never reach the king: `MonkeyController.SetHeightCeiling` caps its climb `ceilingGapU` below the king's chin however long up is held, and a monkey within `pushRangeU` of the cap gets butted down
 - King: built at runtime from Unity primitives, kept simple (`BossKingBody`): a round bead coil, neck, a big round head with two eyes and a small gold crown; thrown bananas fly at an invisible target on the crown's front
-- Camera: in the arena `CameraLookUp.ViewDistanceScale` pulls the behind camera back to `cameraDistanceScale` times its distance, and `ExtraAimOffsetU` tilts it up by `cameraFocusShare` of the height to the king's head (at most `maxCameraFocusU`), kept low so a knocked-down monkey stays in view
+- Camera: in the arena `CameraLookUp.ViewDistanceScale` pulls the behind camera back to `cameraDistanceScale` (2) times its distance, and `ExtraAimOffsetU` tilts it up by `cameraFocusShare` of the height to the king's head (at most `maxCameraFocusU`), kept low so a knocked-down monkey stays in view
 
 ### Fight Loop
 
@@ -150,7 +150,7 @@ Work in progress on the `add-boss-fight` branch, tested in `devWenhaiBossFightSc
 | --- | --- | --- | --- |
 | Bite | a dark red disc on the trunk at the monkey's spot whose bright center fills it, and a red "!" sign reading BITE!, `biteWarnS` | fatal within `biteRadiusU` of the spot | orbit or climb off the disc |
 | Tail Sweep | a red band round the trunk at the monkey's height, growing to the swept height, and a "!" sign reading TAIL!, `sweepWarnS` | the tail loops the trunk in `sweepTimeS`, fatal within `sweepBandHalfU` of the ring | climb above or below the ring |
-| Minions | `minionWaves` waves, each re-aimed at the monkey: filling danger zones on the trunk for `minionCount` - 1 drop spots spread `minionSpreadDeg` apart round it, one inner spot left empty as the gap, and one "!" sign reading LOOK UP! on a middle zone, `minionWarnS`; the first minion attack of a game holds "Minions, help me!" in the bubble | green minions appear under the king's coil and fall one after another (`minionStaggerS`), sweeping across; their touch is fatal, unless the gold shield takes it | orbit into the gap |
+| Minions | `minionWaves` waves, each re-aimed at the monkey: a vertical danger strip down the trunk from the king's coil to `minionStripBelowU` below the monkey for each of `minionCount` - 1 fall lines spread `minionSpreadDeg` apart, filling top-down in bright red, one inner line left empty as the gap, and one "!" sign reading LOOK UP! on a middle strip, `minionWarnS`; the first minion attack of a game holds "Minions, help me!" in the bubble | green minions appear under the king's coil and fall one after another (`minionStaggerS`) down their lines; their touch is fatal, unless the gold shield takes it | orbit into the gap |
 | Head Butt | the head rears back, `pushWindUpS` | a knock-down; a monkey at the ceiling or touching the king (`BossKingContact`) gets it any time, at most once per `pushCooldownS`, with "Stay away from me!"; while the head is busy with a bite the shove lands at once | stay below the ceiling |
 
 Every warning sign is a red diamond with a white "!" and a word, built by `BossFightHud.AddWarning`, beating faster and growing as the hit nears. A knock-down is the usual stun and drop with the heavier shake (`HitBranchSensor.ReportHit`).
@@ -165,11 +165,15 @@ Every warning sign is a red diamond with a white "!" and a word, built by `BossF
 
 `webCount` webs (the segments' `SpiderWeb` prefab) hang at random spots on the trunk when the fight begins, from `webBelowEntryU` below the entry up to just under the ceiling, `websPerThird` more with each lost third, kept `webFruitGapDeg` round the trunk from any banana and never on the monkey. They trap and release as usual, but in the arena each escape press counts `webEscapeGainScale` times (`SpiderWebStruggle.EscapeGainScale`), so mashing Space shakes a web off within the king's attack gaps; outside the arena the scale is back to 1.
 
+### Finisher
+
+The last blow either way plays in slow motion: time runs at `finisherTimeScale` for `finisherRealS` of real time. A win flashes the king white over and over before the victory below; a loss flashes the screen red, shows a K.O. banner and spins the monkey off the tree (`MonkeyController.IsHeld` & `PullTo`), then the run is lost. A death to the guarding great cobra skips it, as `CobraSensor` ends the run at once.
+
 ### Victory
 
-At zero health the king says "Nooo... my crown!" and shatters into tumbling cubes; its crown flies in an arc onto the monkey's head in `crownFlyS`, shrinking to `crownScaleOnMonkey`. After `victoryDelayS` the run is won (`GameController.WinGame`, `GameState.Won`, analytics `RunStatus.Won`) and the victory panel shows the final score; the lose screen's restart key plays again.
+At zero health, after the finisher, the king shatters into tumbling cubes; its crown flies in an arc onto the monkey's head in `crownFlyS`, shrinking to `crownScaleOnMonkey`. After `victoryDelayS` the run is won (`GameController.WinGame`, `GameState.Won`, analytics `RunStatus.Won`) and the victory panel shows the final score; the lose screen's restart key plays again.
 
-UI (`BossFightHud`) is built at runtime on the root Canvas, under the screens: entry flash, name and health bar, speech bubble, key prompt, damage numbers and words, victory panel.
+UI (`BossFightHud`) is built at runtime on the root Canvas, under the screens: entry flash, name and health bar, speech bubble, key prompt, damage numbers and words, victory panel, a K.O. banner for the finisher, and a speech bubble clamped to stay on screen.
 
 ## Known Gaps
 

@@ -137,7 +137,7 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Tooltip("the camera pulls back to this many times its normal distance "
         + "in the arena, to show the king & the monkey together")]
-    private float cameraDistanceScale = 1.7f;
+    private float cameraDistanceScale = 2f;
 
     [SerializeField]
     [Tooltip("share of the height from the monkey up to the king the camera "
@@ -241,6 +241,10 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Tooltip("a minion this close knocks the monkey down; u")]
     private float minionHitRadiusU = 1.1f;
+
+    [SerializeField]
+    [Tooltip("a fall line runs this far below the monkey's height; u")]
+    private float minionStripBelowU = 3f;
 
     [Header("Spider Webs")]
     [SerializeField]
@@ -367,6 +371,15 @@ public class BossFightController: MonoBehaviour {
     [Tooltip("the armor's helmet sits this far above the monkey's center; u")]
     private float armorHelmetU = 0.95f;
 
+    [Header("Finisher")]
+    [SerializeField]
+    [Tooltip("time scale of the last blow's slow motion, either way")]
+    private float finisherTimeScale = 0.2f;
+
+    [SerializeField]
+    [Tooltip("real time the slow motion lasts; s")]
+    private float finisherRealS = 1.4f;
+
     [Header("Victory")]
     [SerializeField]
     [Tooltip("time the crown takes to fly onto the monkey; s")]
@@ -429,8 +442,6 @@ public class BossFightController: MonoBehaviour {
     [Tooltip("said once a game, the first time the minions come")]
     private string minionCallLine = "Minions, help me!";
 
-    [SerializeField]
-    private string defeatLine = "Nooo... my crown!";
 
     [SerializeField]
     [Tooltip("the same line is not repeated within this; s")]
@@ -488,6 +499,9 @@ public class BossFightController: MonoBehaviour {
     }
 
     private void OnDisable() {
+        if (phase == Phase.Finishing) {
+            Time.timeScale = 1f;
+        }
         if (struggle != null) {
             struggle.EscapeGainScale = 1f;
         }
@@ -526,6 +540,8 @@ public class BossFightController: MonoBehaviour {
             UpdateWarnings();
             UpdateFirstThrowHint();
             UpdateFightLoop();
+        } else if (phase == Phase.Finishing) {
+            UpdateFinisher();
         } else if (phase == Phase.Defeated) {
             UpdateVictory();
         }
@@ -1089,9 +1105,12 @@ public class BossFightController: MonoBehaviour {
             if (!isGap) {
                 // the same filling danger zone as the first version; one
                 // LOOK UP! sign for the whole wave, on a middle zone
-                AddTrunkZone(
-                    angle, lockY, minionHitRadiusU * 2f,
-                    i == signAt ? "LOOK UP!" : null, false
+                AddTrunkStrip(
+                    angle,
+                    coilBottomY,
+                    lockY - minionStripBelowU,
+                    minionHitRadiusU * 1.4f,
+                    i == signAt ? "LOOK UP!" : null
                 );
             }
             minions.Add(new Minion {
@@ -1172,15 +1191,72 @@ public class BossFightController: MonoBehaviour {
         return root;
     }
 
-    // Hits On The Monkey  -----------------------------------------------------
-    // a bite or a sweep: fatal, unless the gold shield takes it
+    // a bite, a sweep or a minion: fatal, unless the gold shield takes it
     private void LethalHit() {
+        if (phase != Phase.Fighting) {
+            return;
+        }
         if (hasShield) {
             hasShield = false;
             hud.PopText("Saved!", monkey.position, goldenColor);
             KnockDown(body.HeadCollider);
             return;
         }
+        StartFinisher(false);
+    }
+
+    // Finisher  ---------------------------------------------------------------
+    // the last blow either way plays in slow motion: a win flashes the king
+    // white before it shatters; a loss flashes red & spins the monkey off the
+    // tree under a K.O. banner, then the run is lost
+    private void StartFinisher(bool isWin) {
+        phase = Phase.Finishing;
+        isFinisherWin = isWin;
+        finisherTimeS = 0f;
+        nextFinisherFlashS = 0f;
+        ClearMarkers();
+        hud.SetPrompt(false, Vector3.zero);
+        Time.timeScale = finisherTimeScale;
+
+        if (isWin) {
+            hud.Flash(Color.white);
+            return;
+        }
+        hud.Flash(new Color(0.9f, 0.1f, 0.1f));
+        hud.ShowBanner("K.O.", new Color(0.95f, 0.15f, 0.15f));
+        if (monkeyController != null) {
+            monkeyController.ClearHeightCeiling();
+            Vector3 outward = monkey.position - trunkCenter;
+            outward.y = 0f;
+            monkeyController.IsHeld = true;
+            monkeyController.PullTo(
+                monkey.position + outward.normalized * 6f + Vector3.down * 3f
+            );
+        }
+    }
+
+    // runs on unscaled time, since the game itself crawls meanwhile
+    private void UpdateFinisher() {
+        finisherTimeS += Time.unscaledDeltaTime;
+        if (isFinisherWin) {
+            // the king keeps flashing as it reels
+            if (finisherTimeS >= nextFinisherFlashS) {
+                nextFinisherFlashS = finisherTimeS + 0.18f;
+                body.FlashHit();
+            }
+        } else {
+            monkey.Rotate(Vector3.up, 900f * Time.unscaledDeltaTime);
+        }
+        if (finisherTimeS < finisherRealS) {
+            return;
+        }
+
+        Time.timeScale = 1f;
+        if (isFinisherWin) {
+            Defeat();
+            return;
+        }
+        phase = Phase.Over;
         if (GameController.I != null) {
             GameController.I.LoseGame();
         }
@@ -1378,7 +1454,7 @@ public class BossFightController: MonoBehaviour {
         hud.PopDamage("-" + damage, body.WeakSpotPosition);
 
         if (health <= 0) {
-            Defeat();
+            StartFinisher(true);
             return;
         }
         if (!hasHit) {
@@ -1412,7 +1488,6 @@ public class BossFightController: MonoBehaviour {
         }
         hud.SetPrompt(false, Vector3.zero);
         hud.SetHealth(0f);
-        Say(defeatLine);
 
         crown = body.Shatter();
         if (crown != null) {
@@ -1502,7 +1577,8 @@ public class BossFightController: MonoBehaviour {
         if (cameraLookUp == null) {
             return;
         }
-        bool isFighting = phase == Phase.Fighting;
+        bool isFighting = phase == Phase.Fighting
+            || phase == Phase.Finishing;
         float focus = isFighting
             ? Mathf.Clamp(
                 (body.HeadPosition.y - monkey.position.y) * cameraFocusShare,
@@ -1557,11 +1633,84 @@ public class BossFightController: MonoBehaviour {
         });
     }
 
+    // a minion's fall line: a dark red strip down the trunk from the king's
+    // coil, filling top-down in bright red as the drop nears
+    private void AddTrunkStrip(
+        float angle,
+        float topY,
+        float bottomY,
+        float width,
+        string word
+    ) {
+        float length = Mathf.Max(0.5f, topY - bottomY);
+        float radians = angle * Mathf.Deg2Rad;
+        Vector3 outward = new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
+        Quaternion facing = Quaternion.LookRotation(outward, Vector3.up);
+
+        GameObject rim = CreatePrimitive(
+            PrimitiveType.Cube, "StripRim",
+            new Vector3(width, length, 0.04f), warningDimColor
+        );
+        rim.transform.SetPositionAndRotation(
+            PointOnTrunk(angle, topY - length * 0.5f, trunkRadiusU + 0.04f),
+            facing
+        );
+        GameObject fill = CreatePrimitive(
+            PrimitiveType.Cube, "StripFill",
+            new Vector3(width * 0.8f, 0.01f, 0.06f), warningColor
+        );
+        fill.transform.SetPositionAndRotation(
+            PointOnTrunk(angle, topY, trunkRadiusU + 0.07f),
+            facing
+        );
+
+        int warning = word != null
+            ? hud.AddWarning(
+                PointOnTrunk(angle, bottomY + length * 0.35f, trunkRadiusU),
+                word
+            )
+            : -1;
+        markers.Add(new Marker {
+            rim = rim.transform,
+            fill = fill.transform,
+            size = width,
+            warning = warning,
+            isBand = false,
+            isStrip = true,
+            topY = topY,
+            length = length,
+            angle = angle
+        });
+    }
+
     // fills every zone to progress 0~1; the band grows from its height
     private void UpdateMarkers(float progress, bool isSweep) {
         progress = Mathf.Clamp01(progress);
         foreach (Marker marker in markers) {
             if (marker.fill == null) {
+                continue;
+            }
+            if (marker.isStrip) {
+                float filled = Mathf.Max(0.01f, marker.length * progress);
+                marker.fill.localScale = new Vector3(
+                    marker.size * 0.8f, filled, 0.06f
+                );
+                marker.fill.position = PointOnTrunk(
+                    marker.angle,
+                    marker.topY - filled * 0.5f,
+                    trunkRadiusU + 0.07f
+                );
+                if (marker.warning >= 0) {
+                    hud.UpdateWarning(
+                        marker.warning,
+                        PointOnTrunk(
+                            marker.angle,
+                            marker.topY - marker.length * 0.65f,
+                            trunkRadiusU
+                        ),
+                        progress
+                    );
+                }
                 continue;
             }
             if (marker.isBand) {
@@ -1704,7 +1853,9 @@ public class BossFightController: MonoBehaviour {
     private enum Phase {
         Waiting, // climbing to the trigger height
         Fighting,
-        Defeated,
+        Finishing, // the last blow, in slow motion
+        Defeated, // the king beaten, the crown on its way
+        Over, // the monkey beaten
     }
 
     private enum Loop {
@@ -1749,6 +1900,10 @@ public class BossFightController: MonoBehaviour {
         public float size; // disc diameter; u
         public int warning; // hud warning id, -1 if none
         public bool isBand; // the sweep's band round the trunk
+        public bool isStrip; // a minion's vertical fall line
+        public float topY; // strip top, world y
+        public float length; // strip length; u
+        public float angle; // strip angle round the trunk; deg
     }
 
     private struct Minion {
@@ -1776,6 +1931,9 @@ public class BossFightController: MonoBehaviour {
     private bool hasHit; // the monkey has landed a first hit
     private bool hasShield; // the golden banana's shield is up
     private bool hasWon;
+    private bool isFinisherWin;
+    private float finisherTimeS; // real time into the finisher; s
+    private float nextFinisherFlashS; // finisher time of the next flash
     private readonly List<SpiderWebTrap> webs = new List<SpiderWebTrap>();
     private int goldenIndex = -1; // the golden banana in the fruit list
     private float nextGoldenTime; // Time.time the next visit starts

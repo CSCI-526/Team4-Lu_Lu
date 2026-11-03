@@ -33,6 +33,13 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Flashes the whole screen white, fading out.</summary>
     public void Flash() {
+        Flash(Color.white);
+    }
+
+    /// <summary>Flashes the whole screen in <paramref name="color"/>.
+    /// </summary>
+    public void Flash(Color color) {
+        flashColor = color;
         flashLeftS = flashS;
     }
 
@@ -97,10 +104,16 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Shows a big banner in the screen center.</summary>
     public void ShowBanner(string text) {
+        ShowBanner(text, damageColor);
+    }
+
+    /// <summary>Shows a big banner in <paramref name="color"/>.</summary>
+    public void ShowBanner(string text, Color color) {
         if (bannerLabel == null) {
             return;
         }
         bannerLabel.text = text;
+        bannerLabel.color = color;
         bannerLabel.gameObject.SetActive(true);
     }
 
@@ -236,7 +249,7 @@ public class BossFightHud: MonoBehaviour {
             bool isSpeaking = speechLeftS > 0f;
             speechRect.gameObject.SetActive(isSpeaking);
             if (isSpeaking) {
-                Place(speechRect, speechWorldPosition, speechOffset);
+                PlaceOnScreen(speechRect, speechWorldPosition, speechOffset);
             }
         }
         if (promptRect != null && promptRect.gameObject.activeSelf) {
@@ -361,7 +374,9 @@ public class BossFightHud: MonoBehaviour {
             flashLeftS -= Time.unscaledDeltaTime;
         }
         float alpha = flashS > 0f ? Mathf.Clamp01(flashLeftS / flashS) : 0f;
-        flashImage.color = new Color(1f, 1f, 1f, alpha);
+        flashImage.color = new Color(
+            flashColor.r, flashColor.g, flashColor.b, alpha
+        );
         flashImage.enabled = alpha > 0f;
     }
 
@@ -403,6 +418,38 @@ public class BossFightHud: MonoBehaviour {
         );
         target.anchorMin = target.anchorMax = new Vector2(0.5f, 0.5f);
         target.anchoredPosition = local + offset;
+    }
+
+    // like Place, but kept inside the screen: a head off screen or behind
+    // the camera still shows its line, pinned to the nearest edge
+    private void PlaceOnScreen(
+        RectTransform target,
+        Vector3 world,
+        Vector2 offset
+    ) {
+        Camera cam = Camera.main;
+        if (cam == null || canvasRect == null) {
+            return;
+        }
+        Vector2 half = canvasRect.rect.size * 0.5f;
+        Vector2 box = target.rect.size * 0.5f + new Vector2(16f, 16f);
+        Vector2 local;
+        Vector3 screen = cam.WorldToScreenPoint(world);
+        if (screen.z < 0f) {
+            // behind the camera: the top of the screen, where the king is
+            local = new Vector2(0f, half.y);
+        } else {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect, screen, canvasCamera, out local
+            );
+            local += offset;
+        }
+        // stay clear of the name & health bar at the top
+        float top = half.y - box.y - 90f;
+        local.x = Mathf.Clamp(local.x, -half.x + box.x, half.x - box.x);
+        local.y = Mathf.Clamp(local.y, -half.y + box.y, top);
+        target.anchorMin = target.anchorMax = new Vector2(0.5f, 0.5f);
+        target.anchoredPosition = local;
     }
 
     private static Canvas FindRootCanvas() {
@@ -500,6 +547,7 @@ public class BossFightHud: MonoBehaviour {
     private readonly List<Warning> warnings = new List<Warning>();
     private int nextWarningId;
     private float flashLeftS;
+    private Color flashColor = Color.white;
     private float speechLeftS;
     private Vector3 speechWorldPosition;
     private Vector3 promptWorldPosition;
