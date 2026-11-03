@@ -97,6 +97,10 @@ bug spider web fail to load & log warning
 
 - restart could spawn monkey inside a tree branch: no branch grows w/i `startingZoneBranchClearRadiusU` of monkey before the run is playing
 
+##### Yuqing Lu
+
+- coconuts never spawned in `Lv1Scene`: the `CoconutSystem` prefab (`CoconutSpawner`) was missing under `Envs`
+
 ### Security
 
 [unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha.2...dev
