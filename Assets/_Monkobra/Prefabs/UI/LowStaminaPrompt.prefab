@@ -51,7 +51,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LowStaminaPrompt
   struggle: {fileID: 0}
   promptLabel: {fileID: 5594875553854226992}
-  promptMessage: "Low energy \u2014 eat bananas before you slow down!"
+  promptMessage: "Low Energy \u2014 eat bananas before you slow down!"
   showDurationS: 4
 --- !u!1 &6600849034058797764
 GameObject:

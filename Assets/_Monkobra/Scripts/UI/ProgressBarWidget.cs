@@ -373,10 +373,7 @@ public class ProgressBarWidget: MonoBehaviour {
             return;
         }
 
-        float unitsPerMeter = balanceConfig != null
-            ? Mathf.Max(0.001f, balanceConfig.UnitsPerMeter)
-            : 1f;
-        int decimeters = Mathf.RoundToInt(gap / unitsPerMeter * 10f);
+        int decimeters = Mathf.RoundToInt(gap * 10f);
         if (decimeters != shownDecimeters) {
             shownDecimeters = decimeters;
             distanceLabel.text = (decimeters * 0.1f).ToString(

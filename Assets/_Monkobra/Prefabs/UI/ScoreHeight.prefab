@@ -151,6 +151,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: HeightDisplay
       objectReference: {fileID: 0}
+    - target: {fileID: 1466721235851266999, guid: 488e15867319a564fa98a55cc41471d9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7191687228209292977, guid: 488e15867319a564fa98a55cc41471d9, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
