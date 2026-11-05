@@ -5,9 +5,8 @@ using UnityEngine.Rendering;
 
 /// <summary>
 /// Height markers beside the trunk: a whole number every <c>intervalU</c> of
-/// climbed height, in the same units and from the same baseline as the HUD
-/// Height (<see cref="RampedDifficultyManager.GetClimbedYDistance"/>), shown
-/// to the player as meters, so a height tuned in
+/// climbed height (<see cref="RampedDifficultyManager.GetClimbedYDistance"/>),
+/// shown to the player as meters, so a height tuned in
 /// <see cref="GameBalanceConfig"/>, e.g. the coconut start height, can be
 /// read off the trunk. Put it on an object on the trunk axis, active from
 /// scene load, never under the pool's mock tree.
@@ -47,7 +46,7 @@ public class HeightMarkerSystem: MonoBehaviour {
     [Header("Spacing")]
     [SerializeField]
     [Min(1)]
-    [Tooltip("climbed height b/t two markers, in HUD Height units; u")]
+    [Tooltip("climbed height b/t two markers; u")]
     private int intervalU = 50;
 
     [SerializeField]
@@ -249,7 +248,7 @@ public class HeightMarkerSystem: MonoBehaviour {
             int heightU = marker * interval;
             if (shownHeightsU[i] != heightU) {
                 shownHeightsU[i] = heightU;
-                // the same number format as the HUD Height
+                // thousands separated, e.g. 1,000 m
                 label.text = heightU.ToString("N0") + unitSuffix;
                 FitPlate(i);
             }

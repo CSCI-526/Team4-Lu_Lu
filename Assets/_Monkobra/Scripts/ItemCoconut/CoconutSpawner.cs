@@ -9,9 +9,9 @@ using UnityEngine;
 /// object active from scene load, never under the pool's mock tree.
 /// <para>
 /// Rolled from the Coconut group of <see cref="GameBalanceConfig"/>: at most
-/// one coconut per segment, only on branches whose climbed height (the HUD
-/// Height) has reached the start height, by one roll against the per segment
-/// chance.
+/// one coconut per segment, only on branches whose climbed height (as on the
+/// trunk height markers) has reached the start height, by one roll against
+/// the per segment chance.
 /// </para>
 /// <para>
 /// A coconut hangs on a bare branch through
