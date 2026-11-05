@@ -131,7 +131,7 @@ Every game balance number lives in one asset (how height becomes spawn chances i
 | Coconut | `coconutStartHeightU`, `coconutSpawnChancePerSegment`, `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutSpawner`, `ScoreManager`, `CoconutManager` |
 
 - Wiring: each reader holds a `GameBalanceConfig` inspector field (`balanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `FallingCobraSpawner`, `CoconutSpawner`, `CoconutManager`, and `CobraMotor` on the `GreatCobra` prefab), all pointing at the same asset
-- Not Balance: the arm stroke and reach, orbit speed, deceleration, and input actions stay in `MonkeyConfig`; climb build-up, exhaustion, and idle recovery are in `MovementConfig`; the leap's distance and speed curve are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab; coconut clearance and the test override stay on `CoconutSpawner`, and the web escape grace and the throw start offset on `CoconutManager`
+- Not Balance: the arm stroke and reach, orbit speed, deceleration, and input actions stay in `MonkeyConfig`; climb build-up, exhaustion, and idle recovery are in `MovementConfig`; the leap's distance and speed curve are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab; coconut clearance and the test override stay on `CoconutSpawner`, and the web escape grace and the throw start offset on `CoconutManager`; the height markers' interval, placement, look, and test override stay on `HeightMarkerSystem`
 - Retired: `GameConfig`, `ScoreConfig`, and `ScoreReward` were folded into `GameBalanceConfig` and removed
 - Suffixes: `U` is world units, `S` is seconds, `Deg` is degrees, `PerU` is per world unit travelled
 
@@ -155,7 +155,7 @@ Climb speed builds up along `ClimbUpSpeedCurve` and `ClimbDownSpeedCurve` in `Se
 The tree is a stack of static and dynamic trunk segments under a `TreeTop`, which carries no win zone: a run only loses.
 
 - Extent: `TreeManager` (singleton `I`) holds `MinY` and `MaxY`, 0 and 100 by default, from the finite tree; nothing reads them any more; `FallingCobraSpawner` takes each segment's pivot as the trunk axis
-- Climb Height: heights that drive difficulty are measured above the monkey's start y by `RampedDifficultyManager.GetClimbedYDistance`: branch density, banana chance, web chance, falling cobra chance, the score, and the height HUD. Nothing shifts the world origin; if something ever does, it only has to move `PlayerGameStartYPosition` along
+- Climb Height: heights that drive difficulty are measured above the monkey's start y by `RampedDifficultyManager.GetClimbedYDistance`: branch density, banana chance, web chance, falling cobra chance, the score, and the trunk height markers. Nothing shifts the world origin; if something ever does, it only has to move `PlayerGameStartYPosition` along
 - Segments: each `TreeSegmentController` places branches on itself in `Start` and in every `Restart` ([Mobs](mob-doc.md#placement)), then raises the static `BranchesGenerated`, which `SpiderWebSpawner` answers with webs ([Mobs](mob-doc.md#placement-1)) and `FallingCobraSpawner` with falling cobras ([Mobs](mob-doc.md#spawning))
 - Pool: `DTSPool` sits on an empty object, finds the `Player`-tagged object once, and instantiates `segmentCount` copies of `segmentPrefab` end to end, the first (lowest) one created at the world height `firstSegmentY`. It keeps them in a FIFO: only when the stack top is less than `lookAheadU` above the player, and the lowest segment lies wholly under the player, that lowest one is moved over the stack top by `TreeSegmentController.Restart`, which clears its branches and webs and rolls branches again; the webs follow through `BranchesGenerated`, the pool never calls the spawner. Its `mockTree` field names an editor-only stand-in, `Envs/Tree` in `Lv1Scene`, that is deactivated at runtime, so nothing that must run may sit under it
 
@@ -180,6 +180,7 @@ All values live in `Settings/GameBalanceConfig.asset`.
 - Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups. A coconut's `ScorePickup` (kind `Coconut`) adds `CoconutRewardPoints` instead, kept in `CoconutRewardScore`, counted in `CoconutCollectedCount`, and raises `CoconutCollected`
 - Gate: `CanScore` is true only after start, before `EndRun`, while unpaused, and while the game is not over
 - Display: `ScoreWidget` shows the total on the HUD and on the lose panel
+- Units: `unitsPerMeter` only converts climbed world units to the meters the distance score pays for. Every height the player reads is plain world units: the trunk height markers and the progress bar's cobra gap label them `m`, and the lose panel's final height shows the bare number
 
 All values live in `Settings/GameBalanceConfig.asset`; `ScorePickup` carries no reward asset of its own.
 
@@ -210,16 +211,26 @@ One asset, `Settings/_Shared/InputSystem_Actions`, holds all bindings, reference
 | Stamina Bar | `UI/StaminaBarController` | current stamina, under an `Energy` label |
 | Fruit Fly | `UI/FruitFlyEffect` | a grabbed fruit's sprite flying to the bar, the coconut counter, or the monkey ([Grab System](grab-doc.md#fruit-fly)) |
 | Coconut | `UI/CoconutWidget`, `UI/FreezeTimerWidget`, `UI/CoconutMessageWidget` | count and double-tap hint; freeze countdown & bar; coconut center messages, all switched on by `CoconutManager` ([Grab System](grab-doc.md#coconut)) |
-| Climb Progress | `UI/ProgressBarWidget` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is |
+| Climb Progress | `UI/ProgressBarWidget` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is and the gap in world units labelled `m` |
 | Score | `UI/ScoreWidget` | total score, on the HUD and the lose panel |
-| Height | `UI/HeightDisplayWidget` | height climbed since game start, in world units |
+| Height Markers | `Environment/HeightMarkerSystem` | climbed height every `intervalU` beside the trunk, in world space rather than on the HUD canvas, see below |
 | Screens | `UI/ScreensManager` | tutorial and lose panels |
 | Lose Stats | `UI/LoseScreen` | final height (highest point climbed), final score, and bananas collected, filled each time the lose panel is enabled |
 | Web Prompt | `UI/SpiderWebWidget` | first-trap hint and the escape bar ([Mobs](mob-doc.md#trap-and-escape)) |
 | Low Stamina Prompt | `UI/LowStaminaWidget` | first-low-stamina hint, once per scene load, below the screen center |
 | Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", "Press Esc or P to Resume", and "Press R to Restart" while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
-The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage`, and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on.
+The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage`, and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
+
+The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Envs/HeightMarkerSystem`, whose position marks the trunk axis, and works as follows:
+
+- Pool: TextMeshPro labels are built at runtime, marker k always on label k mod pool size, and only markers from `showBelowU` under to `showAboveU` over the monkey show. Markers follow height, not tree segments, so a recycled segment can neither leave one behind nor show one twice
+- Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in `GameBalanceConfig`, e.g. `coconutStartHeightU`, reads straight off the trunk
+- Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
+- Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette on the `isOnRightSide` side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
+- Pulse: the first time the highest climbed height passes a marker, the label grows to `pulseScale` and its plate brightens for `pulseDurationS`; re-climbing after a drop does not repeat it
+- Physics: neither label nor plate has a collider, so no spawner's overlap check or grab sees them
+- Testing: Use Test Override swaps `intervalU` for `testIntervalU` (5); tick it in Play mode, so it never gets saved
 
 `LowStaminaWidget` sits on an always-active Canvas child and toggles only its TMP label. The first `StaminaBarController.LowStaminaMoveAttempted` since the scene loaded, the event behind the bar shake and the camera cool-down, shows the hint for `showDurationS`; the script then drops its subscription, and nothing is static, so a reload brings the hint back. A loss hides it at once. While `SpiderWebStruggle.IsTrapped` it is hidden and its countdown waits, so it never shares the screen with the web prompt, and the rest plays after the escape; a held monkey reports no move attempts, so a trap can only cut in on a hint already showing. The label sits below the screen center, clear of the web prompt and the catch-up warning above it and of the vignette's dark edges; the Canvas has no render camera, so it draws as an overlay the vignette never darkens.
 
