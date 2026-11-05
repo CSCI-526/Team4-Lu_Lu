@@ -43,7 +43,7 @@ monkobra/
 ├── builds/            local build output of all three builds, ignored by git
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
-│   │   ├── Scenes/    Lv1Scene, a shell of 8 prefab instances, see [Scene Hierarchy](#scene-hierarchy)
+│   │   ├── Scenes/    Lv1Scene, root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, Scoring/, UI/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
 │   │   ├── Prefabs/   Environment/, Mob/, Player/, Systems/ (GameController), UI/, World/ (light, volume, event system)
@@ -62,13 +62,13 @@ monkobra/
 
 ## Scene Hierarchy
 
-`Lv1Scene` holds no inline object: its root is 8 prefab instances, so teammates edit different files; `Envs`, `Entities` and `UI` nest one prefab per unit.
+`Lv1Scene`'s root is 7 prefab instances, so teammates edit different files, plus two plain scene objects: `Envs` and a Cinemachine `Target Group`. `Envs`, `Entities` and `UI` nest one prefab per unit. `Envs` has no prefab of its own, so adding or removing one of its children edits `Lv1Scene.unity` itself.
 
-| Root Prefab | Nests |
+| Root | Nests |
 | --- | --- |
 | `Cameras` | the four Cinemachine cameras |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
-| `Environment/Envs` | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`) |
+| `Envs` (plain scene object) | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `SlipperyBarkSystem` (`SlipperyBarkSpawner`) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Systems/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
 | `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`HeightDisplay`, `ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage`, `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt`, `HackShortcutHelp`, `SpiderWebPrompt`, `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |

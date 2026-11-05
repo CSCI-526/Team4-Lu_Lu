@@ -34,7 +34,7 @@ A system gets its own document when it spans several scripts and carries rules a
 
 | Scene | Purpose |
 | --- | --- |
-| `Lv1Scene` | the game and the only scene; its root is 8 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Envs`, `Entities`, `GameController`, `UI`); `DTSPool` also holds the spider web and falling cobra spawners |
+| `Lv1Scene` | the game and the only scene; its root is 7 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `GameController`, `UI`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DTSPool` also holds the spider web and falling cobra spawners |
 
 Personal copies of `Lv1Scene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
