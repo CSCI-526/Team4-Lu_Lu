@@ -2046,7 +2046,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Grab Banana
+  m_Text: Grab Fruit
 --- !u!1 &4377665114678092023
 GameObject:
   m_ObjectHideFlags: 0
