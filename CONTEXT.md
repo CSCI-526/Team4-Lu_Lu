@@ -43,7 +43,7 @@ monkobra/
 ├── builds/            local build output of all three builds, ignored by git
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
-│   │   ├── Scenes/    Lv1Scene, a shell of 8 prefab instances, see [Scene Hierarchy](#scene-hierarchy)
+│   │   ├── Scenes/    Lv1Scene, root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, Scoring/, UI/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
 │   │   ├── Prefabs/   Environment/, Mob/, Player/, Systems/ (GameController), UI/, World/ (light, volume, event system)
@@ -62,16 +62,16 @@ monkobra/
 
 ## Scene Hierarchy
 
-`Lv1Scene` holds no inline object: its root is 8 prefab instances, so teammates edit different files; `Envs`, `Entities` and `UI` nest one prefab per unit.
+`Lv1Scene`'s root is 7 prefab instances, so teammates edit different files, plus two plain scene objects: `Envs` and a Cinemachine `Target Group`. `Envs`, `Entities` and `UI` nest one prefab per unit. `Envs` has no prefab of its own, so adding or removing one of its children edits `Lv1Scene.unity` itself.
 
-| Root Prefab | Nests |
+| Root | Nests |
 | --- | --- |
 | `Cameras` | the four Cinemachine cameras |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
-| `Environment/Envs` | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`) |
+| `Envs` (plain scene object) | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `SlipperyBarkSystem` (`SlipperyBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Systems/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
-| `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`HeightDisplay`, `ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage`, `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt`, `HackShortcutHelp`, `SpiderWebPrompt`, `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
+| `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage`, `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt`, `HackShortcutHelp`, `SpiderWebPrompt`, `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
 Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `Cameras` tracking target) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
 
@@ -155,6 +155,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/TreeSegmentController` | places branches on a segment, skipping spots w/i `startingZoneBranchClearRadiusU` of the monkey before the run is playing, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/DTSPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |
+| `Environment/HeightMarkerSystem` | on `Envs/HeightMarkerSystem`: the climbed height every `intervalU` beside the trunk, in world units labelled m, on a generated dark rounded plate, from a pool of TextMeshPro labels keyed to height, never to segments; pulses a marker the first time the monkey passes it | [TDD](docs/monkobra-tdd.md#ui) |
 | `Environment/BranchFruitPlacementConfig` | ScriptableObject of branch placement | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit; `TryHangFruit` lets another spawner hang its own fruit on a bare branch's stem tip | [Grab](docs/grab-doc.md#fruit-supply) |
 | `Environment/FruitOutlineListener` | two-tier fruit outline, on the object holding the fruit's collider | [Grab](docs/grab-doc.md#feedback) |
@@ -190,7 +191,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while stamina is low | [TDD](docs/monkobra-tdd.md#stamina) |
 | `UI/FruitFlyEffect`, `UI/FruitFlyTarget` | singleton on `InGameHUD/FruitFlyLayer`: flies a grabbed fruit's sprite to the stamina bar, a top-right anchor, or the monkey, then runs the grab's arrival callback | [Grab](docs/grab-doc.md#fruit-fly) |
 | `UI/FruitFlyConfig` | ScriptableObject (`Settings/FruitFlyConfig.asset`): flight duration, look, and easing | [Grab](docs/grab-doc.md#fruit-fly) |
-| `UI/ScreensManager`, `UI/ProgressBarWidget`, `UI/ScoreWidget`, `UI/HeightDisplayWidget`, `UI/LoseScreen` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress with the surge and chase-start warnings and red cobra marker, score label, climbed height label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
+| `UI/ScreensManager`, `UI/ProgressBarWidget`, `UI/ScoreWidget`, `UI/LoseScreen` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress with the surge and chase-start warnings, red cobra marker and the cobra gap in world units labelled m, score label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/CoconutWidget` | on `InGameHUD/CoconutHUD`, inactive until the first coconut: icon, count, and a double-tap hint until the first use of the session | [Grab](docs/grab-doc.md#coconut) |
 | `UI/FreezeTimerWidget` | on the `FreezeTimerHUD` prefab under `_UI`, inactive except while the cobra is frozen: countdown and shrinking bar | [Grab](docs/grab-doc.md#coconut) |
 | `UI/CoconutMessageWidget` | on `InGameHUD/CoconutMessage`: the center prompts for the first coconut, a freeze, a refused freeze, and the thaw | [Grab](docs/grab-doc.md#coconut) |

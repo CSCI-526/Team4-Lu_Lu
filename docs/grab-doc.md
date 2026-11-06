@@ -88,7 +88,7 @@ A pineapple restores stamina like a banana but scores no fruit reward and no ban
 - Refused: a grab cannot start a leap while `IsHeld`, ie held by a web, so the release grabs nothing and the pineapple stays. This covers the forced release when a web catches a reaching monkey
 - Interact: a press does nothing while the hands are up or the body is pulled
 - Hazards: each one checks `IsLeaping` in its own code, see [Mobs](mob-doc.md#during-a-pineapple-leap). The body's physics stay on, so the detection zones keep reporting exits and fruit left below leaves the reachable sets
-- Height: the distance score and the height display follow the monkey, so a leap counts as climbing
+- Height: the distance score and the trunk height markers follow the monkey, so a leap counts as climbing
 
 For a quick test press the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns a pineapple branch straight above the monkey.
 
@@ -96,7 +96,7 @@ For a quick test press the [hack key](monkobra-tdd.md#hack-shortcuts) that spawn
 
 A rare fruit from higher up, kept instead of eaten: it scores more than a banana, restores no stamina, and is thrown to freeze the great cobra.
 
-- Supply: `CoconutSpawner` on `Envs/CoconutSystem` rolls once per segment, only for branches above `coconutStartHeightU`, the climbed height shown as the HUD Height, against `coconutSpawnChancePerSegment`, so a segment bears at most one. It hangs the `Coconut` prefab on a bare branch through `BranchController.TryHangFruit`, its top pivot on the stem's lower tip, and skips a spot whose grab volume would touch another branch, any fruit, or a web; webs rolled later keep clear of it by its `FruitCollider` tag
+- Supply: `CoconutSpawner` on `Envs/CoconutSystem` rolls once per segment, only for branches above `coconutStartHeightU`, the climbed height the trunk height markers show, against `coconutSpawnChancePerSegment`, so a segment bears at most one. It hangs the `Coconut` prefab on a bare branch through `BranchController.TryHangFruit`, its top pivot on the stem's lower tip, and skips a spot whose grab volume would touch another branch, any fruit, or a web; webs rolled later keep clear of it by its `FruitCollider` tag
 - Grab: the same reach and release as a banana, with its own outline materials; its `ScorePickup` is of kind `Coconut`, so `ScoreManager` adds `CoconutRewardPoints` (`scoreRewardPoints` times `coconutScoreMultiplier`) and raises `CoconutCollected` instead of counting a banana
 - No Stamina: `ArmController` gives a coconut's flight no restore, so its sprite flies to the counter and only pops the icon
 - Count: `CoconutManager` (on the `GameController` prefab) adds one per `CoconutCollected`; the count lives in the scene, so a restart's reload empties it

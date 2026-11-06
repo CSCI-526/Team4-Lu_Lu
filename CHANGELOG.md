@@ -50,6 +50,7 @@ bug spider web fail to load & log warning
 - coconut analytics: pickups, uses & coconut score per run in the session report
 - `CoconutSpawner` test override for coconuts from Height 5 on every segment
 - whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
+- trunk height markers: every 50 u of climbed height a number beside the trunk in world units labelled m (e.g. `150 m`), white bold on a dark rounded plate like the progress bar readout, kept on the trunk's right edge as seen from the camera so the trunk never hides it; a marker grows & its plate brightens the first time the monkey passes it (`HeightMarkerSystem` on `Envs/HeightMarkerSystem`, test override for a 5 u interval)
 
 ### Changed
 
@@ -75,6 +76,7 @@ bug spider web fail to load & log warning
 - `ScoreManager` scores & counts each pickup by its `PickupKind`; `ScorePickup` gains a kind, banana by default
 - `ArmController` gives a coconut's flight no stamina restore
 - analytics report splits the reward score into banana & coconut score
+- progress bar cobra gap in world units labelled m, matching the trunk height markers, no longer converted by `unitsPerMeter` (`ProgressBarWidget`); `unitsPerMeter` now only sets the distance score rate
 
 ### Deprecated
 
@@ -90,6 +92,10 @@ bug spider web fail to load & log warning
 - `SlipTestScene` dev scene, after slippery bark landed in `Lv1Scene`
 - `upSpeedU` & `downSpeedU` (`GameBalanceConfig`), replaced by the `MovementConfig` curves; `accelerationU` (`MonkeyConfig`)
 - orphan `GoalText` object in `Lv1Scene` (never drawn, no parent Canvas) and its mention in the TDD
+
+##### Yuqing Lu
+
+- HUD Height label (`HeightDisplay` prefab, `HeightDisplayWidget`): the trunk height markers show the climbed height
 
 ### Fixed
 

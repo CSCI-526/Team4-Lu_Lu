@@ -37,10 +37,6 @@ public class ProgressBarWidget: MonoBehaviour {
     [Tooltip("bracket spanning the two marker centers")]
     private RectTransform distanceBracket;
 
-    [SerializeField]
-    [Tooltip("uses the same units-per-meter conversion as the score")]
-    private GameBalanceConfig balanceConfig;
-
     [SerializeField, Min(0f)]
     [Tooltip("UI-space clearance; slide the snake left when faces get close")]
     private float markerClearance = 48f;
@@ -125,9 +121,9 @@ public class ProgressBarWidget: MonoBehaviour {
 
         if (distanceRoot == null || distanceLabel == null
             || distanceLabelFrame == null
-            || distanceBracket == null || balanceConfig == null) {
+            || distanceBracket == null) {
             Debug.LogWarning(
-                "ProgressBarWidget:\tassign the distance UI and balanceConfig "
+                "ProgressBarWidget:\tassign the distance UI "
                     + "from the matching ProgressBar prefab",
                 this
             );
@@ -366,7 +362,8 @@ public class ProgressBarWidget: MonoBehaviour {
     }
 
     // The bar clamps the cobra marker at its bottom, but the number always
-    // shows the full world-height gap, converted using the scoring config.
+    // shows the full world-height gap, in world units shown as meters, the
+    // same as the height markers on the trunk.
     private void UpdateDistanceReadout(float gap) {
         if (distanceRoot == null || distanceLabelRect == null
             || distanceBracket == null || progressBar.handleRect == null) {

@@ -162,7 +162,7 @@ public class GameBalanceConfig: ScriptableObject {
         startingZoneExhaustedSpeedMultiplier;
 
     /// <returns>coconuts start hanging on branches once the monkey's climbed
-    /// height (the HUD Height) reaches this; u</returns>
+    /// height (as on the trunk height markers) reaches this; u</returns>
     public float CoconutStartHeightU => coconutStartHeightU;
 
     /// <returns>chance 0~1 that a segment above the start height grows one
@@ -461,7 +461,7 @@ public class GameBalanceConfig: ScriptableObject {
     [SerializeField]
     [Min(0f)]
     [Tooltip(
-        "coconuts appear once the climbed height (the HUD Height) reaches "
+        "coconuts appear once the climbed height on the trunk markers reaches "
             + "this; u"
     )]
     private float coconutStartHeightU = 150f;
