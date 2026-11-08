@@ -1,8 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
+TODO tree texture
 HACK organize & split game balance config
-FIXME replace banana model
 FIXME consistent pop up UI
 
 Bug erik analytic record banana in starting zone run
