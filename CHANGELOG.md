@@ -1,15 +1,14 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug analytic record banana in starting zone run
-Hack need to verify: slippery is working
-Fixme replace banana model
-Hack organize & split game balance config
+HACK organize & split game balance config
+FIXME replace banana model
+FIXME consistent pop up UI
 
+Bug erik analytic record banana in starting zone run
 Fixme Pan: UI mpv
-Todo Dong: boss fight
-Todo Pan: 数字显示和蛇的距离
-Todo Pan 排行榜（假的）
+
+Fixme game play tunning
 
 bug spider web fail to load & log warning
 -->
