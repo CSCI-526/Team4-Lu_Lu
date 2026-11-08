@@ -56,15 +56,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PopUpManager
-  popUps:
-  - {fileID: 1049459233902688}
-  - {fileID: 1049459233902689}
-  - {fileID: 1049459233902690}
-  - {fileID: 1049459233902691}
-  - {fileID: 1049459233902700}
-  - {fileID: 1049459233902701}
-  - {fileID: 1049459233902702}
-  - {fileID: 1049459233902703}
 --- !u!1001 &7400000000000100
 PrefabInstance:
   m_ObjectHideFlags: 0

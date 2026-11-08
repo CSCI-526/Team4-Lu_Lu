@@ -9,7 +9,7 @@ using UnityEngine;
 /// live, remembers the once-per-scene ones, and drops everything on a loss.
 /// <para>
 /// Put it on the always-active popup root: every variant under it is saved
-/// inactive and listed in <c>popUps</c>, this script is its only owner.
+/// inactive and found by this script, its only owner.
 /// </para>
 /// </summary>
 public class PopUpManager: MonoBehaviour {
@@ -69,19 +69,8 @@ public class PopUpManager: MonoBehaviour {
         RemoveQueued(id);
     }
 
-    // Inspector Fields  #######################################################
-    [SerializeField]
-    [Tooltip("every popup variant under this root, one slot each")]
-    private MessagePopUp[] popUps;
-
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        // Inspector Assignment Guard  -----------------------------------------
-        if (popUps == null || popUps.Length == 0) {
-            Debug.LogWarning(
-                "PopUp:\tmust assign Inspector Field: popUps", this);
-        }
-
         if (I != null && I != this) {
             Debug.LogWarning(
                 "PopUp:\tduplicate PopUpManager, this one is off", this);
@@ -90,17 +79,15 @@ public class PopUpManager: MonoBehaviour {
         }
         I = this;
 
-        if (popUps == null) {
-            return;
+        // inactive variants included: they are saved off until first shown
+        MessagePopUp[] popUps = GetComponentsInChildren<MessagePopUp>(true);
+        if (popUps.Length == 0) {
+            Debug.LogWarning("PopUp:	no MessagePopUp under this root", this);
         }
         foreach (MessagePopUp popUp in popUps) {
-            if (popUp == null) {
-                Debug.LogWarning("PopUp:\tempty slot in popUps", this);
-                continue;
-            }
             if (!lookup.TryAdd(popUp.Id, popUp)) {
                 Debug.LogWarning(
-                    "PopUp:\tid listed twice in popUps: " + popUp.Id, this);
+                    "PopUp:	id used by two variants: " + popUp.Id, this);
                 continue;
             }
             popUp.Hidden += OnPopUpHidden;

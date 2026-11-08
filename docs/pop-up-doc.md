@@ -41,7 +41,7 @@ Everything a designer tunes sits on the variant prefab, not in a script or an as
 
 1. Make a variant of `_PopUpBase` in `Prefabs/PopUp/`, named `<Subject>_<Variant>`, and set its message, look, position, timing, and rules; leave it inactive
 2. Add a `PopUpId` entry and set it as the `id` of the variant
-3. Add the variant to the `popUps` list of `PopUpManager` on `_PopUps`, one slot
+3. Nest the variant under `_PopUps`: the manager finds every variant under it, so no list needs filling
 4. Call `PopUpManager.I.Show(PopUpId.<Entry>, args)` from the listener of the event that should raise it
 
-An id missing from the list logs a warning and shows nothing.
+An id with no variant under `_PopUps` logs a warning and shows nothing.
