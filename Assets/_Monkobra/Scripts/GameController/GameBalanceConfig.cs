@@ -156,7 +156,7 @@ public class GameBalanceConfig: ScriptableObject {
     public float StartingZoneStartStaminaFraction =>
         startingZoneStartStaminaFraction;
 
-    /// <returns>like <see cref="MovementConfig.ExhaustedSpeedMultiplier"/>,
+    /// <returns>like <see cref="MonkeyClimbConfig.ExhaustedSpeedMultiplier"/>,
     /// but used while the starting zone lasts</returns>
     public float StartingZoneExhaustedSpeedMultiplier =>
         startingZoneExhaustedSpeedMultiplier;

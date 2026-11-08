@@ -16,7 +16,7 @@ using UnityEngine.InputSystem;
 /// </para>
 /// <para>
 /// Every speed, ramp rate and branch-hit number, plus the input action
-/// itself, comes from the shared <see cref="MonkeyConfig"/> asset, the same
+/// itself, comes from the shared <see cref="MonkeyInputConfig"/> asset, the same
 /// one the arms read, so the body and its arms cannot drift out of tune.
 /// </para>
 /// </summary>
@@ -91,19 +91,19 @@ public class MonkeyController: MonoBehaviour {
     private HitBranchSensor hitBranchDetection;
 
     [SerializeField]
-    [Tooltip(
-        "shared movement, branch-hit and input tuning, the same asset the "
-            + "arms use"
-    )]
-    private MonkeyConfig config;
+    [Tooltip("shared input actions, the same asset the arms use")]
+    private MonkeyInputConfig inputConfig;
 
     [SerializeField]
     [Tooltip("game balance tuning; climb speed and branch hit")]
     private GameBalanceConfig balanceConfig;
 
     [SerializeField]
-    [Tooltip("climb build-up, exhaustion slow down and idle stamina recovery")]
-    private MovementConfig movementConfig;
+    [Tooltip(
+        "climb build-up, exhaustion slow down, idle stamina recovery, orbit "
+            + "speed and deceleration"
+    )]
+    private MonkeyClimbConfig climbConfig;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -115,17 +115,17 @@ public class MonkeyController: MonoBehaviour {
                 this
             );
         }
-        if (config == null) {
+        if (inputConfig == null) {
             Debug.LogWarning(
-                "MonkeyController:\tmust assign Inspector Field: config",
+                "MonkeyController:\tmust assign Inspector Field: inputConfig",
                 this
             );
         }
-        else if (config.MoveAction == null) {
+        else if (inputConfig.MoveAction == null) {
             Debug.LogWarning(
-                "MonkeyController:\tmust assign MonkeyConfig field: "
+                "MonkeyController:\tmust assign MonkeyInputConfig field: "
                     + "moveAction",
-                config
+                inputConfig
             );
         }
 
@@ -137,10 +137,10 @@ public class MonkeyController: MonoBehaviour {
             );
         }
 
-        if (movementConfig == null) {
+        if (climbConfig == null) {
             Debug.LogWarning(
                 "MonkeyController:\tmust assign Inspector Field: "
-                    + "movementConfig",
+                    + "climbConfig",
                 this
             );
         }
@@ -195,7 +195,11 @@ public class MonkeyController: MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        if (config == null || balanceConfig == null || movementConfig == null) {
+        if (
+            inputConfig == null
+            || balanceConfig == null
+            || climbConfig == null
+        ) {
             return;
         }
 
@@ -244,11 +248,11 @@ public class MonkeyController: MonoBehaviour {
             && GameController.I.IsInStartingZone;
         float exhaustedScale = isInStartingZone
             ? balanceConfig.StartingZoneExhaustedSpeedMultiplier
-            : movementConfig.ExhaustedSpeedMultiplier;
+            : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
         orbitAngleDeg -= directionalInput.x
-            * config.RotationSpeedDeg * roughBarkSpeedScale
+            * climbConfig.RotationSpeedDeg * roughBarkSpeedScale
             * Time.fixedDeltaTime;
 
         // speed builds up along a curve of how long the key has been held;
@@ -256,16 +260,16 @@ public class MonkeyController: MonoBehaviour {
         UpdateHeldTimes(directionalInput.y);
         if (upHeldS > 0f) {
             climbSpeedU = directionalInput.y
-                * movementConfig.ClimbUpSpeedCurve.Evaluate(upHeldS)
+                * climbConfig.ClimbUpSpeedCurve.Evaluate(upHeldS)
                 * upSpeedScale;
         } else if (downHeldS > 0f) {
             climbSpeedU = directionalInput.y
-                * movementConfig.ClimbDownSpeedCurve.Evaluate(downHeldS);
+                * climbConfig.ClimbDownSpeedCurve.Evaluate(downHeldS);
         } else {
             climbSpeedU = Mathf.MoveTowards(
                 climbSpeedU,
                 0f,
-                config.DecelerationU * Time.fixedDeltaTime
+                climbConfig.DecelerationU * Time.fixedDeltaTime
             );
         }
 
@@ -288,7 +292,7 @@ public class MonkeyController: MonoBehaviour {
         if (!isStunned && staminaBar != null) {
             float climbedU = Mathf.Max(0f, nextY - transform.position.y);
             float orbitedU = Mathf.Abs(directionalInput.x)
-                * config.RotationSpeedDeg * roughBarkSpeedScale
+                * climbConfig.RotationSpeedDeg * roughBarkSpeedScale
                 * Time.fixedDeltaTime
                 * Mathf.Deg2Rad
                 * orbitRadius;
@@ -297,7 +301,7 @@ public class MonkeyController: MonoBehaviour {
             // standing still, no key pressed, regains stamina slowly
             if (!hasInput) {
                 staminaBar.AddStamina(
-                    movementConfig.IdleStaminaRecoveryPerS
+                    climbConfig.IdleStaminaRecoveryPerS
                         * Time.fixedDeltaTime
                 );
             }
@@ -324,7 +328,7 @@ public class MonkeyController: MonoBehaviour {
     // drop distance, both from the balance config. Ignore hit while previous
     // one in effect
     private void OnBranchHit(Collider branch) {
-        if (config == null || balanceConfig == null) {
+        if (balanceConfig == null) {
             return;
         }
 
@@ -371,9 +375,9 @@ public class MonkeyController: MonoBehaviour {
 
     private bool IsStunned => Time.time < stunEndTime;
 
-    // body and arms share one action, held on the config asset
+    // body and arms share one action, held on the input config asset
     private InputActionReference MoveAction =>
-        config != null ? config.MoveAction : null;
+        inputConfig != null ? inputConfig.MoveAction : null;
 
     // cached references  ------------------------------------------------------
     private Rigidbody body;

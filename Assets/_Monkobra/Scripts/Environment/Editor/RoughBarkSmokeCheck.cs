@@ -151,7 +151,7 @@ public static class RoughBarkSmokeCheck {
                 Press(stage == 4 ? Key.D : Key.A);
                 float elapsed = Time.time - phaseTime;
                 if (elapsed < 0.4f) return;
-                var config = (MonkeyConfig)typeof(MonkeyController).GetField("config", Private).GetValue(monkey);
+                var config = (MonkeyClimbConfig)typeof(MonkeyController).GetField("climbConfig", Private).GetValue(monkey);
                 float turn = Mathf.DeltaAngle(phaseAngle, body.rotation.eulerAngles.y);
                 float ratio = Mathf.Abs(turn) / (config.RotationSpeedDeg * elapsed);
                 Require(ratio > 0.27f && ratio < 0.43f,

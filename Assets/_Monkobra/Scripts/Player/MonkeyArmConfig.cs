@@ -3,8 +3,8 @@ using UnityEngine;
 /// <summary>
 /// Tuning of the monkey's arms: stroke range and speed, reach, resting
 /// splay and visual thickness. Climb and orbit numbers are in
-/// <see cref="MovementConfig"/>, the input actions in
-/// <see cref="MonkeyConfig"/>. Consumed by <see cref="ArmController"/>.
+/// <see cref="MonkeyClimbConfig"/>, the input actions in
+/// <see cref="MonkeyInputConfig"/>. Consumed by <see cref="ArmController"/>.
 /// <para>
 /// <see cref="ArmController"/> takes nothing physical from here, springs,
 /// limits, anchors and axes are authored on its

@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 /// and grants a short protection from any web.
 /// <para>
 /// The escape key, Space, is also bound to interact, the grab key, so the
-/// interact action from <see cref="MonkeyConfig"/> is disabled on trap.
+/// interact action from <see cref="MonkeyInputConfig"/> is disabled on trap.
 /// Disabling cancels it if held, so the arms end any reach and the camera
 /// swings back behind. It stays off until protection ends, so leftover
 /// presses after breaking free do not fire a grab.
@@ -92,7 +92,7 @@ public class SpiderWebStruggle: MonoBehaviour {
         "same asset the body and arms use, its interact action is paused "
             + "while trapped"
     )]
-    private MonkeyConfig monkeyConfig;
+    private MonkeyInputConfig inputConfig;
 
     [SerializeField]
     [Tooltip("button mashed to break free, Player/Jump (Space)")]
@@ -115,17 +115,17 @@ public class SpiderWebStruggle: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (monkeyConfig == null) {
+        if (inputConfig == null) {
             Debug.LogWarning(
                 "SpiderWebStruggle:\tmust assign Inspector Field: "
-                    + "monkeyConfig",
+                    + "inputConfig",
                 this
             );
-        } else if (monkeyConfig.InteractAction == null) {
+        } else if (inputConfig.InteractAction == null) {
             Debug.LogWarning(
-                "SpiderWebStruggle:\tmust assign MonkeyConfig field: "
+                "SpiderWebStruggle:\tmust assign MonkeyInputConfig field: "
                     + "interactAction",
-                monkeyConfig
+                inputConfig
             );
         }
         if (escapeAction == null) {
@@ -213,7 +213,7 @@ public class SpiderWebStruggle: MonoBehaviour {
     private bool isInteractSuspended; // this script disabled interact
 
     private InputActionReference InteractAction =>
-        monkeyConfig != null ? monkeyConfig.InteractAction : null;
+        inputConfig != null ? inputConfig.InteractAction : null;
 
     // frozen time also covers a pause; game over is checked on its own too,
     // so the struggle stays stopped even if a game over keeps time running

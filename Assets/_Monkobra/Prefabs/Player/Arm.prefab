@@ -322,5 +322,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArmRoot
   armVisual: {fileID: 7356365617691678713}
   handCollider: {fileID: 9025548625086386042}
-  config: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
+  armConfig: {fileID: 11400000, guid: 215c208fef9757940b5fc41b7ed0fd78, type: 2}
+  inputConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
   isRightArm: 0

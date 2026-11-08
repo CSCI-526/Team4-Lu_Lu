@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Shared tuning for the monkey: arm stroke and reach, orbit speed, and the
 /// input actions every consumer reads. Climb build-up and exhaustion live in
-/// <see cref="MovementConfig"/>, branch-hit numbers in
+/// <see cref="MonkeyClimbConfig"/>, branch-hit numbers in
 /// <see cref="GameBalanceConfig"/>. Consumed by
 /// <see cref="ArmController"/> and <see cref="MonkeyController"/>.
 /// <para>
@@ -13,10 +13,10 @@ using UnityEngine.InputSystem;
 /// </para>
 /// </summary>
 [CreateAssetMenu(
-    fileName = "MonkeyConfig",
-    menuName = "Scriptable Objects/MonkeyConfig"
+    fileName = "MonkeyInputConfig",
+    menuName = "Scriptable Objects/MonkeyInputConfig"
 )]
-public class MonkeyConfig: ScriptableObject {
+public class MonkeyInputConfig: ScriptableObject {
     // Public Members  #########################################################
     /// <returns>bottom of the stroke, arm fully pulled down, in deg</returns>
     public float MinAngleDeg => minAngleDeg;

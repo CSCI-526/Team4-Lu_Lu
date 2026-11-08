@@ -3,15 +3,15 @@ using UnityEngine;
 /// <summary>
 /// Climb tuning for the monkey: how speed builds up while the climb key is
 /// held, the exhaustion slow down and the idle stamina recovery. Orbit
-/// speed, arms and input actions stay in <see cref="MonkeyConfig"/>, game
+/// speed, arms and input actions stay in <see cref="MonkeyInputConfig"/>, game
 /// wide numbers in <see cref="GameBalanceConfig"/>. Consumed by
 /// <see cref="MonkeyController"/>.
 /// </summary>
 [CreateAssetMenu(
-    fileName = "MovementConfig",
-    menuName = "Scriptable Objects/MovementConfig"
+    fileName = "MonkeyClimbConfig",
+    menuName = "Scriptable Objects/MonkeyClimbConfig"
 )]
-public class MovementConfig: ScriptableObject {
+public class MonkeyClimbConfig: ScriptableObject {
     // Public Members  #########################################################
     /// <returns>x: seconds the up key has been held; y: climb speed moving
     /// up; u/s</returns>
