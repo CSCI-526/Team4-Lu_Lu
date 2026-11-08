@@ -68,6 +68,7 @@ bug spider web fail to load & log warning
 - `InGameHUD` now nested in `_UI`, holding `ProgressBar`, `StaminaBar`, `ScoreHeight` & the pause hint; no visual change
 - `CoconutManager` on the `GameController` prefab centralizes the coconut count, the throw & the HUD switching; the analytics report reads coconut pickups & uses from it
 - `TopRightAnchor` and the coconut `Panel` removed: `CoconutHUD` sits straight under `InGameHUD`; the freeze countdown & bar split out of `CoconutWidget` into `FreezeTimerWidget`, the center prompts into `CoconutMessageWidget`
+- banana model: the 3 stretched capsules of `BranchWithFruit` replaced by `SM_Fruits_Banana_Y1` from the PolyOne Free Fruits pack (child `BananaModel` of `Banana`); `BananaReachable` & `BananaGrabbable` outline widths thinned to fit the mesh
 
 ##### Yuqing Lu
 
