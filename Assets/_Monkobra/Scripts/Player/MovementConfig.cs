@@ -29,6 +29,13 @@ public class MovementConfig: ScriptableObject {
     /// input</returns>
     public float IdleStaminaRecoveryPerS => idleStaminaRecoveryPerS;
 
+    /// <returns>orbit speed around the trunk; deg/s</returns>
+    public float RotationSpeedDeg => rotationSpeedDeg;
+
+    /// <returns>ramp rate toward a stop once the climb key is released;
+    /// u/s²</returns>
+    public float DecelerationU => decelerationU;
+
     // Inspector Fields  #######################################################
     [Header("Climb Build-Up")]
     [SerializeField]
@@ -61,9 +68,20 @@ public class MovementConfig: ScriptableObject {
     [Tooltip("stamina regained per s while no movement key is pressed")]
     private float idleStaminaRecoveryPerS = 2.5f;
 
+    [Header("Orbit")]
+    [SerializeField]
+    [Tooltip("orbit speed around the trunk; deg/s")]
+    private float rotationSpeedDeg = 50f;
+
+    [SerializeField]
+    [Tooltip("ramp rate toward a stop once the climb key is released; u/s²")]
+    private float decelerationU = 30f;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         exhaustedSpeedMultiplier = Mathf.Clamp01(exhaustedSpeedMultiplier);
         idleStaminaRecoveryPerS = Mathf.Max(0f, idleStaminaRecoveryPerS);
+        rotationSpeedDeg = Mathf.Max(0f, rotationSpeedDeg);
+        decelerationU = Mathf.Max(0f, decelerationU);
     }
 }
