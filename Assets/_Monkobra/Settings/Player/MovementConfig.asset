@@ -80,3 +80,5 @@ MonoBehaviour:
     m_RotationOrder: 4
   exhaustedSpeedMultiplier: 0.2
   idleStaminaRecoveryPerS: 2.5
+  rotationSpeedDeg: 50
+  decelerationU: 30
