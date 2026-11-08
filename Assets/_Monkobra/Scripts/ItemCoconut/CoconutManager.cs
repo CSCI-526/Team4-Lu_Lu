@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 /// when it hits
 /// the cobra or has fallen its full distance the great cobra freezes through
 /// <see cref="CobraMotor.TryFreeze"/>, for
-/// <see cref="GameBalanceConfig.CobraFreezeDurationS"/>.
+/// <see cref="PlayerBalanceConfig.CobraFreezeDurationS"/>.
 /// <para>
 /// UseCoconut is an action of the Input Actions asset: a double-tap (Space, E
 /// or gamepad North, the keys of the grab) set up there as a MultiTap
@@ -101,8 +101,8 @@ public class CoconutManager: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
-    [Tooltip("game balance tuning; freeze time & throw")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("player balance tuning; freeze time & throw")]
+    private PlayerBalanceConfig playerBalanceConfig;
 
     [SerializeField]
     [Tooltip("Input Actions asset that holds the coconut action")]
@@ -134,10 +134,10 @@ public class CoconutManager: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (balanceConfig == null) {
+        if (playerBalanceConfig == null) {
             Debug.LogWarning(
                 "CoconutManager:\tmust assign Inspector Field: "
-                    + "balanceConfig",
+                    + "playerBalanceConfig",
                 this
             );
         }
@@ -385,8 +385,8 @@ public class CoconutManager: MonoBehaviour {
             Quaternion.identity
         );
         flyingCoconut.Launch(
-            balanceConfig.CoconutThrowSpeedU,
-            balanceConfig.CoconutThrowDistanceU,
+            playerBalanceConfig.CoconutThrowSpeedU,
+            playerBalanceConfig.CoconutThrowDistanceU,
             OnCoconutLanded
         );
         if (Debug.isDebugBuild) {
@@ -403,7 +403,7 @@ public class CoconutManager: MonoBehaviour {
         if (cobra == null) {
             return;
         }
-        bool isFrozenNow = cobra.TryFreeze(balanceConfig.CobraFreezeDurationS);
+        bool isFrozenNow = cobra.TryFreeze(playerBalanceConfig.CobraFreezeDurationS);
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CoconutManager:\tcoconut landed, "

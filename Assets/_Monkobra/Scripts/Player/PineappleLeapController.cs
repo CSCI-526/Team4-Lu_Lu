@@ -18,7 +18,6 @@ public class PineappleLeapController: MonoBehaviour {
         phase is Phase.Idle or Phase.Grace
         && monkey != null
         && !monkey.IsHeld
-        && balanceConfig != null
         && leapConfig != null;
 
     // Public Methods  #########################################################
@@ -30,7 +29,7 @@ public class PineappleLeapController: MonoBehaviour {
         }
 
         phase = Phase.Extend;
-        phaseEndTime = Time.time + balanceConfig.PineappleArmExtendS;
+        phaseEndTime = Time.time + leapConfig.ArmExtendS;
         if (GameController.I != null) {
             GameController.I.SetLeaping(true);
         }
@@ -39,7 +38,7 @@ public class PineappleLeapController: MonoBehaviour {
         foreach (ArmController arm in arms) {
             arm.BeginLeapReach(
                 leapConfig.DistanceU,
-                balanceConfig.PineappleArmExtendS
+                leapConfig.ArmExtendS
             );
         }
         if (Debug.isDebugBuild) {
@@ -49,23 +48,14 @@ public class PineappleLeapController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("game balance tuning; hand rise and landing grace timing")]
-    private GameBalanceConfig balanceConfig;
-
-    [SerializeField]
-    [Tooltip("leap distance and speed curve")]
+    [Tooltip(
+        "leap distance, speed curve, hand rise time and landing grace time"
+    )]
     private PineappleLeapConfig leapConfig;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (balanceConfig == null) {
-            Debug.LogWarning(
-                "PineappleLeapController:\tmust assign Inspector Field: "
-                    + "balanceConfig",
-                this
-            );
-        }
         if (leapConfig == null) {
             Debug.LogWarning(
                 "PineappleLeapController:\tmust assign Inspector Field: "
@@ -151,7 +141,7 @@ public class PineappleLeapController: MonoBehaviour {
     // control returns here; hazards stay off until the grace ends
     private void Land() {
         phase = Phase.Grace;
-        phaseEndTime = Time.time + balanceConfig.PineappleLandGraceS;
+        phaseEndTime = Time.time + leapConfig.LandGraceS;
         monkey.IsHeld = false;
         foreach (ArmController arm in arms) {
             arm.EndLeapReach();

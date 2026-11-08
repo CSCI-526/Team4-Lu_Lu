@@ -8,7 +8,7 @@ using UnityEngine;
 /// <para>
 /// Three states. Dormant: nothing moves until the monkey comes within
 /// <c>triggerDistanceU</c> (3D), or within the farther
-/// <see cref="GameBalanceConfig.FallingCobraReachWakeDistanceU"/> while an
+/// <see cref="CobraBalanceConfig.FallingCobraReachWakeDistanceU"/> while an
 /// arm reaches for a banana, and the cobra is at or above the monkey's
 /// height, so a grab is the riskiest moment to stand under a cobra.
 /// Warning: a red pulse for <c>warningDurationS</c>. Falling: a
@@ -42,12 +42,12 @@ public class FallingCobraController: MonoBehaviour {
     /// <param name="treeAxisPosition">any world point on the trunk axis
     /// </param>
     public void Initialize(
-        GameBalanceConfig config,
+        CobraBalanceConfig config,
         Vector3 treeAxisPosition
     ) {
         if (config == null) {
             Debug.LogWarning(
-                "FallingCobraController:\tInitialize needs a GameBalanceConfig, stay "
+                "FallingCobraController:\tInitialize needs a CobraBalanceConfig, stay "
                     + "dormant",
                 this
             );

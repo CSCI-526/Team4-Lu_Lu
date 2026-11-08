@@ -220,9 +220,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MonkeyPrefabRoot
   pullSpeedU: 12
   hitBranchDetection: {fileID: 6025946792045646429}
-  config: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
-  movementConfig: {fileID: 11400000, guid: 5f758de8d78c4f6194921d44e5a0aab0, type: 2}
+  inputConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
+  playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
+  climbConfig: {fileID: 11400000, guid: 5f758de8d78c4f6194921d44e5a0aab0, type: 2}
 --- !u!114 &9198043481806832196
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -266,7 +267,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d42c6e8a15b47f3b06e7c31f8d2a570, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::PineappleLeapController
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   leapConfig: {fileID: 11400000, guid: 2c96f1a7b3e84d05a7d4e50c18b6f372, type: 2}
 --- !u!114 &-8657935869639358425
 MonoBehaviour:
@@ -280,7 +280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07f13d6ba233e4d3081f90899fd0427f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderWebStruggle
-  monkeyConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
+  inputConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
   escapeAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   pressGain: 0.12
   decayPerS: 0.35

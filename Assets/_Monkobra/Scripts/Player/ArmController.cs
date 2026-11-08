@@ -99,10 +99,12 @@ public class ArmController: MonoBehaviour {
     private Collider handCollider;
 
     [SerializeField]
-    [Tooltip(
-        "shared stroke, input and arm-width tuning, same asset on both arms"
-    )]
-    private MonkeyConfig config;
+    [Tooltip("stroke, reach and arm-width tuning, same asset on both arms")]
+    private MonkeyArmConfig armConfig;
+
+    [SerializeField]
+    [Tooltip("shared input actions, same asset on both arms")]
+    private MonkeyInputConfig inputConfig;
 
     [Header("Identity")]
     [SerializeField]
@@ -127,23 +129,30 @@ public class ArmController: MonoBehaviour {
                 this
             );
         }
-        if (config == null) {
+        if (armConfig == null) {
             Debug.LogWarning(
-                "ArmController:\tmust assign Inspector Field: config",
+                "ArmController:\tmust assign Inspector Field: armConfig",
+                this
+            );
+        }
+        if (inputConfig == null) {
+            Debug.LogWarning(
+                "ArmController:\tmust assign Inspector Field: inputConfig",
                 this
             );
         } else {
-            if (config.MoveAction == null) {
+            if (inputConfig.MoveAction == null) {
                 Debug.LogWarning(
-                    "ArmController:\tmust assign MonkeyConfig field: moveAction",
-                    config
+                    "ArmController:\tmust assign MonkeyInputConfig field: "
+                        + "moveAction",
+                    inputConfig
                 );
             }
-            if (config.InteractAction == null) {
+            if (inputConfig.InteractAction == null) {
                 Debug.LogWarning(
-                    "ArmController:\tmust assign MonkeyConfig field: "
+                    "ArmController:\tmust assign MonkeyInputConfig field: "
                         + "interactAction",
-                    config
+                    inputConfig
                 );
             }
         }
@@ -295,7 +304,7 @@ public class ArmController: MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        if (joint == null || config == null) {
+        if (joint == null || armConfig == null) {
             return;
         }
 
@@ -418,12 +427,12 @@ public class ArmController: MonoBehaviour {
 
     private readonly HashSet<Collider> handContacts = new HashSet<Collider>();
 
-    // both arms share 1 action, held on the config asset
+    // both arms share 1 action, held on the input config asset
     private InputActionReference MoveAction =>
-        config != null ? config.MoveAction : null;
+        inputConfig != null ? inputConfig.MoveAction : null;
 
     private InputActionReference InteractAction =>
-        config != null ? config.InteractAction : null;
+        inputConfig != null ? inputConfig.InteractAction : null;
 
     // the joint's pivot, read off the connected body so it tracks every step
     private Vector3 ShoulderWorld {
@@ -672,7 +681,7 @@ public class ArmController: MonoBehaviour {
             return;
         }
 
-        float turnSpeedDeg = config.ReachAimSpeedDeg;
+        float turnSpeedDeg = armConfig.ReachAimSpeedDeg;
         aimDirection =
             turnSpeedDeg <= 0f
                 ? toFruit.normalized
@@ -703,7 +712,7 @@ public class ArmController: MonoBehaviour {
         reachExtensionU = Mathf.MoveTowards(
             reachExtensionU,
             joint.linearLimit.limit,
-            config.ReachExtendSpeedU * Time.fixedDeltaTime
+            armConfig.ReachExtendSpeedU * Time.fixedDeltaTime
         );
         SetExtension(reachExtensionU);
     }
@@ -729,7 +738,7 @@ public class ArmController: MonoBehaviour {
             cyclePhase
                 + direction
                     * inputScale
-                    * config.StrokeSpeedCycles
+                    * armConfig.StrokeSpeedCycles
                     * surfaceScale
                     * Time.fixedDeltaTime,
             1f
@@ -737,8 +746,8 @@ public class ArmController: MonoBehaviour {
 
         // stroke range midpoint is the neutral pitch, half its span the swing
         float phaseRad = cyclePhase * Mathf.PI * 2f;
-        float midDeg = (config.MaxAngleDeg + config.MinAngleDeg) * 0.5f;
-        float halfRangeDeg = (config.MaxAngleDeg - config.MinAngleDeg) * 0.5f;
+        float midDeg = (armConfig.MaxAngleDeg + armConfig.MinAngleDeg) * 0.5f;
+        float halfRangeDeg = (armConfig.MaxAngleDeg - armConfig.MinAngleDeg) * 0.5f;
         float swingDeg = midDeg + halfRangeDeg * Mathf.Sin(phaseRad);
 
         // targetRotation is in the joint's own frame: Axis right, Secondary
@@ -746,7 +755,7 @@ public class ArmController: MonoBehaviour {
         // is flipped a half turn so it reads mirrored, splay leans them apart
         SetAimJoint(
             Quaternion.AngleAxis(-swingDeg, Vector3.right)
-                * Quaternion.AngleAxis(config.SplayDeg, Vector3.up)
+                * Quaternion.AngleAxis(armConfig.SplayDeg, Vector3.up)
         );
         if (body != null) {
             body.WakeUp();
@@ -784,7 +793,7 @@ public class ArmController: MonoBehaviour {
     // InvertDriveAxis covers the joint's drive sign, reachAxisSign the mirror
     // between arms
     private void SetExtension(float extensionU) {
-        bool isInverted = config == null || config.InvertDriveAxis;
+        bool isInverted = armConfig == null || armConfig.InvertDriveAxis;
         joint.targetPosition = new Vector3(
             0f,
             0f,
@@ -809,8 +818,8 @@ public class ArmController: MonoBehaviour {
                 ? Quaternion.LookRotation(shoulderLocal)
                 : Quaternion.identity;
         armVisual.localScale = new Vector3(
-            config.ArmWidthU,
-            config.ArmWidthU,
+            armConfig.ArmWidthU,
+            armConfig.ArmWidthU,
             lengthU
         );
     }

@@ -13,7 +13,7 @@ using UnityEngine.Serialization;
 /// <para>
 /// Rolled like branches: a fixed attempt count per segment, each attempt
 /// against the falling cobra probability curve of
-/// <see cref="GameBalanceConfig"/> sampled at the segment's ramped
+/// <see cref="CobraBalanceConfig"/> sampled at the segment's ramped
 /// difficulty. Each cobra is a child of its segment, so a restart's clear
 /// removes it.
 /// </para>
@@ -24,7 +24,7 @@ using UnityEngine.Serialization;
 /// cobra of the segment is retried, and skipped when retries run out.
 /// </para>
 /// <para>
-/// Ambush: with <see cref="GameBalanceConfig.FallingCobraBananaAmbushChance"/>
+/// Ambush: with <see cref="CobraBalanceConfig.FallingCobraBananaAmbushChance"/>
 /// a cobra instead hangs at the angle of a banana on its segment, a little
 /// above it, so reaching for that banana is what wakes it. If the segment
 /// has no banana, or no ambush spot fits, the cobra falls back to a random
@@ -40,8 +40,8 @@ public class FallingCobraSpawner: MonoBehaviour {
     private FallingCobraController cobraPrefab;
 
     [SerializeField]
-    [Tooltip("game balance tuning; cobra attempts, chance & speeds")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("cobra balance tuning; cobra attempts, chance & speeds")]
+    private CobraBalanceConfig cobraBalanceConfig;
 
     [Header("Cobra Position")]
     [SerializeField]
@@ -78,14 +78,14 @@ public class FallingCobraSpawner: MonoBehaviour {
                 this
             );
         }
-        if (balanceConfig == null) {
+        if (cobraBalanceConfig == null) {
             Debug.LogWarning(
                 "FallingCobraSpawner:\tmust assign Inspector Field: "
-                    + "balanceConfig",
+                    + "cobraBalanceConfig",
                 this
             );
         }
-        if (cobraPrefab == null || balanceConfig == null) {
+        if (cobraPrefab == null || cobraBalanceConfig == null) {
             enabled = false;
         }
     }
@@ -163,14 +163,14 @@ public class FallingCobraSpawner: MonoBehaviour {
 
         // pivots sit mid-segment, so this is the segment's middle difficulty
         float spawnProbability = Mathf.Clamp01(
-            balanceConfig.FallingCobraSpawnProbabilityCurve.Evaluate(
+            cobraBalanceConfig.FallingCobraSpawnProbabilityCurve.Evaluate(
                 difficulty.GetRampedValueFromYPosition(
                     segment.transform.position.y
                 )
             )
         );
 
-        int attemptCount = balanceConfig.FallingCobraAttemptCount;
+        int attemptCount = cobraBalanceConfig.FallingCobraAttemptCount;
         for (int i = 0; i < attemptCount; i++) {
             if (Random.value < spawnProbability) {
                 TrySpawnCobra(segment);
@@ -216,7 +216,7 @@ public class FallingCobraSpawner: MonoBehaviour {
 
         // an ambush aims at one banana of the segment, picked once
         Vector3? bananaLocal = null;
-        if (Random.value < balanceConfig.FallingCobraBananaAmbushChance) {
+        if (Random.value < cobraBalanceConfig.FallingCobraBananaAmbushChance) {
             bananaLocal = PickBananaLocal(segmentXfm);
         }
 
@@ -250,7 +250,7 @@ public class FallingCobraSpawner: MonoBehaviour {
                 segmentXfm.rotation
             );
             Physics.SyncTransforms();
-            cobra.Initialize(balanceConfig, segmentXfm.position);
+            cobra.Initialize(cobraBalanceConfig, segmentXfm.position);
             spawnedCobras.Add(cobra);
             return true;
         }

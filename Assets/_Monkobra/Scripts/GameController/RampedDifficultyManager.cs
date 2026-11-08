@@ -46,19 +46,19 @@ public class RampedDifficultyManager: MonoBehaviour {
     /// <param name="y">any y position; world u</param>
     /// <returns>ramped difficulty, clamped to 0~1</returns>
     public float GetRampedValueFromYPosition(float y) {
-        if (balanceConfig == null) {
+        if (worldBalanceConfig == null) {
             return 0f;
         }
         float rampedY = y - RampBaseYPosition;
         return Mathf.Clamp01(
-            balanceConfig.RampedDifficultyCurve.Evaluate(rampedY)
+            worldBalanceConfig.RampedDifficultyCurve.Evaluate(rampedY)
         );
     }
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("game balance tuning; ramp curve")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("world balance tuning; ramp curve")]
+    private WorldBalanceConfig worldBalanceConfig;
 
     [SerializeField]
     [Tooltip("starting zone exit trigger; its y is where the ramp starts at 0")]
@@ -67,10 +67,10 @@ public class RampedDifficultyManager: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (balanceConfig == null) {
+        if (worldBalanceConfig == null) {
             Debug.LogError(
                 "RampedDifficulty:\tmust assign Inspector Field: "
-                + "balanceConfig", this);
+                + "worldBalanceConfig", this);
         }
         if (rampBase == null) {
             Debug.LogWarning(

@@ -46,3 +46,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  armExtendS: 0.15
+  landGraceS: 0.5

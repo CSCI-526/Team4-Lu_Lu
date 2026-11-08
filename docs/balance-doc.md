@@ -1,6 +1,6 @@
 # Monkobra Balance Design
 
-Why difficulty works the way it does: one height-driven ramp, a shared roll model for every hazard, and one asset to tune it all. The numbers are deliberately not here, they live in `Settings/GameBalanceConfig.asset` and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
+Why difficulty works the way it does: one height-driven ramp, a shared roll model for every hazard, and one home per number. The numbers are deliberately not here, they live in `Settings/Player/PlayerBalanceConfig.asset`, `Settings/Environment/WorldBalanceConfig.asset`, and `Settings/Mob/CobraBalanceConfig.asset`, and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
 
 ## Design Goals
 
@@ -54,13 +54,14 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 - Order Matters: branches are placed first, then webs, falling cobras, and the coconut answer `BranchesGenerated`, so late hazards can keep clear of what already stands
 - A Roll Can Place Nothing: webs and falling cobras are skipped when no clear spot is found, so the curve gives the chance of trying, not a guarantee
 
-## Balance Is One Asset
+## Balance Lives In Three Assets
 
-`GameBalanceConfig` is the single home of balance numbers, grouped by system: stamina, movement, branch hit, score, ramped difficulty, branch, spider web, falling cobra, great cobra, coconut.
+The balance numbers have 3 homes, split by what they tune: `PlayerBalanceConfig` for the player's run (stamina, starting zone, branch hit, score, coconut), `WorldBalanceConfig` for the generated world (ramped difficulty, branch and fruit, rough bark, spider web), and `CobraBalanceConfig` for both cobras (falling cobra, great cobra).
 
-- Why One Asset: balance questions cross systems, since stamina drain, banana supply, and climb speed together decide how long a run lasts; one file keeps them in view together and rules out a second, forgotten copy of a number
-- Readers Hold The Reference: each consumer has a `balanceConfig` field pointing at the same asset, so there is no global to trip over, and a test scene can swap in another asset
-- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm and orbit in `MonkeyConfig`, branch geometry in `BranchFruitPlacementConfig`, the pineapple leap's distance and speed curve in `PineappleLeapConfig`, web and falling cobra spawn geometry on their spawners
+- Why Split By Concern: one asset had grown to a dozen unrelated groups, so a designer tuning the cobras scrolled past stamina and score; each question now has one obvious home, while every number still lives in exactly one asset, so there is no second, forgotten copy of it
+- Cross-System Questions: stamina drain, banana supply, and climb speed together decide how long a run lasts, and they sit in different assets; read `PlayerBalanceConfig` and `WorldBalanceConfig` side by side when tuning a run's length
+- Readers Hold The Reference: each consumer has a field for every slice it reads (`playerBalanceConfig`, `worldBalanceConfig`, `cobraBalanceConfig`) and no slice it does not, so there is no global to trip over, and a test scene can swap in another asset
+- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm stroke and reach in `MonkeyArmConfig`, climb and orbit in `MonkeyClimbConfig`, branch geometry in `BranchFruitPlacementConfig`, the pineapple leap's distance, speed curve, and timings in `PineappleLeapConfig`, web and falling cobra spawn geometry on their spawners
 
 ## The Stamina Loop
 
@@ -85,5 +86,5 @@ Because bananas also cost focus to grab ([Grab System](grab-doc.md)), raising ba
 ## Known Gaps
 
 - Every hazard shares one ramp, so a hazard cannot begin at its own height without reshaping its curve to stay flat until then
-- A freshly created `GameBalanceConfig` defaults differ from the tuned asset, so a recreated asset plays differently until retuned
+- A freshly created balance config's defaults differ from the tuned asset, so a recreated asset plays differently until retuned
 - Difficulty ignores how close the chasing cobra is; only the cobra's own surge reacts to the player, speeding up after each hit or web and stacking with repeated mistakes, see [Mobs](mob-doc.md#motion)

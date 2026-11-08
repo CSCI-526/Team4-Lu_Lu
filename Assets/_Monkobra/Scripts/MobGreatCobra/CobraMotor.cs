@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 /// difficulty. Each mistake of the monkey (a branch or
 /// falling cobra hit, or a web) makes it surge for a while, and mistakes
 /// stack, faster and longer, possibly past the monkey's own speed; tuned in
-/// <see cref="GameBalanceConfig"/>. The one exception to never stopping: a
+/// <see cref="CobraBalanceConfig"/>. The one exception to never stopping: a
 /// used coconut freezes the whole cobra for a while, see
 /// <see cref="TryFreeze"/>. The body
 /// wraps at least one full loop as a corkscrew with no gap round the trunk, so
@@ -101,10 +101,17 @@ public class CobraMotor: MonoBehaviour {
 
     [SerializeField]
     [Tooltip(
-        "game balance tuning; catch-up when the monkey is far ahead, "
+        "cobra balance tuning; catch-up when the monkey is far ahead, "
             + "none if unset"
     )]
-    private GameBalanceConfig balanceConfig;
+    private CobraBalanceConfig cobraBalanceConfig;
+
+    [SerializeField]
+    [Tooltip(
+        "player balance tuning; hit stun length, so one hit counts once; "
+            + "none if unset"
+    )]
+    private PlayerBalanceConfig playerBalanceConfig;
 
     [Header("Tree Path")]
     [SerializeField]
@@ -246,9 +253,9 @@ public class CobraMotor: MonoBehaviour {
             return;
         }
 
-        if (balanceConfig == null) {
+        if (cobraBalanceConfig == null) {
             Debug.LogWarning(
-                "CobraMotor:\tno Inspector Field: balanceConfig, "
+                "CobraMotor:\tno Inspector Field: cobraBalanceConfig, "
                     + "the cobra will not catch up",
                 this
             );
@@ -302,7 +309,7 @@ public class CobraMotor: MonoBehaviour {
         if (surgeStacks > 0 && Time.time >= surgeEndTime) {
             surgeStacks = 0;
         }
-        isCatchingUp = surgeStacks > 0 && balanceConfig != null;
+        isCatchingUp = surgeStacks > 0 && cobraBalanceConfig != null;
 
         if (isCatchingUp) {
             // a surge never slows near the monkey: it is the punishment
@@ -310,14 +317,14 @@ public class CobraMotor: MonoBehaviour {
                 baseClimbSpeed,
                 Mathf.Min(
                     baseClimbSpeed
-                        + surgeStacks * balanceConfig.CobraSurgeSpeedPerMistakeU,
-                    balanceConfig.CobraMaxSurgeSpeedU
+                        + surgeStacks * cobraBalanceConfig.CobraSurgeSpeedPerMistakeU,
+                    cobraBalanceConfig.CobraMaxSurgeSpeedU
                 )
             );
         } else if (Time.time < exitBoostEndTime) {
             // leaving the starting zone releases the cobra with a burst
             targetClimbSpeed = baseClimbSpeed
-                + balanceConfig.CobraExitBoostSpeedU;
+                + cobraBalanceConfig.CobraExitBoostSpeedU;
         } else if (player != null && slowNearPlayer) {
             float coilTopHeight = headHeight - neckLiftU;
             float distanceBelowPlayer =
@@ -335,8 +342,8 @@ public class CobraMotor: MonoBehaviour {
         }
 
         // ease toward the target, so a speed-up or a slow-down never jumps
-        float speedChangeRate = balanceConfig != null
-            ? balanceConfig.CobraSpeedChangeRateU
+        float speedChangeRate = cobraBalanceConfig != null
+            ? cobraBalanceConfig.CobraSpeedChangeRateU
             : float.PositiveInfinity;
         currentClimbSpeed = Mathf.MoveTowards(
             currentClimbSpeed,
@@ -440,7 +447,7 @@ public class CobraMotor: MonoBehaviour {
     /// climb goes on, else the inspector's climb speed; u/s</returns>
     private float BaseClimbSpeed() {
         if (
-            balanceConfig == null
+            cobraBalanceConfig == null
             || player == null
             || RampedDifficultyManager.I == null
         ) {
@@ -452,7 +459,7 @@ public class CobraMotor: MonoBehaviour {
             );
         return Mathf.Max(
             0f,
-            balanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty)
+            cobraBalanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty)
         );
     }
 
@@ -470,9 +477,9 @@ public class CobraMotor: MonoBehaviour {
             return;
         }
 
-        if (balanceConfig != null) {
+        if (cobraBalanceConfig != null) {
             exitBoostEndTime =
-                Time.time + balanceConfig.CobraExitBoostDurationS;
+                Time.time + cobraBalanceConfig.CobraExitBoostDurationS;
         }
         ChaseStarted?.Invoke();
     }
@@ -494,11 +501,12 @@ public class CobraMotor: MonoBehaviour {
     // one stun is one mistake: hits the monkey ignores while stunned, e.g.
     // a 2nd branch on the way down, add nothing
     private void OnMonkeyHit(Collider hazard) {
-        if (balanceConfig != null && Time.time < nextCountedHitTime) {
+        if (playerBalanceConfig != null && Time.time < nextCountedHitTime) {
             return;
         }
-        if (balanceConfig != null) {
-            nextCountedHitTime = Time.time + balanceConfig.HitStunDurationS;
+        if (playerBalanceConfig != null) {
+            nextCountedHitTime =
+                Time.time + playerBalanceConfig.HitStunDurationS;
         }
         StartSurge();
     }
@@ -513,8 +521,8 @@ public class CobraMotor: MonoBehaviour {
     // a frozen cobra ignores mistakes
     private void StartSurge() {
         if (
-            balanceConfig == null
-            || balanceConfig.CobraSurgePerMistakeS <= 0f
+            cobraBalanceConfig == null
+            || cobraBalanceConfig.CobraSurgePerMistakeS <= 0f
             || isFrozen
         ) {
             return;
@@ -526,8 +534,8 @@ public class CobraMotor: MonoBehaviour {
         surgeEndTime =
             Time.time
             + Mathf.Min(
-                remainingS + balanceConfig.CobraSurgePerMistakeS,
-                balanceConfig.CobraMaxSurgeS
+                remainingS + cobraBalanceConfig.CobraSurgePerMistakeS,
+                cobraBalanceConfig.CobraMaxSurgeS
             );
         surgeStacks++;
         CatchUpStarted?.Invoke(surgeStacks);

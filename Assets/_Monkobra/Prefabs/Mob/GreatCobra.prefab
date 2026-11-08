@@ -1287,7 +1287,8 @@ MonoBehaviour:
   - {fileID: 8817812591395748306}
   - {fileID: 697809309729298994}
   - {fileID: 8282021799308646717}
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
+  playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   orbitRadius: 5.5
   startHeight: -10
   climbSpeed: 3

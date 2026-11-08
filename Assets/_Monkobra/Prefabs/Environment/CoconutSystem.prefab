@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoconutSpawner
   coconutPrefab: {fileID: 5604785938746913506, guid: 2e274b242ab549eb97b5aaa18a820401, type: 3}
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   clearanceU: 0.2
   useTestOverride: 0
   testStartHeightU: 5

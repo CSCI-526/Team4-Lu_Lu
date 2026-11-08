@@ -1,15 +1,11 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug analytic record banana in starting zone run
-Hack need to verify: slippery is working
-Fixme replace banana model
-Hack organize & split game balance config
-
+Bug erik analytic record banana in starting zone run
+Fixme camera adjust
 Fixme Pan: UI mpv
-Todo Dong: boss fight
-Todo Pan: 数字显示和蛇的距离
-Todo Pan 排行榜（假的）
+
+Fixme game play tunning
 
 bug spider web fail to load & log warning
 -->
@@ -37,6 +33,8 @@ bug spider web fail to load & log warning
 - coconut throw: a double-tap throws one, the `UseCoconut` action of the Input Actions asset (MultiTap on Space, E & gamepad North), listened to by `CoconutManager`; a coconut model (`CoconutProjectile`) falls from the monkey at `coconutThrowSpeedU`, & the great cobra freezes on touching it or after `coconutThrowDistanceU`, not at the tap; works in the starting zone too
 - look-down camera: `CameraLookDown` goes live for `coconutLookDownS` after a throw to follow the fall, under look-left/look-right while Interact is held (`CameraRigManager`)
 - F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`)
+- consistent pop up UI: every center message (4 coconut, 2 cobra warnings, low stamina & web hints) is a variant prefab of `PopUp/_PopUpBase`, a semi-transparent plate behind the text, edited in the Editor; `PopUpManager` shows one at a time, a higher priority interrupts & the interrupted one resumes, run-only & once-per-scene rules, all dropped on a loss; the widgets only raise events into it (see `docs/pop-up-doc.md`)
+- tree bark texture on trunk segments (`TreeBark` material on `TreeSegment`); source credited in `CREDITS.md`
 
 ##### Wenhai Dong
 
@@ -56,6 +54,7 @@ bug spider web fail to load & log warning
 
 ##### Erik
 
+- idle stamina recovery runs at a quarter rate during the starting zone (`startingZoneIdleRecoveryMultiplier` in `PlayerBalanceConfig`)
 - `exhaustedSpeedMultiplier` & `idleStaminaRecoveryPerS` moved from `GameBalanceConfig` to `MovementConfig`
 - Starter Zone → Starting Zone: `GameState.StartingZone`, `EndStartingZone()`, `StartingZoneExitRelay`, `StartingZoneExitTrigger` prefab; Tutorial state & screen unchanged
 - fruit grab aims at banana closest to monkey, not last to enter a detection zone; re-picked every physics step
@@ -69,6 +68,9 @@ bug spider web fail to load & log warning
 - `InGameHUD` now nested in `_UI`, holding `ProgressBar`, `StaminaBar`, `ScoreHeight` & the pause hint; no visual change
 - `CoconutManager` on the `GameController` prefab centralizes the coconut count, the throw & the HUD switching; the analytics report reads coconut pickups & uses from it
 - `TopRightAnchor` and the coconut `Panel` removed: `CoconutHUD` sits straight under `InGameHUD`; the freeze countdown & bar split out of `CoconutWidget` into `FreezeTimerWidget`, the center prompts into `CoconutMessageWidget`
+- banana model: the 3 stretched capsules of `BranchWithFruit` replaced by `SM_Fruits_Banana_Y1` from the PolyOne Free Fruits pack (child `BananaModel` of `Banana`); `BananaReachable` & `BananaGrabbable` outline widths thinned to fit the mesh
+- config reorganization: `GameBalanceConfig` split by concern into `PlayerBalanceConfig`, `WorldBalanceConfig` & `CobraBalanceConfig`; `MonkeyConfig` into `MonkeyArmConfig` & `MonkeyInputConfig`; `MovementConfig` → `MonkeyClimbConfig`, now also holding orbit speed & deceleration; `PineappleLeapConfig` takes the hand rise time & landing grace; every tuned value carried over unchanged
+- `Settings/` is `_Shared/` plus one folder per module (`Player/`, `Environment/`, `Mob/`, `Cameras/`, `UI/`, ~), assets directly inside
 
 ##### Yuqing Lu
 

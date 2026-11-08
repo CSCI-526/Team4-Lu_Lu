@@ -103,7 +103,7 @@ public static class MockAnalyticsGenerator {
     // mirrors the default of AnalyticsConfig.SampleIntervalS
     private const float SAMPLE_INTERVAL_S = 2f;
 
-    // game tuning mirrored from GameBalanceConfig  ----------------------------
+    // game tuning mirrored from PlayerBalanceConfig  ----------------------------
     private const float MAX_STAMINA = 100f;
     private const float UPWARD_DRAIN_PER_U = 0.5f;
     // the periodic drop of 10 per 10 s

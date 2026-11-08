@@ -5,7 +5,7 @@ using UnityEngine;
 /// threshold. Segment ownership handles recycling and cleanup.</summary>
 public class RoughBarkSpawner: MonoBehaviour {
     public bool IsUnlocked => unlocked;
-    [SerializeField] private GameBalanceConfig balanceConfig;
+    [SerializeField] private WorldBalanceConfig worldBalanceConfig;
     [SerializeField] private Material barkMaterial;
     [SerializeField, Min(0.1f)] private float radiusU = 5.05f;
     [SerializeField] private Vector2 patchHeightRangeU = new(5f, 8.5f);
@@ -22,8 +22,8 @@ public class RoughBarkSpawner: MonoBehaviour {
     private bool hasSpawned;
 
     private void Awake() {
-        if (balanceConfig == null || barkMaterial == null) {
-            Debug.LogError("RoughBarkSpawner: assign balanceConfig and barkMaterial", this);
+        if (worldBalanceConfig == null || barkMaterial == null) {
+            Debug.LogError("RoughBarkSpawner: assign worldBalanceConfig and barkMaterial", this);
             enabled = false;
         }
     }
@@ -54,7 +54,7 @@ public class RoughBarkSpawner: MonoBehaviour {
     }
 
     private void OnScoreChanged(long total) {
-        if (unlocked || total < balanceConfig.RoughBarkStartScore) return;
+        if (unlocked || total < worldBalanceConfig.RoughBarkStartScore) return;
         unlocked = true;
         // The pool was built while the score was low. Populate its existing
         // forward segments now, rather than waiting for a full recycle.
@@ -74,10 +74,10 @@ public class RoughBarkSpawner: MonoBehaviour {
         patches.RemoveAll(patch => patch == null || !patch.gameObject.activeInHierarchy);
         RampedDifficultyManager difficulty = RampedDifficultyManager.I;
         if (difficulty == null) return;
-        float chance = Mathf.Clamp01(balanceConfig.RoughBarkSpawnProbabilityCurve.Evaluate(
+        float chance = Mathf.Clamp01(worldBalanceConfig.RoughBarkSpawnProbabilityCurve.Evaluate(
             difficulty.GetRampedValueFromYPosition(segment.transform.position.y)));
         Physics.SyncTransforms();
-        for (int i = 0; i < balanceConfig.RoughBarkAttemptCount; i++) {
+        for (int i = 0; i < worldBalanceConfig.RoughBarkAttemptCount; i++) {
             // The first feasible forward patch appears near the threshold;
             // later patches retain the shared height-driven roll model.
             if (hasSpawned && Random.value >= chance) continue;

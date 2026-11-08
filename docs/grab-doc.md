@@ -33,7 +33,8 @@ graph TD
 | `Player/DetectionZoneRelay` | side-tagged trigger volume on the monkey that forwards enter and exit events |
 | `Player/UpwardFruitSensor` | singleton (`I`) that keeps the reachable fruit per side, picks the reach side, and relays the grabbable fruit |
 | `Player/ArmController` | one arm: hand-over-hand climb stroke, or the reach and the release check |
-| `Player/MonkeyConfig` | reach speed, stroke tuning, and the interact action both arms and the camera read |
+| `Player/MonkeyArmConfig` | reach speed and stroke tuning both arms read |
+| `Player/MonkeyInputConfig` | the interact action both arms and the camera read |
 | `Cameras/CameraRigManager` | swaps the behind, look-left, look-right, and look-down Cinemachine cameras |
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit |
@@ -43,7 +44,7 @@ graph TD
 | `Environment/FruitFlyOnGrab` | on a fruit: which target and sprite its flight uses |
 | `Environment/LeapOnGrab` | marks a fruit whose grab starts a leap |
 | `Player/PineappleLeapController` | on the monkey root: runs the leap |
-| `Player/PineappleLeapConfig` | the leap's distance and speed curve |
+| `Player/PineappleLeapConfig` | the leap's distance, speed curve, hand rise, and landing grace |
 
 ## Detection
 
@@ -102,7 +103,7 @@ A rare fruit from higher up, kept instead of eaten: it scores more than a banana
 - Count: `CoconutManager` (on the `GameController` prefab) adds one per `CoconutCollected`; the count lives in the scene, so a restart's reload empties it
 - Use: the `UseCoconut` input action, a double-tap of Space, E, or the gamepad north button, spends one and throws it: a `CoconutProjectile` falls straight down from just below the monkey at `coconutThrowSpeedU`, and when it touches the cobra or has fallen `coconutThrowDistanceU` the manager calls `CobraMotor.TryFreeze` for `cobraFreezeDurationS`, so the freeze starts at the landing, not at the tap, see [Mobs](mob-doc.md#coconut-freeze). One coconut flies at a time, and a pause holds it in the air. `UseCoconut` is an action of the Input Actions asset with a MultiTap interaction (2 taps, each press short, the gap between them short), so its timing and keys are edited in the asset, and a held reach never completes it. `CoconutManager` enables the action and listens to its `performed` event; the grab (`Interact`) is a separate action on the same keys, so a tap near fruit reaches like any short press and grabs only fruit already under the hand
 - Refused: a double-tap does nothing outside a live run (the starting zone counts, the tutorial and the lose screen do not), while paused, while a web holds the monkey, or within `webEscapeGraceS` of an escape, so mashing out of a web never spends one; while the cobra is already frozen nothing is spent and "Cobra is already frozen" shows
-- HUD: every part starts inactive in its prefab and an owner switches it on, since a script on an inactive object never runs. `CoconutManager` switches on `InGameHUD/CoconutHUD` (`CoconutWidget`: icon, count, dimmed at x0, and a "Double-tap Space" hint under it, flashing when the cobra surges, until the first use of the session) at the first coconut of the scene, and the `FreezeTimerHUD` prefab under `_UI` (`FreezeTimerWidget`: countdown and shrinking bar) only while the cobra is frozen in a run. `CoconutMessageWidget` on `InGameHUD/CoconutMessage` stays active and shows the center prompts, above the cobra warning: the double-tap teaching on the first coconut, the freeze, a refused second one, and the thaw. The widgets are passive views reading the manager
+- HUD: every part starts inactive in its prefab and an owner switches it on, since a script on an inactive object never runs. `CoconutManager` switches on `InGameHUD/CoconutHUD` (`CoconutWidget`: icon, count, dimmed at x0, and a "Double-tap Space" hint under it, flashing when the cobra surges, until the first use of the session) at the first coconut of the scene, and the `FreezeTimerHUD` prefab under `_UI` (`FreezeTimerWidget`: countdown and shrinking bar) only while the cobra is frozen in a run. `CoconutMessageWidget` on `InGameHUD/CoconutMessage` stays active and hands the center prompts to `PopUpManager` ([PopUps](pop-up-doc.md)): the double-tap teaching on the first coconut, the freeze, a refused second one, and the thaw. The widgets are passive views reading the manager
 
 For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 on every segment. The F3 [hack key](monkobra-tdd.md#hack-shortcuts) spawns a branch bearing a coconut straight above the monkey.
 
@@ -142,7 +143,7 @@ Fruit comes from branches, not its own spawner, and a branch bears 1 fruit or no
 
 ## Tuning
 
-The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`. The pineapple chance curve (`pineappleSpawnProbabilityCurve`), the time the hands take to rise (`pineappleArmExtendS`), and the landing grace (`pineappleLandGraceS`) are there too; the leap distance and speed curve are in `Settings/PineappleLeapConfig.asset`. The fruit flight's duration, look, and easing are in `Settings/FruitFlyConfig.asset`; its duration also delays the stamina restore. The coconut's start height, chance per segment, score multiplier, freeze time, and double-tap timing are in the Coconut group of `Settings/GameBalanceConfig.asset`.
+The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/Player/MonkeyArmConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana are in `Settings/Player/PlayerBalanceConfig.asset`. The banana and pineapple chance curves (`bananaSpawnProbabilityCurve`, `pineappleSpawnProbabilityCurve`) are in `Settings/Environment/WorldBalanceConfig.asset`; the leap distance and speed curve, the time the hands take to rise (`armExtendS`), and the landing grace (`landGraceS`) are in `Settings/Player/PineappleLeapConfig.asset`. The fruit flight's duration, look, and easing are in `Settings/UI/FruitFlyConfig.asset`; its duration also delays the stamina restore. The coconut's start height, chance per segment, score multiplier, freeze time, and double-tap timing are in the Coconut group of `Settings/Player/PlayerBalanceConfig.asset`.
 
 ## Known Gaps
 

@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b36b051fbd1253640aa48c1c7f60db96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlipperyBarkSpawner
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
   barkMaterial: {fileID: 2100000, guid: fd9eee44826e9f14fb87c53fe05d87b9, type: 2}
   radiusU: 5.05
   patchHeightRangeU: {x: 5, y: 8.5}

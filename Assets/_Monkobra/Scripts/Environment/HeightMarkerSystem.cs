@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 /// Height markers beside the trunk: a whole number every <c>intervalU</c> of
 /// climbed height (<see cref="RampedDifficultyManager.GetClimbedYDistance"/>),
 /// shown to the player as meters, so a height tuned in
-/// <see cref="GameBalanceConfig"/>, e.g. the coconut start height, can be
+/// <see cref="PlayerBalanceConfig"/>, e.g. the coconut start height, can be
 /// read off the trunk. Put it on an object on the trunk axis, active from
 /// scene load, never under the pool's mock tree.
 /// <para>

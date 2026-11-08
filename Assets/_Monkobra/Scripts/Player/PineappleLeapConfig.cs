@@ -17,6 +17,12 @@ public class PineappleLeapConfig: ScriptableObject {
     /// </returns>
     public AnimationCurve SpeedCurve => speedCurve;
 
+    /// <returns>time the hands take to rise before the pull; s</returns>
+    public float ArmExtendS => armExtendS;
+
+    /// <returns>time hazards stay off after a leap lands; s</returns>
+    public float LandGraceS => landGraceS;
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Min(0f)]
@@ -33,4 +39,14 @@ public class PineappleLeapConfig: ScriptableObject {
         new Keyframe(0.6f, 22f, 0f, 0f),
         new Keyframe(1.25f, 8f, -20f, 0f)
     );
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time hands take to rise b4 the pull; s")]
+    private float armExtendS = 0.15f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time hazards stay off after a leap lands; s")]
+    private float landGraceS = 0.5f;
 }
