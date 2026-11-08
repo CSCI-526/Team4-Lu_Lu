@@ -1,8 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-FIXME consistent pop up UI
-
 Bug erik analytic record banana in starting zone run
 Fixme Pan: UI mpv
 
@@ -34,6 +32,7 @@ bug spider web fail to load & log warning
 - coconut throw: a double-tap throws one, the `UseCoconut` action of the Input Actions asset (MultiTap on Space, E & gamepad North), listened to by `CoconutManager`; a coconut model (`CoconutProjectile`) falls from the monkey at `coconutThrowSpeedU`, & the great cobra freezes on touching it or after `coconutThrowDistanceU`, not at the tap; works in the starting zone too
 - look-down camera: `CameraLookDown` goes live for `coconutLookDownS` after a throw to follow the fall, under look-left/look-right while Interact is held (`CameraRigManager`)
 - F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`)
+- consistent pop up UI: every center message (4 coconut, 2 cobra warnings, low stamina & web hints) is a variant prefab of `PopUp/_PopUpBase`, a semi-transparent plate behind the text, edited in the Editor; `PopUpManager` shows one at a time, a higher priority interrupts & the interrupted one resumes, run-only & once-per-scene rules, all dropped on a loss; the widgets only raise events into it (see `docs/pop-up-doc.md`)
 
 ##### Wenhai Dong
 

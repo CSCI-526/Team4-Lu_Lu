@@ -13,6 +13,7 @@ How Monkobra is built: the engine and packages, the run lifecycle, the systems t
 | [Build](build-doc.md) | the WebGL export, the three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) and their settings |
 | [AGENTS.md](../AGENTS.md) | rules for agents |
 | [CONTEXT.md](../CONTEXT.md) | descriptive system map and known gaps |
+| [PopUps](pop-up-doc.md) | the center messages: one plate-and-text look, priority and queue, gating, how to add one |
 | [Balance Design](balance-doc.md) | why difficulty follows height, the per-segment roll model, the single balance asset |
 | [CHANGELOG.md](../CHANGELOG.md) | version history |
 
@@ -211,17 +212,18 @@ One asset, `Input/InputSystem_Actions`, holds all bindings, referenced through `
 | --- | --- | --- |
 | Stamina Bar | `UI/StaminaBarController` | current stamina, under an `Energy` label |
 | Fruit Fly | `UI/FruitFlyEffect` | a grabbed fruit's sprite flying to the bar, the coconut counter, or the monkey ([Grab System](grab-doc.md#fruit-fly)) |
-| Coconut | `UI/CoconutWidget`, `UI/FreezeTimerWidget`, `UI/CoconutMessageWidget` | count and double-tap hint; freeze countdown & bar; coconut center messages, all switched on by `CoconutManager` ([Grab System](grab-doc.md#coconut)) |
+| Coconut | `UI/CoconutWidget`, `UI/FreezeTimerWidget`, `UI/CoconutMessageWidget` | count and double-tap hint; freeze countdown & bar; coconut messages through `PopUpManager`, all driven by `CoconutManager` ([Grab System](grab-doc.md#coconut)) |
 | Climb Progress | `UI/ProgressBarWidget` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is and the gap in world units labelled `m` |
 | Score | `UI/ScoreWidget` | total score, on the HUD and the lose panel |
 | Height Markers | `Environment/HeightMarkerSystem` | climbed height every `intervalU` beside the trunk, in world space rather than on the HUD canvas, see below |
 | Screens | `UI/ScreensManager` | tutorial and lose panels |
 | Lose Stats | `UI/LoseScreen` | final height (highest point climbed), final score, and bananas collected, filled each time the lose panel is enabled |
-| Web Prompt | `UI/SpiderWebWidget` | first-trap hint and the escape bar ([Mobs](mob-doc.md#trap-and-escape)) |
-| Low Stamina Prompt | `UI/LowStaminaWidget` | first-low-stamina hint, once per scene load, below the screen center |
+| Web Prompt | `UI/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
+| Low Stamina Prompt | `UI/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
+| PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
 | Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", "Press Esc or P to Resume", and "Press R to Restart" while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
-The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage`, and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
+The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage` (the host of `CoconutMessageWidget`), and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it, with the `_PopUps` root just before `Screens`. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
 
 The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Envs/HeightMarkerSystem`, whose position marks the trunk axis, and works as follows:
 
@@ -233,7 +235,9 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 - Physics: neither label nor plate has a collider, so no spawner's overlap check or grab sees them
 - Testing: Use Test Override swaps `intervalU` for `testIntervalU` (5); tick it in Play mode, so it never gets saved
 
-`LowStaminaWidget` sits on an always-active Canvas child and toggles only its TMP label. The first `StaminaBarController.LowStaminaMoveAttempted` since the scene loaded, the event behind the bar shake and the camera cool-down, shows the hint for `showDurationS`; the script then drops its subscription, and nothing is static, so a reload brings the hint back. A loss hides it at once. While `SpiderWebStruggle.IsTrapped` it is hidden and its countdown waits, so it never shares the screen with the web prompt, and the rest plays after the escape; a held monkey reports no move attempts, so a trap can only cut in on a hint already showing. The label sits below the screen center, clear of the web prompt and the catch-up warning above it and of the vignette's dark edges; the Canvas has no render camera, so it draws as an overlay the vignette never darkens.
+`LowStaminaWidget` sits on an always-active Canvas child and holds no text. The first `StaminaBarController.LowStaminaMoveAttempted` since the scene loaded, the event behind the bar shake and the camera cool-down, asks `PopUpManager` for `LowStaminaHint`; the script then drops its subscription, and nothing is static, so a reload brings the hint back. The web hint outranks it, so a web trap interrupts a hint on screen and the manager resumes it afterward; a loss drops it. The hint sits below the screen center, clear of the web hint above it and of the vignette's dark edges; the Canvas has no render camera, so it draws as an overlay the vignette never darkens.
+
+Every center message is a `PopUp` variant; the rules, the parts, and how to add one are in [PopUps](pop-up-doc.md).
 
 The tutorial in `Lv1Scene` uses editable uGUI Images under `TutorialScreen/KeyboardControls` for the WASD cluster and a wide Space key. Thin white Image rectangles form each outline without a sprite dependency; the WASD keys also have inset keycap frames and diagonal bevel lines. Each key has an explicit, stretched Background child with a dark gray Image (alpha 0.82), ordered before its outlines and label to preserve contrast over the white overlay. Letters are white, and `space` sits inside the long rectangular key at the bottom left. Its uGUI Text captions show `Move`, `Grab Banana`, and `Hold to reach, release to grab`; the existing start prompt remains below them. The original translucent white overlay (alpha 0.392) washes out the game behind the tutorial to indicate that the run has not started. `ScreensManager` shows and hides the whole panel as before.
 
