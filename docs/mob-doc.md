@@ -44,18 +44,18 @@ A branch is a prefab (`Prefabs/Environment/BranchWithFruit`) holding a `Branch`-
 3. a second hit during the stun is ignored, so overlapping branches cost one drop, not two
 4. the stun fall is involuntary, so it drains no movement stamina
 
-The stun duration and drop distance and speed are in `Settings/GameBalanceConfig.asset`.
+The stun duration and drop distance and speed are in `Settings/Player/PlayerBalanceConfig.asset`.
 
 ### Placement
 
 `TreeSegmentController` decorates each dynamic trunk segment with branches in its `Start`, after `TreeManager` exists. Placement tuning sits in `BranchFruitPlacementConfig`.
 
-- Count: a fixed `branchGenerationAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `branchSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`) and spawns a branch if a random roll falls below that chance; why the curve is shaped by difficulty is in [Balance Design](balance-doc.md#one-roll-model)
+- Count: a fixed `branchGenerationAttemptCount` per segment (`WorldBalanceConfig`); each attempt samples `branchSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`) and spawns a branch if a random roll falls below that chance; why the curve is shaped by difficulty is in [Balance Design](balance-doc.md#one-roll-model)
 - Position: a random angle round the trunk and a random height in the segment, at a fixed radius, retried until a spot keeps the minimum separation from branches already placed on that segment, else the last try is accepted
-- Monkey Clearance: before the run is playing (tutorial screen and starting zone) a branch spot within `startingZoneBranchClearRadiusU` (`GameBalanceConfig`, 0 turns it off) of the monkey is rejected and retried; if no clear spot is found the branch is skipped, so a restart never spawns the monkey into a branch. The monkey is read from `RampedDifficultyManager.PlayerTransform`
-- Fruit: `TreeSegmentController` samples `pineappleSpawnProbabilityCurve` and `bananaSpawnProbabilityCurve` (`GameBalanceConfig`) at each placed branch's ramped difficulty and passes both chances to `BranchController.Initialize`, which rolls the pineapple first, then the banana, so a branch bears 1 fruit or none, then randomizes the stem length and fruit rotation
+- Monkey Clearance: before the run is playing (tutorial screen and starting zone) a branch spot within `startingZoneBranchClearRadiusU` (`WorldBalanceConfig`, 0 turns it off) of the monkey is rejected and retried; if no clear spot is found the branch is skipped, so a restart never spawns the monkey into a branch. The monkey is read from `RampedDifficultyManager.PlayerTransform`
+- Fruit: `TreeSegmentController` samples `pineappleSpawnProbabilityCurve` and `bananaSpawnProbabilityCurve` (`WorldBalanceConfig`) at each placed branch's ramped difficulty and passes both chances to `BranchController.Initialize`, which rolls the pineapple first, then the banana, so a branch bears 1 fruit or none, then randomizes the stem length and fruit rotation
 
-Attempt counts and the branch and banana chance curves are in `Settings/GameBalanceConfig.asset`; branch radius, separation, and placement retries are in `Settings/Mob/BranchFruitPlacementConfig.asset`.
+Attempt counts and the branch and banana chance curves are in `Settings/Environment/WorldBalanceConfig.asset`; branch radius, separation, and placement retries are in `Settings/Environment/BranchFruitPlacementConfig.asset`.
 
 ## Cobra
 
@@ -66,9 +66,9 @@ The chasing cobra is code-built geometry on one root: `CobraMotor` poses the bod
 - Path: the head orbits the trunk axis (`pathCenter`) at a fixed radius while climbing, and the body trails it as a corkscrew
 - Never Down: the head only climbs, so a monkey that descends runs into the coil instead of pushing it down
 - Closing In: when the coil is within `slowDownDistance` below the monkey, the climb slows to a minimum share of its speed for suspense, but never stops
-- Base Speed: outside a surge the cobra climbs at `cobraBaseSpeedCurve` (`GameBalanceConfig`) sampled at the monkey's ramped difficulty, set against the monkey's real average climb (dodging, grabbing, and resting keep it well under its top speed), so a clean run keeps a lead early and the chase tightens late
-- Zone Exit Boost: when the monkey leaves the starting zone (state becomes Playing) the cobra climbs at its base speed plus `cobraExitBoostSpeedU` for `cobraExitBoostDurationS` (`GameBalanceConfig`; speed 0 turns it off), eased by `cobraSpeedChangeRateU` like any speed change. A running mistake surge takes precedence over it. `CobraMotor` also raises `ChaseStarted` once, and `ProgressBarWidget` shows `chaseStartText` ("Run! The Great Cobra is chasing you!") with the same center cue as the surge warning
-- Mistake Surge: each mistake of the monkey (a branch or falling cobra hit, counted once per stun, or any web trap) adds `cobraSurgePerMistakeS` of surge time, capped at `cobraMaxSurgeS`, and one stack. While a surge runs the cobra climbs at its base speed plus `cobraSurgeSpeedPerMistakeU` per stack, capped at `cobraMaxSurgeSpeedU`, which may pass the monkey's up speed, and it skips the slow-down near the monkey. When the surge time runs out the stacks reset. The speed eases at `cobraSpeedChangeRateU`; all of these live in `GameBalanceConfig`, wired through `balanceConfig` on the `GreatCobra` prefab's `CobraMotor`. Each stacked mistake raises `CatchUpStarted`: `ProgressBarWidget` shows "The cobra is speeding up!" (with ×N from the 2nd stack) at the screen center, sized to the screen height, fading out, and flashes the cobra marker red while the surge lasts
+- Base Speed: outside a surge the cobra climbs at `cobraBaseSpeedCurve` (`CobraBalanceConfig`) sampled at the monkey's ramped difficulty, set against the monkey's real average climb (dodging, grabbing, and resting keep it well under its top speed), so a clean run keeps a lead early and the chase tightens late
+- Zone Exit Boost: when the monkey leaves the starting zone (state becomes Playing) the cobra climbs at its base speed plus `cobraExitBoostSpeedU` for `cobraExitBoostDurationS` (`CobraBalanceConfig`; speed 0 turns it off), eased by `cobraSpeedChangeRateU` like any speed change. A running mistake surge takes precedence over it. `CobraMotor` also raises `ChaseStarted` once, and `ProgressBarWidget` shows `chaseStartText` ("Run! The Great Cobra is chasing you!") with the same center cue as the surge warning
+- Mistake Surge: each mistake of the monkey (a branch or falling cobra hit, counted once per stun, or any web trap) adds `cobraSurgePerMistakeS` of surge time, capped at `cobraMaxSurgeS`, and one stack. While a surge runs the cobra climbs at its base speed plus `cobraSurgeSpeedPerMistakeU` per stack, capped at `cobraMaxSurgeSpeedU`, which may pass the monkey's up speed, and it skips the slow-down near the monkey. When the surge time runs out the stacks reset. The speed eases at `cobraSpeedChangeRateU`; all of these live in `CobraBalanceConfig`, wired through `cobraBalanceConfig` on the `GreatCobra` prefab's `CobraMotor`. Each stacked mistake raises `CatchUpStarted`: `ProgressBarWidget` shows "The cobra is speeding up!" (with ×N from the 2nd stack) at the screen center, sized to the screen height, fading out, and flashes the cobra marker red while the surge lasts
 - Coil: the body spans at least one full loop, and `Awake` clones the last segment until no gap along the coil exceeds `maxSegmentGapU`, so the monkey cannot slip through by orbiting
 - Look: a chain of rounded beads with small gaps, slightly tapered, a flat hooded head with primitive-sphere eyes, a raised neck, and a slow slither wave. The hit shape stays gapless even where the visual has gaps
 
@@ -80,7 +80,7 @@ The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)
 
 ### Coconut Freeze
 
-`CobraMotor.TryFreeze`, called by `CoconutManager` when a thrown coconut lands, on the cobra or after its fixed fall ([Grab System](grab-doc.md#coconut)), holds the whole cobra still for `cobraFreezeDurationS` (`GameBalanceConfig`): no climb, no orbit, no slither wave.
+`CobraMotor.TryFreeze`, called by `CoconutManager` when a thrown coconut lands, on the cobra or after its fixed fall ([Grab System](grab-doc.md#coconut)), holds the whole cobra still for `cobraFreezeDurationS` (`PlayerBalanceConfig`): no climb, no orbit, no slither wave.
 
 - Start: the running mistake surge and the zone exit boost are cleared and the climb speed drops to 0, so after the freeze the cobra eases back up at `cobraSpeedChangeRateU`
 - During: mistakes add no surge and raise no `CatchUpStarted`, so no warning shows; the base speed and the slow-down near the monkey resume at the thaw
@@ -101,13 +101,13 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 
 `FallingCobraSpawner` sits on the active `DTSPool` object in `Lv1Scene`, never under the pool's mock tree, which the pool deactivates at runtime (it logs a warning if one is left there). Like the web spawner it listens to `TreeSegmentController.BranchesGenerated`, so each roll of a segment's branches gets exactly one roll of falling cobras. Only the first enabled spawner listens.
 
-- Count: a fixed `fallingCobraAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `fallingCobraSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
+- Count: a fixed `fallingCobraAttemptCount` per segment (`CobraBalanceConfig`); each attempt samples `fallingCobraSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
 - Spot: a cobra hangs on a ring of `spawnRadiusU` about the segment's pivot, on the trunk axis, at a random angle and a random height that keeps the whole snake inside its segment. A spot too close to another cobra of the segment is retried, then skipped
-- Banana Ambush: with `fallingCobraBananaAmbushChance` (`GameBalanceConfig`) a cobra instead hangs at the angle of one banana of its segment, `ambushMinAboveBananaU` to `ambushMaxAboveBananaU` above it (on the spawner); with no banana, or no room above it inside the segment, it falls back to a random spot. The pick goes by the `FruitCollider` tag, so a pineapple or a coconut can be ambushed too
+- Banana Ambush: with `fallingCobraBananaAmbushChance` (`CobraBalanceConfig`) a cobra instead hangs at the angle of one banana of its segment, `ambushMinAboveBananaU` to `ambushMaxAboveBananaU` above it (on the spawner); with no banana, or no room above it inside the segment, it falls back to a random spot. The pick goes by the `FruitCollider` tag, so a pineapple or a coconut can be ambushed too
 - Cleanup: cobras are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous cobras too
 - Concurrency: several can be live at once, one roll per segment; frequency follows climb height and the curve, not a clock
 
-Fall and chase speeds, the wake distance, and the ambush chance are in `Settings/GameBalanceConfig.asset`; spawn radius, separation, and ambush height are on `FallingCobraSpawner` on `DTSPool`; trigger and fall distances are on the falling cobra prefab.
+Fall and chase speeds, the wake distance, and the ambush chance are in `Settings/Mob/CobraBalanceConfig.asset`; spawn radius, separation, and ambush height are on `FallingCobraSpawner` on `DTSPool`; trigger and fall distances are on the falling cobra prefab.
 
 ### Behavior
 
@@ -125,11 +125,11 @@ A static trap on the trunk that holds the monkey in place while the cobra keeps 
 
 `SpiderWebSpawner` sits on `Envs/DTSPool` in `Lv1Scene`, and on any object that stays active from scene load, never under the pool's mock tree, which `DTSPool` deactivates at runtime (it logs a warning if one is left there). It listens to `TreeSegmentController.BranchesGenerated`, raised each time a segment has rolled its branches, on its first `Start` and after every `DTSPool` restart, so each roll of branches gets exactly one roll of webs. Only the first enabled spawner listens.
 
-- Count: a fixed `webAttemptCount` per segment (`GameBalanceConfig`); each attempt samples `webSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
+- Count: a fixed `webAttemptCount` per segment (`WorldBalanceConfig`); each attempt samples `webSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
 - Spot: a web lies flat on its segment's bark facing outward. A spot is dropped if it is too close to another live web, or its trigger volume (plus clearance) overlaps a branch or fruit. After the retry cap the web is skipped rather than placed overlapping
 - Cleanup: webs are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous webs too, destroying any still active, so none linger and none double up. A web removed under a held monkey frees it
 
-The attempt count and spawn probability curve are in `Settings/GameBalanceConfig.asset`; the minimum separation is on `SpiderWebSpawner` on `Envs/DTSPool`.
+The attempt count and spawn probability curve are in `Settings/Environment/WorldBalanceConfig.asset`; the minimum separation is on `SpiderWebSpawner` on `Envs/DTSPool`.
 
 The curve is the only gate: webs appear wherever it is above 0, and the ramped difficulty is 0 until the climb reaches the start of `rampedDifficultyCurve`.
 
@@ -147,10 +147,10 @@ The struggle suspends interact because of a shared Space binding, see [Input](mo
 
 ### Testing
 
-Webs are in `Lv1Scene` and follow the web probability curve. For a quick test select `Envs/DTSPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Spawn Chance per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/GameBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
+Webs are in `Lv1Scene` and follow the web probability curve. For a quick test select `Envs/DTSPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Spawn Chance per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/Environment/WorldBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
 
 ## Known Gaps
 
-- Mob tuning for the cobra, the web escape, and web geometry lives on scene components, not in a shared ScriptableObject; only the web and falling cobra spawn rates, speeds, and attempt counts are in `GameBalanceConfig`
+- Mob tuning for the web escape and web geometry lives on scene components, not in a shared ScriptableObject; only the web spawn rates and attempt counts are in `WorldBalanceConfig`, and the falling cobra and great cobra numbers in `CobraBalanceConfig`
 - Stamina is not linked to branch hits
 - `Lv1Scene`'s Canvas holds 2 objects named `ProgressBar`, the climb progress and the web escape bar, so look them up by path

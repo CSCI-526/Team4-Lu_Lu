@@ -33,7 +33,8 @@ graph TD
 | `Player/DetectionZoneRelay` | side-tagged trigger volume on the monkey that forwards enter and exit events |
 | `Player/UpwardFruitSensor` | singleton (`I`) that keeps the reachable fruit per side, picks the reach side, and relays the grabbable fruit |
 | `Player/ArmController` | one arm: hand-over-hand climb stroke, or the reach and the release check |
-| `Player/MonkeyConfig` | reach speed, stroke tuning, and the interact action both arms and the camera read |
+| `Player/MonkeyArmConfig` | reach speed and stroke tuning both arms read |
+| `Player/MonkeyInputConfig` | the interact action both arms and the camera read |
 | `Cameras/CameraRigManager` | swaps the behind, look-left, look-right, and look-down Cinemachine cameras |
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit |
@@ -43,7 +44,7 @@ graph TD
 | `Environment/FruitFlyOnGrab` | on a fruit: which target and sprite its flight uses |
 | `Environment/LeapOnGrab` | marks a fruit whose grab starts a leap |
 | `Player/PineappleLeapController` | on the monkey root: runs the leap |
-| `Player/PineappleLeapConfig` | the leap's distance and speed curve |
+| `Player/PineappleLeapConfig` | the leap's distance, speed curve, hand rise, and landing grace |
 
 ## Detection
 
@@ -142,7 +143,7 @@ Fruit comes from branches, not its own spawner, and a branch bears 1 fruit or no
 
 ## Tuning
 
-The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/_Shared/MonkeyConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana and the banana chance curve (`bananaSpawnProbabilityCurve`) are in `Settings/GameBalanceConfig.asset`. The pineapple chance curve (`pineappleSpawnProbabilityCurve`), the time the hands take to rise (`pineappleArmExtendS`), and the landing grace (`pineappleLandGraceS`) are there too; the leap distance and speed curve are in `Settings/PineappleLeapConfig.asset`. The fruit flight's duration, look, and easing are in `Settings/FruitFlyConfig.asset`; its duration also delays the stamina restore. The coconut's start height, chance per segment, score multiplier, freeze time, and double-tap timing are in the Coconut group of `Settings/GameBalanceConfig.asset`.
+The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snaps) are in `Settings/Player/MonkeyArmConfig.asset`, the maximum reach is the linear limit of the `ConfigurableJoint` on the `Arm` prefab, and the stamina and points per banana are in `Settings/Player/PlayerBalanceConfig.asset`. The banana and pineapple chance curves (`bananaSpawnProbabilityCurve`, `pineappleSpawnProbabilityCurve`) are in `Settings/Environment/WorldBalanceConfig.asset`; the leap distance and speed curve, the time the hands take to rise (`armExtendS`), and the landing grace (`landGraceS`) are in `Settings/Player/PineappleLeapConfig.asset`. The fruit flight's duration, look, and easing are in `Settings/UI/FruitFlyConfig.asset`; its duration also delays the stamina restore. The coconut's start height, chance per segment, score multiplier, freeze time, and double-tap timing are in the Coconut group of `Settings/Player/PlayerBalanceConfig.asset`.
 
 ## Known Gaps
 

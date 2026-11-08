@@ -28,6 +28,7 @@ Read these `docs/` files when their topic arises:
 - The repository root is the Unity project root: `Assets/`, `Packages/`, and `ProjectSettings/` sit at the top level
 - Authored assets live under `Assets/_Monkobra/`, laid out `<Type>/<Module>/<asset>` per the `coder-unity-engine` skill (e.g. `Scripts/`, `Prefabs/`, `Scenes/`, `Settings/_Shared/`)
 - Unity drops a new Volume profile into `Scenes/<Scene>/`; move it in the Editor to `Settings/<Module>/` (`Settings/_Shared/` when no one module owns it), since `Scenes/` holds `.unity` files only
+- `Settings/` is `_Shared/` plus one folder per module (`Player/`, `Environment/`, `Mob/`, `Cameras/`, `UI/`, `Analytics/`, `HackShortcuts/`) with assets placed directly inside, never a deeper folder; a config asset goes in the module whose scripts read it, name it for what it configures (e.g. `CobraBalanceConfig.asset`), and balance numbers live in the 3 balance configs by concern (player, world, cobra)
 - Unity template leftovers and imports (`Assets/Readme.asset`, `Assets/TextMesh Pro/`) stay outside the game root
 - `Lv1Scene.unity` is a shell of 8 root prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Envs`, `Entities`, `GameController`, `UI`), see the Scene Hierarchy in [CONTEXT.md](CONTEXT.md#scene-hierarchy); open the owning prefab and edit it there, never an inline copy in the scene, so parallel work lands in different files
 - A new scene object becomes its own prefab under `Assets/_Monkobra/Prefabs/<Module>/`, nested in the matching root prefab; add a root only when no existing one fits
@@ -52,7 +53,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 
 - Unity code follows the `coder-unity-engine` skill conventions
 - Keep gameplay tuning values (stamina drain, grab restore, cobra speed) in serialized fields, never hard-coded
-- Line endings: keep a file's existing endings; `GameBalanceConfig.cs` is CRLF, so edit it in a way that preserves them
+- Line endings: keep a file's existing endings; `PlayerBalanceConfig.cs` is CRLF, so edit it in a way that preserves them
 - Gameplay input comes from actions of the Input Actions asset `InputSystem_Actions`, read through `InputAction` events or polling; timing such as a double-tap is an interaction on the action (`UseCoconut` is a MultiTap), never a hand-rolled key tracker in a script
 - Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive`; never hard-code a dev key or let one run in a release build
 
