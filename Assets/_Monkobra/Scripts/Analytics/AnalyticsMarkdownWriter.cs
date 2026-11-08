@@ -51,15 +51,35 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("#### Final Score: ").Append(run.TotalScore).Append("\n\n");
         sb.Append("- Score from Height: ").Append(run.HeightScore);
         sb.Append('\n');
+        // the reward score holds both fruits, the coconut part kept apart
+        long bananaScore = run.RewardScore - run.CoconutRewardScore;
         sb.Append("- Score from Banana: ");
-        sb.Append(FormatBananaScore(run.RewardScore, run.Bananas.Count));
+        sb.Append(FormatPickupScore(bananaScore, run.Bananas.Count));
+        sb.Append('\n');
+        sb.Append("- Score from Coconut: ");
+        sb.Append(
+            FormatPickupScore(run.CoconutRewardScore, run.Coconuts.Count)
+        );
         sb.Append("\n\n");
-        AppendScoreSplit(sb, run.HeightScore, run.RewardScore);
+        AppendScoreSplit(
+            sb,
+            run.HeightScore,
+            bananaScore,
+            run.CoconutRewardScore
+        );
 
         sb.Append("#### Banana Count: ").Append(run.Bananas.Count);
         sb.Append("\n\n");
         AppendClockList(sb, run.Bananas, run.StartClock, true);
         AppendStaminaCurve(sb, run.Samples);
+
+        sb.Append("#### Coconut Count: ").Append(run.Coconuts.Count);
+        sb.Append("\n\n");
+        AppendClockList(sb, run.Coconuts, run.StartClock, true);
+
+        sb.Append("#### Coconut Used: ").Append(run.CoconutsUsed.Count);
+        sb.Append("\n\n");
+        AppendClockList(sb, run.CoconutsUsed, run.StartClock, true);
 
         sb.Append("#### Web Encounter: ").Append(run.Webs.Count);
         sb.Append("\n\n");
@@ -200,8 +220,9 @@ public static class AnalyticsMarkdownWriter {
         return height.ToString("+0.0;-0.0;+0.0", CultureInfo.InvariantCulture);
     }
 
-    // "unit * count = total" when every banana paid the same, else total only
-    private static string FormatBananaScore(long total, int count) {
+    // "unit * count = total" when every pickup of the kind paid the same, else
+    // total only
+    private static string FormatPickupScore(long total, int count) {
         if (count > 0 && total % count == 0) {
             return (total / count) + " * " + count + " = " + total;
         }
@@ -276,13 +297,15 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("]\n```\n\n");
     }
 
-    // pie of height score against banana score, skipped w/o any score
+    // pie of height score against banana & coconut score, skipped w/o any
+    // score
     private static void AppendScoreSplit(
         StringBuilder sb,
         long heightScore,
-        long rewardScore
+        long bananaScore,
+        long coconutScore
     ) {
-        if (heightScore <= 0 && rewardScore <= 0) {
+        if (heightScore <= 0 && bananaScore <= 0 && coconutScore <= 0) {
             return;
         }
 
@@ -291,8 +314,11 @@ public static class AnalyticsMarkdownWriter {
         if (heightScore > 0) {
             sb.Append("    \"Height\" : ").Append(heightScore).Append('\n');
         }
-        if (rewardScore > 0) {
-            sb.Append("    \"Banana\" : ").Append(rewardScore).Append('\n');
+        if (bananaScore > 0) {
+            sb.Append("    \"Banana\" : ").Append(bananaScore).Append('\n');
+        }
+        if (coconutScore > 0) {
+            sb.Append("    \"Coconut\" : ").Append(coconutScore).Append('\n');
         }
         sb.Append("```\n\n");
     }

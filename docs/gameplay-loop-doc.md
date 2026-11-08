@@ -24,7 +24,14 @@ graph TD
   Banana -->|yes| Grab[Hold to reach, release to grab]
   Grab -->|hit| Restore[Stamina restored, points gained]
   Grab -->|miss| Cost
+  Grab -->|hit, pineapple| Leap[Pulled up a set height, hazards off]
+  Leap -.-> Stamina
+  Leap --> Climb
   Restore -.-> Stamina
+  Grab -->|hit, coconut| Kept[Coconut kept, points gained]
+  Kept --> Climb
+  Kept -.->|double-tap| Freeze[Cobra frozen for a while]
+  Freeze -.-> Cobra
   Restore --> Climb
 
   Stamina -.->|empty| Slow[Climb slows down]
@@ -45,12 +52,12 @@ graph TD
 2. read the hazards ahead: branches, falling cobras, and spider webs
 3. spot a banana in a side's detection zone and decide whether the pause is worth it
 4. hold interact to reach, release when the hand overlaps the banana
-5. a hit restores stamina and scores points, a miss only costs time spent exposed
+5. a hit restores stamina and scores points, a miss only costs time spent exposed; a pineapple scores no fruit points but also pulls the monkey up a set height, past every hazard on the way; a coconut, found higher up, scores double, restores no stamina, and is kept to freeze the cobra with a quick double-tap
 6. repeat until the cobra touches the monkey
 
 ## Pressures
 
-- Cobra: constant pursuit, so every pause (a web, a miss, a hit, an empty bar) is paid for in distance; each hit or web also makes it surge, stacking with repeated mistakes ([Mobs](mob-doc.md#motion))
+- Cobra: constant pursuit, so every pause (a web, a miss, a hit, an empty bar) is paid for in distance; each hit or web also makes it surge, stacking with repeated mistakes ([Mobs](mob-doc.md#motion)); a spent coconut freezes it for a while ([Mobs](mob-doc.md#coconut-freeze))
 - Stamina: an empty bar does not end the run, it slows the upward climb, see [Technical Design Document](monkobra-tdd.md#stamina)
 - Attention: a reach turns the camera to the banana's side, away from the branches and webs ahead
 

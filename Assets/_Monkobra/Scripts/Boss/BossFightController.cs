@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// Runs the boss fight against the Cobra King. Once the monkey has climbed
-/// <see cref="GameBalanceConfig.BossTriggerHeightU"/> the screen flashes and
+/// <see cref="WorldBalanceConfig.BossTriggerHeightU"/> the screen flashes and
 /// the run enters the boss arena: the king coils round the tree top above,
 /// the great cobra stops chasing and guards below, and the spawners of webs,
 /// falling cobras and wet bark stop. Banana branches grow on the trunk in
@@ -105,7 +105,7 @@ public class BossFightController: MonoBehaviour {
     [Header("Wiring")]
     [SerializeField]
     [Tooltip("balance numbers: trigger height, king health, banana damage")]
-    private GameBalanceConfig balanceConfig;
+    private WorldBalanceConfig worldBalanceConfig;
 
     [Header("Arena")]
     [SerializeField]
@@ -455,10 +455,10 @@ public class BossFightController: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (balanceConfig == null) {
+        if (worldBalanceConfig == null) {
             Debug.LogError(
                 "BossFightController:\tmust assign Inspector Field: "
-                    + "balanceConfig",
+                    + "worldBalanceConfig",
                 this
             );
             enabled = false;
@@ -553,7 +553,7 @@ public class BossFightController: MonoBehaviour {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         return ramp != null
             && ramp.CurrentPlayerClimbedYDistance
-                >= balanceConfig.BossTriggerHeightU;
+                >= worldBalanceConfig.BossTriggerHeightU;
     }
 
     private void BeginFight() {
@@ -574,7 +574,7 @@ public class BossFightController: MonoBehaviour {
         trunkCenter = monkey.parent.position;
         entryY = monkey.position.y;
         coilBottomY = entryY + nestHeightU;
-        health = balanceConfig.BossMaxHealth;
+        health = worldBalanceConfig.BossMaxHealth;
         phase = Phase.Fighting;
         loop = Loop.Intro;
 
@@ -609,7 +609,7 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // webs, falling cobras & wet bark stay out of the arena
+    // webs, falling cobras, rough bark & coconuts stay out of the arena
     private void StopHazardSpawners() {
         foreach (SpiderWebSpawner spawner in
             FindObjectsByType<SpiderWebSpawner>(FindObjectsSortMode.None)) {
@@ -619,8 +619,12 @@ public class BossFightController: MonoBehaviour {
             FindObjectsByType<FallingCobraSpawner>(FindObjectsSortMode.None)) {
             spawner.enabled = false;
         }
-        foreach (SlipperyBarkSpawner spawner in
-            FindObjectsByType<SlipperyBarkSpawner>(FindObjectsSortMode.None)) {
+        foreach (RoughBarkSpawner spawner in
+            FindObjectsByType<RoughBarkSpawner>(FindObjectsSortMode.None)) {
+            spawner.enabled = false;
+        }
+        foreach (CoconutSpawner spawner in
+            FindObjectsByType<CoconutSpawner>(FindObjectsSortMode.None)) {
             spawner.enabled = false;
         }
     }
@@ -639,8 +643,8 @@ public class BossFightController: MonoBehaviour {
                 cobra.gameObject.SetActive(false);
             }
         }
-        foreach (SlipperyBarkZone zone in
-            FindObjectsByType<SlipperyBarkZone>(FindObjectsSortMode.None)) {
+        foreach (RoughBarkZone zone in
+            FindObjectsByType<RoughBarkZone>(FindObjectsSortMode.None)) {
             if (zone.transform.position.y > minY) {
                 zone.gameObject.SetActive(false);
             }
@@ -1447,10 +1451,10 @@ public class BossFightController: MonoBehaviour {
         }
 
         int lastThird = Third;
-        int damage = balanceConfig.BossBananaDamage;
+        int damage = worldBalanceConfig.BossBananaDamage;
         health = Mathf.Max(0, health - damage);
         body.FlashHit();
-        hud.SetHealth(health / (float)balanceConfig.BossMaxHealth);
+        hud.SetHealth(health / (float)worldBalanceConfig.BossMaxHealth);
         hud.PopDamage("-" + damage, body.WeakSpotPosition);
 
         if (health <= 0) {
@@ -1473,7 +1477,7 @@ public class BossFightController: MonoBehaviour {
     /// </returns>
     private int Third {
         get {
-            float lost = 1f - health / (float)balanceConfig.BossMaxHealth;
+            float lost = 1f - health / (float)worldBalanceConfig.BossMaxHealth;
             return Mathf.Clamp(Mathf.FloorToInt(lost * 3f), 0, 2);
         }
     }

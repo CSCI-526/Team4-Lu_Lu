@@ -56,6 +56,8 @@ public class RunData {
     public float StartTime;
     public DateTime StartClock;
     public readonly List<EventStamp> Bananas = new List<EventStamp>();
+    public readonly List<EventStamp> Coconuts = new List<EventStamp>();
+    public readonly List<EventStamp> CoconutsUsed = new List<EventStamp>();
     public readonly List<EventStamp> Webs = new List<EventStamp>();
     public readonly List<EventStamp> Branches = new List<EventStamp>();
     public readonly List<RunSample> Samples = new List<RunSample>();
@@ -69,6 +71,8 @@ public class RunData {
     public long TotalScore;
     public long HeightScore;
     public long RewardScore;
+    // part of RewardScore from coconuts, the rest is from bananas
+    public long CoconutRewardScore;
     // seconds from start to end
     public float DurationS;
 }

@@ -71,7 +71,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e6d54d703149299779b0cbe8b87e06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightController
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
   webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
   bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
   goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}

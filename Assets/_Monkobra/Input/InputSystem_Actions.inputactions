@@ -47,6 +47,16 @@
                     "priority": 0
                 },
                 {
+                    "name": "UseCoconut",
+                    "type": "Button",
+                    "id": "4ccacab0-535f-4533-90ce-f681a5e248c4",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "MultiTap(tapTime=0.2,tapDelay=0.35,tapCount=2)",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
                     "name": "Crouch",
                     "type": "Button",
                     "id": "27c5f898-bc57-4ee1-8800-db469aca5fe3",
@@ -499,6 +509,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9ccab39b-c17b-449f-9d03-a49dfeaf2800",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "UseCoconut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3e19f6f9-9654-4345-a737-87a4b94c0464",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "UseCoconut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6bb38336-c4c4-44da-85cf-f6f10138e3c2",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "UseCoconut",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

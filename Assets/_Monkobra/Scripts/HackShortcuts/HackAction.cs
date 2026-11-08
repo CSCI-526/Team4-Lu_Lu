@@ -14,4 +14,11 @@ public enum HackAction {
     /// <summary>saves a mock analytics session file, for layout checks
     /// </summary>
     MockSession,
+
+    /// <summary>spawns a pineapple branch above the monkey</summary>
+    SpawnPineapple,
+
+    /// <summary>spawns a branch bearing a coconut above the monkey, to test
+    /// the cobra freeze w/o climbing to the coconuts</summary>
+    SpawnCoconut,
 }

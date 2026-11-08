@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 /// proportion to vertical move input, so the camera changes its angle and
 /// never its position. Leaves center fast and settles back slowly.
 /// <para>
-/// Reads the move action from the shared <see cref="MonkeyConfig"/> asset,
+/// Reads the move action from the shared <see cref="MonkeyInputConfig"/> asset,
 /// the same one the body and arms read. Set the composer's own Damping Y to 0,
 /// this script does the smoothing.
 /// </para>
@@ -37,7 +37,7 @@ public class CameraLookUp: MonoBehaviour {
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("shared input tuning, supplies the move action")]
-    private MonkeyConfig config;
+    private MonkeyInputConfig inputConfig;
 
     [SerializeField]
     [Tooltip("aim point height above the target at full up input; u")]
@@ -58,16 +58,16 @@ public class CameraLookUp: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (config == null) {
+        if (inputConfig == null) {
             Debug.LogWarning(
-                "CameraLookUp:\tmust assign Inspector Field: config",
+                "CameraLookUp:\tmust assign Inspector Field: inputConfig",
                 this
             );
         }
-        else if (config.MoveAction == null) {
+        else if (inputConfig.MoveAction == null) {
             Debug.LogWarning(
-                "CameraLookUp:\tmust assign MonkeyConfig field: moveAction",
-                config
+                "CameraLookUp:\tmust assign MonkeyInputConfig field: moveAction",
+                inputConfig
             );
         }
 
@@ -87,11 +87,11 @@ public class CameraLookUp: MonoBehaviour {
     }
 
     private void LateUpdate() {
-        if (composer == null || config == null || config.MoveAction == null) {
+        if (composer == null || inputConfig == null || inputConfig.MoveAction == null) {
             return;
         }
 
-        float verticalInput = config.MoveAction.action.ReadValue<Vector2>().y;
+        float verticalInput = inputConfig.MoveAction.action.ReadValue<Vector2>().y;
         float targetOffsetU =
             verticalInput >= 0f
                 ? verticalInput * maxLookUpOffsetU

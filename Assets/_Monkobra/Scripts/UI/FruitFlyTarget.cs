@@ -3,7 +3,6 @@
 /// </summary>
 public enum FruitFlyTarget {
     EnergyBar, // bottom-left stamina bar, the banana's
-    // Todo: an anchor stands in for the top-right counter until it exists
-    TopRightCounter, // the coconut's
-    Monkey, // the monkey on screen, re-projected each frame; the rubber fruit's
+    TopRightCounter, // top-right coconut HUD icon, the coconut's
+    Monkey, // the monkey on screen, re-projected each frame; the pineapple's
 }

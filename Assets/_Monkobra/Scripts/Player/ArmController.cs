@@ -49,6 +49,45 @@ public class ArmController: MonoBehaviour {
     public float CurrentLengthU =>
         Vector3.Distance(ShoulderWorld, transform.position);
 
+    // Public Methods  #########################################################
+    /// <summary>
+    /// Sends the hand up to a point above the shoulder and leaves it there:
+    /// the joint and every collision are off, so the arm stretches past its
+    /// reach and catches on nothing. Once the body is pulled up to that point,
+    /// the arm is back at its rest length.
+    /// </summary>
+    /// <param name="leapDistanceU">height the body is about to rise; u</param>
+    /// <param name="extendS">time the hand takes to get there; s</param>
+    public void BeginLeapReach(float leapDistanceU, float extendS) {
+        if (body == null) {
+            return;
+        }
+
+        isLeapReaching = true;
+        body.isKinematic = true;
+        body.detectCollisions = false;
+        handContacts.Clear();
+        leapAnchor =
+            ShoulderWorld + Vector3.up * (leapDistanceU + restLengthU);
+        leapHandSpeedU =
+            Vector3.Distance(transform.position, leapAnchor)
+            / Mathf.Max(extendS, Time.fixedDeltaTime);
+    }
+
+    /// <summary>Hands the arm back to its joint and to physics.</summary>
+    public void EndLeapReach() {
+        if (!isLeapReaching) {
+            return;
+        }
+
+        isLeapReaching = false;
+        if (body != null) {
+            body.isKinematic = false;
+            body.detectCollisions = true;
+            body.WakeUp();
+        }
+    }
+
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
@@ -60,10 +99,12 @@ public class ArmController: MonoBehaviour {
     private Collider handCollider;
 
     [SerializeField]
-    [Tooltip(
-        "shared stroke, input and arm-width tuning, same asset on both arms"
-    )]
-    private MonkeyConfig config;
+    [Tooltip("stroke, reach and arm-width tuning, same asset on both arms")]
+    private MonkeyArmConfig armConfig;
+
+    [SerializeField]
+    [Tooltip("shared input actions, same asset on both arms")]
+    private MonkeyInputConfig inputConfig;
 
     [Header("Identity")]
     [SerializeField]
@@ -72,15 +113,6 @@ public class ArmController: MonoBehaviour {
             + "out of phase. Lean and sweep direction come from the transform"
     )]
     private bool isRightArm;
-
-    [Header("Wet Grip")]
-    [SerializeField, Range(0f, 30f)]
-    [Tooltip("extra hand sweep angle at full grip loss; deg")]
-    private float wetGripHandDragDeg = 14f;
-
-    [SerializeField, Range(0f, 1f)]
-    [Tooltip("stroke speed scale at full grip loss; 1 = unaffected")]
-    private float wetGripStrokeScale = 0.18f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -97,23 +129,30 @@ public class ArmController: MonoBehaviour {
                 this
             );
         }
-        if (config == null) {
+        if (armConfig == null) {
             Debug.LogWarning(
-                "ArmController:\tmust assign Inspector Field: config",
+                "ArmController:\tmust assign Inspector Field: armConfig",
+                this
+            );
+        }
+        if (inputConfig == null) {
+            Debug.LogWarning(
+                "ArmController:\tmust assign Inspector Field: inputConfig",
                 this
             );
         } else {
-            if (config.MoveAction == null) {
+            if (inputConfig.MoveAction == null) {
                 Debug.LogWarning(
-                    "ArmController:\tmust assign MonkeyConfig field: moveAction",
-                    config
+                    "ArmController:\tmust assign MonkeyInputConfig field: "
+                        + "moveAction",
+                    inputConfig
                 );
             }
-            if (config.InteractAction == null) {
+            if (inputConfig.InteractAction == null) {
                 Debug.LogWarning(
-                    "ArmController:\tmust assign MonkeyConfig field: "
+                    "ArmController:\tmust assign MonkeyInputConfig field: "
                         + "interactAction",
-                    config
+                    inputConfig
                 );
             }
         }
@@ -153,6 +192,8 @@ public class ArmController: MonoBehaviour {
         }
         monkeyRoot = joint.connectedBody != null
             ? joint.connectedBody.GetComponent<MonkeyController>() : null;
+        leapController = monkeyRoot != null
+            ? monkeyRoot.GetComponent<PineappleLeapController>() : null;
 
         reachZMotion = joint.zMotion;
         Vector3 outward = transform.position - ShoulderWorld;
@@ -257,12 +298,25 @@ public class ArmController: MonoBehaviour {
             InteractAction.action.Disable();
         }
         EndReach();
+        EndLeapReach();
         // no physics reports while disabled, stale contacts never clear
         handContacts.Clear();
     }
 
     private void FixedUpdate() {
-        if (joint == null || config == null) {
+        if (joint == null || armConfig == null) {
+            return;
+        }
+
+        if (isLeapReaching) {
+            body.MovePosition(
+                Vector3.MoveTowards(
+                    body.position,
+                    leapAnchor,
+                    leapHandSpeedU * Time.fixedDeltaTime
+                )
+            );
+            StretchVisual();
             return;
         }
 
@@ -298,6 +352,10 @@ public class ArmController: MonoBehaviour {
     // Event Handlers  #########################################################
     // detection singleton picks the side, only the matching arm reaches
     private void OnInteractPerformed(InputAction.CallbackContext context) {
+        if (isLeapReaching) {
+            return;
+        }
+
         UpwardFruitSensor fruitDetection = UpwardFruitSensor.I;
         if (fruitDetection == null) {
             Debug.LogError(
@@ -350,6 +408,9 @@ public class ArmController: MonoBehaviour {
     private Vector3 aimDirection; // world direction the arm is commanded to
     private float cyclePhase; // 0..1, advances only while moving
     private float restLengthU;
+    private bool isLeapReaching; // hand sent up by a leap, joint out of play
+    private Vector3 leapAnchor; // world pos the hand rises to in a leap
+    private float leapHandSpeedU; // speed of the hand to its anchor; u/s
 
     // authored linear motion, restored on reach
     private ConfigurableJointMotion reachZMotion =
@@ -366,12 +427,12 @@ public class ArmController: MonoBehaviour {
 
     private readonly HashSet<Collider> handContacts = new HashSet<Collider>();
 
-    // both arms share 1 action, held on the config asset
+    // both arms share 1 action, held on the input config asset
     private InputActionReference MoveAction =>
-        config != null ? config.MoveAction : null;
+        inputConfig != null ? inputConfig.MoveAction : null;
 
     private InputActionReference InteractAction =>
-        config != null ? config.InteractAction : null;
+        inputConfig != null ? inputConfig.InteractAction : null;
 
     // the joint's pivot, read off the connected body so it tracks every step
     private Vector3 ShoulderWorld {
@@ -411,6 +472,7 @@ public class ArmController: MonoBehaviour {
     private Rigidbody body;
     private ConfigurableJoint joint;
     private MonkeyController monkeyRoot;
+    private PineappleLeapController leapController;
 
     // Private Methods  ########################################################
     // arm brushing the torso would shove the body and report the monkey as a
@@ -506,6 +568,21 @@ public class ArmController: MonoBehaviour {
         Vector3 fruitCentre = fruit.bounds.center;
         FruitFlyOnGrab flyOnGrab =
             fruit.GetComponentInParent<FruitFlyOnGrab>();
+        bool isLeapFruit = fruit.GetComponentInParent<LeapOnGrab>() != null;
+
+        // e.g. a web's forced release: the fruit stays, nothing starts
+        if (
+            isLeapFruit
+            && (leapController == null || !leapController.CanBegin)
+        ) {
+            if (Debug.isDebugBuild) {
+                Debug.Log(
+                    "ArmController:\tleap refused, " + fruit.name + " stays",
+                    this
+                );
+            }
+            return;
+        }
 
         //成功摘到后，交给 ScorePickup 处理
         ScorePickup pickup = fruit.GetComponentInParent<ScorePickup>();
@@ -515,7 +592,11 @@ public class ArmController: MonoBehaviour {
             }
         } else {
             // Existing fruit without a score component keeps its old behavior.
-            fruit.gameObject.SetActive(false);
+            // the collider may sit on a child, the model beside it goes too
+            GameObject fruitRoot = flyOnGrab != null
+                ? flyOnGrab.gameObject
+                : fruit.gameObject;
+            fruitRoot.SetActive(false);
         }
         // a disabled collider may never raise its trigger exit
         UpwardFruitSensor fruitDetection = UpwardFruitSensor.I;
@@ -535,6 +616,14 @@ public class ArmController: MonoBehaviour {
             return;
         }
 
+        // a coconut is kept to freeze the cobra, it restores no stamina
+        bool restoresStamina =
+            pickup == null || pickup.Kind != PickupKind.Coconut;
+        System.Action onArrived = null;
+        if (restoresStamina) {
+            onArrived = RestoreStaminaByFruit;
+        }
+
         // the restore lands with the flown sprite, at once w/o the effect
         FruitFlyEffect flyEffect = FruitFlyEffect.I;
         if (flyEffect != null) {
@@ -543,10 +632,14 @@ public class ArmController: MonoBehaviour {
                 fruitCentre,
                 hasFlyOnGrab ? flyOnGrab.Target : FruitFlyTarget.EnergyBar,
                 hasFlyOnGrab ? flyOnGrab.Sprite : null,
-                RestoreStaminaByFruit
+                onArrived
             );
-        } else {
+        } else if (restoresStamina) {
             RestoreStaminaByFruit();
+        }
+
+        if (isLeapFruit) {
+            leapController.Begin();
         }
     }
 
@@ -594,7 +687,7 @@ public class ArmController: MonoBehaviour {
             return;
         }
 
-        float turnSpeedDeg = config.ReachAimSpeedDeg;
+        float turnSpeedDeg = armConfig.ReachAimSpeedDeg;
         aimDirection =
             turnSpeedDeg <= 0f
                 ? toFruit.normalized
@@ -625,7 +718,7 @@ public class ArmController: MonoBehaviour {
         reachExtensionU = Mathf.MoveTowards(
             reachExtensionU,
             joint.linearLimit.limit,
-            config.ReachExtendSpeedU * Time.fixedDeltaTime
+            armConfig.ReachExtendSpeedU * Time.fixedDeltaTime
         );
         SetExtension(reachExtensionU);
     }
@@ -633,7 +726,7 @@ public class ArmController: MonoBehaviour {
     // hand over hand: sweep about the joint's primary axis, arm keeps its
     // rest length and the hand rides the end
     private void DriveClimb() {
-        float gripLoss = monkeyRoot != null ? monkeyRoot.WetGripLoss01 : 0f;
+        float surfaceScale = monkeyRoot != null ? monkeyRoot.RoughBarkSpeedScale : 1f;
         Vector2 directionalInput =
             MoveAction != null
                 ? MoveAction.action.ReadValue<Vector2>()
@@ -651,25 +744,24 @@ public class ArmController: MonoBehaviour {
             cyclePhase
                 + direction
                     * inputScale
-                    * config.StrokeSpeedCycles
-                    * Mathf.Lerp(1f, wetGripStrokeScale, gripLoss)
+                    * armConfig.StrokeSpeedCycles
+                    * surfaceScale
                     * Time.fixedDeltaTime,
             1f
         );
 
         // stroke range midpoint is the neutral pitch, half its span the swing
         float phaseRad = cyclePhase * Mathf.PI * 2f;
-        float midDeg = (config.MaxAngleDeg + config.MinAngleDeg) * 0.5f;
-        float halfRangeDeg = (config.MaxAngleDeg - config.MinAngleDeg) * 0.5f;
-        float swingDeg = midDeg + halfRangeDeg * Mathf.Sin(phaseRad)
-            + wetGripHandDragDeg * gripLoss;
+        float midDeg = (armConfig.MaxAngleDeg + armConfig.MinAngleDeg) * 0.5f;
+        float halfRangeDeg = (armConfig.MaxAngleDeg - armConfig.MinAngleDeg) * 0.5f;
+        float swingDeg = midDeg + halfRangeDeg * Mathf.Sin(phaseRad);
 
         // targetRotation is in the joint's own frame: Axis right, Secondary
         // Axis up. Both arms take the same angles, the right arm's transform
         // is flipped a half turn so it reads mirrored, splay leans them apart
         SetAimJoint(
             Quaternion.AngleAxis(-swingDeg, Vector3.right)
-                * Quaternion.AngleAxis(config.SplayDeg, Vector3.up)
+                * Quaternion.AngleAxis(armConfig.SplayDeg, Vector3.up)
         );
         if (body != null) {
             body.WakeUp();
@@ -707,7 +799,7 @@ public class ArmController: MonoBehaviour {
     // InvertDriveAxis covers the joint's drive sign, reachAxisSign the mirror
     // between arms
     private void SetExtension(float extensionU) {
-        bool isInverted = config == null || config.InvertDriveAxis;
+        bool isInverted = armConfig == null || armConfig.InvertDriveAxis;
         joint.targetPosition = new Vector3(
             0f,
             0f,
@@ -732,8 +824,8 @@ public class ArmController: MonoBehaviour {
                 ? Quaternion.LookRotation(shoulderLocal)
                 : Quaternion.identity;
         armVisual.localScale = new Vector3(
-            config.ArmWidthU,
-            config.ArmWidthU,
+            armConfig.ArmWidthU,
+            armConfig.ArmWidthU,
             lengthU
         );
     }

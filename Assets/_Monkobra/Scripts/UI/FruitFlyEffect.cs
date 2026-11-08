@@ -79,17 +79,13 @@ public class FruitFlyEffect: MonoBehaviour {
     [Tooltip("bottom-left stamina bar, the banana's target")]
     private RectTransform energyBarTarget;
 
-    // Todo: point at the real top-right counter once it exists
     [SerializeField]
-    [Tooltip(
-        "top-right anchor, the coconut's target, stands in for the future "
-            + "counter"
-    )]
+    [Tooltip("icon of the top-right coconut HUD, the coconut's target")]
     private RectTransform topRightCounterTarget;
 
     [SerializeField]
     [Tooltip(
-        "monkey, the rubber fruit's target; empty finds the MonkeyController "
+        "monkey, the pineapple's target; empty finds the MonkeyController "
             + "at Start"
     )]
     private Transform monkeyTarget;

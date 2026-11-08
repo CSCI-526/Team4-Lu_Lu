@@ -1,15 +1,16 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// Screen-space UI for the spider web trap, driven by the monkey's
 /// <see cref="SpiderWebStruggle"/> events. The first trap since the scene
-/// loaded shows the prompt text and the progress bar, later traps show the
-/// bar only, and breaking free or the game ending hides both.
+/// loaded asks for the web hint popup and shows the progress bar, later traps
+/// show the bar only, and breaking free hides both. The hint ranks above the
+/// low-stamina hint, which the <see cref="PopUpManager"/> resumes afterward;
+/// a loss drops it there too.
 /// <para>
-/// Put it on an always-active Canvas child: it only toggles the text and bar
-/// objects, so its event subscriptions live on while those are hidden.
+/// Put it on an always-active Canvas child: it only toggles the bar object,
+/// so its event subscriptions live on while that is hidden.
 /// </para>
 /// </summary>
 public class SpiderWebWidget: MonoBehaviour {
@@ -20,10 +21,6 @@ public class SpiderWebWidget: MonoBehaviour {
     private SpiderWebStruggle struggle;
 
     [SerializeField]
-    [Tooltip("first-trap hint text, hidden on every later trap")]
-    private TMP_Text promptLabel;
-
-    [SerializeField]
     [Tooltip("progress bar root, background plus fill, shown while trapped")]
     private GameObject progressBar;
 
@@ -31,24 +28,12 @@ public class SpiderWebWidget: MonoBehaviour {
     [Tooltip("fill image, set to Filled, Horizontal from the left at runtime")]
     private Image progressFill;
 
-    [Header("Text")]
-    [SerializeField]
-    [Tooltip("hint shown on the first trap only")]
-    private string promptMessage =
-        "Trapped in a web! Press SPACE rapidly to escape!";
-
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
         if (struggle == null) {
             Debug.LogWarning(
                 "SpiderWebWidget:\tmust assign Inspector Field: struggle",
-                this
-            );
-        }
-        if (promptLabel == null) {
-            Debug.LogWarning(
-                "SpiderWebWidget:\tmust assign Inspector Field: promptLabel",
                 this
             );
         }
@@ -65,11 +50,8 @@ public class SpiderWebWidget: MonoBehaviour {
             );
         }
 
-        if (promptLabel != null) {
-            promptLabel.text = promptMessage;
-        }
         ConfigureFill();
-        SetVisible(showPrompt: false, showBar: false);
+        SetVisible(false);
     }
 
     private void OnEnable() {
@@ -89,21 +71,24 @@ public class SpiderWebWidget: MonoBehaviour {
     }
 
     // the cobra can end the game on a held monkey, no Escaped follows, and
-    // the hint would show through the half-transparent end panel
+    // the bar would show through the half-transparent end panel
     private void Update() {
         if (
             isVisible
             && GameController.I != null
             && GameController.I.State != GameState.Playing
         ) {
-            SetVisible(showPrompt: false, showBar: false);
+            SetVisible(false);
         }
     }
 
     // Event Handlers  #########################################################
     private void OnTrapped(bool isFirstTrap) {
         SetFill(0f);
-        SetVisible(showPrompt: isFirstTrap, showBar: true);
+        SetVisible(true);
+        if (isFirstTrap) {
+            ShowHint();
+        }
     }
 
     private void OnProgressChanged(float progress) {
@@ -111,11 +96,14 @@ public class SpiderWebWidget: MonoBehaviour {
     }
 
     private void OnEscaped() {
-        SetVisible(showPrompt: false, showBar: false);
+        SetVisible(false);
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Hide(PopUpId.SpiderWebHint);
+        }
     }
 
     // private members  ########################################################
-    private bool isVisible; // text or bar shown right now
+    private bool isVisible; // bar shown right now
 
     // private methods  ########################################################
     // a Filled Image without a sprite draws a plain full quad and ignores
@@ -145,11 +133,17 @@ public class SpiderWebWidget: MonoBehaviour {
         }
     }
 
-    private void SetVisible(bool showPrompt, bool showBar) {
-        isVisible = showPrompt || showBar;
-        if (promptLabel != null) {
-            promptLabel.gameObject.SetActive(showPrompt);
+    private void ShowHint() {
+        if (PopUpManager.I == null) {
+            Debug.LogWarning(
+                "SpiderWebWidget:\tfail to get singleton: PopUpManager", this);
+            return;
         }
+        PopUpManager.I.Show(PopUpId.SpiderWebHint);
+    }
+
+    private void SetVisible(bool showBar) {
+        isVisible = showBar;
         if (progressBar != null) {
             progressBar.SetActive(showBar);
         }

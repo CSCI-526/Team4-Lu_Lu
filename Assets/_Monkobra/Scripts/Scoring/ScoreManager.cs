@@ -8,25 +8,41 @@ public class ScoreManager: MonoBehaviour {
     public long DistanceScore { get; private set; }
     public long RewardScore { get; private set; }
     public int BananaCollectedCount { get; private set; }
+    public int CoconutCollectedCount { get; private set; }
+    // part of RewardScore that came from coconuts
+    public long CoconutRewardScore { get; private set; }
     public double HighestClimbedMeters => highestClimbedUnits / unitsPerMeter;
     public bool IsRunEnded => isRunEnded;
     public event Action<long> ScoreChanged;
     // raised once per banana pickup that scored
     public event Action BananaCollected;
+    // raised once per coconut pickup that scored
+    public event Action CoconutCollected;
 
     //必须满足：组件启用、已经开局、尚未结束、没有暂停，才允许计分
     public bool CanScore => isActiveAndEnabled && hasStarted && !isRunEnded && Time.timeScale > 0f && (GameController.I == null || GameController.I.IsRunLive);
 
     // Public Methods  #########################################################
     //添加水果等奖励分
-    public bool TryAddReward() {
+    public bool TryAddReward(PickupKind kind = PickupKind.Banana) {
         if (!CanScore) {
             return false;
         }
 
         long oldScore = TotalScore;
-        RewardScore += Math.Min((long)balanceConfig.ScoreRewardPoints, long.MaxValue - TotalScore);
-        // every reward is a banana pickup
+        if (kind == PickupKind.Coconut) {
+            // a coconut is worth a multiple of the banana points
+            long coconutPoints = Math.Min((long)playerBalanceConfig.CoconutRewardPoints, long.MaxValue - TotalScore);
+            RewardScore += coconutPoints;
+            CoconutRewardScore += coconutPoints;
+            CoconutCollectedCount++;
+            NotifyIfChanged(oldScore);
+            CoconutCollected?.Invoke();
+            return true;
+        }
+
+        RewardScore += Math.Min((long)playerBalanceConfig.ScoreRewardPoints, long.MaxValue - TotalScore);
+        // every other reward is a banana pickup
         BananaCollectedCount++;
         NotifyIfChanged(oldScore);
         BananaCollected?.Invoke();
@@ -43,8 +59,8 @@ public class ScoreManager: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("scoring rates & reward points")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("player balance tuning; scoring rates & reward points")]
+    private PlayerBalanceConfig playerBalanceConfig;
 
     [SerializeField]
     [Tooltip("monkey; height source")]
@@ -53,9 +69,9 @@ public class ScoreManager: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (balanceConfig == null) {
+        if (playerBalanceConfig == null) {
             Debug.LogError(
-                "ScoreManager:\tmust assign Inspector Field: balanceConfig",
+                "ScoreManager:\tmust assign Inspector Field: playerBalanceConfig",
                 this);
         }
         if (player == null) {
@@ -67,7 +83,7 @@ public class ScoreManager: MonoBehaviour {
             Destroy(this);
             return;
         }
-        if (balanceConfig == null || player == null) {
+        if (playerBalanceConfig == null || player == null) {
             enabled = false;
             return;
         }
@@ -76,12 +92,14 @@ public class ScoreManager: MonoBehaviour {
 
     //读取计分设置，记录出生高度，把分数和最高爬升距离清零
     private void Start() {
-        pointsPerMeter = balanceConfig.PointsPerMeter;
-        unitsPerMeter = balanceConfig.UnitsPerMeter;
+        pointsPerMeter = playerBalanceConfig.PointsPerMeter;
+        unitsPerMeter = playerBalanceConfig.UnitsPerMeter;
         highestClimbedUnits = 0d;
         DistanceScore = 0;
         RewardScore = 0;
         BananaCollectedCount = 0;
+        CoconutCollectedCount = 0;
+        CoconutRewardScore = 0;
         isRunEnded = GameController.I != null
             && GameController.I.State == GameState.Lost;
         hasStarted = true;
