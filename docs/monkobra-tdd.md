@@ -120,7 +120,7 @@ Game balance numbers live in 3 assets, split by what they tune (how height becom
 | Asset | Group | Fields | Read by |
 | --- | --- | --- | --- |
 | `PlayerBalanceConfig` | Stamina | `maxStamina`, `staminaUpwardDrainPerU`, `staminaSidewayDrainPerU`, `fruitStaminaRestore` | `StaminaBarController` |
-| 〃 | Starting Zone | `startingZoneStartStaminaFraction`, `startingZoneExhaustedSpeedMultiplier` | `StaminaBarController`, `MonkeyController` |
+| 〃 | Starting Zone | `startingZoneStartStaminaFraction`, `startingZoneExhaustedSpeedMultiplier`, `startingZoneIdleRecoveryMultiplier` | `StaminaBarController`, `MonkeyController` |
 | 〃 | Branch Hit | `hitStunDurationS`, `hitDropDistanceU`, `hitDropSpeedU` | `MonkeyController`, `CobraMotor` |
 | 〃 | Score | `pointsPerMeter`, `unitsPerMeter`, `scoreRewardPoints` | `ScoreManager` |
 | 〃 | Coconut | `coconutStartHeightU`, `coconutSpawnChancePerSegment`, `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutSpawner`, `ScoreManager`, `CoconutManager` |
@@ -166,7 +166,7 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`, whic
 
 - Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways; it is the only drain, nothing lowers the bar on a timer or while the monkey stands still
 - Restore: `AddStaminaByFruit` adds the per-banana amount, capped at the maximum, when the grabbed fruit's flight lands, so the bar rises and punches together ([Grab System](grab-doc.md#fruit-fly))
-- Idle Recovery: `MonkeyController` adds `MonkeyClimbConfig.IdleStaminaRecoveryPerS` per second while no move key is pressed
+- Idle Recovery: `MonkeyController` adds `MonkeyClimbConfig.IdleStaminaRecoveryPerS` per second while no move key is pressed, scaled by `PlayerBalanceConfig.StartingZoneIdleRecoveryMultiplier` during the starting zone
 - Depletion: reaching 0 does not end the run: `MonkeyController` scales upward climb speed only by `MonkeyClimbConfig.ExhaustedSpeedMultiplier` until stamina is above 0 again
 - Label: the `StaminaBar` prefab carries a white TMP `Energy` label, `EnergyLabel`, above the left end of the bar; it is a child of the root, so it punches and shakes with the bar
 - First Low Hint: `LowStaminaWidget` listens to the same `LowStaminaMoveAttempted`, so its once-per-scene hint opens with the first bar shake and cool-down pulse, at the same threshold ([UI](#ui))

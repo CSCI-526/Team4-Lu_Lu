@@ -53,6 +53,7 @@ bug spider web fail to load & log warning
 
 ##### Erik
 
+- idle stamina recovery runs at a quarter rate during the starting zone (`startingZoneIdleRecoveryMultiplier` in `PlayerBalanceConfig`)
 - `exhaustedSpeedMultiplier` & `idleStaminaRecoveryPerS` moved from `GameBalanceConfig` to `MovementConfig`
 - Starter Zone → Starting Zone: `GameState.StartingZone`, `EndStartingZone()`, `StartingZoneExitRelay`, `StartingZoneExitTrigger` prefab; Tutorial state & screen unchanged
 - fruit grab aims at banana closest to monkey, not last to enter a detection zone; re-picked every physics step

@@ -52,6 +52,11 @@ public class PlayerBalanceConfig: ScriptableObject {
     public float StartingZoneExhaustedSpeedMultiplier =>
         startingZoneExhaustedSpeedMultiplier;
 
+    /// <returns>multiplier on the idle stamina recovery rate while the
+    /// starting zone lasts; 0.25 = a quarter of the normal rate</returns>
+    public float StartingZoneIdleRecoveryMultiplier =>
+        startingZoneIdleRecoveryMultiplier;
+
     /// <returns>coconuts start hanging on branches once the monkey's climbed
     /// height (as on the trunk height markers) reaches this; u</returns>
     public float CoconutStartHeightU => coconutStartHeightU;
@@ -119,6 +124,14 @@ public class PlayerBalanceConfig: ScriptableObject {
             + "during the starting zone only"
     )]
     private float startingZoneExhaustedSpeedMultiplier = 0.5f;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "multiplier on the idle stamina recovery while the starting zone "
+            + "lasts; 0.25 = a quarter of the normal rate"
+    )]
+    private float startingZoneIdleRecoveryMultiplier = 0.25f;
 
     [Header("Branch Hit")]
     [SerializeField]
@@ -195,6 +208,9 @@ public class PlayerBalanceConfig: ScriptableObject {
         staminaUpwardDrainPerU = Mathf.Max(0f, staminaUpwardDrainPerU);
         staminaSidewayDrainPerU = Mathf.Max(0f, staminaSidewayDrainPerU);
         fruitStaminaRestore = Mathf.Max(0f, fruitStaminaRestore);
+        startingZoneIdleRecoveryMultiplier = Mathf.Clamp01(
+            startingZoneIdleRecoveryMultiplier
+        );
         hitStunDurationS = Mathf.Max(0f, hitStunDurationS);
         hitDropDistanceU = Mathf.Max(0f, hitDropDistanceU);
         hitDropSpeedU = Mathf.Max(0f, hitDropSpeedU);

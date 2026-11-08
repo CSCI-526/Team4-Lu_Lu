@@ -313,8 +313,13 @@ public class MonkeyController: MonoBehaviour {
 
             // standing still, no key pressed, regains stamina slowly
             if (!hasInput) {
+                // the starting zone recovers slower, to teach the limit
+                float recoveryScale = isInStartingZone
+                    ? playerBalanceConfig.StartingZoneIdleRecoveryMultiplier
+                    : 1f;
                 staminaBar.AddStamina(
                     climbConfig.IdleStaminaRecoveryPerS
+                        * recoveryScale
                         * Time.fixedDeltaTime
                 );
             }
