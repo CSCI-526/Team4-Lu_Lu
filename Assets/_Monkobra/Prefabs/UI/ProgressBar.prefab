@@ -2093,7 +2093,6 @@ MonoBehaviour:
   distanceLabel: {fileID: 910000254}
   distanceLabelFrame: {fileID: 910000242}
   distanceBracket: {fileID: 910000202}
-  balanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   markerClearance: 48
   circleImages:
   - {fileID: 9089429022959934442}

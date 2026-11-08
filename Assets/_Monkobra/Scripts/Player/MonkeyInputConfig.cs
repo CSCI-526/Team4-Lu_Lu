@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 /// Shared tuning for the monkey: arm stroke and reach, orbit speed, and the
 /// input actions every consumer reads. Climb build-up and exhaustion live in
 /// <see cref="MonkeyClimbConfig"/>, branch-hit numbers in
-/// <see cref="GameBalanceConfig"/>. Consumed by
+/// <see cref="PlayerBalanceConfig"/>. Consumed by
 /// <see cref="ArmController"/> and <see cref="MonkeyController"/>.
 /// <para>
 /// <see cref="ArmController"/> takes nothing physical from here, springs, limits,

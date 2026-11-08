@@ -4,7 +4,7 @@ using UnityEngine;
 /// Climb tuning for the monkey: how speed builds up while the climb key is
 /// held, the exhaustion slow down and the idle stamina recovery. Orbit
 /// speed, arms and input actions stay in <see cref="MonkeyInputConfig"/>, game
-/// wide numbers in <see cref="GameBalanceConfig"/>. Consumed by
+/// wide numbers in <see cref="PlayerBalanceConfig"/>. Consumed by
 /// <see cref="MonkeyController"/>.
 /// </summary>
 [CreateAssetMenu(

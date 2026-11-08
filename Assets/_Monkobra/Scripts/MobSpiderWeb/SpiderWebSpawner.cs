@@ -11,7 +11,7 @@ using UnityEngine;
 /// which is deactivated at runtime.
 /// <para>
 /// Rolled like branches, from the Spider Web group of
-/// <see cref="GameBalanceConfig"/>: a fixed attempt count per segment, each
+/// <see cref="WorldBalanceConfig"/>: a fixed attempt count per segment, each
 /// attempt against the web probability curve sampled at the segment's ramped
 /// difficulty, read at its middle from <see cref="RampedDifficultyManager"/>.
 /// </para>
@@ -39,8 +39,8 @@ public class SpiderWebSpawner: MonoBehaviour {
     private SpiderWebTrap webPrefab;
 
     [SerializeField]
-    [Tooltip("game balance tuning; web attempts & chance curve")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("world balance tuning; web attempts & chance curve")]
+    private WorldBalanceConfig worldBalanceConfig;
 
     [Header("Web Position")]
     [SerializeField]
@@ -94,14 +94,14 @@ public class SpiderWebSpawner: MonoBehaviour {
                 this
             );
         }
-        if (balanceConfig == null) {
+        if (worldBalanceConfig == null) {
             Debug.LogWarning(
                 "SpiderWebSpawner:\tmust assign Inspector Field: "
-                    + "balanceConfig",
+                    + "worldBalanceConfig",
                 this
             );
         }
-        if (webPrefab == null || balanceConfig == null) {
+        if (webPrefab == null || worldBalanceConfig == null) {
             enabled = false;
             return;
         }
@@ -219,7 +219,7 @@ public class SpiderWebSpawner: MonoBehaviour {
         // poses into physics so the overlap test can see them
         Physics.SyncTransforms();
 
-        int attemptCount = balanceConfig.WebAttemptCount;
+        int attemptCount = worldBalanceConfig.WebAttemptCount;
         for (int i = 0; i < attemptCount; i++) {
             if (Random.value < chance) {
                 TrySpawnWeb(segment);
@@ -252,7 +252,7 @@ public class SpiderWebSpawner: MonoBehaviour {
             return testSpawnChance;
         }
         return Mathf.Clamp01(
-            balanceConfig.WebSpawnProbabilityCurve.Evaluate(rampedDifficulty)
+            worldBalanceConfig.WebSpawnProbabilityCurve.Evaluate(rampedDifficulty)
         );
     }
 

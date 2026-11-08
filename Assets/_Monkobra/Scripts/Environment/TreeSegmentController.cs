@@ -69,8 +69,8 @@ public class TreeSegmentController: MonoBehaviour {
     private BranchFruitPlacementConfig placementConfig;
 
     [SerializeField]
-    [Tooltip("game balance tuning; branch attempts & chance")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("world balance tuning; branch attempts & chance")]
+    private WorldBalanceConfig worldBalanceConfig;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -98,10 +98,10 @@ public class TreeSegmentController: MonoBehaviour {
             );
         }
 
-        if (balanceConfig == null) {
+        if (worldBalanceConfig == null) {
             Debug.LogWarning(
                 "TreeSegmentController:	"
-                    + "must assign Inspector Field: balanceConfig",
+                    + "must assign Inspector Field: worldBalanceConfig",
                 this
             );
         }
@@ -110,7 +110,7 @@ public class TreeSegmentController: MonoBehaviour {
             segmentCollider == null
             || branchWithFruitPrefab == null
             || placementConfig == null
-            || balanceConfig == null
+            || worldBalanceConfig == null
         ) {
             enabled = false;
             return;
@@ -170,10 +170,10 @@ public class TreeSegmentController: MonoBehaviour {
             segmentCollider.bounds.center.y
         );
         float spawnProbability = Mathf.Clamp01(
-            balanceConfig.BranchSpawnProbabilityCurve.Evaluate(difficulty)
+            worldBalanceConfig.BranchSpawnProbabilityCurve.Evaluate(difficulty)
         );
 
-        int attemptCount = balanceConfig.BranchGenerationAttemptCount;
+        int attemptCount = worldBalanceConfig.BranchGenerationAttemptCount;
         for (int i = 0; i < attemptCount; i++) {
             if (Random.value < spawnProbability) {
                 SpawnBranch(segmentHeight, placedPositions);
@@ -223,10 +223,10 @@ public class TreeSegmentController: MonoBehaviour {
         float rampedDifficulty =
             GetRampedDifficulty(branch.transform.position.y);
         float bananaProbability = Mathf.Clamp01(
-            balanceConfig.BananaSpawnProbabilityCurve.Evaluate(rampedDifficulty)
+            worldBalanceConfig.BananaSpawnProbabilityCurve.Evaluate(rampedDifficulty)
         );
         float pineappleProbability = Mathf.Clamp01(
-            balanceConfig.PineappleSpawnProbabilityCurve.Evaluate(
+            worldBalanceConfig.PineappleSpawnProbabilityCurve.Evaluate(
                 rampedDifficulty
             )
         );
@@ -253,7 +253,7 @@ public class TreeSegmentController: MonoBehaviour {
     // iff the branch keeps the starting zone clearance from the monkey; always
     // true once the run is playing or w/o a monkey or controller
     private bool IsClearOfMonkey(Vector3 localPosition) {
-        float clearRadius = balanceConfig.StartingZoneBranchClearRadiusU;
+        float clearRadius = worldBalanceConfig.StartingZoneBranchClearRadiusU;
         if (
             clearRadius <= 0f
             || GameController.I == null

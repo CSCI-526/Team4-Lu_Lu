@@ -7,10 +7,10 @@ using UnityEngine;
 /// item.
 /// </summary>
 [CreateAssetMenu(
-    fileName = "GameBalanceConfig",
-    menuName = "Scriptable Objects/GameBalanceConfig"
+    fileName = "PlayerBalanceConfig",
+    menuName = "Scriptable Objects/PlayerBalanceConfig"
 )]
-public class GameBalanceConfig: ScriptableObject {
+public class PlayerBalanceConfig: ScriptableObject {
     // Public Members  #########################################################
     /// <returns>stamina at level start, also the ceiling for restores</returns>
     public float MaxStamina => maxStamina;

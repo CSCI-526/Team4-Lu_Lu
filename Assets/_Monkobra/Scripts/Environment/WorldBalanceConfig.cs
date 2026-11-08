@@ -4,7 +4,7 @@ using UnityEngine;
 /// Balance of the generated world: the ramped difficulty curve that every
 /// hazard chance is read against, branch and fruit generation, rough bark and
 /// spider webs. Player, scoring and coconut numbers live in
-/// <see cref="GameBalanceConfig"/>, cobra numbers in
+/// <see cref="PlayerBalanceConfig"/>, cobra numbers in
 /// <see cref="CobraBalanceConfig"/>.
 /// </summary>
 [CreateAssetMenu(

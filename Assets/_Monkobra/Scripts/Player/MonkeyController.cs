@@ -95,8 +95,12 @@ public class MonkeyController: MonoBehaviour {
     private MonkeyInputConfig inputConfig;
 
     [SerializeField]
-    [Tooltip("game balance tuning; climb speed and branch hit")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("player balance tuning; branch hit and starting zone")]
+    private PlayerBalanceConfig playerBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("world balance tuning; rough bark slowdown")]
+    private WorldBalanceConfig worldBalanceConfig;
 
     [SerializeField]
     [Tooltip(
@@ -129,10 +133,18 @@ public class MonkeyController: MonoBehaviour {
             );
         }
 
-        if (balanceConfig == null) {
+        if (playerBalanceConfig == null) {
             Debug.LogWarning(
                 "MonkeyController:	must assign Inspector Field: "
-                    + "balanceConfig",
+                    + "playerBalanceConfig",
+                this
+            );
+        }
+
+        if (worldBalanceConfig == null) {
+            Debug.LogWarning(
+                "MonkeyController:\tmust assign Inspector Field: "
+                    + "worldBalanceConfig",
                 this
             );
         }
@@ -197,7 +209,8 @@ public class MonkeyController: MonoBehaviour {
     private void FixedUpdate() {
         if (
             inputConfig == null
-            || balanceConfig == null
+            || playerBalanceConfig == null
+            || worldBalanceConfig == null
             || climbConfig == null
         ) {
             return;
@@ -225,9 +238,9 @@ public class MonkeyController: MonoBehaviour {
         roughContacts.RemoveWhere(zone => zone == null || !zone.isActiveAndEnabled);
         bool roughContact = roughContacts.Count > 0 && GameController.I != null
             && GameController.I.IsRunLive && !GameController.I.IsLeaping;
-        float targetScale = roughContact ? balanceConfig.RoughBarkSpeedMultiplier : 1f;
-        float blendStep = (1f - balanceConfig.RoughBarkSpeedMultiplier)
-            * Time.fixedDeltaTime / Mathf.Max(0.01f, balanceConfig.RoughBarkBlendS);
+        float targetScale = roughContact ? worldBalanceConfig.RoughBarkSpeedMultiplier : 1f;
+        float blendStep = (1f - worldBalanceConfig.RoughBarkSpeedMultiplier)
+            * Time.fixedDeltaTime / Mathf.Max(0.01f, worldBalanceConfig.RoughBarkBlendS);
         roughBarkSpeedScale = Mathf.MoveTowards(roughBarkSpeedScale, targetScale, blendStep);
         Vector2 directionalInput = isStunned || MoveAction == null
             ? Vector2.zero
@@ -247,7 +260,7 @@ public class MonkeyController: MonoBehaviour {
         bool isInStartingZone = GameController.I != null
             && GameController.I.IsInStartingZone;
         float exhaustedScale = isInStartingZone
-            ? balanceConfig.StartingZoneExhaustedSpeedMultiplier
+            ? playerBalanceConfig.StartingZoneExhaustedSpeedMultiplier
             : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
@@ -283,7 +296,7 @@ public class MonkeyController: MonoBehaviour {
             nextY = Mathf.Max(
                 dropTargetY,
                 transform.position.y
-                    - balanceConfig.HitDropSpeedU * Time.fixedDeltaTime
+                    - playerBalanceConfig.HitDropSpeedU * Time.fixedDeltaTime
             );
         }
 
@@ -328,7 +341,7 @@ public class MonkeyController: MonoBehaviour {
     // drop distance, both from the balance config. Ignore hit while previous
     // one in effect
     private void OnBranchHit(Collider branch) {
-        if (balanceConfig == null) {
+        if (playerBalanceConfig == null) {
             return;
         }
 
@@ -342,13 +355,13 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        stunEndTime = Time.time + balanceConfig.HitStunDurationS;
+        stunEndTime = Time.time + playerBalanceConfig.HitStunDurationS;
         dropTargetY =
-            transform.position.y - balanceConfig.HitDropDistanceU;
+            transform.position.y - playerBalanceConfig.HitDropDistanceU;
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "MonkeyController:\tbranch hit, control lost for "
-                    + $"{balanceConfig.HitStunDurationS}s"
+                    + $"{playerBalanceConfig.HitStunDurationS}s"
             );
         }
     }

@@ -17,13 +17,13 @@ public class StaminaBarController: MonoBehaviour {
     /// included; feeds the feedback efx only, never gameplay
     /// </summary>
     public bool IsLowStamina =>
-        balanceConfig != null
+        playerBalanceConfig != null
         && currentStamina < lowStaminaFraction * MaxStamina;
 
     /// <returns>stamina ceiling from the balance config, 0 w/o a config
     /// </returns>
     public float MaxStamina =>
-        balanceConfig != null ? balanceConfig.MaxStamina : 0f;
+        playerBalanceConfig != null ? playerBalanceConfig.MaxStamina : 0f;
 
     /// <summary>raised each time a fruit restores stamina</summary>
     public event Action FruitConsumed;
@@ -36,12 +36,12 @@ public class StaminaBarController: MonoBehaviour {
 
     // Public Methods  #########################################################
     /// <summary>
-    /// restores the per-fruit amount from <see cref="GameBalanceConfig"/>,
+    /// restores the per-fruit amount from <see cref="PlayerBalanceConfig"/>,
     /// called when a grabbed fruit's flight lands on its target, see
     /// <see cref="FruitFlyEffect"/>
     /// </summary>
     public void AddStaminaByFruit() {
-        AddStamina(balanceConfig.FruitStaminaRestore);
+        AddStamina(playerBalanceConfig.FruitStaminaRestore);
         FruitConsumed?.Invoke();
     }
 
@@ -63,7 +63,7 @@ public class StaminaBarController: MonoBehaviour {
         }
 
         currentStamina = Mathf.Min(
-            balanceConfig.MaxStamina,
+            playerBalanceConfig.MaxStamina,
             currentStamina + amount
         );
 
@@ -73,7 +73,7 @@ public class StaminaBarController: MonoBehaviour {
     /// <summary>
     /// drains stamina for one step of movement: climbing costs the most,
     /// orbiting the trunk costs less, descending is free. Rates come from
-    /// <see cref="GameBalanceConfig"/>
+    /// <see cref="PlayerBalanceConfig"/>
     /// </summary>
     /// <param name="climbedU">upward distance covered this step; u</param>
     /// <param name="orbitedU">sideways arc length covered this step; u</param>
@@ -83,8 +83,8 @@ public class StaminaBarController: MonoBehaviour {
         }
 
         float amount =
-            Mathf.Max(0f, climbedU) * balanceConfig.StaminaUpwardDrainPerU
-            + Mathf.Max(0f, orbitedU) * balanceConfig.StaminaSidewayDrainPerU;
+            Mathf.Max(0f, climbedU) * playerBalanceConfig.StaminaUpwardDrainPerU
+            + Mathf.Max(0f, orbitedU) * playerBalanceConfig.StaminaSidewayDrainPerU;
         if (amount <= 0f) {
             return;
         }
@@ -95,8 +95,8 @@ public class StaminaBarController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("game balance tuning; stamina budget and drain rate")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("player balance tuning; stamina budget and drain rate")]
+    private PlayerBalanceConfig playerBalanceConfig;
 
     [SerializeField]
     [Range(0f, 1f)]
@@ -110,10 +110,10 @@ public class StaminaBarController: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (balanceConfig == null) {
+        if (playerBalanceConfig == null) {
             Debug.LogWarning(
                 "StaminaBarController:\tmust assign Inspector Field: "
-                    + "balanceConfig",
+                    + "playerBalanceConfig",
                 this
             );
             enabled = false;
@@ -132,10 +132,10 @@ public class StaminaBarController: MonoBehaviour {
         staminaSlider = GetComponent<Slider>();
 
         // the level opens on the starting zone, which starts below full
-        currentStamina = balanceConfig.MaxStamina
-            * balanceConfig.StartingZoneStartStaminaFraction;
+        currentStamina = playerBalanceConfig.MaxStamina
+            * playerBalanceConfig.StartingZoneStartStaminaFraction;
         staminaSlider.minValue = 0f;
-        staminaSlider.maxValue = balanceConfig.MaxStamina;
+        staminaSlider.maxValue = playerBalanceConfig.MaxStamina;
         staminaSlider.value = currentStamina;
 
         if (Debug.isDebugBuild) {

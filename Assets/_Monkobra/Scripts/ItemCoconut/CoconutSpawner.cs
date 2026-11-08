@@ -8,7 +8,7 @@ using UnityEngine;
 /// <see cref="TreeSegmentController.BranchesGenerated"/>. Put one on any
 /// object active from scene load, never under the pool's mock tree.
 /// <para>
-/// Rolled from the Coconut group of <see cref="GameBalanceConfig"/>: at most
+/// Rolled from the Coconut group of <see cref="PlayerBalanceConfig"/>: at most
 /// one coconut per segment, only on branches whose climbed height (as on the
 /// trunk height markers) has reached the start height, by one roll against
 /// the per segment chance.
@@ -37,8 +37,8 @@ public class CoconutSpawner: MonoBehaviour {
     private ScorePickup coconutPrefab;
 
     [SerializeField]
-    [Tooltip("game balance tuning; coconut start height & chance")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("player balance tuning; coconut start height & chance")]
+    private PlayerBalanceConfig playerBalanceConfig;
 
     [Header("Placement")]
     [SerializeField]
@@ -75,13 +75,13 @@ public class CoconutSpawner: MonoBehaviour {
                 this
             );
         }
-        if (balanceConfig == null) {
+        if (playerBalanceConfig == null) {
             Debug.LogWarning(
-                "CoconutSpawner:\tmust assign Inspector Field: balanceConfig",
+                "CoconutSpawner:\tmust assign Inspector Field: playerBalanceConfig",
                 this
             );
         }
-        if (coconutPrefab == null || balanceConfig == null) {
+        if (coconutPrefab == null || playerBalanceConfig == null) {
             enabled = false;
             return;
         }
@@ -163,11 +163,11 @@ public class CoconutSpawner: MonoBehaviour {
 
     private float StartHeightU => useTestOverride
         ? testStartHeightU
-        : balanceConfig.CoconutStartHeightU;
+        : playerBalanceConfig.CoconutStartHeightU;
 
     private float SpawnChance => useTestOverride
         ? testSpawnChance
-        : balanceConfig.CoconutSpawnChancePerSegment;
+        : playerBalanceConfig.CoconutSpawnChancePerSegment;
 
     // private methods  ########################################################
     // rolls this segment's coconut, the segment already holds its branches
