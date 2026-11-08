@@ -48,41 +48,16 @@ public class ProgressBarWidget: MonoBehaviour {
 
     [Header("Catch-Up Cue")]
     [SerializeField]
-    [Tooltip("warning at screen center on each cobra surge")]
-    private string catchUpText = "The cobra is speeding up!";
-
-    [SerializeField]
-    [Tooltip("warning at screen center when the monkey leaves the starting "
-        + "zone and the cobra starts chasing")]
-    private string chaseStartText = "Run! The Great Cobra is chasing you!";
-
-    [SerializeField]
     [Tooltip("appended w/ stack count from 2nd stacked mistake on")]
     private string catchUpStackFormat = " x{0}";
 
     [SerializeField]
-    [Tooltip("warning & marker flash color")]
+    [Tooltip("marker flash color")]
     private Color catchUpColor = new Color(1f, 0.2f, 0.15f, 1f);
 
     [SerializeField]
     [Tooltip("marker flashes per s while surging")]
     private float catchUpPulseHz = 3f;
-
-    [SerializeField]
-    [Tooltip("text height as share of screen height")]
-    private float catchUpFontScreenShare = 0.07f;
-
-    [SerializeField]
-    [Tooltip("warning stays this long, last part fading; s")]
-    private float catchUpShowS = 1.5f;
-
-    [SerializeField]
-    [Tooltip("fade-out part of the show time; s")]
-    private float catchUpFadeS = 0.5f;
-
-    [SerializeField]
-    [Tooltip("warning height on screen, 0 bottom ~ 1 top")]
-    private float catchUpScreenY = 0.65f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -152,7 +127,6 @@ public class ProgressBarWidget: MonoBehaviour {
             if (markerGraphic != null) {
                 markerBaseColor = markerGraphic.color;
             }
-            catchUpLabel = CreateCatchUpLabel();
         }
 
         if (cobra != null) {
@@ -187,35 +161,23 @@ public class ProgressBarWidget: MonoBehaviour {
     }
 
     // Event Handlers  #########################################################
+    // the warning text lives on the popup prefabs; the stack count goes in as
+    // its {0} suffix, empty for a first surge
     private void OnCatchUpStarted(int stacks) {
-        ShowWarning(
-            stacks > 1
-                ? catchUpText + string.Format(catchUpStackFormat, stacks)
-                : catchUpText
+        if (PopUpManager.I == null) {
+            return;
+        }
+        PopUpManager.I.Show(
+            PopUpId.CobraSpeedUp,
+            stacks > 1 ? string.Format(catchUpStackFormat, stacks) : ""
         );
     }
 
     private void OnChaseStarted() {
-        ShowWarning(chaseStartText);
-    }
-
-    // shows the center warning w/ the given text, same look for every cue
-    private void ShowWarning(string text) {
-        catchUpHideTime = Time.time + catchUpShowS;
-        if (catchUpLabel == null) {
+        if (PopUpManager.I == null) {
             return;
         }
-
-        catchUpLabel.text = text;
-
-        // re-sized on every show, in case the window size changed
-        Canvas canvas = catchUpLabel.canvas;
-        float scaleFactor = canvas != null && canvas.scaleFactor > 0f
-            ? canvas.scaleFactor
-            : 1f;
-        float fontSize = Screen.height * catchUpFontScreenShare / scaleFactor;
-        catchUpLabel.fontSize = fontSize;
-        catchUpLabel.rectTransform.sizeDelta = new Vector2(0f, fontSize * 1.6f);
+        PopUpManager.I.Show(PopUpId.CobraChase);
     }
 
     // constants  ##############################################################
@@ -231,8 +193,6 @@ public class ProgressBarWidget: MonoBehaviour {
     private CobraMotor cobra;
     private Graphic markerGraphic;
     private Color markerBaseColor;
-    private TextMeshProUGUI catchUpLabel;
-    private float catchUpHideTime; // Time.time the warning is gone
 
     private RectTransform distanceLabelRect;
     private float distanceLabelOffset;
@@ -410,8 +370,7 @@ public class ProgressBarWidget: MonoBehaviour {
         );
     }
 
-    // the marker flashes while the cobra catches up; the center warning
-    // shows once per catch-up, then fades out, only during a run
+    // the marker flashes while the cobra catches up, only during a run
     private void UpdateCatchUpCue() {
         bool isPlaying =
             GameController.I == null
@@ -427,50 +386,5 @@ public class ProgressBarWidget: MonoBehaviour {
                 ? Color.Lerp(markerBaseColor, catchUpColor, pulse)
                 : markerBaseColor;
         }
-
-        if (catchUpLabel == null) {
-            return;
-        }
-
-        float remainingS = catchUpHideTime - Time.time;
-        bool show = isPlaying && remainingS > 0f;
-        catchUpLabel.gameObject.SetActive(show);
-        if (show) {
-            Color labelColor = catchUpColor;
-            labelColor.a = catchUpFadeS > 0f
-                ? Mathf.Clamp01(remainingS / catchUpFadeS)
-                : 1f;
-            catchUpLabel.color = labelColor;
-        }
-    }
-
-    // a full-width label built at runtime on the root canvas, at the screen
-    // center
-    private TextMeshProUGUI CreateCatchUpLabel() {
-        Canvas canvas = cobraMarker.GetComponentInParent<Canvas>();
-        if (canvas == null) {
-            return null;
-        }
-
-        GameObject labelObject =
-            new GameObject("CatchUpWarning", typeof(RectTransform));
-        labelObject.transform.SetParent(canvas.rootCanvas.transform, false);
-
-        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-        labelRect.anchorMin = new Vector2(0f, catchUpScreenY);
-        labelRect.anchorMax = new Vector2(1f, catchUpScreenY);
-        labelRect.pivot = new Vector2(0.5f, 0.5f);
-        labelRect.anchoredPosition = Vector2.zero;
-        labelRect.sizeDelta = new Vector2(0f, 100f);
-
-        TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
-        label.text = catchUpText;
-        label.fontStyle = FontStyles.Bold;
-        label.alignment = TextAlignmentOptions.Center;
-        label.raycastTarget = false;
-        label.color = catchUpColor;
-
-        labelObject.SetActive(false);
-        return label;
     }
 }

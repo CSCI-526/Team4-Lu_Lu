@@ -642,14 +642,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da1683ec39eb44d99d5d1407435a17a9, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::CoconutMessageWidget
-  firstCoconutText: Coconut! Double-tap Space to freeze the cobra
-  frozenFormat: Cobra frozen for {0}s!
-  refusedText: Cobra is already frozen
-  thawedText: The cobra is moving again!
-  frozenColor: {r: 0.55, g: 0.85, b: 1, a: 1}
-  endingColor: {r: 1, g: 0.6, b: 0.15, a: 1}
-  messageFontScreenShare: 0.05
-  messageShowS: 2
-  firstCoconutShowS: 3.5
-  messageFadeS: 0.5
-  messageScreenY: 0.76
