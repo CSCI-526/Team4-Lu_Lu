@@ -1,7 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-TODO tree texture
 HACK organize & split game balance config
 FIXME consistent pop up UI
 
