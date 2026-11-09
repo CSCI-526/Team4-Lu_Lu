@@ -42,12 +42,40 @@ public class BossFightController: MonoBehaviour {
     /// </returns>
     public bool IsInArena => phase != Phase.Waiting;
 
+    /// <returns>highest world y a pineapple leap may carry the monkey to:
+    /// the fight's start height before the fight, so a leap stops at the
+    /// arena instead of flying past it, the ceiling under the king during
+    /// it, & no limit once it is over</returns>
+    public float LeapTopY {
+        get {
+            if (!isActiveAndEnabled) {
+                return float.PositiveInfinity;
+            }
+            if (phase == Phase.Waiting) {
+                RampedDifficultyManager ramp = RampedDifficultyManager.I;
+                // a hair over, so landing there surely starts the fight
+                return ramp != null && worldBalanceConfig != null
+                    ? ramp.PlayerGameStartYPosition
+                        + worldBalanceConfig.BossTriggerHeightU + 0.05f
+                    : float.PositiveInfinity;
+            }
+            bool isOver = phase == Phase.Defeated
+                || phase == Phase.Done
+                || phase == Phase.Over;
+            return isOver
+                ? float.PositiveInfinity
+                : body.LowestY - ceilingGapU;
+        }
+    }
+
     /// <summary>
     /// Called by <see cref="CobraSensor"/> when the great cobra catches the
     /// monkey: the gold armor, worn in the fight or kept as the win reward,
     /// takes the bite once, throwing the cobra back down the trunk.
     /// </summary>
-    /// <returns>true if the catch was absorbed, so the run goes on</returns>
+    /// <returns>true if the catch was handled here, so the sensor must not
+    /// end the run: absorbed by the armor, or in the fight turned into a
+    /// boss fight loss that offers a revive</returns>
     public bool TryAbsorbCobraCatch() {
         if (monkey == null) {
             return false;
@@ -56,13 +84,31 @@ public class BossFightController: MonoBehaviour {
         if (Time.time < cobraSaveGraceEndTime) {
             return true;
         }
+        // the finisher, revive offer & ad already handle the monkey's end
+        if (
+            phase == Phase.Finishing
+            || phase == Phase.ReviveOffer
+            || phase == Phase.WatchingAd
+        ) {
+            return true;
+        }
         bool canSave = phase == Phase.Fighting
             || phase == Phase.Defeated
             || phase == Phase.Done;
-        if (!canSave || !hasShield) {
+        if (!canSave) {
+            return false;
+        }
+        if (!hasShield) {
+            // caught by the guard in the fight: a boss fight loss, w/ its
+            // slow motion & the revive offer, not a plain end of the run
+            if (phase == Phase.Fighting) {
+                StartFinisher(false);
+                return true;
+            }
             return false;
         }
         hasShield = false;
+        hud.ShowArmorBadge(false);
         cobraSaveGraceEndTime = Time.time + 1f;
         hud.PopText("Saved!", monkey.position, goldenColor);
         hud.Flash(goldenColor);
@@ -278,7 +324,15 @@ public class BossFightController: MonoBehaviour {
         "normal mode's finale: pause between one minion wave ending & the "
             + "next one's warning; s"
     )]
-    private float minionStreamGapS = 1.5f;
+    private float minionStreamGapS = 3.5f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "normal mode's finale: a minion wave & a bite or sweep take turns, "
+            + "their dangerous parts overlapping at most this long; s"
+    )]
+    private float finaleOverlapS = 0.6f;
 
 
     [SerializeField]
@@ -309,7 +363,7 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Min(0)]
     [Tooltip("webs on the trunk when the fight begins")]
-    private int webCount = 4;
+    private int webCount = 3;
 
     [SerializeField]
     [Min(0)]
@@ -382,6 +436,34 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     private Color trailColor = new Color(1f, 0.85f, 0.2f);
 
+    [Header("Rough Bark")]
+    [SerializeField]
+    [Tooltip(
+        "material of the arena's rough bark patches, the same the "
+            + "RoughBarkSystem uses"
+    )]
+    private Material roughBarkMaterial;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("rough bark patches on the arena's trunk, slowing the monkey")]
+    private int roughBarkCount = 2;
+
+    [SerializeField]
+    [Tooltip("patch height range; u")]
+    private Vector2 roughBarkHeightRangeU = new Vector2(3f, 4.5f);
+
+    [SerializeField]
+    [Tooltip("patch width round the trunk; deg")]
+    private Vector2 roughBarkArcRangeDeg = new Vector2(70f, 100f);
+
+    [SerializeField]
+    [Tooltip(
+        "patches keep this far round the trunk from the monkey's start "
+            + "spot & the banana branches; deg"
+    )]
+    private float roughBarkClearDeg = 40f;
+
     [Header("Golden Banana")]
     [SerializeField]
     [Tooltip("outline material copied for the golden banana's thick border, "
@@ -419,11 +501,6 @@ public class BossFightController: MonoBehaviour {
     [Min(1f)]
     [Tooltip("how long the revive offer waits before it gives up; s")]
     private float reviveOfferS = 8f;
-
-    [SerializeField]
-    [Min(1f)]
-    [Tooltip("length of the mock ad; s")]
-    private float reviveAdS = 15f;
 
     [SerializeField]
     [Min(0f)]
@@ -487,7 +564,7 @@ public class BossFightController: MonoBehaviour {
 
     [SerializeField]
     [Tooltip("line under the win banner")]
-    private string winLine = "+1 Golden Armor";
+    private string winLine = "Golden Armor is yours to keep!";
 
     [SerializeField]
     [Min(0.5f)]
@@ -499,18 +576,23 @@ public class BossFightController: MonoBehaviour {
         "when the armor takes the great cobra's bite, its head is thrown "
             + "this far back down the trunk; u"
     )]
-    private float armorKnockBackU = 8f;
+    private float armorKnockBackU = 20f;
 
     [SerializeField]
-    [Tooltip("...& it is frozen this long after; s")]
-    private float armorCobraFreezeS = 1.5f;
+    [Min(0f)]
+    [Tooltip(
+        "...& it is frozen this long after, longer than a coconut's freeze, "
+            + "as the armor is the boss fight's one-off reward; s"
+    )]
+    private float armorCobraFreezeS = 15f;
+
 
     [SerializeField]
     [Tooltip(
         "after a win the great cobra chases again from this far further "
             + "down the trunk than its guard spot, a head start; u"
     )]
-    private float winCobraDropU = 25f;
+    private float winCobraDropU = 45f;
 
     [SerializeField]
     [Tooltip("the golden banana first shows up this long after the first "
@@ -542,6 +624,18 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Tooltip("the armor's helmet sits this far above the monkey's center; u")]
     private float armorHelmetU = 0.95f;
+
+    [SerializeField]
+    [Min(0.3f)]
+    [Tooltip(
+        "win reward: the armor pieces swirl in onto the monkey & pulse for "
+            + "this long; s"
+    )]
+    private float armorRewardS = 1.6f;
+
+    [SerializeField]
+    [Tooltip("win reward: the armor pieces start this far out; u")]
+    private float armorRewardRadiusU = 3f;
 
     [Header("Finisher")]
     [SerializeField]
@@ -711,6 +805,7 @@ public class BossFightController: MonoBehaviour {
         // after a win only the reward armor is left to follow the monkey
         if (phase == Phase.Done) {
             UpdateShieldRing();
+            UpdateSparks();
             UpdateCameraFocus();
             UpdateChaseWarning();
             return;
@@ -775,6 +870,9 @@ public class BossFightController: MonoBehaviour {
 
         StopHazardSpawners();
         ClearAbove(entryY - 3f);
+        RemoveNonBananas(
+            FindObjectsByType<BranchController>(FindObjectsSortMode.None)
+        );
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
 
         cameraLookUp = FindFirstObjectByType<CameraLookUp>();
@@ -788,6 +886,7 @@ public class BossFightController: MonoBehaviour {
         // the first try is normal mode; the mode choice comes w/ a revive
         SpawnFruits();
         SpawnWebs(webCount);
+        SpawnRoughBark();
         struggle = FindFirstObjectByType<SpiderWebStruggle>();
         if (struggle != null) {
             struggle.EscapeGainScale = webEscapeGainScale;
@@ -864,9 +963,29 @@ public class BossFightController: MonoBehaviour {
 
     // a segment recycled over the top during the fight rolls new branches
     private void OnBranchesGenerated(TreeSegmentController segment) {
-        ClearBranchesNearNest(
-            segment.GetComponentsInChildren<BranchController>()
-        );
+        BranchController[] branches =
+            segment.GetComponentsInChildren<BranchController>();
+        ClearBranchesNearNest(branches);
+        RemoveNonBananas(branches);
+    }
+
+    // only bananas belong in the arena: a pineapple or coconut on the tree's
+    // own branches there is taken off, its bare stem left
+    private void RemoveNonBananas(BranchController[] branches) {
+        float minY = entryY - 3f;
+        foreach (BranchController branch in branches) {
+            if (branch == null || branch.transform.position.y < minY) {
+                continue;
+            }
+            foreach (ScorePickup pickup in
+                branch.GetComponentsInChildren<ScorePickup>(true)) {
+                if (pickup.Kind == PickupKind.Banana) {
+                    continue;
+                }
+                ForgetFruits(pickup.gameObject);
+                pickup.gameObject.SetActive(false);
+            }
+        }
     }
 
     private void ClearBranchesNearNest(BranchController[] branches) {
@@ -990,6 +1109,11 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
+    private bool IsNearSpot(float angle, float y, Vector3 spot) {
+        return Mathf.Abs(Mathf.DeltaAngle(angle, AngleOf(spot))) < 30f
+            && Mathf.Abs(y - spot.y) < 3f;
+    }
+
     // webs on the trunk in the arena, never on a fruit's branch line
     private void SpawnWebs(int count) {
         if (webPrefab == null) {
@@ -1004,9 +1128,10 @@ public class BossFightController: MonoBehaviour {
                 }
                 float y = Random.Range(entryY - webBelowEntryU, Mathf.Max(entryY + 1f, topY));
                 // never right on the monkey
-                bool isOnMonkey = Mathf.Abs(Mathf.DeltaAngle(
-                    angle, AngleOf(monkey.position)
-                )) < 30f && Mathf.Abs(y - monkey.position.y) < 3f;
+                // never right on the monkey, nor on its start spot, where
+                // a restart brings it back
+                bool isOnMonkey = IsNearSpot(angle, y, monkey.position)
+                    || IsNearSpot(angle, y, entryPosition);
                 if (isOnMonkey) {
                     continue;
                 }
@@ -1022,6 +1147,90 @@ public class BossFightController: MonoBehaviour {
                 break;
             }
         }
+    }
+
+    // the teammates' rough bark, a few patches in the arena that slow the
+    // monkey while it touches them; kept off its start spot & the banana
+    // branches, & kept through a restart
+    private void SpawnRoughBark() {
+        if (roughBarkMaterial == null || roughBarkCount <= 0) {
+            return;
+        }
+        float topY = body.LowestY - ceilingGapU;
+        List<float> usedAngles = new List<float>();
+        for (int i = 0; i < roughBarkCount; i++) {
+            for (int attempt = 0; attempt < 16; attempt++) {
+                float height = Random.Range(
+                    roughBarkHeightRangeU.x, roughBarkHeightRangeU.y
+                );
+                float arc = Random.Range(
+                    roughBarkArcRangeDeg.x, roughBarkArcRangeDeg.y
+                );
+                float extent = RoughBarkZone.GetVerticalExtent(height);
+                float minY = entryY - 2f + extent;
+                float maxY = Mathf.Max(minY, topY - extent);
+                float y = Random.Range(minY, maxY);
+                float angle = Random.Range(0f, 360f);
+                if (!IsRoughBarkClear(angle, arc, usedAngles)) {
+                    continue;
+                }
+                AddRoughBark(angle, y, height, arc);
+                usedAngles.Add(angle);
+                break;
+            }
+        }
+    }
+
+    private bool IsRoughBarkClear(
+        float angle, float arc, List<float> usedAngles
+    ) {
+        float clear = arc * 0.5f + roughBarkClearDeg;
+        if (Mathf.Abs(Mathf.DeltaAngle(angle, AngleOf(entryPosition))) < clear) {
+            return false;
+        }
+        foreach (ArenaFruit fruit in fruits) {
+            if (fruit.root != null && Mathf.Abs(Mathf.DeltaAngle(
+                angle, AngleOf(fruit.root.transform.position)
+            )) < clear) {
+                return false;
+            }
+        }
+        foreach (float used in usedAngles) {
+            if (Mathf.Abs(Mathf.DeltaAngle(angle, used)) < arc + 20f) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // built on the tree segment at its height, so its mesh hugs the
+    // faceted trunk, then kept under the fight so no recycle moves it
+    private void AddRoughBark(float angle, float y, float height, float arc) {
+        GameObject patch = new GameObject("BossRoughBarkPatch");
+        Transform segment = NearestSegment(y);
+        patch.transform.SetParent(segment != null ? segment : transform, false);
+        patch.transform.position = new Vector3(trunkCenter.x, y, trunkCenter.z);
+        RoughBarkZone zone = patch.AddComponent<RoughBarkZone>();
+        // the bark measures angles from +z toward +x, this fight from +x
+        zone.Initialize(
+            trunkRadiusU + 0.05f, height, 90f - angle, arc,
+            roughBarkMaterial, true, Random.Range(0, 100000)
+        );
+        patch.transform.SetParent(transform, true);
+    }
+
+    private static Transform NearestSegment(float y) {
+        Transform nearest = null;
+        float best = float.MaxValue;
+        foreach (TreeSegmentController segment in
+            FindObjectsByType<TreeSegmentController>(FindObjectsSortMode.None)) {
+            float distance = Mathf.Abs(segment.transform.position.y - y);
+            if (distance < best) {
+                best = distance;
+                nearest = segment.transform;
+            }
+        }
+        return nearest;
     }
 
     private bool IsNearFruit(float angle) {
@@ -1176,8 +1385,10 @@ public class BossFightController: MonoBehaviour {
             PrimitiveType.Sphere, "ArmorHelmet",
             new Vector3(0.85f, 0.5f, 0.85f), goldenColor
         ).transform;
-        foreach (Transform piece in armor) {
-            piece.gameObject.SetActive(false);
+        armorBaseScales = new Vector3[armor.Length];
+        for (int i = 0; i < armor.Length; i++) {
+            armorBaseScales[i] = armor[i].localScale;
+            armor[i].gameObject.SetActive(false);
         }
     }
 
@@ -1190,7 +1401,11 @@ public class BossFightController: MonoBehaviour {
                 break;
             case Loop.Rest:
                 loopTimeS -= Time.deltaTime;
-                if (loopTimeS <= 0f) {
+                // in the finale a round waits for a running wave to near its
+                // end, so the two only overlap a little
+                bool isWaveClear = !isMinionStreaming
+                    || WaveDangerLeftS() <= finaleOverlapS;
+                if (loopTimeS <= 0f && isWaveClear) {
                     StartRound();
                 }
                 break;
@@ -1212,8 +1427,16 @@ public class BossFightController: MonoBehaviour {
     private void StartRound() {
         loop = Loop.Attack;
         attackQueue.Clear();
-        // in normal mode's finale the minions stream on their own instead
-        if (Third >= 2 && !IsMinionFinale) {
+        // in normal mode's finale the minions stream on their own, so a
+        // round is a single bite or sweep, taking turns: never more than two
+        // attacks at once
+        if (IsMinionFinale) {
+            attackQueue.Enqueue(isFinaleSweepNext ? Attack.Sweep : Attack.Bite);
+            isFinaleSweepNext = !isFinaleSweepNext;
+            NextAttack();
+            return;
+        }
+        if (Third >= 2) {
             attackQueue.Enqueue(Attack.Minions);
         }
         attackQueue.Enqueue(Attack.Bite);
@@ -1461,9 +1684,45 @@ public class BossFightController: MonoBehaviour {
         }
         if (isWaveRunning) {
             UpdateMinions();
-        } else if (Time.time >= nextWaveTime) {
+        } else if (
+            Time.time >= nextWaveTime
+            && AttackDangerLeftS() <= finaleOverlapS
+        ) {
+            // likewise a wave waits for a bite or sweep to near its end
             StartWave();
         }
+    }
+
+    // time left till a running bite or sweep has struck; s
+    private float AttackDangerLeftS() {
+        if (loop != Loop.Attack) {
+            return 0f;
+        }
+        switch (attack) {
+            case Attack.Bite:
+                // the warning, then a short dive
+                return Mathf.Max(0f, biteWarnS * WarnScale - attackTimeS)
+                    + 0.3f;
+            case Attack.Sweep:
+                return Mathf.Max(
+                    0f, sweepWarnS * WarnScale + sweepTimeS - attackTimeS
+                );
+            default:
+                return 0f;
+        }
+    }
+
+    // time left till the running wave's last minion has fallen past the
+    // monkey's height; s
+    private float WaveDangerLeftS() {
+        if (!isWaveRunning) {
+            return 0f;
+        }
+        float lastDropS = minionWarnS * WarnScale
+            + Mathf.Max(0, minionCount - 2) * minionStaggerS;
+        float fallS = Mathf.Max(0f, coilBottomY - minionLockY)
+            / Mathf.Max(0.1f, minionFallSpeedU);
+        return Mathf.Max(0f, lastDropS + fallS + 0.3f - waveTimeS);
     }
 
     // world y a falling minion is gone at, the bottom of its fall line
@@ -1555,14 +1814,13 @@ public class BossFightController: MonoBehaviour {
     }
 
     // Finisher  ---------------------------------------------------------------
-    // the last blow either way plays in slow motion: a win flashes the king
-    // white before it shatters; a loss flashes red & spins the monkey off the
-    // tree under a K.O. banner, then the run is lost
+    // the last blow either way plays in slow motion: a win flashes the
+    // screen white before the king shatters; a loss flashes red & spins the
+    // monkey off the tree under a K.O. banner
     private void StartFinisher(bool isWin) {
         phase = Phase.Finishing;
         isFinisherWin = isWin;
         finisherTimeS = 0f;
-        nextFinisherFlashS = 0f;
         ClearMarkers();
         hud.SetPrompt(false, Vector3.zero);
         Time.timeScale = finisherTimeScale;
@@ -1573,6 +1831,12 @@ public class BossFightController: MonoBehaviour {
         }
         hud.Flash(new Color(0.9f, 0.1f, 0.1f));
         hud.ShowBanner("K.O.", new Color(0.95f, 0.15f, 0.15f));
+        // from the K.O. till a revive lands, no web, cobra or branch may
+        // touch the monkey: the same untouchable state as a pineapple leap
+        SetUntouchable(true);
+        if (struggle != null) {
+            struggle.ForceRelease();
+        }
         if (monkeyController != null) {
             monkeyController.ClearHeightCeiling();
             Vector3 outward = monkey.position - trunkCenter;
@@ -1587,13 +1851,7 @@ public class BossFightController: MonoBehaviour {
     // runs on unscaled time, since the game itself crawls meanwhile
     private void UpdateFinisher() {
         finisherTimeS += Time.unscaledDeltaTime;
-        if (isFinisherWin) {
-            // the king keeps flashing as it reels
-            if (finisherTimeS >= nextFinisherFlashS) {
-                nextFinisherFlashS = finisherTimeS + 0.18f;
-                body.FlashHit();
-            }
-        } else {
+        if (!isFinisherWin) {
             monkey.Rotate(Vector3.up, 900f * Time.unscaledDeltaTime);
         }
         if (finisherTimeS < finisherRealS) {
@@ -1614,6 +1872,7 @@ public class BossFightController: MonoBehaviour {
 
     private void EndAsLoss() {
         phase = Phase.Over;
+        SetUntouchable(false);
         if (GameController.I != null) {
             GameController.I.LoseGame();
         }
@@ -1634,30 +1893,34 @@ public class BossFightController: MonoBehaviour {
     private void UpdateRevive(GameController game) {
         // a pause & resume would run the game under the offer otherwise
         Time.timeScale = 0f;
+        // the clock holds while paused; the step is capped so a long time
+        // away, eg on the course page, skips nothing. Input is read even
+        // without focus, as coming back from the page may leave the game
+        // unfocused till a click
         if (game.IsPaused) {
             return;
         }
-        reviveLeftS -= Time.unscaledDeltaTime;
+        float stepS = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
+        // the ad runs till skipped: no countdown, only a Skip button after
+        // a short while
         if (phase == Phase.WatchingAd) {
+            adElapsedS += stepS;
             Keyboard adKeyboard = Keyboard.current;
             if (adKeyboard != null && adKeyboard.enterKey.wasPressedThisFrame) {
                 OpenCoursePage();
             }
-            bool canSkip = reviveAdS - reviveLeftS >= adSkipAfterS;
+            bool canSkip = adElapsedS >= adSkipAfterS;
             hud.SetAdSkippable(canSkip);
             if (
                 canSkip && adKeyboard != null
                 && adKeyboard.spaceKey.wasPressedThisFrame
             ) {
                 SkipAd();
-                return;
-            }
-            hud.SetAdCountdown(Mathf.CeilToInt(Mathf.Max(0f, reviveLeftS)));
-            if (reviveLeftS <= 0f) {
-                RestartFight();
             }
             return;
         }
+
+        reviveLeftS -= stepS;
 
         hud.SetReviveCountdown(Mathf.CeilToInt(Mathf.Max(0f, reviveLeftS)));
         Keyboard keyboard = Keyboard.current;
@@ -1676,9 +1939,9 @@ public class BossFightController: MonoBehaviour {
             return;
         }
         phase = Phase.WatchingAd;
-        reviveLeftS = reviveAdS;
+        adElapsedS = 0f;
+        hud.SetAdSkippable(false);
         hud.ShowAd();
-        hud.SetAdCountdown(Mathf.CeilToInt(reviveLeftS));
     }
 
     private void GiveUp() {
@@ -1714,6 +1977,7 @@ public class BossFightController: MonoBehaviour {
         loop = Loop.Intro;
         isMinionStreaming = false;
         isWaveRunning = false;
+        isFinaleSweepNext = false;
         hasHit = false;
         hasThrown = false;
         isEasy = false;
@@ -1726,9 +1990,18 @@ public class BossFightController: MonoBehaviour {
             stamina.AddStamina(stamina.MaxStamina);
         }
 
+        // the guard below ends any peek, so it is not up on the way back
+        if (greatCobra != null) {
+            greatCobra.KnockBack(0f);
+        }
+        if (struggle != null) {
+            struggle.ForceRelease();
+        }
+        SetUntouchable(true);
         monkey.rotation = entryRotation;
         if (monkeyController != null) {
             monkeyController.ClearStun();
+            monkeyController.IsHeld = true;
             monkeyController.PullTo(entryPosition, reviveReturnSpeedU);
             isReturningFromRevive = true;
         }
@@ -1746,7 +2019,7 @@ public class BossFightController: MonoBehaviour {
 
     private void SkipAd() {
         if (phase != Phase.WatchingAd
-            || reviveAdS - reviveLeftS < adSkipAfterS) {
+            || adElapsedS < adSkipAfterS) {
             return;
         }
         RestartFight();
@@ -1768,7 +2041,16 @@ public class BossFightController: MonoBehaviour {
             || (monkey.position - entryPosition).sqrMagnitude < 0.01f
         ) {
             isReturningFromRevive = false;
+            // back on the ring at the fight's start, not where it fell
+            monkeyController.SyncOrbitAngle();
             monkeyController.IsHeld = false;
+            SetUntouchable(false);
+        }
+    }
+
+    private static void SetUntouchable(bool isUntouchable) {
+        if (GameController.I != null) {
+            GameController.I.SetLeaping(isUntouchable);
         }
     }
 
@@ -1846,6 +2128,7 @@ public class BossFightController: MonoBehaviour {
         Vector3 side = Vector3.Cross(Vector3.up, outward);
         float shine = 0.5f + 0.5f * Mathf.Sin(Time.time * 4f);
         Color gold = Color.Lerp(goldenColor, Color.white, shine * 0.35f);
+        float rewardT = UpdateArmorReward();
 
         Vector3[] positions = {
             monkey.position + outward * armorOutU + Vector3.up * 0.15f,
@@ -1860,12 +2143,56 @@ public class BossFightController: MonoBehaviour {
             if (!hasShield) {
                 continue;
             }
-            armor[i].position = positions[i];
+            Vector3 position = positions[i];
+            float scale = 1f;
+            Color color = gold;
+            if (rewardT >= 0f) {
+                // swirl: each piece spirals in from its own side, growing
+                // smaller as it nears, then all pulse bright once it lands
+                float fly = Mathf.Clamp01(rewardT / ARMOR_LAND_SHARE);
+                float ease = 1f - Mathf.Pow(1f - fly, 3f);
+                float radius = Mathf.Lerp(armorRewardRadiusU, 0f, ease);
+                float spin = (i * 90f + fly * 540f) * Mathf.Deg2Rad;
+                position += (outward * Mathf.Cos(spin) + side * Mathf.Sin(spin))
+                    * radius + Vector3.up * radius * 0.7f;
+                if (rewardT < ARMOR_LAND_SHARE) {
+                    scale = Mathf.Lerp(1.8f, 1f, ease);
+                } else {
+                    float pulse = Mathf.Sin(
+                        (rewardT - ARMOR_LAND_SHARE) / (1f - ARMOR_LAND_SHARE)
+                            * Mathf.PI
+                    );
+                    scale = 1f + 0.35f * pulse;
+                    color = Color.Lerp(gold, Color.white, pulse * 0.8f);
+                }
+            }
+            armor[i].position = position;
+            armor[i].localScale = armorBaseScales[i] * scale;
             armor[i].rotation = i == 0
                 ? Quaternion.FromToRotation(Vector3.up, outward)
                 : Quaternion.LookRotation(outward, Vector3.up);
-            SetColor(armor[i].GetComponent<Renderer>(), gold);
+            SetColor(armor[i].GetComponent<Renderer>(), color);
         }
+    }
+
+    // the win reward's swirl, 0~1 while it plays, else -1; on landing a
+    // gold burst & flash, & the armor badge that stays while it is kept
+    private float UpdateArmorReward() {
+        if (armorRewardTimeS < 0f) {
+            return -1f;
+        }
+        armorRewardTimeS += Time.deltaTime;
+        float t = Mathf.Clamp01(armorRewardTimeS / armorRewardS);
+        if (!hasArmorLanded && t >= ARMOR_LAND_SHARE) {
+            hasArmorLanded = true;
+            BurstAt(monkey.position + Vector3.up * 0.4f, goldenColor);
+            hud.Flash(goldenColor);
+            hud.ShowArmorBadge(true);
+        }
+        if (t >= 1f) {
+            armorRewardTimeS = -1f;
+        }
+        return t;
     }
 
     // thrown bananas follow an arc onto the crown, then burst on impact
@@ -1895,7 +2222,7 @@ public class BossFightController: MonoBehaviour {
             }
             Destroy(thrown.transform.gameObject);
             projectiles.RemoveAt(i);
-            BurstAt(target);
+            BurstAt(target, trailColor);
             OnJewelHit();
         }
         UpdateSparks();
@@ -1915,11 +2242,11 @@ public class BossFightController: MonoBehaviour {
         });
     }
 
-    // yellow cubes fly out where a banana lands
-    private void BurstAt(Vector3 position) {
+    // cubes fly out, eg where a banana lands or the reward armor settles
+    private void BurstAt(Vector3 position, Color color) {
         for (int i = 0; i < 10; i++) {
             Transform cube = CreatePrimitive(
-                PrimitiveType.Cube, "Burst", Vector3.one * 0.25f, trailColor
+                PrimitiveType.Cube, "Burst", Vector3.one * 0.25f, color
             ).transform;
             cube.position = position;
             cube.rotation = Random.rotation;
@@ -2050,6 +2377,9 @@ public class BossFightController: MonoBehaviour {
     private void FinishWithReward() {
         phase = Phase.Done;
         hasShield = true;
+        // the armor swirls in onto the monkey, then a badge keeps it in view
+        armorRewardTimeS = 0f;
+        hasArmorLanded = false;
         hud.HideBossBar();
         hud.SetPrompt(false, Vector3.zero);
         hud.ShowBannerFor(winTitle, winLine, goldenColor, winBannerS);
@@ -2468,6 +2798,9 @@ public class BossFightController: MonoBehaviour {
     private static readonly int BASE_COLOR = Shader.PropertyToID("_BaseColor");
     private static readonly int COLOR = Shader.PropertyToID("_Color");
 
+    // share of the win swirl spent flying in, the rest is the pulse
+    private const float ARMOR_LAND_SHARE = 0.7f;
+
     private enum Phase {
         Waiting, // climbing to the trigger height
         Fighting,
@@ -2545,6 +2878,7 @@ public class BossFightController: MonoBehaviour {
     private float minionLockAngle; // monkey angle when the wave began; deg
     private float minionLockY; // monkey y when the wave began
     private bool isMinionStreaming; // normal finale: waves run on their own
+    private bool isFinaleSweepNext; // the finale's next round is a sweep
     private bool isWaveRunning; // a minion wave is warning or falling
     private float nextWaveTime; // Time.time the stream's next wave starts
     private bool biteStarted;
@@ -2558,7 +2892,8 @@ public class BossFightController: MonoBehaviour {
     private bool hasShield; // the golden banana's shield is up
     private bool hasThrown; // the first banana has been thrown
     private bool isReturningFromRevive; // flying back onto the trunk
-    private float reviveLeftS; // offer or ad time left; unscaled s
+    private float reviveLeftS; // revive offer time left; unscaled s
+    private float adElapsedS; // time into the mock ad; unscaled s
     private float cobraSaveGraceEndTime; // the armor's save ignores contacts
     private float chaseWarnTime; // Time.time the chase is called after a win
     private bool hasWarnedChase;
@@ -2572,7 +2907,6 @@ public class BossFightController: MonoBehaviour {
     private bool hasWon;
     private bool isFinisherWin;
     private float finisherTimeS; // real time into the finisher; s
-    private float nextFinisherFlashS; // finisher time of the next flash
     private readonly List<SpiderWebTrap> webs = new List<SpiderWebTrap>();
     private int goldenIndex = -1; // the golden banana in the fruit list
     private float nextGoldenTime; // Time.time the next visit starts
@@ -2595,6 +2929,9 @@ public class BossFightController: MonoBehaviour {
     private Transform[] tail;
     private Transform[] dots;
     private Transform[] armor;
+    private Vector3[] armorBaseScales;
+    private float armorRewardTimeS = -1f; // into the win swirl, -1 if none
+    private bool hasArmorLanded; // the swirl's pieces have settled
 
     // cached references  ------------------------------------------------------
     private BossKingBody body;

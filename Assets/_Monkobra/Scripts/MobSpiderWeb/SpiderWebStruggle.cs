@@ -91,6 +91,19 @@ public class SpiderWebStruggle: MonoBehaviour {
         return true;
     }
 
+    /// <summary>
+    /// Lets the monkey out of its web at once, without the protection an
+    /// escape gives, eg when the boss fight takes over the monkey; does
+    /// nothing if it is not trapped.
+    /// </summary>
+    public void ForceRelease() {
+        if (!isTrapped) {
+            return;
+        }
+        BreakFree();
+        protectionEndTime = 0f;
+    }
+
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]

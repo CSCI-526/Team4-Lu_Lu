@@ -82,6 +82,15 @@ public class MonkeyController: MonoBehaviour {
         hasHeightCeiling = true;
     }
 
+    /// <summary>
+    /// Takes the orbit angle from where the body is now, eg after a pull
+    /// carried it to a spawn point, so letting go glides it onto the ring
+    /// right there instead of back at its old angle.
+    /// </summary>
+    public void SyncOrbitAngle() {
+        orbitAngleDeg = CalcCurrentOrbitAngle();
+    }
+
     /// <summary>Lifts the cap set by <see cref="SetHeightCeiling"/>.</summary>
     public void ClearHeightCeiling() {
         hasHeightCeiling = false;

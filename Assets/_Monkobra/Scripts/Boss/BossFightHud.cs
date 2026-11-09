@@ -171,6 +171,22 @@ public class BossFightHud: MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Shows or hides the armor badge in the bottom right, kept up while the
+    /// monkey keeps the Golden Armor it won; it pops in when shown.
+    /// </summary>
+    public void ShowArmorBadge(bool isShown) {
+        if (rootRect == null) {
+            return;
+        }
+        if (armorBadge == null) {
+            armorBadge = CreateArmorBadge();
+        }
+        armorBadge.gameObject.SetActive(isShown);
+        armorBadgePopS = isShown ? ARMOR_BADGE_POP_S : 0f;
+        armorBadge.localScale = Vector3.one;
+    }
+
     /// <summary>Hides the king's name & health bar, eg once it is beaten.
     /// </summary>
     public void HideBossBar() {
@@ -232,16 +248,6 @@ public class BossFightHud: MonoBehaviour {
         }
         revivePanel.SetActive(false);
         adPanel.SetActive(true);
-    }
-
-    /// <summary>Sets the ad's reward countdown to <paramref name="seconds"/>.
-    /// </summary>
-    public void SetAdCountdown(int seconds) {
-        if (adCountLabel != null) {
-            adCountLabel.text = seconds > 0
-                ? "Reward in " + seconds
-                : "Reward!";
-        }
     }
 
     /// <summary>Hides the revive offer and the ad.</summary>
@@ -394,6 +400,7 @@ public class BossFightHud: MonoBehaviour {
 
         UpdateFlash();
         UpdateAd();
+        UpdateArmorBadge();
         if (bannerHideTime > 0f && Time.unscaledTime >= bannerHideTime) {
             bannerHideTime = -1f;
             bannerLabel.gameObject.SetActive(false);
@@ -739,11 +746,6 @@ public class BossFightHud: MonoBehaviour {
         skip.anchorMin = skip.anchorMax = skip.pivot = new Vector2(1f, 1f);
         skip.anchoredPosition = new Vector2(-24f, -24f);
         adSkipButton.SetActive(false);
-        adCountLabel = CreateLabel("Count", ad, "", 30f, Color.white);
-        RectTransform count = adCountLabel.rectTransform;
-        count.anchorMin = count.anchorMax = count.pivot = new Vector2(1f, 0f);
-        count.anchoredPosition = new Vector2(-30f, 30f);
-        count.sizeDelta = new Vector2(300f, 50f);
         adPanel = ad.gameObject;
         adPanel.SetActive(false);
         return true;
@@ -764,6 +766,43 @@ public class BossFightHud: MonoBehaviour {
             adShapes[i].localScale = Vector3.one
                 * (1f + 0.15f * Mathf.Sin(t * 3f + i));
         }
+    }
+
+    // a dark plate w/ a gold diamond & GOLDEN ARMOR
+    private RectTransform CreateArmorBadge() {
+        Color gold = new Color(1f, 0.82f, 0.2f);
+        RectTransform badge = CreateRect("ArmorBadge", rootRect);
+        badge.anchorMin = badge.anchorMax = badge.pivot = new Vector2(1f, 0f);
+        // left of the progress bar along the right edge
+        badge.anchoredPosition = new Vector2(-70f, 24f);
+        badge.sizeDelta = new Vector2(250f, 54f);
+        AddImage(badge, new Color(0f, 0f, 0f, 0.65f));
+        RectTransform diamond = CreateRect("Diamond", badge);
+        diamond.anchorMin = diamond.anchorMax = new Vector2(0f, 0.5f);
+        diamond.anchoredPosition = new Vector2(30f, 0f);
+        diamond.sizeDelta = new Vector2(26f, 26f);
+        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
+        AddImage(diamond, gold);
+        TextMeshProUGUI label = CreateLabel(
+            "Label", badge, "GOLDEN ARMOR", 24f, gold
+        );
+        RectTransform labelRect = label.rectTransform;
+        labelRect.anchorMin = new Vector2(0f, 0f);
+        labelRect.anchorMax = new Vector2(1f, 1f);
+        labelRect.offsetMin = new Vector2(52f, 0f);
+        labelRect.offsetMax = new Vector2(-8f, 0f);
+        badge.gameObject.SetActive(false);
+        return badge;
+    }
+
+    // the badge pops in big & settles; unscaled, so a pause never stalls it
+    private void UpdateArmorBadge() {
+        if (armorBadge == null || armorBadgePopS <= 0f) {
+            return;
+        }
+        armorBadgePopS = Mathf.Max(0f, armorBadgePopS - Time.unscaledDeltaTime);
+        float left = armorBadgePopS / ARMOR_BADGE_POP_S;
+        armorBadge.localScale = Vector3.one * (1f + 0.8f * left * left);
     }
 
     // a dark plate w/ a colored word, placed over a world point
@@ -799,7 +838,15 @@ public class BossFightHud: MonoBehaviour {
         image.raycastTarget = true;
         Button button = rect.gameObject.AddComponent<Button>();
         button.targetGraphic = image;
-        button.onClick.AddListener(() => onClick());
+        button.onClick.AddListener(() => {
+            // not left selected, or Space / Enter would press it again
+            UnityEngine.EventSystems.EventSystem events =
+                UnityEngine.EventSystems.EventSystem.current;
+            if (events != null) {
+                events.SetSelectedGameObject(null);
+            }
+            onClick();
+        });
         TextMeshProUGUI label = CreateLabel("Label", rect, text, 24f,
             Color.white);
         Stretch(label.rectTransform);
@@ -900,8 +947,10 @@ public class BossFightHud: MonoBehaviour {
     private GameObject adPanel;
     private RectTransform adTitle;
     private readonly List<RectTransform> adShapes = new List<RectTransform>();
-    private TextMeshProUGUI adCountLabel;
     private GameObject adSkipButton;
+    private RectTransform armorBadge;
+    private float armorBadgePopS; // pop-in time left; unscaled s
+    private const float ARMOR_BADGE_POP_S = 0.45f;
     private RectTransform easyTag;
     private RectTransform normalTag;
     private Vector3 easyTagWorld;
