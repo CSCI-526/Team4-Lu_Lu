@@ -1,7 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug analytic record banana in starting zone run
+BUG analytic record banana in starting zone run
 Fixme camera adjust
 Fixme game play tunning
 
