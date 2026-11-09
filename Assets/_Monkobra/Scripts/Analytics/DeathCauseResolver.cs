@@ -17,8 +17,16 @@ public static class DeathCauseResolver {
         DateTime now,
         float windowS
     ) {
-        DateTime branch = GetLatestInWindow(run.Branches, now, windowS);
-        DateTime web = GetLatestInWindow(run.Webs, now, windowS);
+        DateTime branch = GetLatestInWindow(
+            run.GetEvents(AnalyticsMetric.Branch),
+            now,
+            windowS
+        );
+        DateTime web = GetLatestInWindow(
+            run.GetEvents(AnalyticsMetric.Web),
+            now,
+            windowS
+        );
         if (branch == DateTime.MinValue && web == DateTime.MinValue) {
             return DeathCause.GreatCobra;
         }

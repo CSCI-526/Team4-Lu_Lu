@@ -31,7 +31,7 @@ Read these `docs/` files when their topic arises:
 - Unity drops a new Volume profile into `Scenes/<Scene>/`; move it in the Editor to `Settings/<Module>/` (`Settings/_Shared/` when no one module owns it), since `Scenes/` holds `.unity` files only
 - `Settings/` is `_Shared/` plus one folder per module (`Player/`, `Environment/`, `Mob/`, `Cameras/`, `UI/`, `Analytics/`, `HackShortcuts/`) with assets placed directly inside, never a deeper folder; a config asset goes in the module whose scripts read it, name it for what it configures (e.g. `CobraBalanceConfig.asset`), and balance numbers live in the 3 balance configs by concern (player, world, cobra)
 - Unity template leftovers and imports (`Assets/Readme.asset`, `Assets/TextMesh Pro/`) stay outside the game root
-- `Lv1Scene.unity` is a shell of 8 root prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Envs`, `Entities`, `GameController`, `UI`), see the Scene Hierarchy in [CONTEXT.md](CONTEXT.md#scene-hierarchy); open the owning prefab and edit it there, never an inline copy in the scene, so parallel work lands in different files
+- `Lv1Scene.unity` is a shell of 8 root prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`) plus a plain `Envs` object nesting the environment prefabs, see the Scene Hierarchy in [CONTEXT.md](CONTEXT.md#scene-hierarchy); open the owning prefab and edit it there, never an inline copy in the scene, so parallel work lands in different files
 - A new scene object becomes its own prefab under `Assets/_Monkobra/Prefabs/<Module>/`, nested in the matching root prefab; add a root only when no existing one fits
 - A reference between two prefabs is a property override on the scene instance (Unity drops it inside a prefab asset); keep such links few
 - Every asset under `Assets/` is committed with its `.meta` file, and a moved or renamed asset moves its `.meta` with it
@@ -56,7 +56,8 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - Keep gameplay tuning values (stamina drain, grab restore, cobra speed) in serialized fields, never hard-coded
 - Line endings: keep a file's existing endings; `PlayerBalanceConfig.cs` is CRLF, so edit it in a way that preserves them
 - Gameplay input comes from actions of the Input Actions asset `InputSystem_Actions`, read through `InputAction` events or polling; timing such as a double-tap is an interaction on the action (`UseCoconut` is a MultiTap), never a hand-rolled key tracker in a script
-- Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive`; never hard-code a dev key or let one run in a release build
+- Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive`; never hard-code a dev key or let one run in a release build; dev-only UI (e.g. `LoseScreenDownloadWidget`) hides itself unless `HackShortcutConfig.IsActive`
+- Analytics events: a new run event is an `AnalyticsMetric` entry, a row in `AnalyticsMetrics`, and one `RecordEvent` call from a subscription in `AnalyticsManager`; never a new list in `RunData` or a hand-written section in the writer, see [Analytics](docs/analytics-doc.md#adding-a-metric)
 
 ## Testing Instructions
 

@@ -1,13 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug erik analytic record banana in starting zone run
 Fixme camera adjust
-Fixme Pan: UI mpv
-
 Fixme game play tunning
-
-bug spider web fail to load & log warning
 -->
 
 
@@ -35,6 +30,10 @@ bug spider web fail to load & log warning
 - F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`)
 - consistent pop up UI: every center message (4 coconut, 2 cobra warnings, low stamina & web hints) is a variant prefab of `PopUp/_PopUpBase`, a semi-transparent plate behind the text, edited in the Editor; `PopUpManager` shows one at a time, a higher priority interrupts & the interrupted one resumes, run-only & once-per-scene rules, all dropped on a loss; the widgets only raise events into it (see `docs/pop-up-doc.md`)
 - tree bark texture on trunk segments (`TreeBark` material on `TreeSegment`); source credited in `CREDITS.md`
+- analytics metric channel: every run event is an `AnalyticsMetric` stamped through `AnalyticsManager.RecordEvent`, and the report renders each from one loop, so a new metric is an enum entry, a title row & one subscription (`AnalyticsMetric`, `RunData.GetEvents`)
+- analytics records pineapple leaps, rough bark contacts, cobra freezes, pauses, boss fight starts, armor saves & boss revives; `BossFightController` raises `FightStarted`, `ArmorAbsorbed` & `Revived`, `MonkeyController` raises `RoughBarkTouched`
+- analytics report prints a Starting Zone Exit line (time & height)
+- Download Analytics button at the top right of the lose screen (`LoseScreenDownloadWidget`), development builds & the Editor only: it hides itself otherwise
 
 ##### Wenhai Dong
 
@@ -55,10 +54,21 @@ bug spider web fail to load & log warning
 - whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
 - trunk height markers: every 50 u of climbed height a number beside the trunk in world units labelled m (e.g. `150 m`), white bold on a dark rounded plate like the progress bar readout, kept on the trunk's right edge as seen from the camera so the trunk never hides it; a marker grows & its plate brightens the first time the monkey passes it (`HeightMarkerSystem` on `Envs/HeightMarkerSystem`, test override for a 5 u interval)
 
+##### Houdong Pan
+
+- lose screen leaderboard: simulated rivals, fixed per launch, ranked against the final score (`SessionLeaderboard`, `LeaderboardWidget`, `LeaderboardRowWidget`; `Leaderboard` & `LeaderboardRow` prefabs nested in `LoseScreen`)
+- fruit grab prompt: keycap "space, hold, then release" teaches the first grab of each fruit kind per run (`FruitGrabPrompt`, `KeyPromptUI`); `ArmController.FruitGrabbed` event
+
 ### Changed
+
+##### Belle Dai
+
+- slippery bark → avoidable rough terrain after 3000 points: `SlipperyBark*` renamed `RoughBark*` (`RoughBarkZone`, `RoughBarkSpawner`, `RoughBarkSystem`), new bark textures & spawn settings in `GameBalanceConfig`
 
 ##### Erik
 
+- starting zone: level opens at 30% stamina, exhaustion slows less (`StartingZoneStartStaminaFraction`, `StartingZoneExhaustedSpeedMultiplier`); exit trigger raised to y 60 & balance curve retuned
+- pause (Esc, P), restart after lose (R, Space) & restart during pause (R) are `InputSystem_Actions` actions read by `GameController`; `InGameHUD` & `PopUps` prefabs split out of `_UI`
 - idle stamina recovery runs at a quarter rate during the starting zone (`startingZoneIdleRecoveryMultiplier` in `PlayerBalanceConfig`)
 - `exhaustedSpeedMultiplier` & `idleStaminaRecoveryPerS` moved from `GameBalanceConfig` to `MovementConfig`
 - Starter Zone → Starting Zone: `GameState.StartingZone`, `EndStartingZone()`, `StartingZoneExitRelay`, `StartingZoneExitTrigger` prefab; Tutorial state & screen unchanged
@@ -85,6 +95,11 @@ bug spider web fail to load & log warning
 - analytics report splits the reward score into banana & coconut score
 - progress bar cobra gap in world units labelled m, matching the trunk height markers, no longer converted by `unitsPerMeter` (`ProgressBarWidget`); `unitsPerMeter` now only sets the distance score rate
 
+##### Houdong Pan
+
+- progress bar redrawn from generated antialiased face sprites w/ an upright readout (`ProgressBarWidget`, `ProgressBar` prefab)
+- boss fight key prompt reuses `KeyPromptUI`, the keycap of the fruit tutorial (`BossFightHud`)
+
 ### Deprecated
 
 ### Removed
@@ -109,6 +124,7 @@ bug spider web fail to load & log warning
 ##### Erik
 
 - restart could spawn monkey inside a tree branch: no branch grows w/i `startingZoneBranchClearRadiusU` of monkey before the run is playing
+- analytics dropped starting zone data: a run opened only when the zone ended, so zone bananas, webs, branch hits, height samples & the run time were lost; it now opens when the starting zone begins
 
 ##### Yuqing Lu
 

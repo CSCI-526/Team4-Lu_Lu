@@ -57,6 +57,16 @@ public class BossFightController: MonoBehaviour {
         ? worldBalanceConfig.BossTriggerHeightU
         : -1f;
 
+    /// <summary>raised when the monkey enters the arena & the fight begins
+    /// </summary>
+    public event System.Action FightStarted;
+
+    /// <summary>raised when the gold armor takes a great cobra catch</summary>
+    public event System.Action ArmorAbsorbed;
+
+    /// <summary>raised when a revive restarts the fight</summary>
+    public event System.Action Revived;
+
     /// <returns>highest world y a pineapple leap may carry the monkey to:
     /// the fight's start height before the fight, so a leap stops at the
     /// arena instead of flying past it, the ceiling under the king during
@@ -125,6 +135,7 @@ public class BossFightController: MonoBehaviour {
             return false;
         }
         hasShield = false;
+        ArmorAbsorbed?.Invoke();
         hud.ShowArmorBadge(false);
         cobraSaveGraceEndTime = Time.time + 1f;
         hud.PopText("Saved!", monkey.position, goldenColor);
@@ -923,6 +934,7 @@ public class BossFightController: MonoBehaviour {
         maxHealth = worldBalanceConfig.BossMaxHealth;
         health = maxHealth;
         phase = Phase.Fighting;
+        FightStarted?.Invoke();
         loop = Loop.Intro;
 
         StopHazardSpawners();
@@ -2055,6 +2067,7 @@ public class BossFightController: MonoBehaviour {
         hud.HideRevive();
         Time.timeScale = 1f;
         phase = Phase.Fighting;
+        Revived?.Invoke();
 
         body.CancelStrike();
         body.SetWeakSpotLit(true);

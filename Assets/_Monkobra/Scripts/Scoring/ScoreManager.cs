@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 //记录高度分和奖励分，在分数变化时通知 UI，并在游戏结束后停止计分
+// run before UI scripts, so ScoreManager.I is set when they enable
+[DefaultExecutionOrder(-100)]
 public class ScoreManager: MonoBehaviour {
     // Public Members  #########################################################
     public static ScoreManager I { get; private set; }
