@@ -148,6 +148,20 @@ public class HeightMarkerSystem: MonoBehaviour {
     [Tooltip("plate color at the pulse peak")]
     private Color pulsePlateColor = new Color(0.3f, 0.42f, 0.33f, 0.95f);
 
+    [Header("Boss Marker")]
+    [SerializeField]
+    [Tooltip("boss marker's plate, beating toward the beat color")]
+    private Color bossPlateColor = new Color(0.6f, 0.05f, 0.05f, 0.92f);
+
+    [SerializeField]
+    [Tooltip("boss marker's plate at the top of each beat")]
+    private Color bossPlateBeatColor = new Color(0.95f, 0.2f, 0.15f, 0.95f);
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("boss marker's size, times a plain marker's")]
+    private float bossScale = 1.3f;
+
     [Header("Testing")]
     [SerializeField]
     [Tooltip(
@@ -210,6 +224,15 @@ public class HeightMarkerSystem: MonoBehaviour {
         // the markers in the window around the monkey; marker 0 is the start
         // itself and never shows
         int interval = IntervalU;
+        // the boss fight's height gets its own look, no extra words
+        BossFightController bossFight = BossFightController.I;
+        int bossHeightU = bossFight != null && bossFight.isActiveAndEnabled
+            && bossFight.TriggerHeightU > 0f
+            ? Mathf.RoundToInt(bossFight.TriggerHeightU)
+            : int.MinValue;
+        // once the fight has begun its marker is gone, the real king is there
+        bool isBossMarkerDone = bossFight != null && bossFight.IsInArena;
+        bool isFigureShown = false;
         UpdatePassPulse(difficulty, interval);
         float climbedU = difficulty.CurrentPlayerClimbedYDistance;
         int lowest = Mathf.Max(
@@ -234,7 +257,9 @@ public class HeightMarkerSystem: MonoBehaviour {
         for (int i = 0; i < count; i++) {
             TextMeshPro label = labels[i];
             int marker = lowest + Mod(i - lowest, count);
-            if (marker > highest) {
+            int heightU = marker * interval;
+            bool isBoss = heightU == bossHeightU;
+            if (marker > highest || (isBoss && isBossMarkerDone)) {
                 Hide(label);
                 continue;
             }
@@ -245,7 +270,6 @@ public class HeightMarkerSystem: MonoBehaviour {
                 label.gameObject.SetActive(true);
             }
 
-            int heightU = marker * interval;
             if (shownHeightsU[i] != heightU) {
                 shownHeightsU[i] = heightU;
                 // thousands separated, e.g. 1,000 m
@@ -268,7 +292,42 @@ public class HeightMarkerSystem: MonoBehaviour {
             plates[i].color = Color.Lerp(plateColor, pulsePlateColor, pulse);
             label.transform.localScale =
                 Vector3.one * Mathf.Lerp(1f, pulseScale, pulse);
+            // the boss fight's height: a bigger, red, beating plate
+            if (isBoss) {
+                float beat = 0.5f + 0.5f * Mathf.Sin(Time.time * 6f);
+                plates[i].color = Color.Lerp(
+                    bossPlateColor, bossPlateBeatColor, beat
+                );
+                label.transform.localScale *= bossScale * (1f + 0.06f * beat);
+                isFigureShown = PlaceBossFigure(bossFight, label, plates[i]);
+            }
         }
+        if (!isFigureShown && bossFigure != null) {
+            bossFigure.gameObject.SetActive(false);
+        }
+    }
+
+    // a small look-alike of the Cobra King, built by the boss fight, lies on
+    // top of the boss marker's plate; labels are pooled, so it follows
+    // whichever label shows that marker
+    private bool PlaceBossFigure(
+        BossFightController bossFight, TextMeshPro label, SpriteRenderer plate
+    ) {
+        if (bossFigure == null) {
+            bossFigure = bossFight.BuildMarkerFigure();
+            if (bossFigure == null) {
+                return false;
+            }
+        }
+        if (bossFigure.parent != label.transform) {
+            bossFigure.SetParent(label.transform, false);
+        }
+        bossFigure.localPosition = plate.transform.localPosition
+            + Vector3.up * plate.size.y * 0.5f;
+        if (!bossFigure.gameObject.activeSelf) {
+            bossFigure.gameObject.SetActive(true);
+        }
+        return true;
     }
 
     private void OnDestroy() {
@@ -318,6 +377,7 @@ public class HeightMarkerSystem: MonoBehaviour {
     // private members  ########################################################
     private readonly List<TextMeshPro> labels = new();
     private readonly List<SpriteRenderer> plates = new(); // one per label
+    private Transform bossFigure; // the king look-alike on the boss marker
     // climbed height each label shows, int.MinValue while it shows none; u
     private readonly List<int> shownHeightsU = new();
     private bool isStyleDirty; // if a look field changed since last applied
