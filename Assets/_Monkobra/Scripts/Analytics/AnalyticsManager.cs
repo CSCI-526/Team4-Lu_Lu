@@ -170,7 +170,7 @@ public class AnalyticsManager: MonoBehaviour {
         if (
             currentRun != null
             && observedGame != null
-            && observedGame.State == GameState.Playing
+            && observedGame.IsRunLive
         ) {
             if (Time.time >= nextSampleTime) {
                 AddSample();
@@ -255,17 +255,18 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     private void OnGameStateChanged(GameState state) {
-        if (state == GameState.Playing) {
-            // scene reloaded mid run, the old run never saw a game over
-            CloseRun(RunStatus.Interrupted);
-            currentRun = new RunData {
-                StartTime = Time.time,
-                StartClock = DateTime.Now
-            };
-            AddSample();
-            nextSampleTime = Time.time + config.SampleIntervalS;
-            session.Runs.Add(currentRun);
-            SaveSession();
+        if (state == GameState.StartingZone) {
+            // the run goes live here: the zone's fruit, webs & height count
+            OpenRun(true);
+        } else if (state == GameState.Playing) {
+            if (currentRun == null) {
+                // no starting zone, e.g. a dev scene that starts playing
+                OpenRun(false);
+            } else if (currentRun.StartedInZone && !currentRun.HasZoneExit) {
+                currentRun.ZoneExit = CreateStamp();
+                currentRun.HasZoneExit = true;
+                SaveSession();
+            }
         } else if (state == GameState.Lost) {
             CloseRun(RunStatus.Lost);
         } else if (state == GameState.Won) {
@@ -374,6 +375,20 @@ public class AnalyticsManager: MonoBehaviour {
             observedCoconuts.Collected += OnCoconutCollected;
             observedCoconuts.Used += OnCoconutUsed;
         }
+    }
+
+    // opens a run, an old one never closed belongs to a reloaded scene
+    private void OpenRun(bool isInZone) {
+        CloseRun(RunStatus.Interrupted);
+        currentRun = new RunData {
+            StartTime = Time.time,
+            StartClock = DateTime.Now,
+            StartedInZone = isInZone
+        };
+        AddSample();
+        nextSampleTime = Time.time + config.SampleIntervalS;
+        session.Runs.Add(currentRun);
+        SaveSession();
     }
 
     // snapshot of the moment and the height climbed above the run start

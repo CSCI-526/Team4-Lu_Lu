@@ -45,7 +45,17 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("- Time Start: ").Append(FormatClock(run.StartClock));
         sb.Append('\n');
         sb.Append("- Time Stop: ").Append(FormatClock(end.Clock));
-        sb.Append("\n\n");
+        sb.Append('\n');
+        if (run.HasZoneExit) {
+            sb.Append("- Starting Zone Exit: +");
+            sb.Append((run.ZoneExit.Clock - run.StartClock).ToString(
+                @"hh\:mm\:ss",
+                CultureInfo.InvariantCulture
+            ));
+            sb.Append(", y ").Append(FormatHeight(run.ZoneExit.Height));
+            sb.Append('\n');
+        }
+        sb.Append('\n');
         AppendHeightCurve(sb, run.Samples);
 
         sb.Append("#### Final Score: ").Append(run.TotalScore).Append("\n\n");

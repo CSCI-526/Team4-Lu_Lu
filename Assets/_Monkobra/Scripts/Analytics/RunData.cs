@@ -62,6 +62,13 @@ public class RunData {
     public readonly List<EventStamp> Branches = new List<EventStamp>();
     public readonly List<RunSample> Samples = new List<RunSample>();
 
+    // starting zone  -----------------------------------------------------------
+    // if the run opened in the starting zone, so it holds the zone's events
+    public bool StartedInZone;
+    // if the monkey left the starting zone during the run
+    public bool HasZoneExit;
+    public EventStamp ZoneExit;
+
     // set once the run leaves InProgress  --------------------------------------
     public EventStamp End;
     public DeathCause Cause = DeathCause.Unknown;
