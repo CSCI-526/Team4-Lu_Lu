@@ -17,6 +17,7 @@ graph LR
   Coconut[CoconutManager] -->|Collected, Used| AM
   Hit[HitBranchDetection] -->|BranchHit| AM
   Web[SpiderWebTrap] -->|Encountered| AM
+  More[Leap, Pause, Boss Fight, ~] -->|events| AM
   AM --> Data[SessionData and RunData]
   Data --> Writer[AnalyticsMarkdownWriter]
   Writer --> File[Session markdown file]
@@ -26,11 +27,12 @@ graph LR
 
 A session opens when the manager wakes, and a run follows the game state.
 
-1. `GameState.Playing` opens a new run, takes its first sample, and saves
-2. banana, coconut pickup, coconut use, web, and branch events are stamped into the open run, each followed by a save
-3. a timer samples height and stamina while the run plays, and autosaves
-4. `GameState.Lost` closes the run as `Lost`: the end, the score, and the death cause are filled in, then the file is saved
-5. a run cut short, ie Play mode stopped, a scene reload mid run, an application pause, or the restart key, is closed as `Interrupted`
+1. `GameState.StartingZone` opens a new run, takes its first sample, and saves; a run that starts straight at `GameState.Playing`, ie a dev scene, opens there instead
+2. leaving the starting zone for `GameState.Playing` stamps the zone exit into the same run, it never opens a second one
+3. every event of the [event list](#events) is stamped into the open run, each followed by a save
+4. a timer samples height and stamina while the run is live, the starting zone included, and autosaves
+5. `GameState.Lost` closes the run as `Lost`: the end, the score, and the death cause are filled in, then the file is saved
+6. a run cut short, ie Play mode stopped, a scene reload mid run, an application pause, or the restart key, is closed as `Interrupted`
 
 | Run Status | Meaning | In Session Summary |
 | --- | --- | --- |
@@ -73,6 +75,7 @@ Drawn from the `Lost` runs only.
 
 - Run Duration: seconds from start to end
 - Time Start, Time Stop: wall clock times of the run's start and end
+- Starting Zone Exit: time since the run start and height at which the monkey left the starting zone, shown only if it did
 - Height vs Time: line of the sampled height over the run
 
 ### Score
@@ -92,6 +95,25 @@ Each event list is a table of its time since the run start; banana, coconut, and
 - Coconut Used: coconuts thrown, from `CoconutManager.Used`, stamped at the throw, not at the landing; a double-tap refused while the cobra is already frozen is not counted
 - Web Encounter: times the monkey touched a spider web
 - Branch Hit: times the monkey's branch sensor met a branch; the falling cobra counts here too
+- Pineapple Leap: pineapple leaps, stamped at the start of the leap
+- Rough Bark Contact: times the monkey met a rough bark patch it was not already touching
+- Cobra Freeze: times the great cobra froze, from a coconut or the gold armor
+- Pause: times the run was paused, a resume is not counted
+- Boss Fight Start: times the monkey entered the boss arena
+- Armor Save: times the gold armor took a great cobra catch
+- Boss Revive: times a revive restarted the boss fight
+
+A metric that never happened still shows its heading with a count of 0.
+
+#### Adding a Metric
+
+Every event above is one `AnalyticsMetric`, so a new one never touches the writer:
+
+1. add an entry to the `AnalyticsMetric` enum, which fixes its place in the report
+2. add its row (heading and whether the table carries height `y`) to the table in `AnalyticsMetrics`
+3. subscribe to its source in `AnalyticsManager` (`Observe`) and call `RecordEvent` from the handler; a source with no event gets a small one first
+
+The stamp, the save, the report section, and the run reset follow from that.
 
 ### Death Causes
 
@@ -121,12 +143,16 @@ The keys work only in a development build or the Editor, and live in `HackShortc
 | `DownloadReport` | F8 | downloads the report in the browser, saves the file elsewhere |
 | `MockSession` | F10 | saves a mock session file |
 
+The lose screen also carries a Download Analytics button at the top right (`LoseScreenDownloadWidget`) that does what `DownloadReport` does. It is for development builds and the Editor only: outside one the button turns itself off. The mock session does not generate the event metrics added after the first five.
+
 ## Scripts
 
 All under `Assets/_Monkobra/Scripts/Analytics/`.
 
 - `AnalyticsManager`: observes the game, fills the data, saves
 - `SessionData`, `RunData`: plain data of a session and a run
+- `AnalyticsMetric`, `AnalyticsMetrics`: the event kinds and their report headings
+- `LoseScreenDownloadWidget` (under `Scripts/UI/`): the dev-only download button
 - `AnalyticsMarkdownWriter`: renders the data to markdown, writes the file
 - `DeathCause`, `DeathCauseResolver`: infers and names the death cause
 - `AnalyticsConfig`: tuning asset

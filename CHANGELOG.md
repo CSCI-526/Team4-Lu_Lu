@@ -1,7 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-BUG analytic record banana in starting zone run
 Fixme camera adjust
 Fixme game play tunning
 
@@ -33,6 +32,10 @@ bug spider web fail to load & log warning
 - F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`)
 - consistent pop up UI: every center message (4 coconut, 2 cobra warnings, low stamina & web hints) is a variant prefab of `PopUp/_PopUpBase`, a semi-transparent plate behind the text, edited in the Editor; `PopUpManager` shows one at a time, a higher priority interrupts & the interrupted one resumes, run-only & once-per-scene rules, all dropped on a loss; the widgets only raise events into it (see `docs/pop-up-doc.md`)
 - tree bark texture on trunk segments (`TreeBark` material on `TreeSegment`); source credited in `CREDITS.md`
+- analytics metric channel: every run event is an `AnalyticsMetric` stamped through `AnalyticsManager.RecordEvent`, and the report renders each from one loop, so a new metric is an enum entry, a title row & one subscription (`AnalyticsMetric`, `RunData.GetEvents`)
+- analytics records pineapple leaps, rough bark contacts, cobra freezes, pauses, boss fight starts, armor saves & boss revives; `BossFightController` raises `FightStarted`, `ArmorAbsorbed` & `Revived`, `MonkeyController` raises `RoughBarkTouched`
+- analytics report prints a Starting Zone Exit line (time & height)
+- Download Analytics button at the top right of the lose screen (`LoseScreenDownloadWidget`), development builds & the Editor only: it hides itself otherwise
 
 ##### Wenhai Dong
 
@@ -121,6 +124,7 @@ bug spider web fail to load & log warning
 ##### Erik
 
 - restart could spawn monkey inside a tree branch: no branch grows w/i `startingZoneBranchClearRadiusU` of monkey before the run is playing
+- analytics dropped starting zone data: a run opened only when the zone ended, so zone bananas, webs, branch hits, height samples & the run time were lost; it now opens when the starting zone begins
 
 ##### Yuqing Lu
 
