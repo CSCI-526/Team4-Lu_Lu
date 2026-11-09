@@ -274,41 +274,25 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    // one line per source: the metric channel does the stamping & saving
     private void OnBananaCollected() {
-        if (currentRun == null) {
-            return;
-        }
-
-        currentRun.Bananas.Add(CreateStamp());
-        SaveSession();
+        RecordEvent(AnalyticsMetric.Banana);
     }
 
     private void OnCoconutCollected() {
-        if (currentRun != null) {
-            currentRun.Coconuts.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.Coconut);
     }
 
     private void OnCoconutUsed() {
-        if (currentRun != null) {
-            currentRun.CoconutsUsed.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.CoconutUsed);
     }
 
     private void OnWebEncountered(SpiderWebTrap _) {
-        if (currentRun != null) {
-            currentRun.Webs.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.Web);
     }
 
     private void OnBranchHit(Collider _) {
-        if (currentRun != null) {
-            currentRun.Branches.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.Branch);
     }
 
     // constants  ##############################################################
@@ -375,6 +359,16 @@ public class AnalyticsManager: MonoBehaviour {
             observedCoconuts.Collected += OnCoconutCollected;
             observedCoconuts.Used += OnCoconutUsed;
         }
+    }
+
+    // the one way an event enters a run: stamps it, ignored b/t runs, saves
+    private void RecordEvent(AnalyticsMetric metric) {
+        if (currentRun == null) {
+            return;
+        }
+
+        currentRun.GetEvents(metric).Add(CreateStamp());
+        SaveSession();
     }
 
     // opens a run, an old one never closed belongs to a reloaded scene

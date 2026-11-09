@@ -247,13 +247,13 @@ public static class MockAnalyticsGenerator {
         );
 
         foreach (Moment m in plan.Bananas) {
-            run.Bananas.Add(ToStamp(m, start));
+            run.GetEvents(AnalyticsMetric.Banana).Add(ToStamp(m, start));
         }
         foreach (Moment m in plan.Webs) {
-            run.Webs.Add(ToStamp(m, start));
+            run.GetEvents(AnalyticsMetric.Web).Add(ToStamp(m, start));
         }
         foreach (Moment m in plan.Branches) {
-            run.Branches.Add(ToStamp(m, start));
+            run.GetEvents(AnalyticsMetric.Branch).Add(ToStamp(m, start));
         }
 
         AddSamples(run, plan);
@@ -270,7 +270,7 @@ public static class MockAnalyticsGenerator {
         run.HeightScore =
             (long)Mathf.Floor(plan.HighestHeight / UNITS_PER_METER)
             * POINTS_PER_METER;
-        run.RewardScore = (long)run.Bananas.Count * REWARD_POINTS;
+        run.RewardScore = (long)plan.Bananas.Count * REWARD_POINTS;
         run.TotalScore = run.HeightScore + run.RewardScore;
 
         return run;
