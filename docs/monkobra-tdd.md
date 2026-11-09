@@ -86,11 +86,11 @@ stateDiagram-v2
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, `RestartAfterLose` (R or Space) reloads the scene after `restartInputDelay` |
-| Won | 0 | the boss fight's victory panel, the same restart key reloads the scene |
+| Won | 0 | a won run, time frozen, the same restart key reloads the scene |
 
 `LoseGame()` runs once, from StartingZone or Playing: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
-`WinGame()` currently has no caller: a Cobra King win now continues the run with an armor reward ([Mobs](mob-doc.md#win-reward)). When called it runs once, from StartingZone or Playing: like `LoseGame` it settles the score, then enters Won, which freezes time; the boss fight shows its own victory panel, and the lose screen's restart key reloads the scene. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
+`WinGame()` currently has no caller: a Cobra King win now continues the run with an armor reward ([Mobs](mob-doc.md#win-reward)). When called it runs once, from StartingZone or Playing: like `LoseGame` it settles the score, then enters Won, which freezes time, and the lose screen's restart key reloads the scene. The boss fight's own win stops time on a reward panel instead, without entering Won. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
 
 Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R or Space). Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
 
@@ -237,6 +237,7 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 - Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in `PlayerBalanceConfig`, e.g. `coconutStartHeightU`, reads straight off the trunk
 - Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
 - Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette on the `isOnRightSide` side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
+- Boss Marker: the marker at `BossFightController.TriggerHeightU` gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `BossFightController.BuildMarkerFigure` on top of it, kept on whichever pooled label shows it; once `BossFightController.IsInArena` it is no longer shown
 - Pulse: the first time the highest climbed height passes a marker, the label grows to `pulseScale` and its plate brightens for `pulseDurationS`; re-climbing after a drop does not repeat it
 - Physics: neither label nor plate has a collider, so no spawner's overlap check or grab sees them
 - Testing: Use Test Override swaps `intervalU` for `testIntervalU` (5); tick it in Play mode, so it never gets saved
