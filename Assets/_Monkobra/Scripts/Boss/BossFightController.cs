@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Runs the boss fight against the Cobra King. Once the monkey has climbed
@@ -42,6 +43,37 @@ public class BossFightController: MonoBehaviour {
     public bool IsInArena => phase != Phase.Waiting;
 
     /// <summary>
+    /// Called by <see cref="CobraSensor"/> when the great cobra catches the
+    /// monkey: the gold armor, worn in the fight or kept as the win reward,
+    /// takes the bite once, throwing the cobra back down the trunk.
+    /// </summary>
+    /// <returns>true if the catch was absorbed, so the run goes on</returns>
+    public bool TryAbsorbCobraCatch() {
+        if (monkey == null) {
+            return false;
+        }
+        // contacts keep coming for a moment after a save
+        if (Time.time < cobraSaveGraceEndTime) {
+            return true;
+        }
+        bool canSave = phase == Phase.Fighting
+            || phase == Phase.Defeated
+            || phase == Phase.Done;
+        if (!canSave || !hasShield) {
+            return false;
+        }
+        hasShield = false;
+        cobraSaveGraceEndTime = Time.time + 1f;
+        hud.PopText("Saved!", monkey.position, goldenColor);
+        hud.Flash(goldenColor);
+        if (greatCobra != null) {
+            greatCobra.KnockBack(armorKnockBackU);
+            greatCobra.TryFreeze(armorCobraFreezeS);
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Called by <see cref="ArmController"/> on every grab: in the arena a
     /// grabbed banana still feeds the monkey, & is thrown at the king too;
     /// the golden banana gives its shield instead.
@@ -52,6 +84,19 @@ public class BossFightController: MonoBehaviour {
         if (phase != Phase.Fighting || fruit == null
             || !fruit.CompareTag(FRUIT_TAG)) {
             return false;
+        }
+
+        // the first throw picks the mode: plain banana easy, golden normal
+        int choice = choices.FindIndex(f => f.trigger == fruit);
+        if (choice >= 0) {
+            bool isEasyPick = !choices[choice].isGolden;
+            StaminaBarController staminaBar = StaminaBarController.I;
+            if (staminaBar != null) {
+                staminaBar.AddStaminaByFruit();
+            }
+            LaunchBanana(fruit.gameObject, from);
+            ChooseMode(isEasyPick);
+            return true;
         }
 
         int index = fruits.FindIndex(f => f.trigger == fruit);
@@ -80,6 +125,11 @@ public class BossFightController: MonoBehaviour {
     // a copy of the grabbed banana arcs up at the king, spinning, with a
     // trail of fading dots, so the throw reads at a glance
     private void LaunchBanana(GameObject source, Vector3 from) {
+        // the armor intro stays up until the first throw
+        if (!hasThrown) {
+            hasThrown = true;
+            hud.HideBanner();
+        }
         GameObject copy = Instantiate(source, transform, true);
         // a bare look-alike: no scripts or colliders wake up on it
         foreach (MonoBehaviour script in
@@ -168,11 +218,11 @@ public class BossFightController: MonoBehaviour {
     [Header("Fight Loop")]
     [SerializeField]
     [Tooltip("rest with the jewel lit between attack rounds; s")]
-    private float restS = 2.5f;
+    private float restS = 2f;
 
     [SerializeField]
     [Tooltip("rest in the last third of the king's health; s")]
-    private float restFinalS = 1.8f;
+    private float restFinalS = 1.5f;
 
     [SerializeField]
     [Tooltip("warnings in the last third last this share of the normal; "
@@ -222,6 +272,14 @@ public class BossFightController: MonoBehaviour {
         + "sweeps across; s")]
     private float minionStaggerS = 0.18f;
 
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "normal mode's finale: pause between one minion wave ending & the "
+            + "next one's warning; s"
+    )]
+    private float minionStreamGapS = 1.5f;
+
 
     [SerializeField]
     [Min(1)]
@@ -242,9 +300,6 @@ public class BossFightController: MonoBehaviour {
     [Tooltip("a minion this close knocks the monkey down; u")]
     private float minionHitRadiusU = 1.1f;
 
-    [SerializeField]
-    [Tooltip("a fall line runs this far below the monkey's height; u")]
-    private float minionStripBelowU = 3f;
 
     [Header("Spider Webs")]
     [SerializeField]
@@ -337,8 +392,125 @@ public class BossFightController: MonoBehaviour {
     private Color goldenOutlineColor = new Color(1f, 0.75f, 0f);
 
     [SerializeField]
-    [Tooltip("golden banana outline width")]
-    private float goldenOutlineWidth = 0.25f;
+    [Tooltip(
+        "golden banana outline width, times the usual grab outline's, so it "
+            + "follows the banana model's scale"
+    )]
+    private float goldenOutlineWidthScale = 2f;
+
+    [Header("Starting Armor")]
+    [SerializeField]
+    [Tooltip(
+        "banner title as the fight begins in the gold armor; it stays up "
+            + "until the first banana is thrown"
+    )]
+    private string armorIntroTitle = "You get a Golden Armor!";
+
+    [SerializeField]
+    [Tooltip("line under the banner: what the armor does")]
+    private string armorIntroLine = "Blocks 1 fatal hit";
+
+    [Header("Revive")]
+    [SerializeField]
+    [Tooltip("every loss in the boss fight offers a revive for an ad")]
+    private bool canRevive = true;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("how long the revive offer waits before it gives up; s")]
+    private float reviveOfferS = 8f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("length of the mock ad; s")]
+    private float reviveAdS = 15f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("the ad's Skip button shows up after this long; s")]
+    private float adSkipAfterS = 3f;
+
+    [SerializeField]
+    [Tooltip(
+        "speed the revived monkey flies back to where the fight began; u/s"
+    )]
+    private float reviveReturnSpeedU = 20f;
+
+    [SerializeField]
+    [Tooltip(
+        "page the ad's Course Page button opens: the CSCI 526 listing in the "
+            + "USC Schedule of Classes; update the term as needed"
+    )]
+    private string courseUrl =
+        "https://classes.usc.edu/term-20263/course/csci-526";
+
+    [Header("Mode Choice")]
+    [SerializeField]
+    [Tooltip("the two choice bananas sit this far left & right of the "
+        + "monkey round the trunk; deg")]
+    private float choiceSideDeg = 28f;
+
+    [SerializeField]
+    [Tooltip("the choice bananas hang this far above the monkey; u")]
+    private float choiceAboveU = 1.5f;
+
+    [SerializeField]
+    [Tooltip("line under the armor banner after a revive: how to pick a mode")]
+    private string chooseLine = "Grab one: EASY or NORMAL";
+
+    [SerializeField]
+    [Range(0.1f, 1f)]
+    [Tooltip("easy mode: the king's health as a share of the normal")]
+    private float easyHealthScale = 0.6f;
+
+    [SerializeField]
+    [Tooltip("easy mode: warnings last this many times the normal")]
+    private float easyWarnScale = 1.35f;
+
+    [SerializeField]
+    [Tooltip("easy mode: rest between attack rounds; s")]
+    private float easyRestS = 3.25f;
+
+    [SerializeField]
+    [Tooltip("easy mode: rest in the last third of the king's health; s")]
+    private float easyRestFinalS = 2.35f;
+
+    [SerializeField]
+    [Min(1)]
+    [Tooltip("easy mode: waves per minion attack")]
+    private int easyMinionWaves = 1;
+
+    [Header("Win Reward")]
+    [SerializeField]
+    [Tooltip("banner title once the king is beaten")]
+    private string winTitle = "You win!";
+
+    [SerializeField]
+    [Tooltip("line under the win banner")]
+    private string winLine = "+1 Golden Armor";
+
+    [SerializeField]
+    [Min(0.5f)]
+    [Tooltip("how long the win banner stays; s")]
+    private float winBannerS = 3f;
+
+    [SerializeField]
+    [Tooltip(
+        "when the armor takes the great cobra's bite, its head is thrown "
+            + "this far back down the trunk; u"
+    )]
+    private float armorKnockBackU = 8f;
+
+    [SerializeField]
+    [Tooltip("...& it is frozen this long after; s")]
+    private float armorCobraFreezeS = 1.5f;
+
+    [SerializeField]
+    [Tooltip(
+        "after a win the great cobra chases again from this far further "
+            + "down the trunk than its guard spot, a head start; u"
+    )]
+    private float winCobraDropU = 25f;
 
     [SerializeField]
     [Tooltip("the golden banana first shows up this long after the first "
@@ -488,6 +660,10 @@ public class BossFightController: MonoBehaviour {
         body = GetComponent<BossKingBody>();
         body.MonkeyTouched += OnKingTouched;
         hud = GetComponent<BossFightHud>();
+        hud.WatchAdClicked += WatchAd;
+        hud.GiveUpClicked += GiveUp;
+        hud.CoursePageClicked += OpenCoursePage;
+        hud.SkipAdClicked += SkipAd;
         colorBlock = new MaterialPropertyBlock();
     }
 
@@ -499,7 +675,11 @@ public class BossFightController: MonoBehaviour {
     }
 
     private void OnDisable() {
-        if (phase == Phase.Finishing) {
+        if (
+            phase == Phase.Finishing
+            || phase == Phase.ReviveOffer
+            || phase == Phase.WatchingAd
+        ) {
             Time.timeScale = 1f;
         }
         if (struggle != null) {
@@ -528,6 +708,13 @@ public class BossFightController: MonoBehaviour {
         if (!game.IsRunLive || monkey == null) {
             return;
         }
+        // after a win only the reward armor is left to follow the monkey
+        if (phase == Phase.Done) {
+            UpdateShieldRing();
+            UpdateCameraFocus();
+            UpdateChaseWarning();
+            return;
+        }
 
         body.Track(monkey.position);
         hud.SpeechAnchor = body.HeadPosition;
@@ -537,9 +724,14 @@ public class BossFightController: MonoBehaviour {
         UpdateShieldRing();
         UpdateCameraFocus();
         if (phase == Phase.Fighting) {
+            UpdateReviveReturn();
             UpdateWarnings();
+            UpdateChoiceTags();
             UpdateFirstThrowHint();
             UpdateFightLoop();
+            UpdateMinionStream();
+        } else if (phase == Phase.ReviveOffer || phase == Phase.WatchingAd) {
+            UpdateRevive(game);
         } else if (phase == Phase.Finishing) {
             UpdateFinisher();
         } else if (phase == Phase.Defeated) {
@@ -573,8 +765,11 @@ public class BossFightController: MonoBehaviour {
         this.monkeyController = monkeyController;
         trunkCenter = monkey.parent.position;
         entryY = monkey.position.y;
+        entryPosition = monkey.position;
+        entryRotation = monkey.rotation;
         coilBottomY = entryY + nestHeightU;
-        health = worldBalanceConfig.BossMaxHealth;
+        maxHealth = worldBalanceConfig.BossMaxHealth;
+        health = maxHealth;
         phase = Phase.Fighting;
         loop = Loop.Intro;
 
@@ -590,6 +785,7 @@ public class BossFightController: MonoBehaviour {
 
         body.Build(trunkCenter, coilBottomY, AngleOf(monkey.position));
         body.SetWeakSpotLit(true);
+        // the first try is normal mode; the mode choice comes w/ a revive
         SpawnFruits();
         SpawnWebs(webCount);
         struggle = FindFirstObjectByType<SpiderWebStruggle>();
@@ -601,6 +797,10 @@ public class BossFightController: MonoBehaviour {
 
         hud.Show(bossName);
         hud.Flash();
+        // the monkey starts in the gold armor, a spare life against the
+        // king; the golden banana brings it back once lost
+        hasShield = true;
+        hud.ShowBannerFor(armorIntroTitle, armorIntroLine, goldenColor, 0f);
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "BossFightController:\tboss fight begins at y " + entryY,
@@ -613,19 +813,27 @@ public class BossFightController: MonoBehaviour {
     private void StopHazardSpawners() {
         foreach (SpiderWebSpawner spawner in
             FindObjectsByType<SpiderWebSpawner>(FindObjectsSortMode.None)) {
-            spawner.enabled = false;
+            StopSpawner(spawner);
         }
         foreach (FallingCobraSpawner spawner in
             FindObjectsByType<FallingCobraSpawner>(FindObjectsSortMode.None)) {
-            spawner.enabled = false;
+            StopSpawner(spawner);
         }
         foreach (RoughBarkSpawner spawner in
             FindObjectsByType<RoughBarkSpawner>(FindObjectsSortMode.None)) {
-            spawner.enabled = false;
+            StopSpawner(spawner);
         }
         foreach (CoconutSpawner spawner in
             FindObjectsByType<CoconutSpawner>(FindObjectsSortMode.None)) {
+            StopSpawner(spawner);
+        }
+    }
+
+    // off for the fight, & noted so a win turns it back on
+    private void StopSpawner(Behaviour spawner) {
+        if (spawner.enabled) {
             spawner.enabled = false;
+            stoppedSpawners.Add(spawner);
         }
     }
 
@@ -665,10 +873,93 @@ public class BossFightController: MonoBehaviour {
         float minY = coilBottomY - body.HangDepthU - nestClearanceU;
         foreach (BranchController branch in branches) {
             if (branch.transform.position.y > minY) {
+                ForgetFruits(branch.gameObject);
                 branch.gameObject.SetActive(false);
             }
         }
     }
+
+    // two banana branches beside the monkey, plain & golden: the first throw
+    // picks easy or normal mode
+    private void SpawnChoices() {
+        float angle = AngleOf(entryPosition);
+        float y = entryPosition.y + choiceAboveU;
+        AddFruit(angle - choiceSideDeg, y, false);
+        AddFruit(angle + choiceSideDeg, y, true);
+        choices.Add(fruits[fruits.Count - 2]);
+        choices.Add(fruits[fruits.Count - 1]);
+        fruits.RemoveRange(fruits.Count - 2, 2);
+        isChoosing = true;
+    }
+
+    private void ChooseMode(bool isEasyPick) {
+        isChoosing = false;
+        isEasy = isEasyPick;
+        maxHealth = isEasy
+            ? Mathf.Max(
+                1,
+                Mathf.RoundToInt(worldBalanceConfig.BossMaxHealth * easyHealthScale)
+            )
+            : worldBalanceConfig.BossMaxHealth;
+        health = maxHealth;
+        hud.SetHealth(1f);
+        foreach (ArenaFruit choice in choices) {
+            RemoveBranch(choice.branch);
+        }
+        choices.Clear();
+        hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
+        SpawnFruits();
+        hud.PopText(
+            isEasy ? "Easy mode" : "Normal mode",
+            monkey.position,
+            isEasy ? new Color(0.55f, 0.95f, 0.55f) : goldenColor
+        );
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "BossFightController:\t" + (isEasy ? "easy" : "normal")
+                    + " mode, king health " + maxHealth,
+                this
+            );
+        }
+    }
+
+    // the monkey's fruit sensor never sees a trigger exit for a fruit that
+    // is switched off or destroyed, & a destroyed one would break its reach
+    // & grab every physics step, so it is told to forget it first
+    private static void ForgetFruits(GameObject branch) {
+        UpwardFruitSensor sensor = UpwardFruitSensor.I;
+        if (sensor == null || branch == null) {
+            return;
+        }
+        foreach (Collider part in branch.GetComponentsInChildren<Collider>(true)) {
+            sensor.RemoveFruit(part);
+        }
+    }
+
+    private static void RemoveBranch(GameObject branch) {
+        if (branch == null) {
+            return;
+        }
+        ForgetFruits(branch);
+        Destroy(branch);
+    }
+
+    // every arena banana branch goes, eg for a restart
+    private void ClearFruits() {
+        foreach (ArenaFruit fruit in fruits) {
+            RemoveBranch(fruit.branch);
+        }
+        fruits.Clear();
+        foreach (ArenaFruit choice in choices) {
+            RemoveBranch(choice.branch);
+        }
+        choices.Clear();
+        goldenIndex = -1;
+        isChoosing = false;
+        hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
+    }
+
+    private string ChoiceLine => armorIntroLine + "\n" + chooseLine;
 
     private void SpawnFruits() {
         float startAngle = AngleOf(monkey.position);
@@ -760,7 +1051,7 @@ public class BossFightController: MonoBehaviour {
         PlaceBranch(branch.transform, angle, y);
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
-            controller.Initialize(1f);
+            controller.Initialize(1f, 0f); // always a banana, never a pineapple
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject banana = pickup != null ? pickup.gameObject : branch;
@@ -797,7 +1088,11 @@ public class BossFightController: MonoBehaviour {
         if (goldenOutlineMaterial != null) {
             outline = new Material(goldenOutlineMaterial);
             outline.SetColor(OUTLINE_COLOR, goldenOutlineColor);
-            outline.SetFloat(OUTLINE_WIDTH, goldenOutlineWidth);
+            outline.SetFloat(
+                OUTLINE_WIDTH,
+                goldenOutlineMaterial.GetFloat(OUTLINE_WIDTH)
+                    * goldenOutlineWidthScale
+            );
         }
         foreach (Renderer part in banana.GetComponentsInChildren<Renderer>(true)) {
             Material baseMaterial = part.sharedMaterial;
@@ -846,6 +1141,7 @@ public class BossFightController: MonoBehaviour {
     }
 
     private void HideGolden() {
+        ForgetFruits(fruits[goldenIndex].branch);
         fruits[goldenIndex].branch.SetActive(false);
     }
 
@@ -906,7 +1202,9 @@ public class BossFightController: MonoBehaviour {
 
     private void StartRest() {
         loop = Loop.Rest;
-        loopTimeS = Third >= 2 ? restFinalS : restS;
+        loopTimeS = isEasy
+            ? (Third >= 2 ? easyRestFinalS : easyRestS)
+            : (Third >= 2 ? restFinalS : restS);
         body.SetWeakSpotLit(true);
     }
 
@@ -914,7 +1212,8 @@ public class BossFightController: MonoBehaviour {
     private void StartRound() {
         loop = Loop.Attack;
         attackQueue.Clear();
-        if (Third >= 2) {
+        // in normal mode's finale the minions stream on their own instead
+        if (Third >= 2 && !IsMinionFinale) {
             attackQueue.Enqueue(Attack.Minions);
         }
         attackQueue.Enqueue(Attack.Bite);
@@ -926,7 +1225,7 @@ public class BossFightController: MonoBehaviour {
     }
 
     private void NextAttack() {
-        ClearMarkers();
+        ClearAttackMarkers();
         if (attackQueue.Count == 0) {
             StartRest();
             return;
@@ -963,7 +1262,12 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    private float WarnScale => Third >= 2 ? finalWarnScale : 1f;
+    // easy mode warns a notch longer: its last third as normal's start
+    private float WarnScale => isEasy
+        ? (Third >= 2 ? 1f : easyWarnScale)
+        : (Third >= 2 ? finalWarnScale : 1f);
+
+    private int MinionWaves => isEasy ? easyMinionWaves : minionWaves;
 
     // Bite: a red disc marks the spot, the head dives at it
     private void StartBite() {
@@ -975,7 +1279,9 @@ public class BossFightController: MonoBehaviour {
     // the strike starts once the head is free, its wind-up filling the rest
     // of the warning; the attack ends once the head is back at rest
     private void UpdateBite() {
-        UpdateMarkers(attackTimeS / Mathf.Max(0.01f, biteWarnS * WarnScale), false);
+        UpdateMarkers(
+            attackTimeS / Mathf.Max(0.01f, biteWarnS * WarnScale), false, false
+        );
         if (!biteStarted) {
             if (body.IsStriking) {
                 return;
@@ -1033,10 +1339,10 @@ public class BossFightController: MonoBehaviour {
     private void UpdateSweep() {
         float warn = sweepWarnS * WarnScale;
         if (attackTimeS < warn) {
-            UpdateMarkers(attackTimeS / warn, true);
+            UpdateMarkers(attackTimeS / warn, true, false);
             return;
         }
-        ClearMarkers();
+        ClearAttackMarkers();
         if (tail == null) {
             tail = new Transform[tailBeadCount];
             for (int i = 0; i < tailBeadCount; i++) {
@@ -1090,11 +1396,13 @@ public class BossFightController: MonoBehaviour {
 
 
     private void StartWave() {
-        ClearMarkers();
+        ClearStripMarkers();
         minions.Clear();
         waveTimeS = 0f;
-        lockAngle = AngleOf(monkey.position);
-        lockY = monkey.position.y;
+        isWaveRunning = true;
+        // its own lock, so a bite or sweep running alongside keeps theirs
+        minionLockAngle = AngleOf(monkey.position);
+        minionLockY = monkey.position.y;
 
         // a gap never at either end, & the sweep runs either way
         int gap = Random.Range(1, Mathf.Max(2, minionCount - 1));
@@ -1103,16 +1411,18 @@ public class BossFightController: MonoBehaviour {
         int signAt = minionCount / 2 == gap ? gap + 1 : minionCount / 2;
         int order = 0;
         for (int i = 0; i < minionCount; i++) {
-            float angle = lockAngle
+            float angle = minionLockAngle
                 + direction * (i - (minionCount - 1) * 0.5f) * minionSpreadDeg;
             bool isGap = i == gap;
             if (!isGap) {
                 // the same filling danger zone as the first version; one
                 // LOOK UP! sign for the whole wave, on a middle zone
+                // the strip is the minion's whole fall: from the coil it
+                // drops out of, to where it is gone
                 AddTrunkStrip(
                     angle,
                     coilBottomY,
-                    lockY - minionStripBelowU,
+                    MinionEndY,
                     minionHitRadiusU * 1.4f,
                     i == signAt ? "LOOK UP!" : null
                 );
@@ -1131,11 +1441,39 @@ public class BossFightController: MonoBehaviour {
 
 
 
+    // normal mode's last third: minion waves stream on & on, alongside the
+    // usual rounds of bites & sweeps, until the king or the monkey falls;
+    // easy mode keeps minions as one attack of its rounds
+    private bool IsMinionFinale => !isEasy && Third >= 2;
+
+    private void UpdateMinionStream() {
+        if (!isMinionStreaming) {
+            if (!IsMinionFinale || loop == Loop.Intro) {
+                return;
+            }
+            isMinionStreaming = true;
+            if (!hasCalledMinions) {
+                hasCalledMinions = true;
+                SayNow(minionCallLine, true);
+            }
+            StartWave();
+            return;
+        }
+        if (isWaveRunning) {
+            UpdateMinions();
+        } else if (Time.time >= nextWaveTime) {
+            StartWave();
+        }
+    }
+
+    // world y a falling minion is gone at, the bottom of its fall line
+    private float MinionEndY => entryY - guardDepthU;
+
     private void UpdateMinions() {
         waveTimeS += Time.deltaTime;
         float warn = minionWarnS * WarnScale;
         if (waveTimeS < warn) {
-            UpdateMarkers(waveTimeS / warn, false);
+            UpdateMarkers(waveTimeS / warn, false, true);
         }
         bool isAnyLeft = false;
         for (int i = 0; i < minions.Count; i++) {
@@ -1162,7 +1500,7 @@ public class BossFightController: MonoBehaviour {
                 // gold shield takes it
                 LethalHit();
             }
-            if (hasHit || minion.root.position.y < entryY - guardDepthU) {
+            if (hasHit || minion.root.position.y < MinionEndY) {
                 Destroy(minion.root.gameObject);
                 minion.root = null;
                 minion.isDone = true;
@@ -1172,8 +1510,15 @@ public class BossFightController: MonoBehaviour {
         if (isAnyLeft) {
             return;
         }
+        isWaveRunning = false;
+        ClearStripMarkers();
+        // the finale's stream starts its next wave after a short gap
+        if (isMinionStreaming) {
+            nextWaveTime = Time.time + minionStreamGapS;
+            return;
+        }
         waveIndex++;
-        if (waveIndex < minionWaves) {
+        if (waveIndex < MinionWaves) {
             StartWave();
         } else {
             NextAttack();
@@ -1260,9 +1605,170 @@ public class BossFightController: MonoBehaviour {
             Defeat();
             return;
         }
+        if (canRevive) {
+            OfferRevive();
+            return;
+        }
+        EndAsLoss();
+    }
+
+    private void EndAsLoss() {
         phase = Phase.Over;
         if (GameController.I != null) {
             GameController.I.LoseGame();
+        }
+    }
+
+    // Revive  -----------------------------------------------------------------
+    // once a game a loss stops on an offer: watch a (mock) ad to fight on.
+    // Time stands still meanwhile, so all of it runs on unscaled time
+    private void OfferRevive() {
+        phase = Phase.ReviveOffer;
+        reviveLeftS = reviveOfferS;
+        Time.timeScale = 0f;
+        hud.HideBanner();
+        hud.ShowReviveOffer();
+        hud.SetReviveCountdown(Mathf.CeilToInt(reviveLeftS));
+    }
+
+    private void UpdateRevive(GameController game) {
+        // a pause & resume would run the game under the offer otherwise
+        Time.timeScale = 0f;
+        if (game.IsPaused) {
+            return;
+        }
+        reviveLeftS -= Time.unscaledDeltaTime;
+        if (phase == Phase.WatchingAd) {
+            Keyboard adKeyboard = Keyboard.current;
+            if (adKeyboard != null && adKeyboard.enterKey.wasPressedThisFrame) {
+                OpenCoursePage();
+            }
+            bool canSkip = reviveAdS - reviveLeftS >= adSkipAfterS;
+            hud.SetAdSkippable(canSkip);
+            if (
+                canSkip && adKeyboard != null
+                && adKeyboard.spaceKey.wasPressedThisFrame
+            ) {
+                SkipAd();
+                return;
+            }
+            hud.SetAdCountdown(Mathf.CeilToInt(Mathf.Max(0f, reviveLeftS)));
+            if (reviveLeftS <= 0f) {
+                RestartFight();
+            }
+            return;
+        }
+
+        hud.SetReviveCountdown(Mathf.CeilToInt(Mathf.Max(0f, reviveLeftS)));
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) {
+            WatchAd();
+        } else if (
+            (keyboard != null && keyboard.rKey.wasPressedThisFrame)
+            || reviveLeftS <= 0f
+        ) {
+            GiveUp();
+        }
+    }
+
+    private void WatchAd() {
+        if (phase != Phase.ReviveOffer) {
+            return;
+        }
+        phase = Phase.WatchingAd;
+        reviveLeftS = reviveAdS;
+        hud.ShowAd();
+        hud.SetAdCountdown(Mathf.CeilToInt(reviveLeftS));
+    }
+
+    private void GiveUp() {
+        if (phase != Phase.ReviveOffer) {
+            return;
+        }
+        hud.HideRevive();
+        Time.timeScale = 1f;
+        EndAsLoss();
+    }
+
+    // after the ad the fight starts over: the monkey flies back to where it
+    // began, in the armor, full stamina, a full-health king & the mode
+    // choice again
+    private void RestartFight() {
+        hud.HideRevive();
+        Time.timeScale = 1f;
+        phase = Phase.Fighting;
+
+        body.CancelStrike();
+        body.SetWeakSpotLit(true);
+        ClearAttackObjects();
+        ClearMarkers();
+        attackQueue.Clear();
+        ClearFruits();
+        foreach (SpiderWebTrap web in webs) {
+            if (web != null) {
+                Destroy(web.gameObject);
+            }
+        }
+        webs.Clear();
+
+        loop = Loop.Intro;
+        isMinionStreaming = false;
+        isWaveRunning = false;
+        hasHit = false;
+        hasThrown = false;
+        isEasy = false;
+        maxHealth = worldBalanceConfig.BossMaxHealth;
+        health = maxHealth;
+        hud.SetHealth(1f);
+        hasShield = true;
+        StaminaBarController stamina = StaminaBarController.I;
+        if (stamina != null) {
+            stamina.AddStamina(stamina.MaxStamina);
+        }
+
+        monkey.rotation = entryRotation;
+        if (monkeyController != null) {
+            monkeyController.ClearStun();
+            monkeyController.PullTo(entryPosition, reviveReturnSpeedU);
+            isReturningFromRevive = true;
+        }
+        SpawnChoices();
+        SpawnWebs(webCount);
+        hud.Flash(goldenColor);
+        hud.ShowBannerFor(armorIntroTitle, ChoiceLine, goldenColor, 0f);
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "BossFightController:\trevived after the ad, fight restarts",
+                this
+            );
+        }
+    }
+
+    private void SkipAd() {
+        if (phase != Phase.WatchingAd
+            || reviveAdS - reviveLeftS < adSkipAfterS) {
+            return;
+        }
+        RestartFight();
+    }
+
+    private void OpenCoursePage() {
+        if (phase == Phase.WatchingAd && !string.IsNullOrEmpty(courseUrl)) {
+            Application.OpenURL(courseUrl);
+        }
+    }
+
+    // lets go of the monkey once it is back where it fell
+    private void UpdateReviveReturn() {
+        if (!isReturningFromRevive || monkeyController == null) {
+            return;
+        }
+        if (
+            monkeyController.HasReachedPullTarget
+            || (monkey.position - entryPosition).sqrMagnitude < 0.01f
+        ) {
+            isReturningFromRevive = false;
+            monkeyController.IsHeld = false;
         }
     }
 
@@ -1292,8 +1798,10 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
+    // a striking head reaches far below the rest pose, so its touch is no
+    // sign of a monkey too close; only the rest pose's range counts then
     private void OnKingTouched() {
-        if (phase == Phase.Fighting) {
+        if (phase == Phase.Fighting && !body.IsStriking) {
             StartPush();
         }
     }
@@ -1454,7 +1962,7 @@ public class BossFightController: MonoBehaviour {
         int damage = worldBalanceConfig.BossBananaDamage;
         health = Mathf.Max(0, health - damage);
         body.FlashHit();
-        hud.SetHealth(health / (float)worldBalanceConfig.BossMaxHealth);
+        hud.SetHealth(health / (float)maxHealth);
         hud.PopDamage("-" + damage, body.WeakSpotPosition);
 
         if (health <= 0) {
@@ -1477,7 +1985,7 @@ public class BossFightController: MonoBehaviour {
     /// </returns>
     private int Third {
         get {
-            float lost = 1f - health / (float)worldBalanceConfig.BossMaxHealth;
+            float lost = 1f - health / (float)maxHealth;
             return Mathf.Clamp(Mathf.FloorToInt(lost * 3f), 0, 2);
         }
     }
@@ -1522,21 +2030,78 @@ public class BossFightController: MonoBehaviour {
         }
         if (!hasWon && victoryTimeS >= crownFlyS + victoryDelayS) {
             hasWon = true;
-            if (GameController.I != null) {
-                GameController.I.WinGame();
+            FinishWithReward();
+        }
+    }
+
+    private void UpdateChaseWarning() {
+        if (hasWarnedChase || Time.time < chaseWarnTime) {
+            return;
+        }
+        hasWarnedChase = true;
+        hud.ShowBannerFor(
+            "The cobra is coming!", "Climb!",
+            new Color(0.95f, 0.25f, 0.2f), 2.5f
+        );
+    }
+
+    // the run goes on: the gold armor is the reward, the hazards & the great
+    // cobra's chase come back, & the climb is free again
+    private void FinishWithReward() {
+        phase = Phase.Done;
+        hasShield = true;
+        hud.HideBossBar();
+        hud.SetPrompt(false, Vector3.zero);
+        hud.ShowBannerFor(winTitle, winLine, goldenColor, winBannerS);
+
+        foreach (Behaviour spawner in stoppedSpawners) {
+            if (spawner != null) {
+                spawner.enabled = true;
             }
-            ScoreManager score = ScoreManager.I;
-            hud.ShowVictory(score != null ? score.TotalScore : 0);
+        }
+        stoppedSpawners.Clear();
+        TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
+        // a head start: the cobra chases again from far down the trunk,
+        // called out once the win banner is gone
+        if (greatCobra != null) {
+            greatCobra.StopGuard();
+            greatCobra.KnockBack(winCobraDropU);
+        }
+        chaseWarnTime = Time.time + winBannerS;
+        hasWarnedChase = false;
+        if (monkeyController != null) {
+            monkeyController.ClearHeightCeiling();
+        }
+        if (struggle != null) {
+            struggle.EscapeGainScale = 1f;
+        }
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "BossFightController:\twon, armor given, the climb goes on",
+                this
+            );
         }
     }
 
     // Hint, Fruits, Camera  ---------------------------------------------------
     private void UpdateFirstThrowHint() {
-        ArenaFruit first = fruits.Count > 0 ? fruits[0] : default;
-        bool isShown = !hasHit && first.root != null && first.root.activeSelf;
-        Vector3 from = first.root != null
-            ? first.root.transform.position
-            : Vector3.zero;
+        // until a mode is picked: the key prompt between the two choices,
+        // the dotted line from there to the crown
+        bool isShown;
+        Vector3 from;
+        if (isChoosing && choices.Count == 2) {
+            isShown = choices[0].root != null && choices[1].root != null;
+            from = isShown
+                ? (choices[0].root.transform.position
+                    + choices[1].root.transform.position) * 0.5f
+                : Vector3.zero;
+        } else {
+            ArenaFruit first = fruits.Count > 0 ? fruits[0] : default;
+            isShown = !hasHit && first.root != null && first.root.activeSelf;
+            from = first.root != null
+                ? first.root.transform.position
+                : Vector3.zero;
+        }
         hud.SetPrompt(isShown, from);
         if (dots == null) {
             return;
@@ -1560,6 +2125,18 @@ public class BossFightController: MonoBehaviour {
             dots[i].localScale = Vector3.one * dotRadiusU * 2f
                 * Mathf.Lerp(1.6f, 0.8f, pulse);
         }
+    }
+
+    // EASY & NORMAL tags over the two choice bananas
+    private void UpdateChoiceTags() {
+        if (!isChoosing || choices.Count < 2) {
+            return;
+        }
+        hud.SetChoiceTags(
+            true,
+            choices[0].root.transform.position,
+            choices[1].root.transform.position
+        );
     }
 
     // a taken banana grows back on its branch
@@ -1592,9 +2169,10 @@ public class BossFightController: MonoBehaviour {
             : 0f;
         cameraLookUp.ExtraAimOffsetU = focus;
         // pulled back through the fight & the crown's flight
-        cameraLookUp.ViewDistanceScale = phase != Phase.Waiting
-            ? cameraDistanceScale
-            : 1f;
+        cameraLookUp.ViewDistanceScale =
+            phase != Phase.Waiting && phase != Phase.Done
+                ? cameraDistanceScale
+                : 1f;
     }
 
     // Markers & Helpers  ------------------------------------------------------
@@ -1659,18 +2237,19 @@ public class BossFightController: MonoBehaviour {
             PointOnTrunk(angle, topY - length * 0.5f, trunkRadiusU + 0.04f),
             facing
         );
+        // the whole line is red from the start, it only beats faster
         GameObject fill = CreatePrimitive(
             PrimitiveType.Cube, "StripFill",
-            new Vector3(width * 0.8f, 0.01f, 0.06f), warningColor
+            new Vector3(width * 0.8f, length, 0.06f), warningColor
         );
         fill.transform.SetPositionAndRotation(
-            PointOnTrunk(angle, topY, trunkRadiusU + 0.07f),
+            PointOnTrunk(angle, topY - length * 0.5f, trunkRadiusU + 0.07f),
             facing
         );
 
         int warning = word != null
             ? hud.AddWarning(
-                PointOnTrunk(angle, bottomY + length * 0.35f, trunkRadiusU),
+                PointOnTrunk(angle, minionLockY + 2.5f, trunkRadiusU),
                 word
             )
             : -1;
@@ -1687,29 +2266,36 @@ public class BossFightController: MonoBehaviour {
         });
     }
 
-    // fills every zone to progress 0~1; the band grows from its height
-    private void UpdateMarkers(float progress, bool isSweep) {
+    // fills the attack's zones (or the minion strips) to progress 0~1; the
+    // band grows from its height
+    private void UpdateMarkers(float progress, bool isSweep, bool isStrips) {
         progress = Mathf.Clamp01(progress);
         foreach (Marker marker in markers) {
-            if (marker.fill == null) {
+            if (marker.fill == null || marker.isStrip != isStrips) {
                 continue;
             }
             if (marker.isStrip) {
-                float filled = Mathf.Max(0.01f, marker.length * progress);
-                marker.fill.localScale = new Vector3(
-                    marker.size * 0.8f, filled, 0.06f
+                // the full strip glows red, beating faster & brighter as
+                // the minions near
+                float beat = 0.5f + 0.5f * Mathf.Sin(
+                    Time.time * Mathf.Lerp(6f, 22f, progress)
                 );
-                marker.fill.position = PointOnTrunk(
-                    marker.angle,
-                    marker.topY - filled * 0.5f,
-                    trunkRadiusU + 0.07f
+                float glow = Mathf.Lerp(0.55f, 1f, Mathf.Max(beat, progress));
+                SetColor(
+                    marker.fill.GetComponent<Renderer>(),
+                    Color.Lerp(warningDimColor, warningColor, glow)
+                );
+                marker.fill.localScale = new Vector3(
+                    marker.size * Mathf.Lerp(0.8f, 0.95f, progress),
+                    marker.length,
+                    0.06f
                 );
                 if (marker.warning >= 0) {
                     hud.UpdateWarning(
                         marker.warning,
                         PointOnTrunk(
                             marker.angle,
-                            marker.topY - marker.length * 0.65f,
+                            minionLockY + 2.5f,
                             trunkRadiusU
                         ),
                         progress
@@ -1738,17 +2324,45 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
+    // every marker & sign, eg for the finisher or a restart
     private void ClearMarkers() {
         foreach (Marker marker in markers) {
-            if (marker.rim != null) {
-                Destroy(marker.rim.gameObject);
-            }
-            if (marker.fill != null) {
-                Destroy(marker.fill.gameObject);
-            }
+            DestroyMarker(marker);
         }
         markers.Clear();
         hud.ClearWarnings();
+    }
+
+    // a bite's or sweep's markers, leaving the minion strips
+    private void ClearAttackMarkers() {
+        ClearMarkersOfKind(false);
+    }
+
+    // the minion strips, leaving a bite's or sweep's markers
+    private void ClearStripMarkers() {
+        ClearMarkersOfKind(true);
+    }
+
+    private void ClearMarkersOfKind(bool isStrip) {
+        for (int i = markers.Count - 1; i >= 0; i--) {
+            if (markers[i].isStrip != isStrip) {
+                continue;
+            }
+            DestroyMarker(markers[i]);
+            markers.RemoveAt(i);
+        }
+    }
+
+    private void DestroyMarker(Marker marker) {
+        if (marker.rim != null) {
+            Destroy(marker.rim.gameObject);
+        }
+        if (marker.fill != null) {
+            Destroy(marker.fill.gameObject);
+        }
+        if (marker.warning >= 0) {
+            hud.RemoveWarning(marker.warning);
+        }
     }
 
     private void ClearAttackObjects() {
@@ -1858,8 +2472,11 @@ public class BossFightController: MonoBehaviour {
         Waiting, // climbing to the trigger height
         Fighting,
         Finishing, // the last blow, in slow motion
+        ReviveOffer, // time stopped, asking to watch an ad
+        WatchingAd, // time stopped, the mock ad playing
         Defeated, // the king beaten, the crown on its way
         Over, // the monkey beaten
+        Done, // the king beaten & the climb going on, the armor kept
     }
 
     private enum Loop {
@@ -1925,6 +2542,11 @@ public class BossFightController: MonoBehaviour {
     private float attackTimeS; // time into the running attack
     private float lockAngle; // monkey angle when the attack began; deg
     private float lockY; // monkey y when the attack began
+    private float minionLockAngle; // monkey angle when the wave began; deg
+    private float minionLockY; // monkey y when the wave began
+    private bool isMinionStreaming; // normal finale: waves run on their own
+    private bool isWaveRunning; // a minion wave is warning or falling
+    private float nextWaveTime; // Time.time the stream's next wave starts
     private bool biteStarted;
     private int waveIndex; // minion wave under way
     private bool hasCalledMinions; // the minion call was said this game
@@ -1934,6 +2556,19 @@ public class BossFightController: MonoBehaviour {
     private int health;
     private bool hasHit; // the monkey has landed a first hit
     private bool hasShield; // the golden banana's shield is up
+    private bool hasThrown; // the first banana has been thrown
+    private bool isReturningFromRevive; // flying back onto the trunk
+    private float reviveLeftS; // offer or ad time left; unscaled s
+    private float cobraSaveGraceEndTime; // the armor's save ignores contacts
+    private float chaseWarnTime; // Time.time the chase is called after a win
+    private bool hasWarnedChase;
+    private Vector3 entryPosition; // monkey's pose when the fight began
+    private Quaternion entryRotation;
+    private bool isChoosing; // waiting for the first throw to pick a mode
+    private bool isEasy;
+    private int maxHealth; // the king's full health in the chosen mode
+    private readonly List<ArenaFruit> choices = new List<ArenaFruit>();
+    private readonly List<Behaviour> stoppedSpawners = new List<Behaviour>();
     private bool hasWon;
     private bool isFinisherWin;
     private float finisherTimeS; // real time into the finisher; s

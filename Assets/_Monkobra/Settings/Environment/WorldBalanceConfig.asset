@@ -253,6 +253,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  bossTriggerHeightU: 40
+  bossTriggerHeightU: 320
   bossMaxHealth: 12
   bossBananaDamage: 1

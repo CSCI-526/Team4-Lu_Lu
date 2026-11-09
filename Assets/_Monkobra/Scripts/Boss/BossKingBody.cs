@@ -121,6 +121,14 @@ public class BossKingBody: MonoBehaviour {
     }
 
     /// <summary>
+    /// Drops a running strike's impact: the head still eases back, but
+    /// <c>onImpact</c> never runs, eg when the fight restarts.
+    /// </summary>
+    public void CancelStrike() {
+        buttImpact = null;
+    }
+
+    /// <summary>
     /// Shatters the king into tumbling cubes and frees its crown, which is
     /// returned so it can be carried off; null if never built.
     /// </summary>

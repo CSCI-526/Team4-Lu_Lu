@@ -154,10 +154,11 @@ public class WorldBalanceConfig: ScriptableObject {
     [Header("Boss Fight")]
     [SerializeField]
     [Tooltip(
-        "height climbed since game start at which the boss fight begins; "
-            + "kept low while testing; u"
+        "height climbed since game start at which the boss fight begins: "
+            + "past where webs, falling cobras, pineapples, coconuts & rough "
+            + "bark have all shown up; lower it to test; u"
     )]
-    private float bossTriggerHeightU = 40f;
+    private float bossTriggerHeightU = 320f;
 
     [SerializeField]
     [Tooltip("health of the Cobra King")]

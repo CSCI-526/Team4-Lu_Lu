@@ -51,6 +51,11 @@ public class BossFightHud: MonoBehaviour {
         }
         speechLabel.text = line;
         speechLeftS = speechShowS;
+        // the bubble fits its line
+        speechRect.sizeDelta = new Vector2(
+            Mathf.Max(200f, speechLabel.GetPreferredValues(line).x + 48f),
+            56f
+        );
     }
 
     /// <summary>Pops a rising damage number at a world point.</summary>
@@ -114,7 +119,139 @@ public class BossFightHud: MonoBehaviour {
         }
         bannerLabel.text = text;
         bannerLabel.color = color;
+        bannerLabel.rectTransform.anchoredPosition = bannerCenterPosition;
         bannerLabel.gameObject.SetActive(true);
+        bannerHideTime = -1f;
+    }
+
+    /// <summary>
+    /// Shows a big banner in <paramref name="color"/> with a smaller
+    /// <paramref name="subtitle"/> under it, hidden after
+    /// <paramref name="seconds"/>, or kept until <see cref="HideBanner"/>
+    /// when it is 0; eg the armor intro.
+    /// </summary>
+    public void ShowBannerFor(
+        string text, string subtitle, Color color, float seconds
+    ) {
+        ShowBanner("<size=70%>" + text + "</size>\n<size=40%><color=#FFFFFF>"
+            + subtitle + "</color></size>", color);
+        // low on screen, clear of the key prompt & the action mid-screen
+        bannerLabel.rectTransform.anchoredPosition = bannerLowPosition;
+        bannerHideTime = seconds > 0f ? Time.unscaledTime + seconds : -1f;
+    }
+
+    /// <summary>Hides the big banner.</summary>
+    public void HideBanner() {
+        if (bannerLabel == null) {
+            return;
+        }
+        bannerHideTime = -1f;
+        bannerLabel.gameObject.SetActive(false);
+    }
+
+    /// <summary>Raised when the revive offer's Watch Ad button is clicked.
+    /// </summary>
+    public event System.Action WatchAdClicked;
+
+    /// <summary>Raised when the revive offer's Give Up button is clicked.
+    /// </summary>
+    public event System.Action GiveUpClicked;
+
+    /// <summary>Raised when the ad's Course Page button is clicked.
+    /// </summary>
+    public event System.Action CoursePageClicked;
+
+    /// <summary>Raised when the ad's Skip button is clicked.</summary>
+    public event System.Action SkipAdClicked;
+
+    /// <summary>Shows or hides the ad's Skip button.</summary>
+    public void SetAdSkippable(bool canSkip) {
+        if (adSkipButton != null && adSkipButton.activeSelf != canSkip) {
+            adSkipButton.SetActive(canSkip);
+        }
+    }
+
+    /// <summary>Hides the king's name & health bar, eg once it is beaten.
+    /// </summary>
+    public void HideBossBar() {
+        if (healthFill != null && healthFill.parent != null) {
+            healthFill.parent.gameObject.SetActive(false);
+        }
+        if (nameLabel != null) {
+            nameLabel.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Shows EASY & NORMAL tags over the two mode-choice bananas at
+    /// <paramref name="easyWorld"/> & <paramref name="normalWorld"/>, or
+    /// hides them.
+    /// </summary>
+    public void SetChoiceTags(
+        bool isShown, Vector3 easyWorld, Vector3 normalWorld
+    ) {
+        if (rootRect == null) {
+            return;
+        }
+        if (easyTag == null) {
+            easyTag = CreateTag("EasyTag", "EASY",
+                new Color(0.55f, 0.95f, 0.55f));
+            normalTag = CreateTag("NormalTag", "NORMAL",
+                new Color(1f, 0.82f, 0.2f));
+        }
+        easyTag.gameObject.SetActive(isShown);
+        normalTag.gameObject.SetActive(isShown);
+        easyTagWorld = easyWorld;
+        normalTagWorld = normalWorld;
+    }
+
+    /// <summary>
+    /// Shows the revive offer: a card asking to watch an ad, with a
+    /// countdown and Watch Ad / Give Up buttons.
+    /// </summary>
+    public void ShowReviveOffer() {
+        if (!BuildRevive()) {
+            return;
+        }
+        revivePanel.SetActive(true);
+        adPanel.SetActive(false);
+    }
+
+    /// <summary>Sets the offer's countdown to <paramref name="seconds"/>.
+    /// </summary>
+    public void SetReviveCountdown(int seconds) {
+        if (reviveCountLabel != null) {
+            reviveCountLabel.text = seconds.ToString();
+        }
+    }
+
+    /// <summary>Swaps the offer for the full-screen mock ad.</summary>
+    public void ShowAd() {
+        if (!BuildRevive()) {
+            return;
+        }
+        revivePanel.SetActive(false);
+        adPanel.SetActive(true);
+    }
+
+    /// <summary>Sets the ad's reward countdown to <paramref name="seconds"/>.
+    /// </summary>
+    public void SetAdCountdown(int seconds) {
+        if (adCountLabel != null) {
+            adCountLabel.text = seconds > 0
+                ? "Reward in " + seconds
+                : "Reward!";
+        }
+    }
+
+    /// <summary>Hides the revive offer and the ad.</summary>
+    public void HideRevive() {
+        if (revivePanel != null) {
+            revivePanel.SetActive(false);
+        }
+        if (adPanel != null) {
+            adPanel.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -191,6 +328,18 @@ public class BossFightHud: MonoBehaviour {
         warnings[index] = warning;
     }
 
+    /// <summary>Removes the warning <paramref name="id"/>.</summary>
+    public void RemoveWarning(int id) {
+        int index = warnings.FindIndex(w => w.id == id);
+        if (index < 0) {
+            return;
+        }
+        if (warnings[index].sign != null) {
+            Destroy(warnings[index].sign.gameObject);
+        }
+        warnings.RemoveAt(index);
+    }
+
     /// <summary>Removes every attack warning.</summary>
     public void ClearWarnings() {
         foreach (Warning warning in warnings) {
@@ -244,16 +393,25 @@ public class BossFightHud: MonoBehaviour {
         }
 
         UpdateFlash();
+        UpdateAd();
+        if (bannerHideTime > 0f && Time.unscaledTime >= bannerHideTime) {
+            bannerHideTime = -1f;
+            bannerLabel.gameObject.SetActive(false);
+        }
         if (speechRect != null) {
             speechLeftS -= Time.deltaTime;
             bool isSpeaking = speechLeftS > 0f;
             speechRect.gameObject.SetActive(isSpeaking);
             if (isSpeaking) {
-                PlaceOnScreen(speechRect, speechWorldPosition, speechOffset);
+                PlaceSpeech();
             }
         }
         if (promptRect != null && promptRect.gameObject.activeSelf) {
             Place(promptRect, promptWorldPosition, promptOffset);
+        }
+        if (easyTag != null && easyTag.gameObject.activeSelf) {
+            Place(easyTag, easyTagWorld, tagOffset);
+            Place(normalTag, normalTagWorld, tagOffset);
         }
         UpdatePops();
         UpdateWarnings();
@@ -355,7 +513,7 @@ public class BossFightHud: MonoBehaviour {
         bannerLabel = CreateLabel(
             "Banner", rootRect, "", 80f, new Color(1f, 0.85f, 0.2f)
         );
-        bannerLabel.rectTransform.sizeDelta = new Vector2(1000f, 120f);
+        bannerLabel.rectTransform.sizeDelta = new Vector2(1100f, 240f);
         bannerLabel.rectTransform.anchoredPosition = new Vector2(0f, 120f);
         bannerLabel.gameObject.SetActive(false);
 
@@ -422,6 +580,26 @@ public class BossFightHud: MonoBehaviour {
 
     // like Place, but kept inside the screen: a head off screen or behind
     // the camera still shows its line, pinned to the nearest edge
+    // over the king's head while it is well in view; otherwise, eg the
+    // camera turned away or the head off screen, docked under the health bar
+    // with the king's name, so a line is never missed
+    private void PlaceSpeech() {
+        Camera cam = Camera.main;
+        Vector3 view = cam != null
+            ? cam.WorldToViewportPoint(speechWorldPosition)
+            : Vector3.back;
+        bool isHeadInView = view.z > 0f
+            && view.x > 0.1f && view.x < 0.9f
+            && view.y > 0.12f && view.y < 0.75f;
+        if (isHeadInView) {
+            PlaceOnScreen(speechRect, speechWorldPosition, speechOffset);
+            return;
+        }
+        speechRect.anchorMin = speechRect.anchorMax = new Vector2(0.5f, 1f);
+        speechRect.pivot = new Vector2(0.5f, 1f);
+        speechRect.anchoredPosition = new Vector2(0f, -96f);
+    }
+
     private void PlaceOnScreen(
         RectTransform target,
         Vector3 world,
@@ -449,6 +627,7 @@ public class BossFightHud: MonoBehaviour {
         local.x = Mathf.Clamp(local.x, -half.x + box.x, half.x - box.x);
         local.y = Mathf.Clamp(local.y, -half.y + box.y, top);
         target.anchorMin = target.anchorMax = new Vector2(0.5f, 0.5f);
+        target.pivot = new Vector2(0.5f, 0.5f);
         target.anchoredPosition = local;
     }
 
@@ -471,6 +650,160 @@ public class BossFightHud: MonoBehaviour {
             }
         }
         return null;
+    }
+
+    // the revive offer card & the mock ad, built on first use
+    private bool BuildRevive() {
+        if (revivePanel != null) {
+            return true;
+        }
+        if (rootRect == null) {
+            return false;
+        }
+        Color gold = new Color(1f, 0.82f, 0.2f);
+
+        RectTransform offer = CreateRect("ReviveOffer", rootRect);
+        Stretch(offer);
+        AddImage(offer, new Color(0f, 0f, 0f, 0.6f));
+        RectTransform card = CreateRect("Card", offer);
+        card.sizeDelta = new Vector2(580f, 340f);
+        AddImage(card, new Color(0.13f, 0.1f, 0.2f, 0.95f));
+        PlaceLabel(CreateLabel("Title", card, "Revive?", 60f, gold),
+            new Vector2(0f, 110f), new Vector2(540f, 70f));
+        PlaceLabel(CreateLabel(
+                "Line", card, "Watch a short ad to keep fighting!", 26f,
+                Color.white
+            ), new Vector2(0f, 50f), new Vector2(540f, 40f));
+        reviveCountLabel = CreateLabel("Count", card, "", 48f, gold);
+        PlaceLabel(reviveCountLabel, new Vector2(0f, -10f),
+            new Vector2(200f, 60f));
+        CreateButton("WatchAd", card, "Watch Ad  [Space]",
+            new Color(0.2f, 0.7f, 0.3f), new Vector2(-135f, -105f),
+            () => WatchAdClicked?.Invoke());
+        CreateButton("GiveUp", card, "Give Up  [R]",
+            new Color(0.4f, 0.4f, 0.45f), new Vector2(135f, -105f),
+            () => GiveUpClicked?.Invoke());
+        revivePanel = offer.gameObject;
+        revivePanel.SetActive(false);
+
+        // the "ad" plugs the course this game is made in: cardinal &
+        // gold, bobbing shapes, a Course Page button and a timer
+        Color cardinal = new Color(0.6f, 0.05f, 0.08f);
+        RectTransform ad = CreateRect("MockAd", rootRect);
+        Stretch(ad);
+        AddImage(ad, cardinal);
+        Color[] shapeColors = {
+            gold, new Color(1f, 1f, 1f, 0.75f), new Color(1f, 0.6f, 0.2f),
+        };
+        for (int i = 0; i < 8; i++) {
+            RectTransform shape = CreateRect("Shape" + i, ad);
+            float size = 40f + 25f * (i % 3);
+            shape.sizeDelta = new Vector2(size, size);
+            shape.anchoredPosition = new Vector2(
+                -520f + i * 150f, i % 2 == 0 ? 250f : -250f
+            );
+            AddImage(shape, shapeColors[i % shapeColors.Length]);
+            adShapes.Add(shape);
+        }
+        TextMeshProUGUI title = CreateLabel(
+            "Title", ad, "Like this game? Make your own!", 64f, gold
+        );
+        PlaceLabel(title, new Vector2(0f, 110f), new Vector2(1150f, 90f));
+        adTitle = title.rectTransform;
+        PlaceLabel(CreateLabel(
+                "Course", ad, "USC CSCI 526", 52f, Color.white
+            ), new Vector2(0f, 30f), new Vector2(1000f, 70f));
+        PlaceLabel(CreateLabel(
+                "Name", ad, "Advanced Mobile Devices and Game Consoles", 30f,
+                Color.white
+            ), new Vector2(0f, -25f), new Vector2(1100f, 44f));
+        PlaceLabel(CreateLabel(
+                "Pitch", ad,
+                "Team up and ship a game in one semester, like Monkobra!",
+                26f, new Color(1f, 0.92f, 0.7f)
+            ), new Vector2(0f, -70f), new Vector2(1100f, 40f));
+        CreateButton("CoursePage", ad, "Course Page  [Enter]", gold * 0.85f,
+            new Vector2(0f, -150f), () => CoursePageClicked?.Invoke());
+        RectTransform tag = CreateRect("AdTag", ad);
+        tag.anchorMin = tag.anchorMax = tag.pivot = new Vector2(0f, 1f);
+        tag.anchoredPosition = new Vector2(24f, -24f);
+        tag.sizeDelta = new Vector2(70f, 40f);
+        AddImage(tag, new Color(0f, 0f, 0f, 0.6f));
+        TextMeshProUGUI tagLabel = CreateLabel("Label", tag, "AD", 24f,
+            Color.white);
+        Stretch(tagLabel.rectTransform);
+        adSkipButton = CreateButton("Skip", ad, "Skip  [Space]",
+            new Color(0f, 0f, 0f, 0.55f), Vector2.zero,
+            () => SkipAdClicked?.Invoke());
+        RectTransform skip = (RectTransform)adSkipButton.transform;
+        skip.anchorMin = skip.anchorMax = skip.pivot = new Vector2(1f, 1f);
+        skip.anchoredPosition = new Vector2(-24f, -24f);
+        adSkipButton.SetActive(false);
+        adCountLabel = CreateLabel("Count", ad, "", 30f, Color.white);
+        RectTransform count = adCountLabel.rectTransform;
+        count.anchorMin = count.anchorMax = count.pivot = new Vector2(1f, 0f);
+        count.anchoredPosition = new Vector2(-30f, 30f);
+        count.sizeDelta = new Vector2(300f, 50f);
+        adPanel = ad.gameObject;
+        adPanel.SetActive(false);
+        return true;
+    }
+
+    // the ad's title throbs and its shapes bob & spin; time stands still
+    // under it, so this runs on unscaled time
+    private void UpdateAd() {
+        if (adPanel == null || !adPanel.activeSelf) {
+            return;
+        }
+        float t = Time.unscaledTime;
+        adTitle.localScale = Vector3.one * (1f + 0.06f * Mathf.Sin(t * 6f));
+        for (int i = 0; i < adShapes.Count; i++) {
+            adShapes[i].localRotation = Quaternion.Euler(
+                0f, 0f, t * (40f + i * 12f) * (i % 2 == 0 ? 1f : -1f)
+            );
+            adShapes[i].localScale = Vector3.one
+                * (1f + 0.15f * Mathf.Sin(t * 3f + i));
+        }
+    }
+
+    // a dark plate w/ a colored word, placed over a world point
+    private RectTransform CreateTag(string tagName, string text, Color color) {
+        RectTransform tag = CreateRect(tagName, rootRect);
+        tag.sizeDelta = new Vector2(130f, 40f);
+        AddImage(tag, new Color(0f, 0f, 0f, 0.7f));
+        TextMeshProUGUI label = CreateLabel("Label", tag, text, 26f, color);
+        Stretch(label.rectTransform);
+        tag.gameObject.SetActive(false);
+        return tag;
+    }
+
+    private static void PlaceLabel(
+        TextMeshProUGUI label, Vector2 position, Vector2 size
+    ) {
+        label.rectTransform.anchoredPosition = position;
+        label.rectTransform.sizeDelta = size;
+    }
+
+    private static GameObject CreateButton(
+        string buttonName,
+        Transform parent,
+        string text,
+        Color color,
+        Vector2 position,
+        System.Action onClick
+    ) {
+        RectTransform rect = CreateRect(buttonName, parent);
+        rect.sizeDelta = new Vector2(240f, 60f);
+        rect.anchoredPosition = position;
+        Image image = AddImage(rect, color);
+        image.raycastTarget = true;
+        Button button = rect.gameObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(() => onClick());
+        TextMeshProUGUI label = CreateLabel("Label", rect, text, 24f,
+            Color.white);
+        Stretch(label.rectTransform);
+        return rect.gameObject;
     }
 
     private static RectTransform CreateRect(string rectName, Transform parent) {
@@ -562,5 +895,20 @@ public class BossFightHud: MonoBehaviour {
     private TextMeshProUGUI speechLabel;
     private RectTransform promptRect;
     private TextMeshProUGUI bannerLabel;
+    private GameObject revivePanel;
+    private TextMeshProUGUI reviveCountLabel;
+    private GameObject adPanel;
+    private RectTransform adTitle;
+    private readonly List<RectTransform> adShapes = new List<RectTransform>();
+    private TextMeshProUGUI adCountLabel;
+    private GameObject adSkipButton;
+    private RectTransform easyTag;
+    private RectTransform normalTag;
+    private Vector3 easyTagWorld;
+    private Vector3 normalTagWorld;
+    private readonly Vector2 tagOffset = new Vector2(0f, 55f);
+    private readonly Vector2 bannerCenterPosition = new Vector2(0f, 120f);
+    private readonly Vector2 bannerLowPosition = new Vector2(0f, -150f);
+    private float bannerHideTime = -1f; // unscaled time a timed banner goes
     private Image flashImage;
 }

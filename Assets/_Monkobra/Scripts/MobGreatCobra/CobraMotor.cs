@@ -65,6 +65,40 @@ public class CobraMotor: MonoBehaviour {
         UpdateBody();
     }
 
+    /// <summary>
+    /// Ends <see cref="StartGuard"/>: the chase picks up again from the
+    /// guard height, easing up from a standstill.
+    /// </summary>
+    public void StopGuard() {
+        if (!isGuarding) {
+            return;
+        }
+        isGuarding = false;
+        guardPeek = 0f;
+        currentClimbSpeed = 0f;
+        UpdateBody();
+    }
+
+    /// <summary>
+    /// Throws the head back <paramref name="distanceU"/> down the trunk, eg
+    /// when the monkey's gold armor takes the bite; a guarding cobra ends
+    /// its peek instead. Clears the running surge.
+    /// </summary>
+    public void KnockBack(float distanceU) {
+        if (isGuarding) {
+            guardPeek = 0f;
+            nextPeekTime = Time.time + UnityEngine.Random.Range(
+                peekIntervalRangeS.x, peekIntervalRangeS.y
+            );
+        } else {
+            headHeight -= Mathf.Max(0f, distanceU);
+            currentClimbSpeed = 0f;
+            surgeStacks = 0;
+            isCatchingUp = false;
+        }
+        UpdateBody();
+    }
+
     /// <returns>if a coconut holds the cobra still right now</returns>
     public bool IsFrozen => isFrozen;
 
