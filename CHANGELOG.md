@@ -1,8 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme camera adjust
-Fixme game play tunning
+FIXME camera adjust
+FIXME game play tunning
 
 bug spider web fail to load & log warning
 -->
