@@ -1,10 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug erik analytic record banana in starting zone run
+Bug analytic record banana in starting zone run
 Fixme camera adjust
-Fixme Pan: UI mpv
-
 Fixme game play tunning
 
 bug spider web fail to load & log warning
@@ -53,10 +51,21 @@ bug spider web fail to load & log warning
 - whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
 - trunk height markers: every 50 u of climbed height a number beside the trunk in world units labelled m (e.g. `150 m`), white bold on a dark rounded plate like the progress bar readout, kept on the trunk's right edge as seen from the camera so the trunk never hides it; a marker grows & its plate brightens the first time the monkey passes it (`HeightMarkerSystem` on `Envs/HeightMarkerSystem`, test override for a 5 u interval)
 
+##### Houdong Pan
+
+- lose screen leaderboard: simulated rivals, fixed per launch, ranked against the final score (`SessionLeaderboard`, `LeaderboardWidget`, `LeaderboardRowWidget`; `Leaderboard` & `LeaderboardRow` prefabs nested in `LoseScreen`)
+- fruit grab prompt: keycap "space, hold, then release" teaches the first grab of each fruit kind per run (`FruitGrabPrompt`, `KeyPromptUI`); `ArmController.FruitGrabbed` event
+
 ### Changed
+
+##### Belle Dai
+
+- slippery bark → avoidable rough terrain after 3000 points: `SlipperyBark*` renamed `RoughBark*` (`RoughBarkZone`, `RoughBarkSpawner`, `RoughBarkSystem`), new bark textures & spawn settings in `GameBalanceConfig`
 
 ##### Erik
 
+- starting zone: level opens at 30% stamina, exhaustion slows less (`StartingZoneStartStaminaFraction`, `StartingZoneExhaustedSpeedMultiplier`); exit trigger raised to y 60 & balance curve retuned
+- pause (Esc, P), restart after lose (R, Space) & restart during pause (R) are `InputSystem_Actions` actions read by `GameController`; `InGameHUD` & `PopUps` prefabs split out of `_UI`
 - idle stamina recovery runs at a quarter rate during the starting zone (`startingZoneIdleRecoveryMultiplier` in `PlayerBalanceConfig`)
 - `exhaustedSpeedMultiplier` & `idleStaminaRecoveryPerS` moved from `GameBalanceConfig` to `MovementConfig`
 - Starter Zone → Starting Zone: `GameState.StartingZone`, `EndStartingZone()`, `StartingZoneExitRelay`, `StartingZoneExitTrigger` prefab; Tutorial state & screen unchanged
@@ -82,6 +91,11 @@ bug spider web fail to load & log warning
 - `ArmController` gives a coconut's flight no stamina restore
 - analytics report splits the reward score into banana & coconut score
 - progress bar cobra gap in world units labelled m, matching the trunk height markers, no longer converted by `unitsPerMeter` (`ProgressBarWidget`); `unitsPerMeter` now only sets the distance score rate
+
+##### Houdong Pan
+
+- progress bar redrawn from generated antialiased face sprites w/ an upright readout (`ProgressBarWidget`, `ProgressBar` prefab)
+- boss fight key prompt reuses `KeyPromptUI`, the keycap of the fruit tutorial (`BossFightHud`)
 
 ### Deprecated
 
