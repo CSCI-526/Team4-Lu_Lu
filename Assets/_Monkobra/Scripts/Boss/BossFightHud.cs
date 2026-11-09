@@ -161,6 +161,34 @@ public class BossFightHud: MonoBehaviour {
     /// </summary>
     public event System.Action CoursePageClicked;
 
+    /// <summary>Raised when the reward panel's Continue button is clicked.
+    /// </summary>
+    public event System.Action ContinueClicked;
+
+    /// <summary>
+    /// Shows the win's reward panel over a dimmed screen: a gold title, the
+    /// reward line, a small detail line & a Continue (Space) button.
+    /// </summary>
+    public void ShowRewardPanel(string title, string line, string detail) {
+        if (rootRect == null) {
+            return;
+        }
+        if (rewardPanel == null) {
+            rewardPanel = CreateRewardPanel();
+        }
+        rewardTitle.text = title;
+        rewardLine.text = line;
+        rewardDetail.text = detail;
+        rewardPanel.SetActive(true);
+    }
+
+    /// <summary>Hides the win's reward panel.</summary>
+    public void HideRewardPanel() {
+        if (rewardPanel != null) {
+            rewardPanel.SetActive(false);
+        }
+    }
+
     /// <summary>Raised when the ad's Skip button is clicked.</summary>
     public event System.Action SkipAdClicked;
 
@@ -399,6 +427,7 @@ public class BossFightHud: MonoBehaviour {
         UpdateFlash();
         UpdateAd();
         UpdateArmorBadge();
+        UpdateRewardPanel();
         if (bannerHideTime > 0f && Time.unscaledTime >= bannerHideTime) {
             bannerHideTime = -1f;
             bannerLabel.gameObject.SetActive(false);
@@ -740,6 +769,44 @@ public class BossFightHud: MonoBehaviour {
         }
     }
 
+    // the win's pause: dimmed screen, title, lines & a beating Continue
+    private GameObject CreateRewardPanel() {
+        Color gold = new Color(1f, 0.82f, 0.2f);
+        RectTransform panel = CreateRect("RewardPanel", rootRect);
+        Stretch(panel);
+        AddImage(panel, new Color(0f, 0f, 0f, 0.6f));
+        RectTransform diamond = CreateRect("Diamond", panel);
+        diamond.anchoredPosition = new Vector2(0f, 190f);
+        diamond.sizeDelta = new Vector2(56f, 56f);
+        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
+        AddImage(diamond, gold);
+        rewardTitle = CreateLabel("Title", panel, "", 84f, gold);
+        PlaceLabel(rewardTitle, new Vector2(0f, 100f), new Vector2(1100f, 100f));
+        rewardLine = CreateLabel("Line", panel, "", 42f, Color.white);
+        PlaceLabel(rewardLine, new Vector2(0f, 20f), new Vector2(1100f, 60f));
+        rewardDetail = CreateLabel(
+            "Detail", panel, "", 30f, new Color(1f, 0.92f, 0.7f)
+        );
+        PlaceLabel(rewardDetail, new Vector2(0f, -30f), new Vector2(1100f, 44f));
+        GameObject button = CreateButton(
+            "Continue", panel, "Continue  [Space]",
+            new Color(0.2f, 0.7f, 0.3f), new Vector2(0f, -120f),
+            () => ContinueClicked?.Invoke()
+        );
+        rewardButton = (RectTransform)button.transform;
+        panel.gameObject.SetActive(false);
+        return panel.gameObject;
+    }
+
+    // the Continue button beats gently; time stands still, so unscaled
+    private void UpdateRewardPanel() {
+        if (rewardPanel == null || !rewardPanel.activeSelf) {
+            return;
+        }
+        float beat = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f);
+        rewardButton.localScale = Vector3.one * (1f + 0.06f * beat);
+    }
+
     // a dark plate w/ a gold diamond & GOLDEN ARMOR
     private RectTransform CreateArmorBadge() {
         Color gold = new Color(1f, 0.82f, 0.2f);
@@ -920,6 +987,11 @@ public class BossFightHud: MonoBehaviour {
     private readonly List<RectTransform> adShapes = new List<RectTransform>();
     private GameObject adSkipButton;
     private RectTransform armorBadge;
+    private GameObject rewardPanel;
+    private TextMeshProUGUI rewardTitle;
+    private TextMeshProUGUI rewardLine;
+    private TextMeshProUGUI rewardDetail;
+    private RectTransform rewardButton;
     private float armorBadgePopS; // pop-in time left; unscaled s
     private const float ARMOR_BADGE_POP_S = 0.45f;
     private RectTransform easyTag;

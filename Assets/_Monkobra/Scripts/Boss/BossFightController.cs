@@ -42,6 +42,21 @@ public class BossFightController: MonoBehaviour {
     /// </returns>
     public bool IsInArena => phase != Phase.Waiting;
 
+    /// <summary>
+    /// Builds a small look-alike of the Cobra King for the trunk height
+    /// marker at the fight's height, its face toward the parent's -z.
+    /// </summary>
+    /// <returns>the figure's root, unparented, or null</returns>
+    public Transform BuildMarkerFigure() {
+        return body != null ? body.BuildFigure(markerFigureScale) : null;
+    }
+
+    /// <returns>climbed height the fight starts at, eg for its trunk height
+    /// marker; u, -1 when unknown</returns>
+    public float TriggerHeightU => worldBalanceConfig != null
+        ? worldBalanceConfig.BossTriggerHeightU
+        : -1f;
+
     /// <summary>raised when the monkey enters the arena & the fight begins
     /// </summary>
     public event System.Action FightStarted;
@@ -70,6 +85,7 @@ public class BossFightController: MonoBehaviour {
                     : float.PositiveInfinity;
             }
             bool isOver = phase == Phase.Defeated
+                || phase == Phase.Rewarding
                 || phase == Phase.Done
                 || phase == Phase.Over;
             return isOver
@@ -104,6 +120,7 @@ public class BossFightController: MonoBehaviour {
         }
         bool canSave = phase == Phase.Fighting
             || phase == Phase.Defeated
+            || phase == Phase.Rewarding
             || phase == Phase.Done;
         if (!canSave) {
             return false;
@@ -123,6 +140,24 @@ public class BossFightController: MonoBehaviour {
         cobraSaveGraceEndTime = Time.time + 1f;
         hud.PopText("Saved!", monkey.position, goldenColor);
         hud.Flash(goldenColor);
+        // in the fight that is the guard below: its peek ends & the monkey
+        // flies back up to where the fight began, never left under the guard,
+        // where it could not climb back alive; no freeze, as in the fight
+        // the armor only saves, the same "Saved!" as any fatal hit
+        bool isGuardStill = phase == Phase.Fighting
+            || phase == Phase.Defeated
+            || phase == Phase.Rewarding;
+        if (isGuardStill) {
+            if (greatCobra != null) {
+                greatCobra.KnockBack(0f);
+            }
+            if (phase == Phase.Fighting) {
+                ReturnToStart();
+            }
+            return true;
+        }
+        // the kept reward armor on the climb after: the cobra is thrown far
+        // down & frozen, more than a coconut does
         if (greatCobra != null) {
             greatCobra.KnockBack(armorKnockBackU);
             greatCobra.TryFreeze(armorCobraFreezeS);
@@ -447,6 +482,15 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     private Color trailColor = new Color(1f, 0.85f, 0.2f);
 
+    [Header("Height Marker")]
+    [SerializeField]
+    [Min(0.05f)]
+    [Tooltip(
+        "size of the king look-alike on the fight's trunk height marker, as "
+            + "a share of the real king"
+    )]
+    private float markerFigureScale = 0.3f;
+
     [Header("Rough Bark")]
     [SerializeField]
     [Tooltip(
@@ -574,13 +618,12 @@ public class BossFightController: MonoBehaviour {
     private string winTitle = "You win!";
 
     [SerializeField]
-    [Tooltip("line under the win banner")]
+    [Tooltip("line under the win title")]
     private string winLine = "Golden Armor is yours to keep!";
 
     [SerializeField]
-    [Min(0.5f)]
-    [Tooltip("how long the win banner stays; s")]
-    private float winBannerS = 3f;
+    [Tooltip("small line under it: what the armor does")]
+    private string winDetailLine = "It blocks 1 fatal hit";
 
     [SerializeField]
     [Tooltip(
@@ -768,6 +811,7 @@ public class BossFightController: MonoBehaviour {
         hud.WatchAdClicked += WatchAd;
         hud.GiveUpClicked += GiveUp;
         hud.CoursePageClicked += OpenCoursePage;
+        hud.ContinueClicked += ContinueAfterReward;
         hud.SkipAdClicked += SkipAd;
         colorBlock = new MaterialPropertyBlock();
     }
@@ -777,6 +821,11 @@ public class BossFightController: MonoBehaviour {
             I = null;
         }
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
+        TreeSegmentController.BranchesGenerated -= OnBranchesGeneratedAhead;
+    }
+
+    private void Start() {
+        TreeSegmentController.BranchesGenerated += OnBranchesGeneratedAhead;
     }
 
     private void OnDisable() {
@@ -784,6 +833,7 @@ public class BossFightController: MonoBehaviour {
             phase == Phase.Finishing
             || phase == Phase.ReviveOffer
             || phase == Phase.WatchingAd
+            || phase == Phase.Rewarding
         ) {
             Time.timeScale = 1f;
         }
@@ -821,6 +871,13 @@ public class BossFightController: MonoBehaviour {
             UpdateChaseWarning();
             return;
         }
+        if (phase == Phase.Rewarding) {
+            UpdateShieldRing();
+            UpdateSparks();
+            UpdateCameraFocus();
+            UpdateRewardPause(game);
+            return;
+        }
 
         body.Track(monkey.position);
         hud.SpeechAnchor = body.HeadPosition;
@@ -830,7 +887,7 @@ public class BossFightController: MonoBehaviour {
         UpdateShieldRing();
         UpdateCameraFocus();
         if (phase == Phase.Fighting) {
-            UpdateReviveReturn();
+            UpdateReturnToStart();
             UpdateWarnings();
             UpdateChoiceTags();
             UpdateFirstThrowHint();
@@ -883,7 +940,9 @@ public class BossFightController: MonoBehaviour {
         StopHazardSpawners();
         ClearAbove(entryY - 3f);
         RemoveNonBananas(
-            FindObjectsByType<BranchController>(FindObjectsSortMode.None)
+            FindObjectsByType<BranchController>(FindObjectsSortMode.None),
+            ArenaBottomY(entryY),
+            float.PositiveInfinity
         );
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
 
@@ -978,24 +1037,59 @@ public class BossFightController: MonoBehaviour {
         BranchController[] branches =
             segment.GetComponentsInChildren<BranchController>();
         ClearBranchesNearNest(branches);
-        RemoveNonBananas(branches);
+        RemoveNonBananas(branches, ArenaBottomY(entryY), float.PositiveInfinity);
+    }
+
+    // b4 the fight, segments grown ahead around its height already bear
+    // only bananas, so no pineapple or coconut is seen there on the way up
+    private void OnBranchesGeneratedAhead(TreeSegmentController segment) {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (phase != Phase.Waiting || ramp == null || worldBalanceConfig == null) {
+            return;
+        }
+        float triggerY = ramp.PlayerGameStartYPosition
+            + worldBalanceConfig.BossTriggerHeightU;
+        RemoveNonBananas(
+            segment.GetComponentsInChildren<BranchController>(),
+            ArenaBottomY(triggerY),
+            triggerY + nestHeightU + 10f
+        );
+    }
+
+    // the arena reaches down past the guard
+    private float ArenaBottomY(float startY) {
+        return startY - guardDepthU - 4f;
     }
 
     // only bananas belong in the arena: a pineapple or coconut on the tree's
-    // own branches there is taken off, its bare stem left
-    private void RemoveNonBananas(BranchController[] branches) {
-        float minY = entryY - 3f;
+    // own branches there is taken off, its bare stem left. A pineapple scores
+    // as a banana, so it is told apart by its LeapOnGrab
+    private void RemoveNonBananas(
+        BranchController[] branches, float minY, float maxY
+    ) {
         foreach (BranchController branch in branches) {
-            if (branch == null || branch.transform.position.y < minY) {
+            if (branch == null) {
+                continue;
+            }
+            float y = branch.transform.position.y;
+            if (y < minY || y > maxY) {
                 continue;
             }
             foreach (ScorePickup pickup in
                 branch.GetComponentsInChildren<ScorePickup>(true)) {
-                if (pickup.Kind == PickupKind.Banana) {
+                bool isPlainBanana = pickup.Kind == PickupKind.Banana
+                    && pickup.GetComponentInParent<LeapOnGrab>(true) == null
+                    && pickup.GetComponentInChildren<LeapOnGrab>(true) == null;
+                if (isPlainBanana) {
                     continue;
                 }
                 ForgetFruits(pickup.gameObject);
                 pickup.gameObject.SetActive(false);
+            }
+            foreach (LeapOnGrab leap in
+                branch.GetComponentsInChildren<LeapOnGrab>(true)) {
+                ForgetFruits(leap.gameObject);
+                leap.gameObject.SetActive(false);
             }
         }
     }
@@ -1813,7 +1907,8 @@ public class BossFightController: MonoBehaviour {
 
     // a bite, a sweep or a minion: fatal, unless the gold shield takes it
     private void LethalHit() {
-        if (phase != Phase.Fighting) {
+        // nor on the way back to the start, while it cannot dodge
+        if (phase != Phase.Fighting || isReturningToStart) {
             return;
         }
         if (hasShield) {
@@ -2016,7 +2111,7 @@ public class BossFightController: MonoBehaviour {
             monkeyController.ClearStun();
             monkeyController.IsHeld = true;
             monkeyController.PullTo(entryPosition, reviveReturnSpeedU);
-            isReturningFromRevive = true;
+            isReturningToStart = true;
         }
         SpawnChoices();
         SpawnWebs(webCount);
@@ -2044,16 +2139,32 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // lets go of the monkey once it is back where it fell
-    private void UpdateReviveReturn() {
-        if (!isReturningFromRevive || monkeyController == null) {
+    // flies the monkey back to where the fight began, untouchable & out of
+    // any web on the way, as after a revive
+    private void ReturnToStart() {
+        if (monkeyController == null) {
+            return;
+        }
+        if (struggle != null) {
+            struggle.ForceRelease();
+        }
+        SetUntouchable(true);
+        monkeyController.ClearStun();
+        monkeyController.IsHeld = true;
+        monkeyController.PullTo(entryPosition, reviveReturnSpeedU);
+        isReturningToStart = true;
+    }
+
+    // lets go of the monkey once it is back at the fight's start
+    private void UpdateReturnToStart() {
+        if (!isReturningToStart || monkeyController == null) {
             return;
         }
         if (
             monkeyController.HasReachedPullTarget
             || (monkey.position - entryPosition).sqrMagnitude < 0.01f
         ) {
-            isReturningFromRevive = false;
+            isReturningToStart = false;
             // back on the ring at the fight's start, not where it fell
             monkeyController.SyncOrbitAngle();
             monkeyController.IsHeld = false;
@@ -2388,14 +2499,45 @@ public class BossFightController: MonoBehaviour {
     // the run goes on: the gold armor is the reward, the hazards & the great
     // cobra's chase come back, & the climb is free again
     private void FinishWithReward() {
-        phase = Phase.Done;
+        phase = Phase.Rewarding;
         hasShield = true;
+        isRewardPanelShown = false;
         // the armor swirls in onto the monkey, then a badge keeps it in view
+        // & the game pauses on the reward till the player goes on
         armorRewardTimeS = 0f;
         hasArmorLanded = false;
         hud.HideBossBar();
         hud.SetPrompt(false, Vector3.zero);
-        hud.ShowBannerFor(winTitle, winLine, goldenColor, winBannerS);
+    }
+
+    // once the swirl is done, time stops on the reward panel; Space or its
+    // button goes on
+    private void UpdateRewardPause(GameController game) {
+        if (!isRewardPanelShown) {
+            if (armorRewardTimeS >= 0f) {
+                return;
+            }
+            isRewardPanelShown = true;
+            hud.ShowRewardPanel(winTitle, winLine, winDetailLine);
+        }
+        // a pause & resume would run the game under the panel otherwise
+        Time.timeScale = 0f;
+        if (game.IsPaused) {
+            return;
+        }
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) {
+            ContinueAfterReward();
+        }
+    }
+
+    private void ContinueAfterReward() {
+        if (phase != Phase.Rewarding || !isRewardPanelShown) {
+            return;
+        }
+        hud.HideRewardPanel();
+        Time.timeScale = 1f;
+        phase = Phase.Done;
 
         foreach (Behaviour spawner in stoppedSpawners) {
             if (spawner != null) {
@@ -2405,12 +2547,12 @@ public class BossFightController: MonoBehaviour {
         stoppedSpawners.Clear();
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
         // a head start: the cobra chases again from far down the trunk,
-        // called out once the win banner is gone
+        // called out a moment after
         if (greatCobra != null) {
             greatCobra.StopGuard();
             greatCobra.KnockBack(winCobraDropU);
         }
-        chaseWarnTime = Time.time + winBannerS;
+        chaseWarnTime = Time.time + 1f;
         hasWarnedChase = false;
         if (monkeyController != null) {
             monkeyController.ClearHeightCeiling();
@@ -2822,6 +2964,7 @@ public class BossFightController: MonoBehaviour {
         WatchingAd, // time stopped, the mock ad playing
         Defeated, // the king beaten, the crown on its way
         Over, // the monkey beaten
+        Rewarding, // the armor reward, then a pause till the player goes on
         Done, // the king beaten & the climb going on, the armor kept
     }
 
@@ -2904,7 +3047,7 @@ public class BossFightController: MonoBehaviour {
     private bool hasHit; // the monkey has landed a first hit
     private bool hasShield; // the golden banana's shield is up
     private bool hasThrown; // the first banana has been thrown
-    private bool isReturningFromRevive; // flying back onto the trunk
+    private bool isReturningToStart; // flying back to the fight's start
     private float reviveLeftS; // revive offer time left; unscaled s
     private float adElapsedS; // time into the mock ad; unscaled s
     private float cobraSaveGraceEndTime; // the armor's save ignores contacts
@@ -2945,6 +3088,7 @@ public class BossFightController: MonoBehaviour {
     private Vector3[] armorBaseScales;
     private float armorRewardTimeS = -1f; // into the win swirl, -1 if none
     private bool hasArmorLanded; // the swirl's pieces have settled
+    private bool isRewardPanelShown; // the win's pause panel is up
 
     // cached references  ------------------------------------------------------
     private BossKingBody body;
