@@ -68,7 +68,7 @@ monkobra/
 | --- | --- |
 | `Cameras` | the four Cinemachine cameras |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
-| `Envs` (plain scene object) | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `SlipperyBarkSystem` (`SlipperyBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
+| `Envs` (plain scene object) | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `RoughBarkSystem` (`RoughBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Boss/BossFight` | `BossFightController`, `BossKingBody`, `BossFightHud`; builds the Cobra King arena at runtime, its position does not matter |
 | `Systems/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
@@ -158,8 +158,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Cameras/CameraCoolDownFeedback` | on the main camera: vignette blackdown and zoom-out pulse on each low-stamina move attempt, a lighter step while low and a stronger one when empty | [TDD](docs/monkobra-tdd.md#camera) |
 | `Cameras/CameraEfxConfig` | ScriptableObject (`Settings/Cameras/CameraEfxConfig.asset`) of the camera efx tuning: both cool-down steps (vignette, zoom-out) and their timing | [TDD](docs/monkobra-tdd.md#camera) |
 | `Player/HitBranchSensor` | singleton branch sensor: raises `BranchHit` and `Hit` (with a `HitKind`); `ReportHit` applies the same drop for a hazard touching the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
-| `Environment/SlipperyBarkZone` | wet patch on the trunk: its wavy outline is the contact area; each pass can make the monkey slip via `MonkeyController.TrySlip` | none |
-| `Environment/SlipperyBarkSpawner` | on the `SlipperyBarkSystem` prefab: one tutorial band, then on each `BranchesGenerated` rolls patches on that segment against a curve in `WorldBalanceConfig` | none |
+| `Environment/RoughBarkZone` | raised, irregular bark patch on the trunk that smoothly slows the monkey in every direction while touched; avoidable | [Mobs](docs/mob-doc.md) |
+| `Environment/RoughBarkSpawner` | on the `RoughBarkSystem` prefab: once the score passes `roughBarkStartScore`, rolls broad patches ahead of the monkey, off obstacles; `RoughBarkSetup` & `RoughBarkSmokeCheck` are Editor tools | [TDD](docs/monkobra-tdd.md) |
 | `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/TreeSegmentController` | places branches on a segment, skipping spots w/i `startingZoneBranchClearRadiusU` of the monkey before the run is playing, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/DTSPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |
@@ -212,6 +212,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `UI/CoconutMessageWidget` | on `InGameHUD/CoconutMessage`: turns the coconut events into `PopUpManager.Show` calls for the first coconut, a freeze, a refused freeze, and the thaw | [Grab](docs/grab-doc.md#coconut) |
 | `UI/SpiderWebWidget` | escape bar, and the first-trap hint through `PopUpManager`, hidden on escape | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `UI/PauseScreenWidget` | pause panel, shown while `GameController.IsPaused` (Esc or P; R restarts), toggled on `PauseChanged` | [TDD](docs/monkobra-tdd.md#ui) |
+| `UI/KeyPromptUI`, `UI/FruitGrabPrompt` | runtime keycap ("space", "hold, then release") following a world point; `FruitGrabPrompt` on the Canvas teaches the first grab of each fruit kind per run, the boss HUD reuses the keycap | [Grab](docs/grab-doc.md) |
+| `Scoring/SessionLeaderboard`, `UI/LeaderboardWidget`, `UI/LeaderboardRowWidget` | simulated rivals fixed per launch; the widget fills the leaderboard nested in `LoseScreen` with the player's rank when it opens | none |
 | `UI/LowStaminaWidget` | asks `PopUpManager` for the low-stamina hint on the first event behind the bar shake and cool-down | [TDD](docs/monkobra-tdd.md#ui) |
 
 ## Known Gaps & Constraints
