@@ -125,6 +125,14 @@ public class PineappleLeapController: MonoBehaviour {
         pullStartTime = Time.time;
         pullTarget =
             monkey.transform.position + Vector3.up * leapConfig.DistanceU;
+        // never past the boss fight's arena: the leap stops at its height
+        BossFightController bossFight = BossFightController.I;
+        if (bossFight != null) {
+            pullTarget.y = Mathf.Max(
+                monkey.transform.position.y,
+                Mathf.Min(pullTarget.y, bossFight.LeapTopY)
+            );
+        }
         PullAtCurveSpeed();
         if (Debug.isDebugBuild) {
             Debug.Log("PineappleLeapController:\tpull started", this);

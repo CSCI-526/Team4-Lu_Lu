@@ -610,6 +610,12 @@ public class ArmController: MonoBehaviour {
             }//一个水果即使有多个碰撞体，摘掉后也会一起从检测列表移除，避免留下已经不存在的目标
         }
 
+        // in the boss fight a grabbed banana is also thrown at the boss
+        BossFightController bossFight = BossFightController.I;
+        if (bossFight != null && bossFight.TryThrow(fruit, fruitCentre)) {
+            return;
+        }
+
         // a coconut is kept to freeze the cobra, it restores no stamina
         bool restoresStamina =
             pickup == null || pickup.Kind != PickupKind.Coconut;

@@ -38,6 +38,12 @@ public class SpiderWebStruggle: MonoBehaviour {
     /// <returns>if a web holds the monkey right now</returns>
     public bool IsTrapped => isTrapped;
 
+    /// <summary>
+    /// Scale on the progress each escape press adds, 1 = normal; above 1
+    /// breaks free in fewer presses, eg in the boss arena
+    /// </summary>
+    public float EscapeGainScale { get; set; } = 1f;
+
     /// <returns>escape progress, 0~1, 1 breaks free</returns>
     public float EscapeProgress => escapeProgress;
 
@@ -83,6 +89,19 @@ public class SpiderWebStruggle: MonoBehaviour {
         Trapped?.Invoke(trapCount == 1);
         ProgressChanged?.Invoke(escapeProgress);
         return true;
+    }
+
+    /// <summary>
+    /// Lets the monkey out of its web at once, without the protection an
+    /// escape gives, eg when the boss fight takes over the monkey; does
+    /// nothing if it is not trapped.
+    /// </summary>
+    public void ForceRelease() {
+        if (!isTrapped) {
+            return;
+        }
+        BreakFree();
+        protectionEndTime = 0f;
     }
 
     // Inspector Fields  #######################################################
@@ -194,7 +213,10 @@ public class SpiderWebStruggle: MonoBehaviour {
             return;
         }
 
-        escapeProgress = Mathf.Min(1f, escapeProgress + pressGain);
+        escapeProgress = Mathf.Min(
+            1f,
+            escapeProgress + pressGain * EscapeGainScale
+        );
         if (trapWeb != null) {
             trapWeb.Pulse();
         }

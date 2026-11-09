@@ -221,7 +221,7 @@ public class FruitFlyEffect: MonoBehaviour {
     // Event Handlers  #########################################################
     // a flight cut by the run's end never restores into the next run
     private void OnStateChanged(GameState next) {
-        if (next == GameState.Lost) {
+        if (next == GameState.Lost || next == GameState.Won) {
             ClearFlights();
         }
     }

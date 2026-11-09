@@ -41,6 +41,12 @@ public class CobraSensor: MonoBehaviour {
             return;
         }
 
+        // the boss fight's gold armor takes the bite once
+        BossFightController bossFight = BossFightController.I;
+        if (bossFight != null && bossFight.TryAbsorbCobraCatch()) {
+            return;
+        }
+
         if (Debug.isDebugBuild) {
             Debug.Log(
                 $"CobraSensor:\tplayer caught via {other.name}, "

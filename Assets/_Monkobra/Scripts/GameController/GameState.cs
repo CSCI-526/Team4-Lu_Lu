@@ -19,4 +19,10 @@ public enum GameState {
 
     /// <summary>Run lost, the lose screen waits for a restart.</summary>
     Lost,
+
+    /// <summary>
+    /// Run won by defeating the Cobra King; the boss fight's victory panel
+    /// waits for a restart.
+    /// </summary>
+    Won,
 }

@@ -2,8 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// Balance of the generated world: the ramped difficulty curve that every
-/// hazard chance is read against, branch and fruit generation, rough bark and
-/// spider webs. Player, scoring and coconut numbers live in
+/// hazard chance is read against, branch and fruit generation, rough bark,
+/// spider webs and the boss fight. Player, scoring and coconut numbers live in
 /// <see cref="PlayerBalanceConfig"/>, cobra numbers in
 /// <see cref="CobraBalanceConfig"/>.
 /// </summary>
@@ -55,6 +55,17 @@ public class WorldBalanceConfig: ScriptableObject {
     /// creates a web</returns>
     public AnimationCurve WebSpawnProbabilityCurve =>
         webSpawnProbabilityCurve;
+
+    /// <returns>height climbed since game start at which the boss fight
+    /// begins; u</returns>
+    public float BossTriggerHeightU => bossTriggerHeightU;
+
+    /// <returns>health of the Cobra King</returns>
+    public int BossMaxHealth => bossMaxHealth;
+
+    /// <returns>health a thrown banana takes off the Cobra King per hit
+    /// </returns>
+    public int BossBananaDamage => bossBananaDamage;
 
     // Inspector Fields  #######################################################
     [Header("Ramped Difficulty")]
@@ -140,6 +151,23 @@ public class WorldBalanceConfig: ScriptableObject {
     private AnimationCurve webSpawnProbabilityCurve =
         AnimationCurve.Linear(0f, 0f, 1f, 0.5f);
 
+    [Header("Boss Fight")]
+    [SerializeField]
+    [Tooltip(
+        "height climbed since game start at which the boss fight begins: "
+            + "past where webs, falling cobras, pineapples, coconuts & rough "
+            + "bark have all shown up; lower it to test; u"
+    )]
+    private float bossTriggerHeightU = 500f;
+
+    [SerializeField]
+    [Tooltip("health of the Cobra King")]
+    private int bossMaxHealth = 12;
+
+    [SerializeField]
+    [Tooltip("health a thrown banana takes off the Cobra King per hit")]
+    private int bossBananaDamage = 1;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         branchGenerationAttemptCount = Mathf.Max(
@@ -155,5 +183,8 @@ public class WorldBalanceConfig: ScriptableObject {
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
         roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
         webAttemptCount = Mathf.Max(0, webAttemptCount);
+        bossTriggerHeightU = Mathf.Max(0f, bossTriggerHeightU);
+        bossMaxHealth = Mathf.Max(1, bossMaxHealth);
+        bossBananaDamage = Mathf.Max(1, bossBananaDamage);
     }
 }
