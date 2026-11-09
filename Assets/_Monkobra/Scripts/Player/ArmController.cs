@@ -22,6 +22,10 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(ConfigurableJoint))]
 public class ArmController: MonoBehaviour {
     // Public Members  #########################################################
+    /// <summary>Raised after a successful grab, with the collected fruit's
+    /// collider (already inactive). A failed release never raises it.</summary>
+    public static event System.Action<Collider> FruitGrabbed;
+
     /// <returns>if the arm is reaching for fruit, else climbing</returns>
     public bool IsReaching => isReaching;
 
@@ -609,6 +613,8 @@ public class ArmController: MonoBehaviour {
                 fruitDetection.RemoveFruit(fruit);
             }//一个水果即使有多个碰撞体，摘掉后也会一起从检测列表移除，避免留下已经不存在的目标
         }
+
+        FruitGrabbed?.Invoke(fruit);
 
         // in the boss fight a grabbed banana is also thrown at the boss
         BossFightController bossFight = BossFightController.I;

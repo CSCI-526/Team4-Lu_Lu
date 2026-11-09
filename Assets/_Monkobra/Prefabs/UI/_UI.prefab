@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3826928508572276498}
   - component: {fileID: 7656722582697012459}
   - component: {fileID: 6878486538531318635}
+  - component: {fileID: 7461908573824196231}
   m_Layer: 5
   m_Name: _UI
   m_TagString: Untagged
@@ -108,6 +109,21 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &7461908573824196231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722326252678987484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb2a9b2d334e4a4fa4c080e268d8b543, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FruitGrabPrompt
+  promptOffset: {x: 0, y: 80}
+  keyText: space
+  instructionText: hold, then release
 --- !u!1001 &1940182272393177215
 PrefabInstance:
   m_ObjectHideFlags: 0

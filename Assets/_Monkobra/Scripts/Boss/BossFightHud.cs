@@ -265,11 +265,9 @@ public class BossFightHud: MonoBehaviour {
     /// it when <paramref name="isShown"/> is false.
     /// </summary>
     public void SetPrompt(bool isShown, Vector3 worldPosition) {
-        if (promptRect == null) {
-            return;
+        if (keyPrompt != null) {
+            keyPrompt.SetPrompt(isShown, worldPosition, promptOffset);
         }
-        promptRect.gameObject.SetActive(isShown);
-        promptWorldPosition = worldPosition;
     }
 
     /// <summary>
@@ -413,9 +411,6 @@ public class BossFightHud: MonoBehaviour {
                 PlaceSpeech();
             }
         }
-        if (promptRect != null && promptRect.gameObject.activeSelf) {
-            Place(promptRect, promptWorldPosition, promptOffset);
-        }
         if (easyTag != null && easyTag.gameObject.activeSelf) {
             Place(easyTag, easyTagWorld, tagOffset);
             Place(normalTag, normalTagWorld, tagOffset);
@@ -490,31 +485,8 @@ public class BossFightHud: MonoBehaviour {
         Stretch(speechLabel.rectTransform);
         speechRect.gameObject.SetActive(false);
 
-        // key prompt: a keycap over the banana and how to use it
-        promptRect = CreateRect("Prompt", rootRect);
-        promptRect.sizeDelta = new Vector2(220f, 90f);
-        RectTransform keycap = CreateRect("Keycap", promptRect);
-        keycap.anchorMin = keycap.anchorMax = new Vector2(0.5f, 1f);
-        keycap.pivot = new Vector2(0.5f, 1f);
-        keycap.sizeDelta = new Vector2(150f, 44f);
-        AddImage(keycap, Color.white);
-        RectTransform keyFace = CreateRect("Face", keycap);
-        Stretch(keyFace);
-        keyFace.offsetMin = new Vector2(3f, 3f);
-        keyFace.offsetMax = new Vector2(-3f, -3f);
-        AddImage(keyFace, new Color(0.15f, 0.15f, 0.15f, 0.9f));
-        TextMeshProUGUI keyLabel = CreateLabel(
-            "Key", keyFace, "space", 24f, Color.white
-        );
-        Stretch(keyLabel.rectTransform);
-        TextMeshProUGUI howLabel = CreateLabel(
-            "How", promptRect, "hold, then release", 22f, Color.white
-        );
-        RectTransform howRect = howLabel.rectTransform;
-        howRect.anchorMin = howRect.anchorMax = new Vector2(0.5f, 0f);
-        howRect.pivot = new Vector2(0.5f, 0f);
-        howRect.sizeDelta = new Vector2(260f, 36f);
-        promptRect.gameObject.SetActive(false);
+        // Same keycap component as the fruit tutorial.
+        keyPrompt = KeyPromptUI.Create(rootRect);
 
         // banner, screen center
         bannerLabel = CreateLabel(
@@ -930,7 +902,6 @@ public class BossFightHud: MonoBehaviour {
     private Color flashColor = Color.white;
     private float speechLeftS;
     private Vector3 speechWorldPosition;
-    private Vector3 promptWorldPosition;
 
     // cached references  ------------------------------------------------------
     private RectTransform canvasRect;
@@ -940,7 +911,7 @@ public class BossFightHud: MonoBehaviour {
     private TextMeshProUGUI nameLabel;
     private RectTransform speechRect;
     private TextMeshProUGUI speechLabel;
-    private RectTransform promptRect;
+    private KeyPromptUI keyPrompt;
     private TextMeshProUGUI bannerLabel;
     private GameObject revivePanel;
     private TextMeshProUGUI reviveCountLabel;
