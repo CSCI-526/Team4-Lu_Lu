@@ -45,7 +45,17 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("- Time Start: ").Append(FormatClock(run.StartClock));
         sb.Append('\n');
         sb.Append("- Time Stop: ").Append(FormatClock(end.Clock));
-        sb.Append("\n\n");
+        sb.Append('\n');
+        if (run.HasZoneExit) {
+            sb.Append("- Starting Zone Exit: +");
+            sb.Append((run.ZoneExit.Clock - run.StartClock).ToString(
+                @"hh\:mm\:ss",
+                CultureInfo.InvariantCulture
+            ));
+            sb.Append(", y ").Append(FormatHeight(run.ZoneExit.Height));
+            sb.Append('\n');
+        }
+        sb.Append('\n');
         AppendHeightCurve(sb, run.Samples);
 
         sb.Append("#### Final Score: ").Append(run.TotalScore).Append("\n\n");
@@ -54,12 +64,16 @@ public static class AnalyticsMarkdownWriter {
         // the reward score holds both fruits, the coconut part kept apart
         long bananaScore = run.RewardScore - run.CoconutRewardScore;
         sb.Append("- Score from Banana: ");
-        sb.Append(FormatPickupScore(bananaScore, run.Bananas.Count));
+        sb.Append(FormatPickupScore(
+            bananaScore,
+            run.CountOf(AnalyticsMetric.Banana)
+        ));
         sb.Append('\n');
         sb.Append("- Score from Coconut: ");
-        sb.Append(
-            FormatPickupScore(run.CoconutRewardScore, run.Coconuts.Count)
-        );
+        sb.Append(FormatPickupScore(
+            run.CoconutRewardScore,
+            run.CountOf(AnalyticsMetric.Coconut)
+        ));
         sb.Append("\n\n");
         AppendScoreSplit(
             sb,
@@ -68,26 +82,22 @@ public static class AnalyticsMarkdownWriter {
             run.CoconutRewardScore
         );
 
-        sb.Append("#### Banana Count: ").Append(run.Bananas.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.Bananas, run.StartClock, true);
-        AppendStaminaCurve(sb, run.Samples);
-
-        sb.Append("#### Coconut Count: ").Append(run.Coconuts.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.Coconuts, run.StartClock, true);
-
-        sb.Append("#### Coconut Used: ").Append(run.CoconutsUsed.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.CoconutsUsed, run.StartClock, true);
-
-        sb.Append("#### Web Encounter: ").Append(run.Webs.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.Webs, run.StartClock, false);
-
-        sb.Append("#### Branch Hit: ").Append(run.Branches.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.Branches, run.StartClock, true);
+        // every metric gets one section, a new metric needs no code here
+        foreach (AnalyticsMetric metric in AnalyticsMetrics.All) {
+            List<EventStamp> stamps = run.GetEvents(metric);
+            sb.Append("#### ").Append(AnalyticsMetrics.GetTitle(metric));
+            sb.Append(": ").Append(stamps.Count).Append("\n\n");
+            AppendClockList(
+                sb,
+                stamps,
+                run.StartClock,
+                AnalyticsMetrics.HasHeight(metric)
+            );
+            // stamina is refilled by bananas, so its curve sits under them
+            if (metric == AnalyticsMetric.Banana) {
+                AppendStaminaCurve(sb, run.Samples);
+            }
+        }
 
         return sb.ToString();
     }

@@ -170,7 +170,7 @@ public class AnalyticsManager: MonoBehaviour {
         if (
             currentRun != null
             && observedGame != null
-            && observedGame.State == GameState.Playing
+            && observedGame.IsRunLive
         ) {
             if (Time.time >= nextSampleTime) {
                 AddSample();
@@ -205,7 +205,7 @@ public class AnalyticsManager: MonoBehaviour {
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SpiderWebTrap.Encountered -= OnWebEncountered;
-        Observe(null, null, null, null);
+        Observe(null, null, null, null, null, null);
         I = null;
     }
 
@@ -255,17 +255,18 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     private void OnGameStateChanged(GameState state) {
-        if (state == GameState.Playing) {
-            // scene reloaded mid run, the old run never saw a game over
-            CloseRun(RunStatus.Interrupted);
-            currentRun = new RunData {
-                StartTime = Time.time,
-                StartClock = DateTime.Now
-            };
-            AddSample();
-            nextSampleTime = Time.time + config.SampleIntervalS;
-            session.Runs.Add(currentRun);
-            SaveSession();
+        if (state == GameState.StartingZone) {
+            // the run goes live here: the zone's fruit, webs & height count
+            OpenRun(true);
+        } else if (state == GameState.Playing) {
+            if (currentRun == null) {
+                // no starting zone, e.g. a dev scene that starts playing
+                OpenRun(false);
+            } else if (currentRun.StartedInZone && !currentRun.HasZoneExit) {
+                currentRun.ZoneExit = CreateStamp();
+                currentRun.HasZoneExit = true;
+                SaveSession();
+            }
         } else if (state == GameState.Lost) {
             CloseRun(RunStatus.Lost);
         } else if (state == GameState.Won) {
@@ -273,41 +274,60 @@ public class AnalyticsManager: MonoBehaviour {
         }
     }
 
+    // one line per source: the metric channel does the stamping & saving
     private void OnBananaCollected() {
-        if (currentRun == null) {
-            return;
-        }
-
-        currentRun.Bananas.Add(CreateStamp());
-        SaveSession();
+        RecordEvent(AnalyticsMetric.Banana);
     }
 
     private void OnCoconutCollected() {
-        if (currentRun != null) {
-            currentRun.Coconuts.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.Coconut);
     }
 
     private void OnCoconutUsed() {
-        if (currentRun != null) {
-            currentRun.CoconutsUsed.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.CoconutUsed);
     }
 
     private void OnWebEncountered(SpiderWebTrap _) {
-        if (currentRun != null) {
-            currentRun.Webs.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.Web);
     }
 
     private void OnBranchHit(Collider _) {
-        if (currentRun != null) {
-            currentRun.Branches.Add(CreateStamp());
-            SaveSession();
+        RecordEvent(AnalyticsMetric.Branch);
+    }
+
+    // a leap counts at its start, not its end
+    private void OnLeapChanged(bool isLeaping) {
+        if (isLeaping) {
+            RecordEvent(AnalyticsMetric.PineappleLeap);
         }
+    }
+
+    private void OnRoughBarkTouched() {
+        RecordEvent(AnalyticsMetric.RoughBark);
+    }
+
+    // freezes from a coconut & from the gold armor both arrive here
+    private void OnCobraFrozen(float _) {
+        RecordEvent(AnalyticsMetric.CobraFreeze);
+    }
+
+    // a pause counts, a resume does not
+    private void OnPauseChanged(bool isPaused) {
+        if (isPaused) {
+            RecordEvent(AnalyticsMetric.Pause);
+        }
+    }
+
+    private void OnBossFightStarted() {
+        RecordEvent(AnalyticsMetric.BossFight);
+    }
+
+    private void OnBossArmorAbsorbed() {
+        RecordEvent(AnalyticsMetric.BossArmorSaved);
+    }
+
+    private void OnBossRevived() {
+        RecordEvent(AnalyticsMetric.BossRevive);
     }
 
     // constants  ##############################################################
@@ -325,6 +345,8 @@ public class AnalyticsManager: MonoBehaviour {
     private ScoreManager observedScore;
     private HitBranchSensor observedBranch;
     private CoconutManager observedCoconuts;
+    private MonkeyController observedMonkey;
+    private BossFightController observedBoss;
 
     // private methods  ########################################################
     private void ObserveScene() {
@@ -332,7 +354,9 @@ public class AnalyticsManager: MonoBehaviour {
             GameController.I,
             ScoreManager.I,
             FindFirstObjectByType<HitBranchSensor>(),
-            CoconutManager.I
+            CoconutManager.I,
+            FindFirstObjectByType<MonkeyController>(),
+            BossFightController.I
         );
     }
 
@@ -340,10 +364,22 @@ public class AnalyticsManager: MonoBehaviour {
         GameController game,
         ScoreManager score,
         HitBranchSensor branch,
-        CoconutManager coconuts
+        CoconutManager coconuts,
+        MonkeyController monkey,
+        BossFightController boss
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;
+            observedGame.LeapChanged -= OnLeapChanged;
+            observedGame.PauseChanged -= OnPauseChanged;
+        }
+        if (observedMonkey != null) {
+            observedMonkey.RoughBarkTouched -= OnRoughBarkTouched;
+        }
+        if (observedBoss != null) {
+            observedBoss.FightStarted -= OnBossFightStarted;
+            observedBoss.ArmorAbsorbed -= OnBossArmorAbsorbed;
+            observedBoss.Revived -= OnBossRevived;
         }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
@@ -354,15 +390,28 @@ public class AnalyticsManager: MonoBehaviour {
         if (observedCoconuts != null) {
             observedCoconuts.Collected -= OnCoconutCollected;
             observedCoconuts.Used -= OnCoconutUsed;
+            observedCoconuts.Frozen -= OnCobraFrozen;
         }
 
         observedGame = game;
         observedScore = score;
         observedBranch = branch;
         observedCoconuts = coconuts;
+        observedMonkey = monkey;
+        observedBoss = boss;
 
         if (observedGame != null) {
             observedGame.StateChanged += OnGameStateChanged;
+            observedGame.LeapChanged += OnLeapChanged;
+            observedGame.PauseChanged += OnPauseChanged;
+        }
+        if (observedMonkey != null) {
+            observedMonkey.RoughBarkTouched += OnRoughBarkTouched;
+        }
+        if (observedBoss != null) {
+            observedBoss.FightStarted += OnBossFightStarted;
+            observedBoss.ArmorAbsorbed += OnBossArmorAbsorbed;
+            observedBoss.Revived += OnBossRevived;
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
@@ -373,7 +422,32 @@ public class AnalyticsManager: MonoBehaviour {
         if (observedCoconuts != null) {
             observedCoconuts.Collected += OnCoconutCollected;
             observedCoconuts.Used += OnCoconutUsed;
+            observedCoconuts.Frozen += OnCobraFrozen;
         }
+    }
+
+    // the one way an event enters a run: stamps it, ignored b/t runs, saves
+    private void RecordEvent(AnalyticsMetric metric) {
+        if (currentRun == null) {
+            return;
+        }
+
+        currentRun.GetEvents(metric).Add(CreateStamp());
+        SaveSession();
+    }
+
+    // opens a run, an old one never closed belongs to a reloaded scene
+    private void OpenRun(bool isInZone) {
+        CloseRun(RunStatus.Interrupted);
+        currentRun = new RunData {
+            StartTime = Time.time,
+            StartClock = DateTime.Now,
+            StartedInZone = isInZone
+        };
+        AddSample();
+        nextSampleTime = Time.time + config.SampleIntervalS;
+        session.Runs.Add(currentRun);
+        SaveSession();
     }
 
     // snapshot of the moment and the height climbed above the run start

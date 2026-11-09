@@ -49,9 +49,16 @@ public class MonkeyController: MonoBehaviour {
     /// <summary>Tracks actual surface contact; overlap never stacks slowdown.</summary>
     public void SetRoughBarkContact(RoughBarkZone zone, bool touching) {
         if (zone == null) return;
-        if (touching) roughContacts.Add(zone);
-        else roughContacts.Remove(zone);
+        if (touching) {
+            // only a patch not touched before counts as a new contact
+            if (roughContacts.Add(zone)) RoughBarkTouched?.Invoke();
+        } else {
+            roughContacts.Remove(zone);
+        }
     }
+
+    /// <summary>raised each time the monkey meets a rough bark patch</summary>
+    public event System.Action RoughBarkTouched;
     /// <summary>
     /// While held, slides the body to <paramref name="worldPos"/> in 3D, e.g.
     /// the hub of the web that caught it. Releasing the hold glides the body

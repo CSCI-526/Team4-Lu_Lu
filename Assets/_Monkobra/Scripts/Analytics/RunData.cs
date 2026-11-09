@@ -55,12 +55,14 @@ public class RunData {
     // <see cref="UnityEngine.Time.time"/> at run start, base of elapsed secs
     public float StartTime;
     public DateTime StartClock;
-    public readonly List<EventStamp> Bananas = new List<EventStamp>();
-    public readonly List<EventStamp> Coconuts = new List<EventStamp>();
-    public readonly List<EventStamp> CoconutsUsed = new List<EventStamp>();
-    public readonly List<EventStamp> Webs = new List<EventStamp>();
-    public readonly List<EventStamp> Branches = new List<EventStamp>();
     public readonly List<RunSample> Samples = new List<RunSample>();
+
+    // starting zone  -----------------------------------------------------------
+    // if the run opened in the starting zone, so it holds the zone's events
+    public bool StartedInZone;
+    // if the monkey left the starting zone during the run
+    public bool HasZoneExit;
+    public EventStamp ZoneExit;
 
     // set once the run leaves InProgress  --------------------------------------
     public EventStamp End;
@@ -75,4 +77,27 @@ public class RunData {
     public long CoconutRewardScore;
     // seconds from start to end
     public float DurationS;
+
+    // Public Methods  #########################################################
+    /// <returns>stamps of the metric in time order, empty if it never
+    /// happened; add to it to record an event</returns>
+    public List<EventStamp> GetEvents(AnalyticsMetric metric) {
+        if (!events.TryGetValue(metric, out List<EventStamp> stamps)) {
+            stamps = new List<EventStamp>();
+            events[metric] = stamps;
+        }
+
+        return stamps;
+    }
+
+    /// <returns>how many times the metric happened in the run</returns>
+    public int CountOf(AnalyticsMetric metric) {
+        return events.TryGetValue(metric, out List<EventStamp> stamps)
+            ? stamps.Count
+            : 0;
+    }
+
+    // private members  ########################################################
+    private readonly Dictionary<AnalyticsMetric, List<EventStamp>> events =
+        new Dictionary<AnalyticsMetric, List<EventStamp>>();
 }
