@@ -121,6 +121,93 @@ public class BossKingBody: MonoBehaviour {
     }
 
     /// <summary>
+    /// Builds a small look-alike of the king, shown eg on the trunk height
+    /// marker at the fight's height: a wavy bead coil thinning to its tail,
+    /// a short neck, the round head w/ its eyes & the gold crown, all at
+    /// <paramref name="scale"/> of the real king; no colliders. Its face
+    /// looks toward the root's -z, so under a camera-facing label it faces
+    /// the player.
+    /// </summary>
+    /// <returns>the figure's root, w/o a parent</returns>
+    public Transform BuildFigure(float scale) {
+        if (colorBlock == null) {
+            colorBlock = new MaterialPropertyBlock();
+        }
+        Transform figure = new GameObject("KingFigure").transform;
+        Transform shape = new GameObject("Shape").transform;
+        shape.SetParent(figure, false);
+        shape.localRotation = Quaternion.Euler(0f, 180f, 0f);
+        shape.localScale = Vector3.one * scale;
+
+        // the coil lies along the top, waving & thinning to the tail
+        const int beadCount = 6;
+        for (int i = 0; i < beadCount; i++) {
+            float t = i / (beadCount - 1f);
+            float size = Mathf.Lerp(1.3f, 0.6f, t);
+            CreatePart(
+                PrimitiveType.Sphere, "Bead" + i, shape,
+                new Vector3(
+                    Mathf.Lerp(1.2f, -3.4f, t),
+                    size * 0.5f + 0.3f * Mathf.Sin(t * Mathf.PI * 2f),
+                    0f
+                ),
+                Vector3.one * size, bodyColor, false, true
+            );
+        }
+        // the neck rises from the coil's thick end
+        CreatePart(
+            PrimitiveType.Sphere, "Neck0", shape, new Vector3(2f, 1.3f, 0f),
+            Vector3.one * 1.1f, bodyColor, false, true
+        );
+        CreatePart(
+            PrimitiveType.Sphere, "Neck1", shape, new Vector3(2.4f, 2.2f, 0f),
+            Vector3.one * 1f, bodyColor, false, true
+        );
+
+        Transform figureHead = new GameObject("Head").transform;
+        figureHead.SetParent(shape, false);
+        figureHead.localPosition = new Vector3(2.5f, 3.6f, 0f);
+        Vector3 skull = headSize * 0.8f;
+        CreatePart(
+            PrimitiveType.Sphere, "Skull", figureHead, Vector3.zero, skull,
+            bodyColor, false, true
+        );
+        for (int side = -1; side <= 1; side += 2) {
+            Vector3 eyeCenter = new Vector3(
+                side * skull.x * 0.24f, skull.y * 0.1f, skull.z * 0.4f
+            );
+            CreatePart(
+                PrimitiveType.Sphere, "Eye", figureHead, eyeCenter,
+                Vector3.one * 0.7f, Color.white, false, true
+            );
+            CreatePart(
+                PrimitiveType.Sphere, "Pupil", figureHead,
+                eyeCenter + new Vector3(0f, 0f, 0.25f), Vector3.one * 0.4f,
+                new Color(0.12f, 0.08f, 0.15f), false, true
+            );
+        }
+        Transform figureCrown = new GameObject("Crown").transform;
+        figureCrown.SetParent(figureHead, false);
+        figureCrown.localPosition = new Vector3(0f, skull.y * 0.47f, 0f);
+        CreatePart(
+            PrimitiveType.Cylinder, "Band", figureCrown, Vector3.zero,
+            new Vector3(1.2f, 0.14f, 1.2f), crownColor, false, true
+        );
+        for (int i = 0; i < 3; i++) {
+            float radians = (90f + (i - 1) * 50f) * Mathf.Deg2Rad;
+            CreatePart(
+                PrimitiveType.Cube, "Point" + i, figureCrown,
+                new Vector3(
+                    Mathf.Cos(radians) * 0.48f, 0.26f,
+                    Mathf.Sin(radians) * 0.48f
+                ),
+                new Vector3(0.2f, 0.4f, 0.2f), crownColor, false, true
+            );
+        }
+        return figure;
+    }
+
+    /// <summary>
     /// Drops a running strike's impact: the head still eases back, but
     /// <c>onImpact</c> never runs, eg when the fight restarts.
     /// </summary>

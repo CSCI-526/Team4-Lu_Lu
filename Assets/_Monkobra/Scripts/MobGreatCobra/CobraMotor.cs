@@ -694,6 +694,8 @@ public class CobraMotor: MonoBehaviour {
             cobraBalanceConfig == null
             || cobraBalanceConfig.CobraSurgePerMistakeS <= 0f
             || isFrozen
+            // it holds still in the starting zone, so no surge & no cue
+            || IsInStartingZone
         ) {
             return;
         }
