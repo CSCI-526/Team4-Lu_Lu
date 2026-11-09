@@ -12,7 +12,14 @@ public enum AnalyticsMetric {
     Coconut,
     CoconutUsed,
     Web,
-    Branch
+    Branch,
+    PineappleLeap,
+    RoughBark,
+    CobraFreeze,
+    Pause,
+    BossFight,
+    BossArmorSaved,
+    BossRevive
 }
 
 /// <summary>
@@ -55,7 +62,14 @@ public static class AnalyticsMetrics {
             { AnalyticsMetric.Coconut, new Info("Coconut Count", true) },
             { AnalyticsMetric.CoconutUsed, new Info("Coconut Used", true) },
             { AnalyticsMetric.Web, new Info("Web Encounter", false) },
-            { AnalyticsMetric.Branch, new Info("Branch Hit", true) }
+            { AnalyticsMetric.Branch, new Info("Branch Hit", true) },
+            { AnalyticsMetric.PineappleLeap, new Info("Pineapple Leap", true) },
+            { AnalyticsMetric.RoughBark, new Info("Rough Bark Contact", true) },
+            { AnalyticsMetric.CobraFreeze, new Info("Cobra Freeze", true) },
+            { AnalyticsMetric.Pause, new Info("Pause", true) },
+            { AnalyticsMetric.BossFight, new Info("Boss Fight Start", true) },
+            { AnalyticsMetric.BossArmorSaved, new Info("Armor Save", true) },
+            { AnalyticsMetric.BossRevive, new Info("Boss Revive", true) }
         };
 
     private static readonly AnalyticsMetric[] all =

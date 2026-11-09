@@ -205,7 +205,7 @@ public class AnalyticsManager: MonoBehaviour {
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SpiderWebTrap.Encountered -= OnWebEncountered;
-        Observe(null, null, null, null);
+        Observe(null, null, null, null, null, null);
         I = null;
     }
 
@@ -295,6 +295,41 @@ public class AnalyticsManager: MonoBehaviour {
         RecordEvent(AnalyticsMetric.Branch);
     }
 
+    // a leap counts at its start, not its end
+    private void OnLeapChanged(bool isLeaping) {
+        if (isLeaping) {
+            RecordEvent(AnalyticsMetric.PineappleLeap);
+        }
+    }
+
+    private void OnRoughBarkTouched() {
+        RecordEvent(AnalyticsMetric.RoughBark);
+    }
+
+    // freezes from a coconut & from the gold armor both arrive here
+    private void OnCobraFrozen(float _) {
+        RecordEvent(AnalyticsMetric.CobraFreeze);
+    }
+
+    // a pause counts, a resume does not
+    private void OnPauseChanged(bool isPaused) {
+        if (isPaused) {
+            RecordEvent(AnalyticsMetric.Pause);
+        }
+    }
+
+    private void OnBossFightStarted() {
+        RecordEvent(AnalyticsMetric.BossFight);
+    }
+
+    private void OnBossArmorAbsorbed() {
+        RecordEvent(AnalyticsMetric.BossArmorSaved);
+    }
+
+    private void OnBossRevived() {
+        RecordEvent(AnalyticsMetric.BossRevive);
+    }
+
     // constants  ##############################################################
     private const string FOLDER_NAME = "Analytics";
 
@@ -310,6 +345,8 @@ public class AnalyticsManager: MonoBehaviour {
     private ScoreManager observedScore;
     private HitBranchSensor observedBranch;
     private CoconutManager observedCoconuts;
+    private MonkeyController observedMonkey;
+    private BossFightController observedBoss;
 
     // private methods  ########################################################
     private void ObserveScene() {
@@ -317,7 +354,9 @@ public class AnalyticsManager: MonoBehaviour {
             GameController.I,
             ScoreManager.I,
             FindFirstObjectByType<HitBranchSensor>(),
-            CoconutManager.I
+            CoconutManager.I,
+            FindFirstObjectByType<MonkeyController>(),
+            BossFightController.I
         );
     }
 
@@ -325,10 +364,22 @@ public class AnalyticsManager: MonoBehaviour {
         GameController game,
         ScoreManager score,
         HitBranchSensor branch,
-        CoconutManager coconuts
+        CoconutManager coconuts,
+        MonkeyController monkey,
+        BossFightController boss
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;
+            observedGame.LeapChanged -= OnLeapChanged;
+            observedGame.PauseChanged -= OnPauseChanged;
+        }
+        if (observedMonkey != null) {
+            observedMonkey.RoughBarkTouched -= OnRoughBarkTouched;
+        }
+        if (observedBoss != null) {
+            observedBoss.FightStarted -= OnBossFightStarted;
+            observedBoss.ArmorAbsorbed -= OnBossArmorAbsorbed;
+            observedBoss.Revived -= OnBossRevived;
         }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
@@ -339,15 +390,28 @@ public class AnalyticsManager: MonoBehaviour {
         if (observedCoconuts != null) {
             observedCoconuts.Collected -= OnCoconutCollected;
             observedCoconuts.Used -= OnCoconutUsed;
+            observedCoconuts.Frozen -= OnCobraFrozen;
         }
 
         observedGame = game;
         observedScore = score;
         observedBranch = branch;
         observedCoconuts = coconuts;
+        observedMonkey = monkey;
+        observedBoss = boss;
 
         if (observedGame != null) {
             observedGame.StateChanged += OnGameStateChanged;
+            observedGame.LeapChanged += OnLeapChanged;
+            observedGame.PauseChanged += OnPauseChanged;
+        }
+        if (observedMonkey != null) {
+            observedMonkey.RoughBarkTouched += OnRoughBarkTouched;
+        }
+        if (observedBoss != null) {
+            observedBoss.FightStarted += OnBossFightStarted;
+            observedBoss.ArmorAbsorbed += OnBossArmorAbsorbed;
+            observedBoss.Revived += OnBossRevived;
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
@@ -358,6 +422,7 @@ public class AnalyticsManager: MonoBehaviour {
         if (observedCoconuts != null) {
             observedCoconuts.Collected += OnCoconutCollected;
             observedCoconuts.Used += OnCoconutUsed;
+            observedCoconuts.Frozen += OnCobraFrozen;
         }
     }
 
