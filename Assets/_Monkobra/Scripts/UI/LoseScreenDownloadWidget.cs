@@ -5,33 +5,22 @@ using UnityEngine.UI;
 /// Dev-only button on the lose screen that downloads the session analytics
 /// report: in the browser a file download, elsewhere the session file is saved.
 /// <para>
-/// Attach to the button object. Outside a development build the object turns
-/// itself off, so a release build never shows it.
+/// Attach to the button object, which must carry the <see cref="Button"/>
+/// itself. Outside a development build the object turns itself off, so a
+/// release build never shows it.
 /// </para>
 /// </summary>
+[RequireComponent(typeof(Button))]
 public class LoseScreenDownloadWidget: MonoBehaviour {
-    // Inspector Fields  #######################################################
-    [SerializeField]
-    [Tooltip("button that downloads the analytics report")]
-    private Button button;
-
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        // Inspector Assignment Guard  -----------------------------------------
-        if (button == null) {
-            Debug.LogError(
-                "LoseScreenDownloadWidget:\tmust assign Inspector Field: "
-                    + "Button",
-                this
-            );
-        }
-
+        button = GetComponent<Button>();
         HideOutsideDevBuild();
     }
 
     private void OnEnable() {
         // covers anything that switches the object back on
-        if (HideOutsideDevBuild() || button == null) {
+        if (HideOutsideDevBuild()) {
             return;
         }
 
@@ -59,6 +48,10 @@ public class LoseScreenDownloadWidget: MonoBehaviour {
 
         AnalyticsManager.I.DownloadReport();
     }
+
+    // private members  ########################################################
+    // sibling component, so no Inspector Field is needed
+    private Button button;
 
     // Private Helpers  ########################################################
     // whether the object was turned off, ie this is not a development build
