@@ -3,8 +3,6 @@
 <!--
 FIXME camera adjust
 FIXME game play tunning
-
-bug spider web fail to load & log warning
 -->
 
 

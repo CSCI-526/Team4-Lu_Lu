@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// fixme arm root split into multiple system
 
 /// <summary>
 /// Prefab root of one arm, at the hand end: the joint telescopes it away from
