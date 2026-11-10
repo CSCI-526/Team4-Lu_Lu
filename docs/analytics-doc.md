@@ -4,9 +4,9 @@ How the game records playtests: one markdown report per game launch, with a reco
 
 ## Overview
 
-`AnalyticsManager` is a scene-placed singleton kept across scene reloads. It listens to the game and writes the data to a markdown file, so a playtest can be read with any markdown viewer that renders Mermaid.
+`AnalyticsManager` is a singleton on its own `Analytics` prefab, placed in every scene; the first instance is kept across all scene loads. It listens to the game and writes the data to a markdown file, so a playtest can be read with any markdown viewer that renders Mermaid.
 
-- Session: one game launch, one file; a scene restart keeps the same session
+- Session: one game launch, one file; menus, scene loads and restarts keep the same session
 - Run: one attempt from the start of play to a game over; every run adds one entry to the session file
 - Report: the markdown file, rewritten whole on every save
 
@@ -56,7 +56,7 @@ Every figure the report carries, grouped by where it appears. Heights are in wor
 
 ### Session Summary
 
-Drawn from the `Lost` runs only.
+Drawn from the `Lost` runs only; when lost runs of both run modes occur, one block per mode.
 
 - Death Causes: pie of what ended each lost run, see [Death Causes](#death-causes)
 - Final Score vs Run: bar chart of the total score of each lost run
@@ -66,6 +66,7 @@ Drawn from the `Lost` runs only.
 
 ### Run Header
 
+- Mode: `Full` or `Endless`, the run mode of the scene that played the run
 - Status: shown only when the run is not `Lost`
 - Highest Height: highest point reached, which can exceed where the run ended
 - Death Height: height at the moment of the loss, shown for a lost run

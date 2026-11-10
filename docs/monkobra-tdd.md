@@ -35,7 +35,26 @@ A system gets its own document when it spans several scripts and carries rules a
 
 | Scene | Purpose |
 | --- | --- |
-| `Lv1Scene` | the game and the only scene; its root is 7 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `GameController`, `UI`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `TitleScene` | the startup scene of every build: any key or click opens the level selection |
+| `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
+| `Lv1Scene` | the normal run; its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `EndlessScene` | a copy of `Lv1Scene` with `GameController.runMode` set to `Endless` |
+
+```mermaid
+graph LR
+  Title[TitleScene] -->|any key| Select[LevelSelectScene]
+  Select -->|Normal Play| Full[Lv1Scene]
+  Select -->|Endless Mode, unlocked| Endless[EndlessScene]
+  Select -->|Back, Esc| Title
+  Full -->|R restarts| Full
+  Endless -->|R restarts| Endless
+```
+
+Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`MenuEventSystem`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `AnyKey` serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
+
+Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, from the `runMode` field) tells a gameplay scene how to behave. In `Endless` the boss fight is skipped (`BossFightController` starts in its done state, gold armor worn), `RampedDifficultyManager` reads the post boss curve from the starting zone exit on and has no boss zone, and `HeightMarkerSystem` draws no boss marker.
+
+Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `BossFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Unlock Endless` and `Monkobra/Reset Progress` flip it for testing.
 
 Personal copies of `Lv1Scene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
@@ -100,7 +119,7 @@ Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and the 
 
 ## Analytics
 
-`AnalyticsManager` is a singleton component on the `GameController` prefab, not kept across reloads: a scene load starts a new session and file, and a reload in the middle of a run leaves that run unclosed at its last autosave. It observes the run (`GameController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
+`AnalyticsManager` is a singleton component on its own `Analytics` prefab, one per scene, and the first one is kept across every scene load: one session and file per launch, menus included. A scene load closes an open run as `Interrupted`, and each run is tagged with the scene's run mode. It observes the run (`GameController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
 
 A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB filesystem), so the download key renders the session in memory and `WebDownload` hands it to the browser through `Plugins/WebGL/Download.jslib`. A run still open is rendered as it stands and keeps recording. Elsewhere the same key saves the session file and logs its path.
 

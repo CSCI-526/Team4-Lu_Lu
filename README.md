@@ -22,6 +22,10 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 | Esc or P | pause or resume the run |
 | R (while paused) | restart the run |
 | R or Space (lose screen) | restart the run |
+| Any key or click (title) | open the level selection |
+| W, S or Up, Down; mouse hover (menus) | move the highlight |
+| Space, Enter or click (menus) | confirm |
+| Esc (level selection) | back to the title |
 
 Gamepad: left stick or D-pad moves, the north button grabs (a double-tap spends a coconut), the south button breaks free of a web.
 
@@ -29,7 +33,7 @@ Dev keys (development builds and the Editor only): F1 toggles the cobra no-clip 
 
 ## Getting Started
 
-Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `Lv1Scene` and press Play. The game also runs in the browser from the WebGL export served by GitHub Pages; the builds are described in [Build](docs/build-doc.md).
+Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `TitleScene` and press Play (or open `Lv1Scene` to start a run directly). Endless Mode unlocks after the Cobra King is beaten once; for testing use the Editor menu `Monkobra/Unlock Endless`. The game also runs in the browser from the WebGL export served by GitHub Pages; the builds are described in [Build](docs/build-doc.md).
 
 ### Testing the Coconut
 
