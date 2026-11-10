@@ -46,7 +46,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   segmentCollider: {fileID: 3938361225300413944}
-  branchWithFruitPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
+  branchEmptyPrefab: {fileID: 7490866546275933270, guid: 92e3089d439b48538d1aca56cda3a5bf, type: 3}
+  branchBananaPrefab: {fileID: 7490866546275933269, guid: 6f950279f9fc45b3a59c96c1c99d0609, type: 3}
+  branchCoconutPrefab: {fileID: 7490866546275933268, guid: 5007418d3aac4e91bac3cbbaa722cf00, type: 3}
+  branchPineapplePrefab: {fileID: 7490866546275933259, guid: fe4c3219fb4542aea7ad83f64c592e93, type: 3}
   placementConfig: {fileID: 11400000, guid: 8a6cb80e5c899be4baaed7d0fa7bcce8, type: 2}
   worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
 --- !u!1001 &6749698255446215196

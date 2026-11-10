@@ -438,6 +438,19 @@ public class BossFightController: MonoBehaviour {
     private GameObject bananaBranchPrefab;
 
     [SerializeField]
+    [Tooltip("mesh shown in place of the banana on every arena fruit, "
+        + "grabbed & thrown; the watermelon")]
+    private Mesh watermelonMesh;
+
+    [SerializeField]
+    [Tooltip("local scale of the watermelon on its branch")]
+    private Vector3 watermelonScale = new Vector3(6f, 6f, 6f);
+
+    [SerializeField]
+    [Tooltip("local offset of the watermelon on its branch; u")]
+    private Vector3 watermelonOffset = new Vector3(0f, -0.629f, 0.06f);
+
+    [SerializeField]
     [Min(1)]
     [Tooltip("banana branches in the arena")]
     private int bananaCount = 3;
@@ -480,7 +493,7 @@ public class BossFightController: MonoBehaviour {
     private float thrownBananaScale = 1.6f;
 
     [SerializeField]
-    private Color trailColor = new Color(1f, 0.85f, 0.2f);
+    private Color trailColor = new Color(0.3f, 0.8f, 0.3f);
 
     [Header("Height Marker")]
     [SerializeField]
@@ -821,11 +834,6 @@ public class BossFightController: MonoBehaviour {
             I = null;
         }
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
-        TreeSegmentController.BranchesGenerated -= OnBranchesGeneratedAhead;
-    }
-
-    private void Start() {
-        TreeSegmentController.BranchesGenerated += OnBranchesGeneratedAhead;
     }
 
     private void OnDisable() {
@@ -936,12 +944,11 @@ public class BossFightController: MonoBehaviour {
         FightStarted?.Invoke();
         loop = Loop.Intro;
 
-        StopHazardSpawners();
-        ClearAbove(entryY - 3f);
-        RemoveNonBananas(
-            FindObjectsByType<BranchController>(FindObjectsSortMode.None),
-            ArenaBottomY(entryY),
-            float.PositiveInfinity
+        WarnIfArenaLeavesZone();
+        // the boss zone grows nothing but the fight; only a branch of a
+        // segment reaching past the zone end can hang near the nest
+        ClearBranchesNearNest(
+            FindObjectsByType<BranchController>(FindObjectsSortMode.None)
         );
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
 
@@ -978,57 +985,23 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // webs, falling cobras, rough bark & coconuts stay out of the arena
-    private void StopHazardSpawners() {
-        foreach (SpiderWebSpawner spawner in
-            FindObjectsByType<SpiderWebSpawner>(FindObjectsSortMode.None)) {
-            StopSpawner(spawner);
+    // the arena, guard cobra down to the king's nest, belongs inside the boss
+    // zone, where nothing else is generated
+    private void WarnIfArenaLeavesZone() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp == null) {
+            return;
         }
-        foreach (FallingCobraSpawner spawner in
-            FindObjectsByType<FallingCobraSpawner>(FindObjectsSortMode.None)) {
-            StopSpawner(spawner);
+        float zoneStartY = ramp.PlayerGameStartYPosition
+            + worldBalanceConfig.BossZoneStartU;
+        if (entryY - guardDepthU < zoneStartY) {
+            Debug.LogWarning(
+                "BossFightController:\tthe guard cobra hangs below the boss "
+                + "zone start, ordinary hazards may reach the arena; move "
+                + "the trigger up or shorten guardDepthU",
+                this
+            );
         }
-        foreach (RoughBarkSpawner spawner in
-            FindObjectsByType<RoughBarkSpawner>(FindObjectsSortMode.None)) {
-            StopSpawner(spawner);
-        }
-        foreach (CoconutSpawner spawner in
-            FindObjectsByType<CoconutSpawner>(FindObjectsSortMode.None)) {
-            StopSpawner(spawner);
-        }
-    }
-
-    // off for the fight, & noted so a win turns it back on
-    private void StopSpawner(Behaviour spawner) {
-        if (spawner.enabled) {
-            spawner.enabled = false;
-            stoppedSpawners.Add(spawner);
-        }
-    }
-
-    // hazards already placed in the arena go, & branches near the nest
-    private void ClearAbove(float minY) {
-        foreach (SpiderWebTrap web in
-            FindObjectsByType<SpiderWebTrap>(FindObjectsSortMode.None)) {
-            if (web.transform.position.y > minY) {
-                web.gameObject.SetActive(false);
-            }
-        }
-        foreach (FallingCobraController cobra in
-            FindObjectsByType<FallingCobraController>(FindObjectsSortMode.None)) {
-            if (cobra.transform.position.y > minY) {
-                cobra.gameObject.SetActive(false);
-            }
-        }
-        foreach (RoughBarkZone zone in
-            FindObjectsByType<RoughBarkZone>(FindObjectsSortMode.None)) {
-            if (zone.transform.position.y > minY) {
-                zone.gameObject.SetActive(false);
-            }
-        }
-        ClearBranchesNearNest(
-            FindObjectsByType<BranchController>(FindObjectsSortMode.None)
-        );
     }
 
     // a segment recycled over the top during the fight rolls new branches
@@ -1036,61 +1009,6 @@ public class BossFightController: MonoBehaviour {
         BranchController[] branches =
             segment.GetComponentsInChildren<BranchController>();
         ClearBranchesNearNest(branches);
-        RemoveNonBananas(branches, ArenaBottomY(entryY), float.PositiveInfinity);
-    }
-
-    // b4 the fight, segments grown ahead around its height already bear
-    // only bananas, so no pineapple or coconut is seen there on the way up
-    private void OnBranchesGeneratedAhead(TreeSegmentController segment) {
-        RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        if (phase != Phase.Waiting || ramp == null || worldBalanceConfig == null) {
-            return;
-        }
-        float triggerY = ramp.PlayerGameStartYPosition
-            + worldBalanceConfig.BossTriggerHeightU;
-        RemoveNonBananas(
-            segment.GetComponentsInChildren<BranchController>(),
-            ArenaBottomY(triggerY),
-            triggerY + nestHeightU + 10f
-        );
-    }
-
-    // the arena reaches down past the guard
-    private float ArenaBottomY(float startY) {
-        return startY - guardDepthU - 4f;
-    }
-
-    // only bananas belong in the arena: a pineapple or coconut on the tree's
-    // own branches there is taken off, its bare stem left. A pineapple scores
-    // as a banana, so it is told apart by its LeapOnGrab
-    private void RemoveNonBananas(
-        BranchController[] branches, float minY, float maxY
-    ) {
-        foreach (BranchController branch in branches) {
-            if (branch == null) {
-                continue;
-            }
-            float y = branch.transform.position.y;
-            if (y < minY || y > maxY) {
-                continue;
-            }
-            foreach (ScorePickup pickup in
-                branch.GetComponentsInChildren<ScorePickup>(true)) {
-                bool isPlainBanana = pickup.Kind == PickupKind.Banana
-                    && pickup.GetComponentInParent<LeapOnGrab>(true) == null
-                    && pickup.GetComponentInChildren<LeapOnGrab>(true) == null;
-                if (isPlainBanana) {
-                    continue;
-                }
-                ForgetFruits(pickup.gameObject);
-                pickup.gameObject.SetActive(false);
-            }
-            foreach (LeapOnGrab leap in
-                branch.GetComponentsInChildren<LeapOnGrab>(true)) {
-                ForgetFruits(leap.gameObject);
-                leap.gameObject.SetActive(false);
-            }
-        }
     }
 
     private void ClearBranchesNearNest(BranchController[] branches) {
@@ -1365,10 +1283,11 @@ public class BossFightController: MonoBehaviour {
         PlaceBranch(branch.transform, angle, y);
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
-            controller.Initialize(1f, 0f); // always a banana, never a pineapple
+            controller.Setup(); // the banana branch prefab bears a banana
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject banana = pickup != null ? pickup.gameObject : branch;
+        ApplyWatermelon(banana);
         if (isGolden) {
             MakeGolden(banana);
         }
@@ -1390,6 +1309,21 @@ public class BossFightController: MonoBehaviour {
             PointOnTrunk(angle, fruitY + BANANA_HANG_U, branchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
         );
+    }
+
+    // the arena's fruit looks like a watermelon: the banana model's mesh is
+    // swapped, its collider & scripts stay, so grab & throw work as before
+    private void ApplyWatermelon(GameObject fruit) {
+        if (watermelonMesh == null || fruit == null) {
+            return;
+        }
+        foreach (MeshFilter filter in
+            fruit.GetComponentsInChildren<MeshFilter>(true)) {
+            filter.sharedMesh = watermelonMesh;
+            filter.transform.localRotation = Quaternion.identity;
+            filter.transform.localScale = watermelonScale;
+            filter.transform.localPosition = watermelonOffset;
+        }
     }
 
     private void MakeGolden(GameObject banana) {
@@ -1450,7 +1384,7 @@ public class BossFightController: MonoBehaviour {
         golden.root.SetActive(true);
         goldenHideTime = Time.time + goldenShowS;
         hud.PopText(
-            "Golden banana!", golden.root.transform.position, goldenColor
+            "Golden watermelon!", golden.root.transform.position, goldenColor
         );
     }
 
@@ -2538,12 +2472,6 @@ public class BossFightController: MonoBehaviour {
         Time.timeScale = 1f;
         phase = Phase.Done;
 
-        foreach (Behaviour spawner in stoppedSpawners) {
-            if (spawner != null) {
-                spawner.enabled = true;
-            }
-        }
-        stoppedSpawners.Clear();
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
         // a head start: the cobra chases again from far down the trunk,
         // called out a moment after
@@ -3059,7 +2987,6 @@ public class BossFightController: MonoBehaviour {
     private bool isEasy;
     private int maxHealth; // the king's full health in the chosen mode
     private readonly List<ArenaFruit> choices = new List<ArenaFruit>();
-    private readonly List<Behaviour> stoppedSpawners = new List<Behaviour>();
     private bool hasWon;
     private bool isFinisherWin;
     private float finisherTimeS; // real time into the finisher; s

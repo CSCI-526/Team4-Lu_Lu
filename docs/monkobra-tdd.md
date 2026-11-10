@@ -110,12 +110,17 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 
 | Key | Action | Read by |
 | --- | --- | --- |
-| F1 | toggle `GameController.CobraNoClip` | `GameController` |
-| F2 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
-| F3 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
-| F8 | download the analytics session report | `AnalyticsManager` |
-| F9 | close the analytics session and open a new file | `AnalyticsManager` |
-| F10 | save a mock analytics session file | `AnalyticsManager` |
+| F1 | toggle `GameController.CobraNoClip`, the great cobra no longer kills | `GameController` |
+| F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
+| F3 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
+| F4 | jump to the boss fight: teleport the monkey to the boss trigger height (`BossTriggerHeightU`), live run only | `MonkeyController` |
+| F5 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
+| F6 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
+| F7 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
+| F8 | stick a spider web on the trunk above the monkey | `HackPineappleSpawner` |
+| F10 | download the analytics session report | `AnalyticsManager` |
+| F11 | close the analytics session and open a new file | `AnalyticsManager` |
+| F12 | save a mock analytics session file | `AnalyticsManager` |
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
 
@@ -128,18 +133,19 @@ Game balance numbers live in 3 assets, split by what they tune (how height becom
 | `PlayerBalanceConfig` | Stamina | `maxStamina`, `staminaUpwardDrainPerU`, `staminaSidewayDrainPerU`, `fruitStaminaRestore` | `StaminaBarController` |
 | 〃 | Starting Zone | `startingZoneStartStaminaFraction`, `startingZoneExhaustedSpeedMultiplier`, `startingZoneIdleRecoveryMultiplier` | `StaminaBarController`, `MonkeyController` |
 | 〃 | Branch Hit | `hitStunDurationS`, `hitDropDistanceU`, `hitDropSpeedU` | `MonkeyController`, `CobraMotor` |
+| 〃 | Fruit Popup | `fruitPopUpDetectRadiusU` | `FruitGrabPrompt` |
 | 〃 | Score | `pointsPerMeter`, `unitsPerMeter`, `scoreRewardPoints` | `ScoreManager` |
-| 〃 | Coconut | `coconutStartHeightU`, `coconutSpawnChancePerSegment`, `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutSpawner`, `ScoreManager`, `CoconutManager` |
-| `WorldBalanceConfig` | Ramped Difficulty | `rampedDifficultyCurve` | `RampedDifficultyManager` |
-| 〃 | Branch | `branchGenerationAttemptCount`, `startingZoneBranchClearRadiusU`, `startingZoneBranchChance`, `startingZoneBananaChance`, `branchSpawnProbabilityCurve`, `bananaSpawnProbabilityCurve`, `pineappleSpawnProbabilityCurve` | `TreeSegmentController` |
-| 〃 | Rough Bark | `roughBarkStartScore`, `roughBarkSpeedMultiplier`, `roughBarkBlendS`, `roughBarkAttemptCount`, `roughBarkSpawnProbabilityCurve` | `RoughBarkSpawner`, `MonkeyController` |
+| 〃 | Coconut | `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `ScoreManager`, `CoconutManager` |
+| `WorldBalanceConfig` | Ramped Difficulty | `preBossRampCurve`, `postBossRampCurve` | `RampedDifficultyManager` |
+| 〃 | Branch | `startingZoneBranchClearRadiusU`, `startingZoneBananaBranchChance`, and per kind (empty, banana, coconut, pineapple) `<kind>BranchAttemptCount` & `<kind>BranchProbabilityCurve`, plus `coconutGuaranteedHeightU` & `pineappleGuaranteedHeightU` | `TreeSegmentController` |
+| 〃 | Rough Bark | `roughBarkSpeedMultiplier`, `roughBarkBlendS`, `roughBarkAttemptCount`, `roughBarkSpawnProbabilityCurve` | `RoughBarkSpawner`, `MonkeyController` |
 | 〃 | Spider Web | `webAttemptCount`, `webSpawnProbabilityCurve` | `SpiderWebSpawner` |
-| 〃 | Boss Fight | `bossTriggerHeightU`, `bossMaxHealth`, `bossBananaDamage` | `BossFightController` |
+| 〃 | Boss Fight | `bossZoneStartU`, `bossTriggerHeightU`, `bossZoneEndU`, `bossMaxHealth`, `bossBananaDamage` | `BossFightController`, `RampedDifficultyManager` |
 | `CobraBalanceConfig` | Falling Cobra | `fallingCobraAttemptCount`, `fallingCobraSpawnProbabilityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU`, `fallingCobraReachWakeDistanceU`, `fallingCobraBananaAmbushChance`, `fallingCobraRehitGraceS`, `fallingCobraMaxHits` | `FallingCobraSpawner`, `FallingCobraController` |
 | 〃 | Great Cobra | `cobraBaseSpeedCurve`, `cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraMaxSurgeSpeedU`, `cobraExitBoostSpeedU`, `cobraExitBoostDurationS`, `cobraSpeedChangeRateU` | `CobraMotor` |
 
-- Wiring: each reader holds an inspector field for every slice it needs, never more: `playerBalanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `CoconutSpawner`, `CoconutManager`, and `CobraMotor` (hit stun only); `worldBalanceConfig` on `MonkeyController` (rough bark), `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `RoughBarkSpawner`, and `BossFightController` (boss fight); `cobraBalanceConfig` on `FallingCobraSpawner` and `CobraMotor`, each pointing at the one asset of its slice
-- Not Balance: the arm stroke and reach are in `MonkeyArmConfig`; climb build-up, exhaustion, idle recovery, orbit speed, and deceleration are in `MonkeyClimbConfig`; input actions are in `MonkeyInputConfig`; the leap's distance, speed curve, hand rise, and landing grace are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab; coconut clearance and the test override stay on `CoconutSpawner`, and the web escape grace and the throw start offset on `CoconutManager`; the height markers' interval, placement, look, and test override stay on `HeightMarkerSystem`
+- Wiring: each reader holds an inspector field for every slice it needs, never more: `playerBalanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `CoconutManager`, and `CobraMotor` (hit stun only); `worldBalanceConfig` on `MonkeyController` (rough bark), `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `RoughBarkSpawner`, and `BossFightController` (boss fight); `cobraBalanceConfig` on `FallingCobraSpawner` and `CobraMotor`, each pointing at the one asset of its slice
+- Not Balance: the arm stroke and reach are in `MonkeyArmConfig`; climb build-up, exhaustion, idle recovery, orbit speed, and deceleration are in `MonkeyClimbConfig`; input actions are in `MonkeyInputConfig`; the leap's distance, speed curve, hand rise, and landing grace are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab; the web escape grace and the throw start offset on `CoconutManager`; the height markers' interval, placement, look, and test override stay on `HeightMarkerSystem`
 - Retired: `GameConfig`, `ScoreConfig`, and `ScoreReward` were folded into the balance configs and removed
 - Suffixes: `U` is world units, `S` is seconds, `Deg` is degrees, `PerU` is per world unit travelled
 
@@ -252,7 +258,7 @@ The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressB
 The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Envs/HeightMarkerSystem`, whose position marks the trunk axis, and works as follows:
 
 - Pool: TextMeshPro labels are built at runtime in right and left pairs, marker k always on pair k mod pair count, so every marker shows on both sides of the trunk, and only markers from `showBelowU` under to `showAboveU` over the monkey show. Markers follow height, not tree segments, so a recycled segment can neither leave one behind nor show one twice
-- Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in `PlayerBalanceConfig`, e.g. `coconutStartHeightU`, reads straight off the trunk
+- Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in a config, e.g. `bossTriggerHeightU`, reads straight off the trunk
 - Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
 - Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette, one on each side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
 - Boss Marker: the marker at `BossFightController.TriggerHeightU` gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `BossFightController.BuildMarkerFigure` on top of it, kept on whichever pooled label shows it; once `BossFightController.IsInArena` it is no longer shown

@@ -13,8 +13,22 @@ using UnityEngine;
 /// </summary>
 [DisallowMultipleComponent]
 public class FruitGrabPrompt: MonoBehaviour {
+    // Inspector Fields  #######################################################
+    [SerializeField]
+    [Tooltip("player balance tuning; the popup detect radius")]
+    private PlayerBalanceConfig playerBalanceConfig;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Start() {
+        if (playerBalanceConfig == null) {
+            Debug.LogError(
+                "FruitGrabPrompt:	must assign Inspector Field: "
+                    + "playerBalanceConfig",
+                this
+            );
+            enabled = false;
+            return;
+        }
         game = GameController.I;
         sensor = UpwardFruitSensor.I;
         if (game == null || sensor == null) {
@@ -43,18 +57,22 @@ public class FruitGrabPrompt: MonoBehaviour {
             return;
         }
 
-        // Follow the same target as the arm and outline, including its lock
-        // while Space is held. An unrelated nearby fruit cannot steal it.
+        // A fruit in arm reach wins, including its lock while Space is held,
+        // so an unrelated fruit cannot steal it; else the nearest unlearned
+        // fruit within the wide range, even on the far side of the tree.
         Collider fruit = sensor.ReachTarget;
         FruitKind kind = GetFruitKind(fruit);
         if (
             fruit == null
-            || !fruit.enabled
-            || !fruit.gameObject.activeInHierarchy
+            || !IsPromptable(fruit)
             || !sensor.IsFruitInReach(fruit)
             || kind == FruitKind.None
             || IsLearned(kind)
         ) {
+            fruit = FindNearestUnlearnedFruit();
+            kind = GetFruitKind(fruit);
+        }
+        if (fruit == null) {
             HidePopUp();
             return;
         }
@@ -99,7 +117,59 @@ public class FruitGrabPrompt: MonoBehaviour {
 
     private enum FruitKind { None, Banana, Pineapple, Coconut }
 
+    // constants  ##############################################################
+    private const string FRUIT_TAG = "FruitCollider";
+    private const int SCAN_BUFFER_SIZE = 64;
+
+    private readonly Collider[] scanBuffer = new Collider[SCAN_BUFFER_SIZE];
+
     // private methods  ########################################################
+    // if the fruit is still live in the scene
+    private static bool IsPromptable(Collider fruit) {
+        return fruit.enabled && fruit.gameObject.activeInHierarchy;
+    }
+
+    // nearest live fruit of an unlearned kind within the config radius of the
+    // monkey, null for none; the scan ignores the arm zones on purpose
+    private Collider FindNearestUnlearnedFruit() {
+        Vector3 origin = sensor.transform.position;
+        int count = Physics.OverlapSphereNonAlloc(
+            origin,
+            playerBalanceConfig.FruitPopUpDetectRadiusU,
+            scanBuffer,
+            ~0,
+            QueryTriggerInteraction.Collide
+        );
+
+        Collider nearest = null;
+        float nearestSqrDistance = float.MaxValue;
+        int nearestRank = int.MaxValue;
+        for (int i = 0; i < count; i++) {
+            Collider candidate = scanBuffer[i];
+            if (
+                !candidate.CompareTag(FRUIT_TAG)
+                || !IsPromptable(candidate)
+                || IsLearned(GetFruitKind(candidate))
+            ) {
+                continue;
+            }
+            // the rarer kind outranks distance, so a far pineapple is not
+            // hidden behind a near banana
+            int rank = GetFruitKind(candidate) == FruitKind.Banana ? 1 : 0;
+            float sqrDistance =
+                (candidate.bounds.center - origin).sqrMagnitude;
+            if (
+                rank < nearestRank
+                || rank == nearestRank && sqrDistance < nearestSqrDistance
+            ) {
+                nearestRank = rank;
+                nearestSqrDistance = sqrDistance;
+                nearest = candidate;
+            }
+        }
+        return nearest;
+    }
+
     private bool CanShowPrompt() {
         return game != null && sensor != null
             && game.IsRunLive && Time.timeScale > 0f

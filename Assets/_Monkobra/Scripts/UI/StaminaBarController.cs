@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Slider))]
@@ -11,6 +12,12 @@ public class StaminaBarController: MonoBehaviour {
 
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
+
+    /// <returns>if the dev max stamina mode keeps the bar at max, toggled by the
+    /// <see cref="HackAction.MaxStamina"/> key in a development build</returns>
+    public bool IsMaxStamina {
+        get; private set;
+    }
 
     /// <summary>
     /// if stamina is below <c>lowStaminaFraction</c> of the max, empty
@@ -78,7 +85,7 @@ public class StaminaBarController: MonoBehaviour {
     /// <param name="climbedU">upward distance covered this step; u</param>
     /// <param name="orbitedU">sideways arc length covered this step; u</param>
     public void DrainByMovement(float climbedU, float orbitedU) {
-        if (!HasStamina) {
+        if (IsMaxStamina || !HasStamina) {
             return;
         }
 
@@ -106,6 +113,11 @@ public class StaminaBarController: MonoBehaviour {
             + "only, an empty bar alone slows the monkey"
     )]
     private float lowStaminaFraction = 0.1f;
+
+    [SerializeField]
+    [Tooltip("dev/hack keys, its max stamina key works in a development build "
+        + "only")]
+    private HackShortcutConfig hackShortcuts;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -143,9 +155,42 @@ public class StaminaBarController: MonoBehaviour {
         }
     }
 
+    private void Update() {
+        UpdateMaxStaminaKey();
+    }
+
     private void OnDestroy() {
         if (I == this) {
             I = null;
+        }
+    }
+
+    // private methods  ########################################################
+    // dev/hack key toggling max stamina; turning it on fills the bar at once
+    private void UpdateMaxStaminaKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        Key maxStaminaKey = hackShortcuts.GetKey(HackAction.MaxStamina);
+        if (
+            keyboard == null
+            || maxStaminaKey == Key.None
+            || !keyboard[maxStaminaKey].wasPressedThisFrame
+        ) {
+            return;
+        }
+
+        IsMaxStamina = !IsMaxStamina;
+        if (IsMaxStamina) {
+            AddStamina(MaxStamina);
+        }
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "StaminaBarController:\tmax stamina " + IsMaxStamina,
+                this
+            );
         }
     }
 

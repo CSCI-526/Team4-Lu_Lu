@@ -239,7 +239,12 @@ public class FallingCobraSpawner: MonoBehaviour {
                     + Vector3.up * Random.Range(minLocalY, maxLocalY);
             }
             Vector3 position = segmentXfm.TransformPoint(localPosition);
-            if (!IsSpotFree(position)) {
+            // only the boss fight grows anything in the boss zone, snake
+            // tail to head included
+            if (
+                IsSnakeInBossZone(position, tailU, cobra.LengthU)
+                || !IsSpotFree(position)
+            ) {
                 // a taken ambush spot falls back to random spots
                 bananaLocal = null;
                 continue;
@@ -257,6 +262,24 @@ public class FallingCobraSpawner: MonoBehaviour {
 
         Destroy(cobra.gameObject);
         return false;
+    }
+
+    // iff the snake's tail, pivot or head lies in the boss zone; false w/o a
+    // service
+    private static bool IsSnakeInBossZone(
+        Vector3 pivot,
+        float tailBelowPivotU,
+        float lengthU
+    ) {
+        RampedDifficultyManager difficulty = RampedDifficultyManager.I;
+        return difficulty != null
+            && (
+                difficulty.IsInBossZoneY(pivot.y - tailBelowPivotU)
+                || difficulty.IsInBossZoneY(pivot.y)
+                || difficulty.IsInBossZoneY(
+                    pivot.y + lengthU - tailBelowPivotU
+                )
+            );
     }
 
     // a random banana still shown on the segment, in segment-local space,

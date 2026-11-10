@@ -43,6 +43,14 @@ public class MonkeyController: MonoBehaviour {
         }
     }
 
+    /// <returns>if the dev speed buff runs the body at
+    /// <see cref="SPEED_BUFF_SCALE"/> times its normal speed, toggled by the
+    /// <see cref="HackAction.SpeedBuff"/> key in a development build
+    /// </returns>
+    public bool IsSpeedBuff {
+        get; private set;
+    }
+
     // Public Methods  #########################################################
     public float RoughBarkSpeedScale => roughBarkSpeedScale;
 
@@ -139,6 +147,11 @@ public class MonkeyController: MonoBehaviour {
             + "speed and deceleration"
     )]
     private MonkeyClimbConfig climbConfig;
+
+    [SerializeField]
+    [Tooltip("dev/hack keys, its speed buff key works in a development build "
+        + "only")]
+    private HackShortcutConfig hackShortcuts;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -237,6 +250,11 @@ public class MonkeyController: MonoBehaviour {
         }
     }
 
+    private void Update() {
+        UpdateSpeedBuffKey();
+        UpdateBossJumpKey();
+    }
+
     private void FixedUpdate() {
         if (
             inputConfig == null
@@ -295,8 +313,12 @@ public class MonkeyController: MonoBehaviour {
             : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
+        // rough bark slows the body, the dev speed buff multiplies it
+        float moveScale = roughBarkSpeedScale
+            * (IsSpeedBuff ? SPEED_BUFF_SCALE : 1f);
+
         orbitAngleDeg -= directionalInput.x
-            * climbConfig.RotationSpeedDeg * roughBarkSpeedScale
+            * climbConfig.RotationSpeedDeg * moveScale
             * Time.fixedDeltaTime;
 
         // speed builds up along a curve of how long the key has been held;
@@ -317,7 +339,8 @@ public class MonkeyController: MonoBehaviour {
             );
         }
 
-        float nextY = transform.position.y + climbSpeedU * roughBarkSpeedScale * Time.fixedDeltaTime;
+        float nextY = transform.position.y
+            + climbSpeedU * moveScale * Time.fixedDeltaTime;
         if (isStunned) {
             // knocked off the climb: the ramp is bypassed, fall at a set
             // speed and stop dead on the drop target
@@ -346,7 +369,7 @@ public class MonkeyController: MonoBehaviour {
         if (!isStunned && staminaBar != null) {
             float climbedU = Mathf.Max(0f, nextY - transform.position.y);
             float orbitedU = Mathf.Abs(directionalInput.x)
-                * climbConfig.RotationSpeedDeg * roughBarkSpeedScale
+                * climbConfig.RotationSpeedDeg * moveScale
                 * Time.fixedDeltaTime
                 * Mathf.Deg2Rad
                 * orbitRadius;
@@ -415,6 +438,7 @@ public class MonkeyController: MonoBehaviour {
     // constants  ##############################################################
     private const float INPUT_DEADZONE = 0.1f;
     private const float INPUT_DEADZONE_SQR = INPUT_DEADZONE * INPUT_DEADZONE;
+    private const float SPEED_BUFF_SCALE = 3f; // dev buff on climb & orbit
 
     // private members  ########################################################
     private float orbitAngleDeg;
@@ -445,6 +469,70 @@ public class MonkeyController: MonoBehaviour {
     private Rigidbody body;
 
     // private methods  ########################################################
+    // dev/hack key toggling the speed buff
+    private void UpdateSpeedBuffKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        Key speedBuffKey = hackShortcuts.GetKey(HackAction.SpeedBuff);
+        if (
+            keyboard == null
+            || speedBuffKey == Key.None
+            || !keyboard[speedBuffKey].wasPressedThisFrame
+        ) {
+            return;
+        }
+
+        IsSpeedBuff = !IsSpeedBuff;
+        if (Debug.isDebugBuild) {
+            Debug.Log("MonkeyController:\tspeed buff " + IsSpeedBuff, this);
+        }
+    }
+
+    // dev/hack key teleporting the monkey to the boss fight trigger height;
+    // the fight begins on its own once the climbed height reads that high
+    private void UpdateBossJumpKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        Key bossJumpKey = hackShortcuts.GetKey(HackAction.BossJump);
+        if (
+            keyboard == null
+            || bossJumpKey == Key.None
+            || !keyboard[bossJumpKey].wasPressedThisFrame
+        ) {
+            return;
+        }
+
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        bool isLive = GameController.I != null && GameController.I.IsRunLive;
+        if (ramp == null || worldBalanceConfig == null || body == null
+            || !isLive) {
+            return;
+        }
+
+        // a hair over the trigger, so landing there surely starts the fight
+        Vector3 target = transform.position;
+        target.y = ramp.PlayerGameStartYPosition
+            + worldBalanceConfig.BossTriggerHeightU + 0.05f;
+        transform.position = target;
+        body.position = target;
+        climbSpeedU = 0f;
+        upHeldS = 0f;
+        downHeldS = 0f;
+        Physics.SyncTransforms();
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                $"MonkeyController:\tboss jump to y {target.y}",
+                this
+            );
+        }
+    }
+
     // counts how long the up or down key has been held; a release or a flip
     // of direction starts the count over
     private void UpdateHeldTimes(float verticalInput) {

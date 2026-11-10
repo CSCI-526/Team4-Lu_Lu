@@ -15,6 +15,9 @@ Todo level selection & scene system
 
 ##### Erik
 
+- hack keys reorganized, development builds only: F1 great cobra no kill, F2 max energy (stamina bar stays at max, toggle), F3 speed x3 (climb & orbit, toggle), F4 jump to the boss fight (teleport to the trigger height), F5 pineapple, F6 coconut, F7 falling snake & F8 spider web spawns, F10 report download, F11 new session, F12 mock session (`HackAction.MaxStamina`, `SpeedBuff`, `BossJump`, `SpawnFallingCobra`, `SpawnSpiderWeb`)
+- brown coconut: the whole `SM_Fruits_Coconut_1` model in the world (`Coconut`, `CoconutProjectile`) renders w/ the `Coconut_Brown` material instead of the pack's green
+- coconut counter & flight sprite: use `coconut128x128` instead of `Coconut_Green`; unused `Coconut_Green` sprite & `SM_Fruits_Coconut_4` model rm
 - `Lv1Scene` split into nested prefabs: `World`, `Envs`, `Entities`, `Systems`, `UI` and a leaf prefab per unit, so teammates edit different files
 - Great Cobra exit boost: extra climb speed for a while after the monkey leaves the starting zone, w/ center warning "Run! The Great Cobra is chasing you!"; `cobraExitBoostSpeedU` & `cobraExitBoostDurationS` in `GameBalanceConfig`
 - `MovementConfig` asset: climb speed builds up along 2 curves (up, down) of how long the key is held, instead of a fixed acceleration
@@ -43,6 +46,12 @@ Todo level selection & scene system
 - pineapple leap shot: camera looks up, pulls back & trails the climb, hands back at the landing (`CameraLeapFraming`, `PineappleLeapController.Landed`)
 - rough bark shake: Perlin noise eases up while moving on rough bark (`CameraRoughBarkShake`); every camera has an impulse listener & noise
 - height marker pass trigger: `HeightMarker` prefab w/ a trigger at the exact height, the plate drawn 5 u above on its label anchor (`HeightMarkerTrigger`)
+- post-boss ramp: difficulty keeps rising past 1 after the boss fight, linear to 2 at 1000 m; every ramp-read curve (branch, banana, pineapple, web, rough bark, falling cobra, cobra base speed) has a key at 2
+- `coconutSpawnProbabilityCurve` in `PlayerBalanceConfig`: coconut chance per segment read off the ramped difficulty like every other hazard
+- boss zone: `bossZoneStartU`, `bossTriggerHeightU` & `bossZoneEndU` in `WorldBalanceConfig` set a stretch of the trunk where nothing but the boss fight is generated; ramped difficulty is 0~1 up to the zone start (`preBossRampCurve`), a flat 1 inside, and above 1 after the zone end (`postBossRampCurve`); `RampedDifficultyManager.IsInBossZoneY`; the fight's own spawner stop & non-banana sweep are gone
+- 4 branch kinds: empty, banana, coconut & pineapple branches are separate prefab variants of `BranchWithFruit` (`BranchEmpty`, `BranchBanana`, `BranchCoconut`, `BranchPineapple`), each w/ its own attempt count & chance curve in `WorldBalanceConfig`, rolled by `TreeSegmentController`; `BranchController.Setup` by `BranchKind`, `BranchKind` enum
+- `CoconutSpawner`, the `CoconutSystem` prefab & `coconutSpawnProbabilityCurve` retired for the coconut branch kind; F2 & F3 hack keys spawn the pineapple & coconut branch variants
+- guaranteed fruit branches: 1 pineapple branch at 150 m & 1 coconut branch at 250 m always grow, at exactly that height, on top of the curve rolls & before them so nothing crowds them out (`pineappleGuaranteedHeightU`, `coconutGuaranteedHeightU` in `WorldBalanceConfig`; `TreeSegmentController`); negative turns one off
 
 ##### Wenhai Dong
 
@@ -101,6 +110,12 @@ Todo level selection & scene system
 - hit shake force scaled per kind & overall by `CameraConfig`
 - `DynamicTreeSegmentPool`: 20 segments, look-ahead 60, first segment at y -40, so trunk exists far above & below the camera
 - height markers show up to 50 u ahead (`showAboveU`) & pulse when the monkey touches their trigger, not at a polled height
+- ramped difficulty runs 0 at the starting zone exit to 1 at the boss fight (500 m), no longer to 1200 u; `RampedDifficultyManager` floors it at 0 instead of clamping to 0~1
+- first appearances follow height: rough bark 100 m, pineapple 150 m, falling cobra 200 m, coconut 250 m, web 300 m, each the zero stretch of its own curve in the ramped difficulty (falling cobra curve linear after its knee)
+
+- first-grab fruit popup also detects an unlearned fruit w/i `fruitPopUpDetectRadiusU` (`PlayerBalanceConfig`) of the monkey, any side of the tree; a fruit in arm reach still wins, a rarer kind outranks a nearer banana (`FruitGrabPrompt`)
+- falling cobra stops against tree branches: drop & slide are swept & halt short of any branch collider, so a branch holds it up; it keeps homing & may slip off the edge (`FallingCobraController`)
+- boss arena fruit shows the watermelon model `SM_Fruits_Watermelon_1` instead of the banana, thrown copy & golden banana word included; grab & throw unchanged (`BossFightController`); credited in `CREDITS.md`
 
 ##### Yuqing Lu
 
@@ -131,6 +146,7 @@ Todo level selection & scene system
 - orphan `GoalText` object in `Lv1Scene` (never drawn, no parent Canvas) and its mention in the TDD
 - look-left & look-right cameras: grab shifts the climb view instead of cutting; `CameraLookDown` → `CameraCoconutTrack`
 - cobra alert on surges, falling cobra hits & proximity
+- `coconutStartHeightU` & `coconutSpawnChancePerSegment` (`PlayerBalanceConfig`), `roughBarkStartScore` (`WorldBalanceConfig`) & the rough bark forced first patch: no fixed gate left, the ramp decides
 
 ##### Yuqing Lu
 

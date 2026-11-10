@@ -3,7 +3,9 @@ using UnityEngine;
 
 /// <summary>
 /// Prefab root for one dynamic tree segment. Procedurally decorates itself
-/// with Branch With Fruit prefabs on creation, and again each time
+/// with branch prefabs, one per <see cref="BranchKind"/> (empty, banana,
+/// coconut, pineapple), each rolled from its own chance curve, on creation,
+/// and again each time
 /// <see cref="Restart"/> moves it to a new place, raising
 /// <see cref="BranchesGenerated"/> after each roll.
 /// </summary>
@@ -61,8 +63,20 @@ public class TreeSegmentController: MonoBehaviour {
     private Collider segmentCollider;
 
     [SerializeField]
-    [Tooltip("branch prefab spawned on segment")]
-    private GameObject branchWithFruitPrefab;
+    [Tooltip("branch prefab of the empty kind, bearing no fruit")]
+    private GameObject branchEmptyPrefab;
+
+    [SerializeField]
+    [Tooltip("branch prefab of the banana kind")]
+    private GameObject branchBananaPrefab;
+
+    [SerializeField]
+    [Tooltip("branch prefab of the coconut kind")]
+    private GameObject branchCoconutPrefab;
+
+    [SerializeField]
+    [Tooltip("branch prefab of the pineapple kind")]
+    private GameObject branchPineapplePrefab;
 
     [SerializeField]
     [Tooltip("shared branch placement tuning")]
@@ -82,12 +96,15 @@ public class TreeSegmentController: MonoBehaviour {
                 this
             );
         }
-        if (branchWithFruitPrefab == null) {
-            Debug.LogWarning(
-                "TreeSegmentController:\t"
-                    + "must assign Inspector Field: branchWithFruitPrefab",
-                this
-            );
+        foreach (BranchKind kind in ROLL_ORDER) {
+            if (GetBranchPrefab(kind) == null) {
+                Debug.LogWarning(
+                    "TreeSegmentController:\tmust assign the branch prefab "
+                        + "Inspector Field of kind " + kind,
+                    this
+                );
+                hasAllBranchPrefabs = false;
+            }
         }
 
         if (placementConfig == null) {
@@ -108,7 +125,7 @@ public class TreeSegmentController: MonoBehaviour {
 
         if (
             segmentCollider == null
-            || branchWithFruitPrefab == null
+            || !hasAllBranchPrefabs
             || placementConfig == null
             || worldBalanceConfig == null
         ) {
@@ -141,7 +158,18 @@ public class TreeSegmentController: MonoBehaviour {
         GenerateBranches();
     }
 
+    // constants  ##############################################################
+    // rarest first, so the common empty branches never crowd a pineapple or
+    // coconut out of its spot
+    private static readonly BranchKind[] ROLL_ORDER = {
+        BranchKind.Pineapple,
+        BranchKind.Coconut,
+        BranchKind.Banana,
+        BranchKind.Empty
+    };
+
     // private members  ########################################################
+    private bool hasAllBranchPrefabs = true; // if every kind has its prefab
     private readonly HashSet<Transform> prefabChildren = new();
     private bool isReady; // if Awake passed the Inspector guard
     private bool hasGenerated; // if branches were rolled once already
@@ -164,22 +192,46 @@ public class TreeSegmentController: MonoBehaviour {
         float segmentHeight = GetHeight();
         List<Vector3> placedPositions = new();
 
-        // fixed attempt count, each attempt spawns a branch by the chance the
-        // curve gives at this segment's ramped difficulty, or by the flat
-        // starting zone chance when the segment's middle lies in the zone
+        // each kind rolls a fixed attempt count, each attempt succeeding by
+        // the chance its own curve gives at this segment's ramped difficulty;
+        // in the starting zone only the banana kind grows, at a flat chance
         float centerY = segmentCollider.bounds.center.y;
-        float spawnProbability = IsInStartingZone(centerY)
-            ? worldBalanceConfig.StartingZoneBranchChance
-            : Mathf.Clamp01(
-                worldBalanceConfig.BranchSpawnProbabilityCurve.Evaluate(
-                    GetRampedDifficulty(centerY)
-                )
-            );
+        bool isInStartingZone = IsInStartingZone(centerY);
+        float rampedDifficulty = GetRampedDifficulty(centerY);
 
-        int attemptCount = worldBalanceConfig.BranchGenerationAttemptCount;
-        for (int i = 0; i < attemptCount; i++) {
-            if (Random.value < spawnProbability) {
-                SpawnBranch(segmentHeight, placedPositions);
+        // the fixed-height branches go first, so nothing crowds them out
+        foreach (BranchKind kind in ROLL_ORDER) {
+            float guaranteedY = GetGuaranteedWorldY(kind);
+            if (
+                !float.IsNaN(guaranteedY)
+                && guaranteedY >= segmentCollider.bounds.min.y
+                && guaranteedY < segmentCollider.bounds.max.y
+            ) {
+                SpawnBranch(
+                    kind,
+                    segmentHeight,
+                    placedPositions,
+                    transform.InverseTransformPoint(
+                        new Vector3(0f, guaranteedY, 0f)
+                    ).y
+                );
+            }
+        }
+
+        foreach (BranchKind kind in ROLL_ORDER) {
+            float spawnProbability = GetSpawnProbability(
+                kind,
+                isInStartingZone,
+                rampedDifficulty
+            );
+            if (spawnProbability <= 0f) {
+                continue;
+            }
+            int attemptCount = worldBalanceConfig.GetBranchAttemptCount(kind);
+            for (int i = 0; i < attemptCount; i++) {
+                if (Random.value < spawnProbability) {
+                    SpawnBranch(kind, segmentHeight, placedPositions);
+                }
             }
         }
 
@@ -187,7 +239,50 @@ public class TreeSegmentController: MonoBehaviour {
         BranchesGenerated?.Invoke(this);
     }
 
-    private void SpawnBranch(float segmentHeight, List<Vector3> placedPositions) {
+    // chance 0~1 that one attempt of the kind grows a branch
+    private float GetSpawnProbability(
+        BranchKind kind,
+        bool isInStartingZone,
+        float rampedDifficulty
+    ) {
+        if (isInStartingZone) {
+            return kind == BranchKind.Banana
+                ? worldBalanceConfig.StartingZoneBananaBranchChance
+                : 0f;
+        }
+        AnimationCurve curve =
+            worldBalanceConfig.GetBranchProbabilityCurve(kind);
+        return curve != null
+            ? Mathf.Clamp01(curve.Evaluate(rampedDifficulty))
+            : 0f;
+    }
+
+    private GameObject GetBranchPrefab(BranchKind kind) {
+        return kind switch {
+            BranchKind.Empty => branchEmptyPrefab,
+            BranchKind.Banana => branchBananaPrefab,
+            BranchKind.Coconut => branchCoconutPrefab,
+            BranchKind.Pineapple => branchPineapplePrefab,
+            _ => null
+        };
+    }
+
+    // world y of the kind's guaranteed branch, NaN when it has none
+    private float GetGuaranteedWorldY(BranchKind kind) {
+        float climbedY = worldBalanceConfig.GetGuaranteedBranchHeightU(kind);
+        if (climbedY < 0f || RampedDifficultyManager.I == null) {
+            return float.NaN;
+        }
+        return RampedDifficultyManager.I.PlayerGameStartYPosition + climbedY;
+    }
+
+    // fixedLocalHeight: segment-local y to grow at, NaN for a random one
+    private void SpawnBranch(
+        BranchKind kind,
+        float segmentHeight,
+        List<Vector3> placedPositions,
+        float fixedLocalHeight = float.NaN
+    ) {
         Quaternion branchRotation = Quaternion.identity;
         Vector3 branchPosition = Vector3.zero;
 
@@ -195,12 +290,18 @@ public class TreeSegmentController: MonoBehaviour {
         bool isClear = false;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
             branchRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            float branchHeight = Random.Range(0f, segmentHeight);
+            float branchHeight = float.IsNaN(fixedLocalHeight)
+                ? Random.Range(0f, segmentHeight)
+                : fixedLocalHeight;
             branchPosition =
                 branchRotation * Vector3.forward * placementConfig.BranchRadius
                 + Vector3.up * branchHeight;
 
-            isClear = IsClearOfMonkey(branchPosition);
+            // a spot in the boss zone is never clear: only the fight grows
+            // anything there
+            isClear =
+                IsClearOfMonkey(branchPosition)
+                && !IsInBossZone(branchPosition);
             if (
                 isClear
                 && IsFarEnoughFromExisting(branchPosition, placedPositions)
@@ -216,37 +317,22 @@ public class TreeSegmentController: MonoBehaviour {
 
         placedPositions.Add(branchPosition);
 
-        GameObject branch = Instantiate(branchWithFruitPrefab, transform);
+        GameObject branch = Instantiate(GetBranchPrefab(kind), transform);
         branch.transform.SetLocalPositionAndRotation(
             branchPosition,
             branchRotation
         );
 
-        // fruit chances follow the difficulty at the branch's own height
-        float rampedDifficulty =
-            GetRampedDifficulty(branch.transform.position.y);
-        float bananaProbability = IsInStartingZone(branch.transform.position.y)
-            ? worldBalanceConfig.StartingZoneBananaChance
-            : Mathf.Clamp01(
-                worldBalanceConfig.BananaSpawnProbabilityCurve.Evaluate(
-                    rampedDifficulty
-                )
-            );
-        float pineappleProbability = Mathf.Clamp01(
-            worldBalanceConfig.PineappleSpawnProbabilityCurve.Evaluate(
-                rampedDifficulty
-            )
-        );
         BranchController branchRoot =
             branch.GetComponent<BranchController>();
         if (branchRoot == null) {
             Debug.LogWarning(
                 "TreeSegmentController:\t"
-                    + "branchWithFruitPrefab lacks BranchController",
+                    + kind + " branch prefab lacks BranchController",
                 this
             );
         } else {
-            branchRoot.Initialize(bananaProbability, pineappleProbability);
+            branchRoot.Setup();
         }
     }
 
@@ -261,6 +347,14 @@ public class TreeSegmentController: MonoBehaviour {
         return RampedDifficultyManager.I != null
             ? RampedDifficultyManager.I.GetRampedValueFromYPosition(worldY)
             : 0f;
+    }
+
+    // iff the segment-local spot lies in the boss zone; false w/o a service
+    private bool IsInBossZone(Vector3 localPosition) {
+        return RampedDifficultyManager.I != null
+            && RampedDifficultyManager.I.IsInBossZoneY(
+                transform.TransformPoint(localPosition).y
+            );
     }
 
     // iff the branch keeps the starting zone clearance from the monkey; always

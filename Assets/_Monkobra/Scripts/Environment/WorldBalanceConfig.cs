@@ -1,10 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Balance of the generated world: the ramped difficulty curve that every
-/// hazard chance is read against, branch and fruit generation, rough bark,
-/// spider webs and the boss fight. Player, scoring and coconut numbers live in
-/// <see cref="PlayerBalanceConfig"/>, cobra numbers in
+/// Balance of the generated world: the ramped difficulty curves that every
+/// hazard chance is read against, the 4 branch kinds (empty, banana, coconut,
+/// pineapple), rough bark, spider webs and the boss zone & fight. Player and
+/// scoring numbers live in <see cref="PlayerBalanceConfig"/>, cobra numbers in
 /// <see cref="CobraBalanceConfig"/>.
 /// </summary>
 [CreateAssetMenu(
@@ -13,12 +13,13 @@ using UnityEngine;
 )]
 public class WorldBalanceConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>x: player y above start y; world u; y: ramped difficulty
-    /// 0~1</returns>
-    public AnimationCurve RampedDifficultyCurve => rampedDifficultyCurve;
+    /// <returns>x: progress 0~1 from the starting zone exit to the boss zone
+    /// start; y: ramped difficulty 0~1</returns>
+    public AnimationCurve PreBossRampCurve => preBossRampCurve;
 
-    /// <returns>branch creation attempts rolled per segment</returns>
-    public int BranchGenerationAttemptCount => branchGenerationAttemptCount;
+    /// <returns>x: height above the boss zone end; world u; y: ramped
+    /// difficulty from 1 up</returns>
+    public AnimationCurve PostBossRampCurve => postBossRampCurve;
 
     /// <returns>no branch grows within this distance of the monkey while the
     /// starting zone lasts, so a restart never spawns the monkey into one;
@@ -26,31 +27,50 @@ public class WorldBalanceConfig: ScriptableObject {
     public float StartingZoneBranchClearRadiusU =>
         startingZoneBranchClearRadiusU;
 
-    /// <returns>chance 0~1 that one attempt creates a branch on a segment
-    /// whose middle lies in the starting zone, in place of the branch
-    /// curve</returns>
-    public float StartingZoneBranchChance => startingZoneBranchChance;
+    /// <returns>chance 0~1 that one banana branch attempt succeeds on a
+    /// segment whose middle lies in the starting zone, in place of the banana
+    /// branch curve; the other kinds do not grow there</returns>
+    public float StartingZoneBananaBranchChance =>
+        startingZoneBananaBranchChance;
 
-    /// <returns>chance 0~1 that a branch grown in the starting zone bears a
-    /// banana, in place of the banana curve</returns>
-    public float StartingZoneBananaChance => startingZoneBananaChance;
+    /// <param name="kind">which of the 4 branch kinds</param>
+    /// <returns>attempts rolled per segment for that kind, the most one
+    /// segment can hold of it</returns>
+    public int GetBranchAttemptCount(BranchKind kind) {
+        return kind switch {
+            BranchKind.Empty => emptyBranchAttemptCount,
+            BranchKind.Banana => bananaBranchAttemptCount,
+            BranchKind.Coconut => coconutBranchAttemptCount,
+            BranchKind.Pineapple => pineappleBranchAttemptCount,
+            _ => 0
+        };
+    }
 
-    /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that one attempt
-    /// creates a branch</returns>
-    public AnimationCurve BranchSpawnProbabilityCurve =>
-        branchSpawnProbabilityCurve;
+    /// <param name="kind">which of the 4 branch kinds</param>
+    /// <returns>x: ramped difficulty; y: chance 0~1 that one attempt grows a
+    /// branch of that kind</returns>
+    public AnimationCurve GetBranchProbabilityCurve(BranchKind kind) {
+        return kind switch {
+            BranchKind.Empty => emptyBranchProbabilityCurve,
+            BranchKind.Banana => bananaBranchProbabilityCurve,
+            BranchKind.Coconut => coconutBranchProbabilityCurve,
+            BranchKind.Pineapple => pineappleBranchProbabilityCurve,
+            _ => null
+        };
+    }
 
-    /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that a generated
-    /// branch bears a banana</returns>
-    public AnimationCurve BananaSpawnProbabilityCurve =>
-        bananaSpawnProbabilityCurve;
+    /// <param name="kind">which of the 4 branch kinds</param>
+    /// <returns>climbed height where one branch of that kind always grows,
+    /// whatever its chance curve rolls; negative for a kind w/o one; u
+    /// </returns>
+    public float GetGuaranteedBranchHeightU(BranchKind kind) {
+        return kind switch {
+            BranchKind.Coconut => coconutGuaranteedHeightU,
+            BranchKind.Pineapple => pineappleGuaranteedHeightU,
+            _ => -1f
+        };
+    }
 
-    /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that a generated
-    /// branch bears a pineapple, rolled before the banana</returns>
-    public AnimationCurve PineappleSpawnProbabilityCurve =>
-        pineappleSpawnProbabilityCurve;
-
-    public int RoughBarkStartScore => roughBarkStartScore;
     public float RoughBarkSpeedMultiplier => roughBarkSpeedMultiplier;
     public float RoughBarkBlendS => roughBarkBlendS;
     public int RoughBarkAttemptCount => roughBarkAttemptCount;
@@ -65,9 +85,18 @@ public class WorldBalanceConfig: ScriptableObject {
     public AnimationCurve WebSpawnProbabilityCurve =>
         webSpawnProbabilityCurve;
 
+    /// <returns>climbed height where the boss zone begins: the ramp reaches 1
+    /// here and nothing unrelated to the fight is generated from here on; u
+    /// </returns>
+    public float BossZoneStartU => bossZoneStartU;
+
     /// <returns>height climbed since game start at which the boss fight
     /// begins; u</returns>
     public float BossTriggerHeightU => bossTriggerHeightU;
+
+    /// <returns>climbed height where the boss zone ends: ordinary generation
+    /// resumes and the ramp climbs above 1 from here; u</returns>
+    public float BossZoneEndU => bossZoneEndU;
 
     /// <returns>health of the Cobra King</returns>
     public int BossMaxHealth => bossMaxHealth;
@@ -79,16 +108,28 @@ public class WorldBalanceConfig: ScriptableObject {
     // Inspector Fields  #######################################################
     [Header("Ramped Difficulty")]
     [SerializeField]
-    [Tooltip("x: player y above start y; world u; y: ramped difficulty 0~1")]
-    private AnimationCurve rampedDifficultyCurve =
-        AnimationCurve.Linear(20f, 0f, 100f, 1f);
+    [Tooltip(
+        "before the boss zone. x: progress 0~1 from the starting zone exit "
+            + "to the boss zone start; y: ramped difficulty, 0 at the exit, "
+            + "1 at the zone start"
+    )]
+    private AnimationCurve preBossRampCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 1f);
+
+    [SerializeField]
+    [Tooltip(
+        "after the boss zone. x: height above the boss zone end; world u; "
+            + "y: ramped difficulty, 1 at the zone end and rising; the "
+            + "difficulty is a flat 1 inside the zone"
+    )]
+    private AnimationCurve postBossRampCurve = AnimationCurve.Linear(
+        0f,
+        1f,
+        500f,
+        2f
+    );
 
     [Header("Branch")]
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("branch creation attempts rolled per segment")]
-    private int branchGenerationAttemptCount = 9;
-
     [SerializeField]
     [Min(0f)]
     [Tooltip(
@@ -100,48 +141,89 @@ public class WorldBalanceConfig: ScriptableObject {
     [SerializeField]
     [Range(0f, 1f)]
     [Tooltip(
-        "chance that one branch attempt succeeds on a segment in the starting "
-            + "zone, below the exit trigger; replaces the branch curve there"
+        "chance that one banana branch attempt succeeds on a segment in the "
+            + "starting zone, below the exit trigger; replaces the banana "
+            + "branch curve there, and no other kind grows there"
     )]
-    private float startingZoneBranchChance = 0.4f;
+    private float startingZoneBananaBranchChance = 0.4f;
 
+    [Header("Branch: Empty")]
     [SerializeField]
-    [Range(0f, 1f)]
-    [Tooltip(
-        "chance that a branch grown in the starting zone bears a banana; "
-            + "replaces the banana curve there"
-    )]
-    private float startingZoneBananaChance = 1f;
-
-    [SerializeField]
-    [Tooltip(
-        "x: ramped difficulty 0~1; y: chance 0~1 that one attempt "
-            + "creates a branch"
-    )]
-    private AnimationCurve branchSpawnProbabilityCurve =
-        AnimationCurve.Linear(0f, 0f, 1f, 1f);
+    [Min(0)]
+    [Tooltip("empty branch attempts rolled per segment")]
+    private int emptyBranchAttemptCount = 10;
 
     [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~1; y: chance 0~1 that a generated branch "
-            + "bears a banana"
+        "x: ramped difficulty; y: chance 0~1 that one attempt grows a "
+            + "branch bearing no fruit"
     )]
-    private AnimationCurve bananaSpawnProbabilityCurve =
-        AnimationCurve.Linear(0f, 0f, 1f, 1f);
+    private AnimationCurve emptyBranchProbabilityCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 0.4f);
+
+    [Header("Branch: Banana")]
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("banana branch attempts rolled per segment")]
+    private int bananaBranchAttemptCount = 10;
 
     [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~1; y: chance 0~1 that a generated branch "
-            + "bears a pineapple, rolled before the banana"
+        "x: ramped difficulty; y: chance 0~1 that one attempt grows a "
+            + "branch bearing a banana"
     )]
-    private AnimationCurve pineappleSpawnProbabilityCurve =
-        AnimationCurve.Linear(0f, 0f, 1f, 0.1f);
+    private AnimationCurve bananaBranchProbabilityCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 0.3f);
+
+    [Header("Branch: Coconut")]
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("coconut branch attempts rolled per segment")]
+    private int coconutBranchAttemptCount = 1;
+
+    [SerializeField]
+    [Tooltip(
+        "climbed height, as the trunk markers show it, where one coconut "
+            + "branch always grows, on top of the curve rolls; negative "
+            + "turns it off; u"
+    )]
+    private float coconutGuaranteedHeightU = 250f;
+
+    [SerializeField]
+    [Tooltip(
+        "x: ramped difficulty; y: chance 0~1 that one attempt grows a "
+            + "branch bearing a coconut; 0 below the first appearance"
+    )]
+    private AnimationCurve coconutBranchProbabilityCurve = new(
+        new Keyframe(0f, 0f),
+        new Keyframe(0.495f, 0f),
+        new Keyframe(0.55f, 0.1f),
+        new Keyframe(2f, 0.1f)
+    );
+
+    [Header("Branch: Pineapple")]
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("pineapple branch attempts rolled per segment")]
+    private int pineappleBranchAttemptCount = 10;
+
+    [SerializeField]
+    [Tooltip(
+        "climbed height, as the trunk markers show it, where one pineapple "
+            + "branch always grows, on top of the curve rolls; negative "
+            + "turns it off; u"
+    )]
+    private float pineappleGuaranteedHeightU = 150f;
+
+    [SerializeField]
+    [Tooltip(
+        "x: ramped difficulty; y: chance 0~1 that one attempt grows a "
+            + "branch bearing a pineapple"
+    )]
+    private AnimationCurve pineappleBranchProbabilityCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 0.05f);
 
     [Header("Rough Bark")]
-    [SerializeField, Min(0)]
-    [Tooltip("minimum total HUD score before rough patches begin appearing")]
-    private int roughBarkStartScore = 3000;
-
     [SerializeField, Range(0.1f, 1f)]
     [Tooltip(
         "movement speed on rough bark, applied equally to climbing and "
@@ -158,7 +240,7 @@ public class WorldBalanceConfig: ScriptableObject {
     private int roughBarkAttemptCount = 2;
 
     [SerializeField]
-    [Tooltip("x: height difficulty 0~1; y: rough patch chance 0~1")]
+    [Tooltip("x: ramped difficulty; y: rough patch chance 0~1")]
     private AnimationCurve roughBarkSpawnProbabilityCurve =
         AnimationCurve.Linear(0f, 0.1f, 1f, 0.7f);
 
@@ -179,11 +261,25 @@ public class WorldBalanceConfig: ScriptableObject {
     [Header("Boss Fight")]
     [SerializeField]
     [Tooltip(
-        "height climbed since game start at which the boss fight begins: "
-            + "past where webs, falling cobras, pineapples, coconuts & rough "
-            + "bark have all shown up; lower it to test; u"
+        "climbed height, as the trunk markers show it, where the boss zone "
+            + "begins: the ramp reaches 1 here and only the boss fight "
+            + "generates anything from here to the zone end; u"
     )]
-    private float bossTriggerHeightU = 500f;
+    private float bossZoneStartU = 500f;
+
+    [SerializeField]
+    [Tooltip(
+        "height climbed since game start at which the boss fight begins, "
+            + "inside the boss zone; lower the zone to test; u"
+    )]
+    private float bossTriggerHeightU = 525f;
+
+    [SerializeField]
+    [Tooltip(
+        "climbed height where the boss zone ends: ordinary generation "
+            + "resumes and the ramp climbs above 1 from here; u"
+    )]
+    private float bossZoneEndU = 550f;
 
     [SerializeField]
     [Tooltip("health of the Cobra King")]
@@ -195,11 +291,10 @@ public class WorldBalanceConfig: ScriptableObject {
 
     // Editor Validation  ######################################################
     private void OnValidate() {
-        branchGenerationAttemptCount = Mathf.Max(
-            0,
-            branchGenerationAttemptCount
-        );
-        roughBarkStartScore = Mathf.Max(0, roughBarkStartScore);
+        emptyBranchAttemptCount = Mathf.Max(0, emptyBranchAttemptCount);
+        bananaBranchAttemptCount = Mathf.Max(0, bananaBranchAttemptCount);
+        coconutBranchAttemptCount = Mathf.Max(0, coconutBranchAttemptCount);
+        pineappleBranchAttemptCount = Mathf.Max(0, pineappleBranchAttemptCount);
         roughBarkSpeedMultiplier = Mathf.Clamp(
             roughBarkSpeedMultiplier,
             0.1f,
@@ -208,7 +303,10 @@ public class WorldBalanceConfig: ScriptableObject {
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
         roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
         webAttemptCount = Mathf.Max(0, webAttemptCount);
-        bossTriggerHeightU = Mathf.Max(0f, bossTriggerHeightU);
+        // the zone is ordered: start <= trigger <= end
+        bossZoneStartU = Mathf.Max(0f, bossZoneStartU);
+        bossTriggerHeightU = Mathf.Max(bossZoneStartU, bossTriggerHeightU);
+        bossZoneEndU = Mathf.Max(bossTriggerHeightU, bossZoneEndU);
         bossMaxHealth = Mathf.Max(1, bossMaxHealth);
         bossBananaDamage = Mathf.Max(1, bossBananaDamage);
     }

@@ -16,7 +16,7 @@ Every short message shown over the screen during a run: the coconut prompts, the
 | `Prefabs/PopUp/_PopUps` | root prefab nesting every variant, carrying `PopUpManager`, a direct child of `_UI` drawn under `Screens` |
 | `Sprites/PopUp/PopUpBackground` | the rounded plate sprite, its 9-slice border set in the import settings |
 
-The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget`, `ProgressBarWidget` (the surge and chase warnings), `LowStaminaWidget`, and `SpiderWebWidget`, and `FruitGrabPrompt` (the `BananaFirst`, `PineappleFirst`, and `CoconutGrab` hints, each held while a fruit of its kind is in reach until one is grabbed in the run, and shown again at the next such fruit) each call `PopUpManager.I.Show` or `Hide` with a `PopUpId`. `FruitGrabPrompt` also finds the variant with `PopUpManager.I.GetPopUp` and hands the reach target to its `PopUpWorldLink` each frame, so the line follows the fruit.
+The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget`, `ProgressBarWidget` (the surge and chase warnings), `LowStaminaWidget`, and `SpiderWebWidget`, and `FruitGrabPrompt` (the `BananaFirst`, `PineappleFirst`, and `CoconutGrab` hints, each held while a fruit of its kind is in reach, or within a wide radius even on the far side of the tree, until one is grabbed in the run, and shown again at the next such fruit; the coconut and pineapple outrank the banana) each call `PopUpManager.I.Show` or `Hide` with a `PopUpId`. `FruitGrabPrompt` also finds the variant with `PopUpManager.I.GetPopUp` and hands the reach target to its `PopUpWorldLink` each frame, so the line follows the fruit.
 
 ## Where Config Lives
 

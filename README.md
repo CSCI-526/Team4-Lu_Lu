@@ -25,7 +25,7 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 
 Gamepad: left stick or D-pad moves, the north button grabs (a double-tap spends a coconut), the south button breaks free of a web.
 
-Dev keys (development builds and the Editor only): F1 toggles the cobra no-clip cheat, F2 spawns a pineapple branch above the monkey, F3 spawns a coconut branch above the monkey, F8 downloads the analytics session report, F9 starts a new analytics session, F10 saves a mock session; the lose screen also shows a Download Analytics button, top right. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
+Dev keys (development builds and the Editor only): F1 toggles the cobra no-clip cheat (the great cobra no longer kills), F2 toggles max energy (the stamina bar stays at max), F3 toggles a 3x speed buff, F4 jumps to the boss fight, F5 spawns a pineapple branch above the monkey, F6 a coconut branch, F7 a falling cobra, F8 a spider web, F10 downloads the analytics session report, F11 starts a new analytics session, F12 saves a mock session; the lose screen also shows a Download Analytics button, top right. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
 
 ## Getting Started
 
@@ -35,8 +35,7 @@ Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6,
 
 Coconuts appear only from Height 150, on about one segment in ten, so a normal run meets few of them. For a quick check either:
 
-- press F3 (fn+F3 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra
-- select `Envs/CoconutSystem` in the scene, tick `CoconutSpawner` > Use Test Override before pressing Play, and leave the scene unsaved: coconuts then hang from Height 5 (Test Start Height U) on every segment (Test Spawn Chance 1)
+- press F6 (fn+F6 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra
 
 The real values live in the Coconut group of `Settings/Player/PlayerBalanceConfig.asset`, see the [Grab System](docs/grab-doc.md#coconut).
 

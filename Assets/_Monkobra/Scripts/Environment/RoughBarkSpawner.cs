@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>Creates broad, avoidable rough-bark patches after the score
-/// threshold. Segment ownership handles recycling and cleanup.</summary>
+/// <summary>Creates broad, avoidable rough-bark patches, rolled per segment
+/// from the ramped difficulty. Segment ownership handles recycling and
+/// cleanup.</summary>
 public class RoughBarkSpawner: MonoBehaviour {
-    public bool IsUnlocked => unlocked;
     [SerializeField] private WorldBalanceConfig worldBalanceConfig;
     [SerializeField] private Material barkMaterial;
     [SerializeField, Min(0.1f)] private float radiusU = 5.05f;
@@ -16,10 +16,7 @@ public class RoughBarkSpawner: MonoBehaviour {
     [SerializeField, Min(0.1f)] private float obstacleClearanceU = 0.7f;
     private readonly HashSet<TreeSegmentController> segments = new();
     private readonly List<RoughBarkZone> patches = new();
-    private ScoreManager score;
     private Transform player;
-    private bool unlocked;
-    private bool hasSpawned;
 
     private void Awake() {
         if (worldBalanceConfig == null || barkMaterial == null) {
@@ -33,44 +30,30 @@ public class RoughBarkSpawner: MonoBehaviour {
     }
 
     private void Start() {
-        score = ScoreManager.I;
         GameObject target = GameObject.FindGameObjectWithTag("Player");
         player = target != null ? target.transform : null;
-        if (score == null || player == null) {
-            Debug.LogError("RoughBarkSpawner: missing score manager or player", this);
+        if (player == null) {
+            Debug.LogError("RoughBarkSpawner: missing player", this);
             enabled = false;
             return;
         }
-        score.ScoreChanged += OnScoreChanged;
         foreach (TreeSegmentController segment in FindObjectsByType<TreeSegmentController>(FindObjectsSortMode.None)) {
             segments.Add(segment);
+            PopulateSegment(segment);
         }
-        OnScoreChanged(score.TotalScore);
     }
 
     private void OnDisable() {
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
-        if (score != null) score.ScoreChanged -= OnScoreChanged;
-    }
-
-    private void OnScoreChanged(long total) {
-        if (unlocked || total < worldBalanceConfig.RoughBarkStartScore) return;
-        unlocked = true;
-        // The pool was built while the score was low. Populate its existing
-        // forward segments now, rather than waiting for a full recycle.
-        List<TreeSegmentController> forward = new(segments);
-        forward.RemoveAll(segment => segment == null || !segment.gameObject.activeInHierarchy);
-        forward.Sort((a, b) => a.transform.position.y.CompareTo(b.transform.position.y));
-        foreach (TreeSegmentController segment in forward) PopulateSegment(segment);
     }
 
     private void OnBranchesGenerated(TreeSegmentController segment) {
         segments.Add(segment);
-        if (unlocked) PopulateSegment(segment);
+        PopulateSegment(segment);
     }
 
     private void PopulateSegment(TreeSegmentController segment) {
-        if (!unlocked || player == null || segment == null || !segment.gameObject.activeInHierarchy) return;
+        if (player == null || segment == null || !segment.gameObject.activeInHierarchy) return;
         patches.RemoveAll(patch => patch == null || !patch.gameObject.activeInHierarchy);
         RampedDifficultyManager difficulty = RampedDifficultyManager.I;
         if (difficulty == null) return;
@@ -78,9 +61,7 @@ public class RoughBarkSpawner: MonoBehaviour {
             difficulty.GetRampedValueFromYPosition(segment.transform.position.y)));
         Physics.SyncTransforms();
         for (int i = 0; i < worldBalanceConfig.RoughBarkAttemptCount; i++) {
-            // The first feasible forward patch appears near the threshold;
-            // later patches retain the shared height-driven roll model.
-            if (hasSpawned && Random.value >= chance) continue;
+            if (Random.value >= chance) continue;
             float height = Random.Range(patchHeightRangeU.x, patchHeightRangeU.y);
             float arc = Random.Range(patchArcRangeDeg.x, patchArcRangeDeg.y);
             float extent = RoughBarkZone.GetVerticalExtent(height);
@@ -96,6 +77,7 @@ public class RoughBarkSpawner: MonoBehaviour {
                 Vector3 center = segment.transform.position;
                 center.y = Random.Range(minY, maxY);
                 float angle = Random.Range(0f, 360f);
+                if (IsPatchInBossZone(difficulty, center.y, extent)) continue;
                 if (!IsClear(center, angle, extent, arc)) continue;
                 GameObject patch = new("RoughBarkPatch");
                 patch.transform.SetParent(segment.transform, false);
@@ -103,10 +85,18 @@ public class RoughBarkSpawner: MonoBehaviour {
                 RoughBarkZone zone = patch.AddComponent<RoughBarkZone>();
                 zone.Initialize(radiusU, height, angle, arc, barkMaterial, true, Random.Range(0, 100000));
                 patches.Add(zone);
-                hasSpawned = true;
                 break;
             }
         }
+    }
+
+    // iff the patch, center y +- extent, overlaps the boss zone, where only
+    // the boss fight grows anything
+    private static bool IsPatchInBossZone(
+        RampedDifficultyManager difficulty, float centerY, float extent) {
+        return difficulty.IsInBossZoneY(centerY - extent)
+            || difficulty.IsInBossZoneY(centerY)
+            || difficulty.IsInBossZoneY(centerY + extent);
     }
 
     private bool IsClear(Vector3 center, float angle, float extent, float arc) {
