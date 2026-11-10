@@ -46,7 +46,7 @@ monkobra/
 │   │   ├── Scenes/    Lv1Scene, root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, ItemPineapple/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/, Scoring/, UI/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
-│   │   ├── Prefabs/   Cameras/, Environment/, GameController/, ItemCoconut/, ItemPineapple/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, one variant per popup), TutorialScreen/, UI/, World/ (light, volume, event system)
+│   │   ├── Prefabs/   Cameras/, Environment/, GameController/, ItemCoconut/, ItemPineapple/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup), TutorialScreen/, UI/, World/ (light, volume, event system)
 │   │   ├── Materials/ Environment/, ItemBanana/, ItemCoconut/, ItemPineapple/, MobGreatCobra/, MobSpiderWeb/, Player/
 │   │   ├── Sprites/   ItemBanana/, ItemCoconut/, ItemPineapple/ (fruit art), PopUp/ (popup background)
 │   │   ├── Inputs/    InputSystem_Actions
@@ -205,6 +205,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `HackShortcuts/HackShortcutPanel` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself outside a development build | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `PopUp/PopUpManager` | singleton on `Prefabs/PopUp/_PopUps`: shows one popup at a time by `PopUpId`, priority interrupts and queues, run gating, once-per-scene memory, drops all on a loss | [PopUps](docs/pop-up-doc.md#rules) |
 | `PopUp/MessagePopUp` | on each popup variant prefab: text with a `{0}` slot, look, show and fade times, priority, flags; `Show` and `Hide` | [PopUps](docs/pop-up-doc.md#where-config-lives) |
+| `PopUp/PopUpWorldLink` | on `Prefabs/PopUp/_PopUpFruitBase`: line from the popup bottom center to a world target its owner sets (`FruitGrabPrompt` hands over the reach target); hidden without a target | [PopUps](docs/pop-up-doc.md#parts) |
 | `PopUp/PopUpId` | enum of the 8 popup variants, the key callers pass to `Show` | [PopUps](docs/pop-up-doc.md#add-a-popup) |
 | `Scoring/ScoreManager` | singleton, distance and reward score, each pickup scored and counted by its `PickupKind` | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup`, `Scoring/PickupKind` | on a fruit: hands points over once, as a banana or a coconut | [Grab](docs/grab-doc.md#on-a-successful-grab) |

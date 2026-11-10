@@ -10,11 +10,13 @@ Every short message shown over the screen during a run: the coconut prompts, the
 | `PopUp/MessagePopUp` | on every variant: its own text, look, timing, and flags; `Show` fades it in, `Hide` fades it out |
 | `PopUp/PopUpManager` | singleton `PopUpManager.I` on the `_PopUps` root: shows one popup at a time and owns the rules below |
 | `Prefabs/PopUp/_PopUpBase` | base prefab: `CanvasGroup`, `MessagePopUp`, a 9-sliced `Background` plate, a `Text` label |
-| `Prefabs/PopUp/<Subject>_<Variant>` | one variant of the base per popup, saved inactive |
+| `Prefabs/PopUp/_PopUpFruitBase` | copy of the base for the fruit grab hints: a fruit `Icon`, the text, an inline SPACE BAR keycap, a static tail label, and a `Line` driven by `PopUpWorldLink` |
+| `PopUp/PopUpWorldLink` | on `_PopUpFruitBase`: draws the `Line` from the popup bottom center to a world target set by its owner, hidden when there is none or it is behind the camera |
+| `Prefabs/PopUp/<Subject>_<Variant>` | one variant of the base per popup, saved inactive; `Banana_First` and `Coconut_Grab` vary `_PopUpFruitBase` and set their own icon sprite |
 | `Prefabs/PopUp/_PopUps` | root prefab nesting every variant, carrying `PopUpManager`, a direct child of `_UI` drawn under `Screens` |
 | `Sprites/PopUp/PopUpBackground` | the rounded plate sprite, its 9-slice border set in the import settings |
 
-The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget`, `ProgressBarWidget` (the surge and chase warnings), `LowStaminaWidget`, and `SpiderWebWidget`, and `FruitGrabPrompt` (the `BananaFirst`, `PineappleFirst`, and `CoconutGrab` hints, each held while a fruit of its kind is in reach until one is grabbed in the run, and shown again at the next such fruit) each call `PopUpManager.I.Show` or `Hide` with a `PopUpId`.
+The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget`, `ProgressBarWidget` (the surge and chase warnings), `LowStaminaWidget`, and `SpiderWebWidget`, and `FruitGrabPrompt` (the `BananaFirst`, `PineappleFirst`, and `CoconutGrab` hints, each held while a fruit of its kind is in reach until one is grabbed in the run, and shown again at the next such fruit) each call `PopUpManager.I.Show` or `Hide` with a `PopUpId`. `FruitGrabPrompt` also finds the variant with `PopUpManager.I.GetPopUp` and hands the reach target to its `PopUpWorldLink` each frame, so the line follows the fruit.
 
 ## Where Config Lives
 
@@ -25,6 +27,7 @@ Everything a designer tunes sits on the variant prefab, not in a script or an as
 - Position: the anchors and anchored position of the root `RectTransform`; the plate grows with the text
 - Timing: show time (0 stays until hidden), fade-in, fade-out, and pulse rate
 - Rules: priority, run-only, once-per-scene
+- Fruit Hint Parts: on `_PopUpFruitBase`, the `Icon` size, the `Key` label of the keycap, the `Tail` text, and the `Line` color and width (`lineWidth` of `PopUpWorldLink`); a variant sets only its icon sprite and its `message`, which stops before the keycap
 
 ## Rules
 
