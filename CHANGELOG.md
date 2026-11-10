@@ -11,132 +11,98 @@ todo upd gdd
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta...dev
+
+## [1.0.0-beta] - 2026-11-10
+
+### Added
+
 ##### Belle Dai
 
-- slippery bark: wet patches on the trunk (`SlipperyBarkZone`, spawned by `SlipperyBarkSpawner`, one tutorial band) make the monkey slip & lose grip; wet grip slows the arm stroke (`ArmController`)
+- rough bark: avoidable raised patches on the trunk smoothly slow the monkey, replacing slippery bark (`RoughBarkZone`, `RoughBarkSpawner`)
 
 ##### Erik
 
-- scene system: `TitleScene` (startup scene of every build, any key or click), `LevelSelectScene` (Normal Play, Endless Mode, Back; mouse, W S or arrows, Space or Enter, Esc), `Lv1Scene`, `EndlessScene`; menus use their own `MenuEventSystem` & `MenuCamera`; `SceneNames.Load` is the one way to load a scene
-- Endless Mode: starts at the tree base in the post boss state (gold armor worn, no boss fight, no boss marker, no hazard-free zone); difficulty opens at the post boss level & keeps ramping (`GameController.runMode`, `RunMode`); unlocked once the Cobra King is beaten (`ProgressStore`, PlayerPrefs; Editor menu `Monkobra/Unlock Endless`, `Monkobra/Reset Progress`)
-- pause & lose screens: option buttons Resume (pause only), Restart, Exit to Title; W S or arrows & mouse hover highlight, Space or Enter or click confirm (`RunScreenMenu`); the gameplay `EventSystem` reads the `InputSystem_Actions` UI map; `RestartAfterLose` is R only, a confirm press with nothing highlighted restarts too
-- analytics: one session file per launch across scene loads, each run tagged `Full` or `Endless`, session summary split by mode when both occur; a scene load closes the open run as `Interrupted`
-- hack keys reorganized, development builds only: F1 great cobra no kill, F2 max energy (stamina bar stays at max, toggle), F3 speed x3 (climb & orbit, toggle), F4 jump to the boss fight (teleport to the trigger height), F5 pineapple, F6 coconut, F7 falling snake & F8 spider web spawns, F10 report download, F11 new session, F12 mock session (`HackAction.MaxStamina`, `SpeedBuff`, `BossJump`, `SpawnFallingCobra`, `SpawnSpiderWeb`)
-- brown coconut: the whole `SM_Fruits_Coconut_1` model in the world (`Coconut`, `CoconutProjectile`) renders w/ the `Coconut_Brown` material instead of the pack's green
-- coconut counter & flight sprite: use `coconut128x128` instead of `Coconut_Green`; unused `Coconut_Green` sprite & `SM_Fruits_Coconut_4` model rm
-- `Lv1Scene` split into nested prefabs: `World`, `Envs`, `Entities`, `Systems`, `UI` and a leaf prefab per unit, so teammates edit different files
-- Great Cobra exit boost: extra climb speed for a while after the monkey leaves the starting zone, w/ center warning "Run! The Great Cobra is chasing you!"; `cobraExitBoostSpeedU` & `cobraExitBoostDurationS` in `GameBalanceConfig`
-- `MovementConfig` asset: climb speed builds up along 2 curves (up, down) of how long the key is held, instead of a fixed acceleration
-- `startingZoneBranchClearRadiusU` in `GameBalanceConfig`: branch clearance round the monkey before the run is playing
-- fruit fly: a grabbed fruit's sprite flies from its screen spot to a target (`FruitFlyEffect`, `FruitFlyConfig` asset): banana to the stamina bar, coconut to the icon of the coconut HUD, pineapple to the monkey; per-fruit target & sprite via `FruitFlyOnGrab`
-- `Coconut` placeholder fruit prefab, banana-shaped, no score, not spawned yet
-- pineapple: a branch may bear one instead of a banana (`pineappleSpawnProbabilityCurve` in `GameBalanceConfig`); grabbing it raises both hands & pulls the monkey up a set height, w/ hazards off for the leap & a short landing grace (`PineappleLeapController`, `GameController.IsLeaping`, `PineappleLeapConfig` asset)
-- F2 dev key: spawns a pineapple branch straight above the monkey (`HackPineappleSpawner`)
-- fruit UI sprites (banana, coconut, pineapple) in `Sprites/UI/`, shown in flights at 3x size (`sizePx` 192 in `FruitFlyConfig`); sources credited in `CREDITS.md`
-- coconut throw: a double-tap throws one, the `UseCoconut` action of the Input Actions asset (MultiTap on Space, E & gamepad North), listened to by `CoconutManager`; a coconut model (`CoconutProjectile`) falls from the monkey at `coconutThrowSpeedU`, & the great cobra freezes on touching it or after `coconutThrowDistanceU`, not at the tap; works in the starting zone too
-- look-down camera: `CameraLookDown` goes live for `coconutLookDownS` after a throw to follow the fall, under look-left/look-right while Interact is held (`CameraRigManager`)
-- F3 dev key: spawns a branch bearing a coconut above the monkey (`HackAction.SpawnCoconut`, `HackPineappleSpawner`)
-- consistent pop up UI: every center message (4 coconut, 2 cobra warnings, low stamina & web hints) is a variant prefab of `PopUp/_PopUpBase`, a semi-transparent plate behind the text, edited in the Editor; `PopUpManager` shows one at a time, a higher priority interrupts & the interrupted one resumes, run-only & once-per-scene rules, all dropped on a loss; the widgets only raise events into it (see `docs/pop-up-doc.md`)
-- tree bark texture on trunk segments (`TreeBark` material on `TreeSegment`); source credited in `CREDITS.md`
-- analytics metric channel: every run event is an `AnalyticsMetric` stamped through `AnalyticsManager.RecordEvent`, and the report renders each from one loop, so a new metric is an enum entry, a title row & one subscription (`AnalyticsMetric`, `RunData.GetEvents`)
-- analytics records pineapple leaps, rough bark contacts, cobra freezes, pauses, boss fight starts, armor saves & boss revives; `BossFightController` raises `FightStarted`, `ArmorAbsorbed` & `Revived`, `MonkeyController` raises `RoughBarkTouched`
-- analytics report prints a Starting Zone Exit line (time & height)
-- Download Analytics button at the top right of the lose screen (`LoseScreenDownloadWidget`), development builds & the Editor only: it hides itself otherwise
-- camera redesign: every gameplay camera tracks `CameraAnchor`, a yaw-only proxy w/ eased, dead-zoned yaw round the trunk; monkey body interpolated, brain on `LateUpdate`, so strafing no longer spins the view
-- `CameraConfig` asset: one place for all camera tuning: anchor, climb framing, the 3 shots, shake, stamina vignette, comfort switch (`reduceMotion`, `shakeScale`)
-- climb framing (`CameraClimbFraming`): looks up by default, lead from real vertical speed, grab shifts the aim toward the fruit side, picked once per press, no cut
-- hold curves in `CameraConfig`: look-up height & FOV (base → final view) vs time the up input is held, settle back on release
-- shot director (`CameraRigManager`): coconut track, cobra alert & pineapple leap shots by priority, min hold, cap & cooldown, so events never chain into rapid cuts; blend times in `CameraBlends` asset; `CameraShotTarget` frames monkey w/ coconut
-- coconut track shot follows a thrown coconut, ends at the landing or `Duration S`, whichever is first (`CoconutManager.Thrown` & `Landed`)
-- cobra alert shot, once, when the cobra first starts chasing: `CameraCobraAlertFraming` moves only up & down, close, looking down, w/ a y offset, FOV fitted to the whole coil (`CobraMotor.TryGetBodyBounds`)
-- pineapple leap shot: camera looks up, pulls back & trails the climb, hands back at the landing (`CameraLeapFraming`, `PineappleLeapController.Landed`)
-- rough bark shake: Perlin noise eases up while moving on rough bark (`CameraRoughBarkShake`); every camera has an impulse listener & noise
-- height marker pass trigger: `HeightMarker` prefab w/ a trigger at the exact height, the plate drawn 5 u above on its label anchor (`HeightMarkerTrigger`)
-- post-boss ramp: difficulty keeps rising past 1 after the boss fight, linear to 2 at 1000 m; every ramp-read curve (branch, banana, pineapple, web, rough bark, falling cobra, cobra base speed) has a key at 2
-- `coconutSpawnProbabilityCurve` in `PlayerBalanceConfig`: coconut chance per segment read off the ramped difficulty like every other hazard
-- boss zone: `bossZoneStartU`, `bossTriggerHeightU` & `bossZoneEndU` in `WorldBalanceConfig` set a stretch of the trunk where nothing but the boss fight is generated; ramped difficulty is 0~1 up to the zone start (`preBossRampCurve`), a flat 1 inside, and above 1 after the zone end (`postBossRampCurve`); `RampedDifficultyManager.IsInBossZoneY`; the fight's own spawner stop & non-banana sweep are gone
-- 4 branch kinds: empty, banana, coconut & pineapple branches are separate prefab variants of `BranchWithFruit` (`BranchEmpty`, `BranchBanana`, `BranchCoconut`, `BranchPineapple`), each w/ its own attempt count & chance curve in `WorldBalanceConfig`, rolled by `TreeSegmentController`; `BranchController.Setup` by `BranchKind`, `BranchKind` enum
-- `CoconutSpawner`, the `CoconutSystem` prefab & `coconutSpawnProbabilityCurve` retired for the coconut branch kind; F2 & F3 hack keys spawn the pineapple & coconut branch variants
-- guaranteed fruit branches: 1 pineapple branch at 150 m & 1 coconut branch at 250 m always grow, at exactly that height, on top of the curve rolls & before them so nothing crowds them out (`pineappleGuaranteedHeightU`, `coconutGuaranteedHeightU` in `WorldBalanceConfig`; `TreeSegmentController`); negative turns one off
+- scene system: title, level select (Normal Play, Endless Mode, Back), `Lv1Scene` & `EndlessScene`; `SceneNames.Load` loads every scene
+- Endless Mode: starts at the tree base in the post boss state, difficulty keeps ramping; unlocks once the Cobra King is beaten (Editor menu `Monkobra/Unlock Endless`, `Monkobra/Reset Progress`)
+- pause & lose screens: Resume, Restart, Exit to Title by keys, mouse hover or click (`RunScreenMenu`)
+- analytics: 1 session file per launch across scene loads, runs tagged Full or Endless; every run event is an `AnalyticsMetric`, so a new metric is 1 entry; records leaps, rough bark, freezes, pauses, boss fight events & the Starting Zone Exit
+- dev builds only: Download Analytics button on the lose screen; hack keys F1~F12 for no-clip, max stamina, speed x3, boss jump, spawning a pineapple branch, coconut branch, falling cobra or spider web, report download, new session & mock session
+- `Lv1Scene` split into nested prefabs, so teammates edit different files
+- Great Cobra exit boost after the monkey leaves the starting zone, w/ "Run! The Great Cobra is chasing you!" warning
+- climb speed builds up along curves of key hold time; branches cleared round the monkey before the run is playing
+- fruit fly: a grabbed fruit's sprite flies to the stamina bar, coconut HUD or monkey
+- pineapple leap: a grab pulls the monkey up, hazards off for the leap & a short landing grace
+- coconut throw: a double-tap spends 1, it falls & freezes the cobra on touch or after a fixed distance; brown coconut model & new fruit sprites, credited in `CREDITS.md`
+- consistent pop up UI: every center message is a variant of `PopUp/_PopUpBase`, shown 1 at a time by `PopUpManager` w/ priority & queue, see `docs/pop-up-doc.md`
+- tree bark texture on trunk segments, credited in `CREDITS.md`
+- camera redesign: every gameplay camera tracks `CameraAnchor`, so strafing no longer spins the view; climb framing, hold curves & noise on rough bark; all tuning in `CameraConfig`
+- shot director (`CameraRigManager`): coconut, cobra alert & pineapple leap shots by priority, so events never chain into rapid cuts
+- height marker pass trigger (`HeightMarkerTrigger`)
+- difficulty: the post boss ramp keeps rising after the fight; a boss zone holds only the boss fight; 4 branch kinds (empty, banana, coconut, pineapple) w/ own chance curves; a guaranteed pineapple & coconut branch at fixed heights
 
 ##### Wenhai Dong
 
-- boss fight height marker: the 500 m marker sits on a bigger, red, beating plate w/ a small Cobra King look-alike on top, no extra words; hidden once the fight begins (`HeightMarkerSystem`)
-- boss fight win: time stops on a reward panel (You win! / Golden Armor is yours to keep!) till Space or Continue
-- tree bark is less glossy but stays crisp: `TreeBark` smoothness 0.5 → 0.25, environment reflections off; `tree_bark.png` trilinear with 8× anisotropic filtering, so the trunk seen at a steep angle is not blurred
-- Cobra King boss fight (`devWenhaiBossFightScene`, `Boss/BossFight` prefab): at `bossTriggerHeightU` the run enters a boss arena; the king, built from simple primitives, coils round the tree top and alternates rests with attack rounds (bite & tail sweep, fatal & warned; minion waves down vertical danger strips, sweeping across w/ one gap, fatal, called once a game w/ "Minions, help me!"; head butt, a knock-down) that grow with each lost third of its health; real banana branches in the arena, more and growing back faster later in the fight; every grabbed banana still feeds the monkey and is also thrown in a visible arc at the crown; spider webs in the arena, shaken off in fewer presses there (`SpiderWebStruggle.EscapeGainScale`); once the king is first hit, a golden banana (the banana model, gold w/ a thick outline) shows up now & then beside the monkey, refills stamina & shields one fatal hit; the monkey's climb is capped below the king, who butts down a monkey at the cap; the great cobra guards below without climbing, still circling, and now & then pokes its head straight up as a threat; attack warnings are filling danger zones with a "!" sign (BITE!, TAIL!, LOOK UP!); fruit grows on branch stubs; the shield is gold armor; the camera pulls back and tilts up to keep the king in view; first-throw keycap prompt & dotted line, speech, health bar; the last blow either way plays in slow motion (a K.O. banner & the monkey spun off the tree on a loss); the speech bubble stays on screen; at zero health the king shatters into cubes, its crown lands on the monkey and the run is won; Boss Fight group in `GameBalanceConfig`; `CobraMotor.StartGuard` (guard & peek); `MonkeyController.SetHeightCeiling` & `ClearHeightCeiling`; `ArmController` hands arena fruit to `BossFightController.TryThrow`; `CameraLookUp.ExtraAimOffsetU`; the fight starts in the gold armor under a short "You get a Golden Armor!" banner low on screen, kept until the first throw; every boss fight loss, the guarding great cobra's catch included, offers a revive for watching a mock USC CSCI 526 ad, which restarts the fight, and after a revive the first throw picks EASY (plain banana: less health, longer warnings & rests, one minion wave) or NORMAL (golden banana); a win no longer ends the run: with a swirl-in animation and a GOLDEN ARMOR badge the monkey keeps a Golden Armor that takes one great cobra catch (`CobraSensor` → `BossFightController.TryAbsorbCobraCatch`, `CobraMotor.KnockBack`), and the hazards and the chase resume (`CobraMotor.StopGuard`) after a head start with the cobra set further down; the boss fight starts at 500 u, well past every basic hazard and fruit; no pineapples or coconuts in the arena; normal mode rests a little shorter and in its last third minion waves stream on (3.5 s apart) alongside one bite or sweep per round, at most two attacks at once and overlapping only briefly (`finaleOverlapS`), until the fight ends; the arena opens with 3 webs instead of 4; 2 small rough bark patches slow the monkey in the arena, off its start spot and the banana branches; the king's lines dock under its health bar when its head is out of view; the mock ad has no countdown and stays until skipped, its Skip button showing up after 3 s; a pineapple leap stops at the arena's start height instead of flying past it (`PineappleLeapController` reads `BossFightController.LeapTopY`); from the K.O. until a revive lands the monkey is untouchable and let out of any web (`SpiderWebStruggle.ForceRelease`), so no web prompt or cobra save fires on the way; the armor's save throws the cobra 20 u down and freezes it 15 s, more than a coconut; a revive lands the monkey back at the fight's start spot (`MonkeyController.SyncOrbitAngle`).
-- `GameState.Won` & `GameController.WinGame()`: a won run settles the score, freezes, and restarts on the lose screen's restart key; analytics records it as `RunStatus.Won`
-- pause: Esc or P pauses or resumes a live run (starting zone or playing), and R restarts it from the pause; time freezes, audio pauses, and a `PauseScreen` panel ("Paused", "Press Esc or P to Resume", "Press R to Restart") covers the screen; `GameController.IsPaused`, `SetPaused`, and `PauseChanged`, with the panel toggled by `PauseScreenWidget`
+- Cobra King boss fight (`Boss/BossFight` prefab): at the trigger height the run enters an arena; the king coils round the tree top, alternates rests with attack rounds (bite, tail sweep, minion waves, head butt) that grow with each lost third of its health
+- boss arena: banana branches whose fruit is also thrown at the crown, spider webs, a golden banana that refills stamina & shields 1 fatal hit; the monkey's climb is capped below the king, the great cobra guards below
+- boss fight presentation: danger zone warnings, health bar & speech, first-throw key prompt, slow-motion K.O., camera pulls back & tilts up
+- boss fight win: the king shatters, a reward panel shows, the monkey keeps a Golden Armor that absorbs 1 great cobra catch, the run goes on
+- boss fight revive: every loss offers a revive for watching a mock ad; after a revive the first throw picks EASY or NORMAL
+- boss fight height marker: a bigger, red, beating plate w/ a Cobra King look-alike, hidden once the fight begins
+- `GameState.Won`: a won run settles the score & analytics records it as `RunStatus.Won`
+- pause: Esc or P pauses or resumes a live run, R restarts it; time freezes, audio pauses, a `PauseScreen` panel shows
+- tree bark less glossy but still crisp at steep angles
 
 ##### Yuqing Lu
 
-- coconut: a rare fruit from Height 150 (`coconutStartHeightU`, `coconutSpawnChancePerSegment` in `GameBalanceConfig`, at most one per segment) hung on a bare branch's stem tip, clear of other branches, fruit & webs (`CoconutSpawner`, `BranchController.TryHangFruit`); grabbed like a banana, it scores `scoreRewardPoints` x `coconutScoreMultiplier` & restores no stamina
-- coconut use: a quick double-tap spends one to freeze the great cobra for `cobraFreezeDurationS` (`CobraMotor.TryFreeze`); refused while paused, trapped in a web or just out of one, & while already frozen; the cobra turns light blue while frozen (`CobraFreezeTint`)
-- coconut HUD: count, freeze countdown & bar, a "Double-tap Space" hint until the first use of the session, & center messages
-- coconut analytics: pickups, uses & coconut score per run in the session report
-- `CoconutSpawner` test override for coconuts from Height 5 on every segment
-- whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
-- trunk height markers: every 50 u of climbed height a number beside the trunk in world units labelled m (e.g. `150 m`), white bold on a dark rounded plate like the progress bar readout, one on each of the trunk's left and right edges as seen from the camera so the trunk never hides it; a marker grows & its plate brightens the first time the monkey passes it (`HeightMarkerSystem` on `Envs/HeightMarkerSystem`, test override for a 5 u interval)
+- coconut: a rare fruit grabbed like a banana, scores w/ a multiplier & restores no stamina
+- coconut use: a quick double-tap freezes the great cobra for a while; refused while paused, trapped in a web or already frozen; the cobra turns light blue while frozen
+- coconut HUD: count, freeze countdown & bar, a double-tap hint until the first use, center messages; coconut analytics per run
+- green coconut model & matching UI sprite from the PolyOne Free Fruits pack, credited in `CREDITS.md`
+- trunk height markers: every 50 u a number beside the trunk in m on a dark rounded plate, 1 on each trunk edge as seen from the camera; the marker grows & brightens the first time the monkey passes it
 
 ##### Houdong Pan
 
-- lose screen leaderboard: simulated rivals, fixed per launch, ranked against the final score (`SessionLeaderboard`, `LeaderboardWidget`, `LeaderboardRowWidget`; `Leaderboard` & `LeaderboardRow` prefabs nested in `LoseScreen`)
-- fruit grab prompt: keycap "space, hold, then release" teaches the first grab of each fruit kind per run (`FruitGrabPrompt`, `KeyPromptUI`); `ArmController.FruitGrabbed` event
+- lose screen leaderboard: simulated rivals, fixed per launch, ranked against the final score
+- fruit grab prompt: keycap "space, hold, then release" teaches the first grab of each fruit kind per run
 
 ### Changed
 
-##### Belle Dai
-
-- slippery bark → avoidable rough terrain after 3000 points: `SlipperyBark*` renamed `RoughBark*` (`RoughBarkZone`, `RoughBarkSpawner`, `RoughBarkSystem`), new bark textures & spawn settings in `GameBalanceConfig`
-
 ##### Erik
 
-- starting zone: level opens at 30% stamina, exhaustion slows less (`StartingZoneStartStaminaFraction`, `StartingZoneExhaustedSpeedMultiplier`); exit trigger raised to y 60 & balance curve retuned
-- pause (Esc, P), restart after lose (R, Space) & restart during pause (R) are `InputSystem_Actions` actions read by `GameController`; `InGameHUD` & `PopUps` prefabs split out of `_UI`
-- idle stamina recovery runs at a quarter rate during the starting zone (`startingZoneIdleRecoveryMultiplier` in `PlayerBalanceConfig`)
-- `exhaustedSpeedMultiplier` & `idleStaminaRecoveryPerS` moved from `GameBalanceConfig` to `MovementConfig`
-- Starter Zone → Starting Zone: `GameState.StartingZone`, `EndStartingZone()`, `StartingZoneExitRelay`, `StartingZoneExitTrigger` prefab; Tutorial state & screen unchanged
-- fruit grab aims at banana closest to monkey, not last to enter a detection zone; re-picked every physics step
-- scripts renamed to house role suffixes (`Controller`, `Sensor`, `Motor`, `Widget`, `Relay`, `Feedback`, ~), e.g. `ArmRoot` to `ArmController`, `HitBranchDetection` to `HitBranchSensor`, `RampedDifficultyService` to `RampedDifficultyManager`; no behavior change
-- code style pass over all scripts: same-line braces, MonoBehaviour section order with banners, Inspector guards, explicit types instead of `var`, plain logs gated by `isDebugBuild`
-- `World` and `Systems` wrapper prefabs dropped: the light, volume and event system are root prefabs, and `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` are components of the `GameController` prefab
-- `AnalyticsManager` moved from the `GameController` prefab onto its own `Analytics` prefab, one in every scene, and the first one survives scene loads
-- slippery bark scripts follow the Unity MonoBehaviour conventions: tooltips, assignment guard, section banners, 80 columns
-- Global Volume profile moved from `Scenes/Lv1Scene/` to `Settings/`
-- stamina restore & bar punch land when the grabbed fruit's flight arrives, not at the grab; score still counts at the grab
-- `InGameHUD` now nested in `_UI`, holding `ProgressBar`, `StaminaBar`, `ScoreHeight` & the pause hint; no visual change
-- `CoconutManager` on the `GameController` prefab centralizes the coconut count, the throw & the HUD switching; the analytics report reads coconut pickups & uses from it
-- `TopRightAnchor` and the coconut `Panel` removed: `CoconutHUD` sits straight under `InGameHUD`; the freeze countdown & bar split out of `CoconutWidget` into `FreezeTimerWidget`, the center prompts into `CoconutMessageWidget`
-- banana model: the 3 stretched capsules of `BranchWithFruit` replaced by `SM_Fruits_Banana_Y1` from the PolyOne Free Fruits pack (child `BananaModel` of `Banana`); `BananaReachable` & `BananaGrabbable` outline widths thinned to fit the mesh
-- config reorganization: `GameBalanceConfig` split by concern into `PlayerBalanceConfig`, `WorldBalanceConfig` & `CobraBalanceConfig`; `MonkeyConfig` into `MonkeyArmConfig` & `MonkeyInputConfig`; `MovementConfig` → `MonkeyClimbConfig`, now also holding orbit speed & deceleration; `PineappleLeapConfig` takes the hand rise time & landing grace; every tuned value carried over unchanged
-- `Settings/` is `_Shared/` plus one folder per module (`Player/`, `Environment/`, `Mob/`, `Cameras/`, `UI/`, ~), assets directly inside
-- `CameraEfxConfig` → `CameraConfig`; `CameraLookUp` → `CameraClimbFraming`, boss fight view via `SetBossFraming`
-- `CameraRigManager` no longer enables or disables the shared Interact action
-- low stamina pulse: vignette only, no FOV zoom
-- hit shake force scaled per kind & overall by `CameraConfig`
-- `DynamicTreeSegmentPool`: 20 segments, look-ahead 60, first segment at y -40, so trunk exists far above & below the camera
-- height markers show up to 50 u ahead (`showAboveU`) & pulse when the monkey touches their trigger, not at a polled height
-- ramped difficulty runs 0 at the starting zone exit to 1 at the boss fight (500 m), no longer to 1200 u; `RampedDifficultyManager` floors it at 0 instead of clamping to 0~1
-- first appearances follow height: rough bark 100 m, pineapple 150 m, falling cobra 200 m, coconut 250 m, web 300 m, each the zero stretch of its own curve in the ramped difficulty (falling cobra curve linear after its knee)
-
-- first-grab fruit popup also detects an unlearned fruit w/i `fruitPopUpDetectRadiusU` (`PlayerBalanceConfig`) of the monkey, any side of the tree; a fruit in arm reach still wins, a rarer kind outranks a nearer banana (`FruitGrabPrompt`)
-- falling cobra stops against tree branches: drop & slide are swept & halt short of any branch collider, so a branch holds it up; it keeps homing & may slip off the edge (`FallingCobraController`)
-- boss arena fruit shows the watermelon model `SM_Fruits_Watermelon_1` instead of the banana, thrown copy & golden banana word included; grab & throw unchanged (`BossFightController`); credited in `CREDITS.md`
+- starting zone: opens at lower stamina, exhaustion slows less, idle recovery slower, exit trigger raised; Starter Zone → Starting Zone
+- pause & restart are `InputSystem_Actions` actions read by `GameController`
+- fruit grab aims at the closest banana; stamina restore & bar punch land when the fruit's flight arrives
+- scripts renamed to house role suffixes & code style pass over all scripts; no behavior change
+- prefab restructure: `World` & `Systems` wrappers dropped, `Analytics`, `InGameHUD` & `PopUps` split out; `CoconutManager` centralizes the coconut count, throw & HUD
+- banana model: `SM_Fruits_Banana_Y1` replaces the stretched capsules
+- config reorganization: `GameBalanceConfig` split into `PlayerBalanceConfig`, `WorldBalanceConfig` & `CobraBalanceConfig`, `MonkeyConfig` into arm & input configs, `MovementConfig` → `MonkeyClimbConfig`, `Settings/` 1 folder per module; every value carried over
+- camera: `CameraEfxConfig` → `CameraConfig`, `CameraLookUp` → `CameraClimbFraming`; low stamina pulse vignette only; hit shake scaled per kind; `CameraRigManager` no longer toggles the shared Interact action
+- `DynamicTreeSegmentPool` holds more segments & looks further ahead
+- height markers show up to 50 u ahead & pulse on touching their trigger
+- ramped difficulty runs 0 at the starting zone exit to 1 at the boss fight; first appearances follow height
+- first-grab fruit popup also detects an unlearned fruit nearby; falling cobra stops against tree branches; boss arena fruit shows the watermelon model
 
 ##### Yuqing Lu
 
-- `Coconut` prefab: from banana-shaped placeholder to the coconut item: whole coconut model under a top pivot, `ScorePickup` of kind `Coconut`, `CoconutReachable` & `CoconutGrabbable` outlines, green flight sprite
-- `ScoreManager` scores & counts each pickup by its `PickupKind`; `ScorePickup` gains a kind, banana by default
-- `ArmController` gives a coconut's flight no stamina restore
-- analytics report splits the reward score into banana & coconut score
-- progress bar cobra gap in world units labelled m, matching the trunk height markers, no longer converted by `unitsPerMeter` (`ProgressBarWidget`); `unitsPerMeter` now only sets the distance score rate
+- `Coconut` prefab: from banana-shaped placeholder to the coconut item w/ its own score kind & outlines
+- `ScoreManager` scores & counts each pickup by `PickupKind`; a coconut's flight restores no stamina; analytics splits reward score into banana & coconut score
+- progress bar cobra gap in m, matching the height markers; `unitsPerMeter` now only sets the distance score rate
 
 ##### Houdong Pan
 
-- progress bar redrawn from generated antialiased face sprites w/ an upright readout (`ProgressBarWidget`, `ProgressBar` prefab)
-- boss fight key prompt reuses `KeyPromptUI`, the keycap of the fruit tutorial (`BossFightHud`)
-
-### Deprecated
+- progress bar redrawn from generated antialiased sprites w/ an upright readout
+- boss fight key prompt reuses the keycap of the fruit tutorial
 
 ### Removed
 
@@ -146,40 +112,49 @@ todo upd gdd
 
 ##### Erik
 
-- `devYuqingCoconutScene` personal dev scene, the coconut work lives in `Lv1Scene`
-- `SlipTestScene` dev scene, after slippery bark landed in `Lv1Scene`
-- `upSpeedU` & `downSpeedU` (`GameBalanceConfig`), replaced by the `MovementConfig` curves; `accelerationU` (`MonkeyConfig`)
-- orphan `GoalText` object in `Lv1Scene` (never drawn, no parent Canvas) and its mention in the TDD
-- look-left & look-right cameras: grab shifts the climb view instead of cutting; `CameraLookDown` → `CameraCoconutTrack`
+- `devYuqingCoconutScene` & `SlipTestScene` personal dev scenes
+- `upSpeedU`, `downSpeedU` & `accelerationU`, replaced by the climb speed curves
+- orphan `GoalText` object in `Lv1Scene`
+- look-left & look-right cameras: a grab shifts the climb view instead of cutting
 - cobra alert on surges, falling cobra hits & proximity
-- `coconutStartHeightU` & `coconutSpawnChancePerSegment` (`PlayerBalanceConfig`), `roughBarkStartScore` (`WorldBalanceConfig`) & the rough bark forced first patch: no fixed gate left, the ramp decides
+- `CoconutSpawner` & the `CoconutSystem` prefab, replaced by the coconut branch kind; fixed coconut start height, rough bark score gate & forced first patch: the ramp decides
 
 ##### Yuqing Lu
 
-- HUD Height label (`HeightDisplay` prefab, `HeightDisplayWidget`): the trunk height markers show the climbed height
+- HUD Height label: the trunk height markers show the climbed height
 
 ### Fixed
 
 ##### Erik
 
-- restart could spawn monkey inside a tree branch: no branch grows w/i `startingZoneBranchClearRadiusU` of monkey before the run is playing
-- analytics dropped starting zone data: a run opened only when the zone ended, so zone bananas, webs, branch hits, height samples & the run time were lost; it now opens when the starting zone begins
-- camera dizziness: world spin on strafe, 50 Hz background judder, side flip while grab held, nod on every up press
+- restart could spawn the monkey inside a branch
+- analytics dropped starting zone data; a run now opens when the zone begins
+- camera dizziness: world spin on strafe, background judder, side flip while grab held, nod on every up press
 - hit shake reached only the behind view; stamina pulse could leave a widened FOV on the old camera
 
 ##### Yuqing Lu
 
-- coconuts never spawned in `Lv1Scene`: the `CoconutSystem` prefab (`CoconutSpawner`) was missing under `Envs`
+- coconuts never spawned in `Lv1Scene` ⇐ `CoconutSystem` prefab missing under `Envs`
 
 ##### Wenhai Dong
 
-- boss fight: an armored monkey could drop past the guarding great cobra, the armor taking its bite, & then never climb back alive ⇐ it stayed where it was caught; the armor's save now flies it back up to the fight's start, untouchable on the way (`BossFightController.ReturnToStart`); in the fight that save no longer freezes the guard nor shows the coconut freeze popup, only "Saved!"
-- boss fight: pineapples still grew in the arena ⇐ they score as bananas, so the filter kept them; they are now told apart by `LeapOnGrab`, & the filter covers the arena from the guard up, also on segments grown ahead b4 the fight
-- a branch hit in the starting zone showed "The cobra is speeding up!" though the cobra holds still there ⇐ mistakes counted as surges in the zone; `CobraMotor.StartSurge` now ignores them until the zone ends
+- boss fight: an armored monkey could drop past the guarding great cobra & never climb back alive; the armor's save now flies it back to the fight's start, untouchable on the way
+- boss fight: pineapples still grew in the arena ⇐ they score as bananas; now told apart by `LeapOnGrab`
+- a branch hit in the starting zone showed "The cobra is speeding up!" ⇐ mistakes counted as surges there
 
-### Security
+[1.0.0-beta]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha.2...v1.0.0-beta
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-alpha.2...dev
+
+
+
+
+
+
+
+
+
+
+
 
 ## [1.0.0-alpha.2] - 2026-10-19
 

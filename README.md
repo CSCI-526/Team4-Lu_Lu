@@ -39,9 +39,7 @@ Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6,
 
 ### Testing the Coconut
 
-Coconuts appear only from Height 150, on about one segment in ten, so a normal run meets few of them. For a quick check either:
-
-- press F6 (fn+F6 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra
+Coconuts appear only high on the tree and are rare, so a normal run meets few of them. For a quick check, press F6 (fn+F6 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra.
 
 The real values live in the Coconut group of `Settings/Player/PlayerBalanceConfig.asset`, see the [Grab System](docs/grab-doc.md#coconut).
 

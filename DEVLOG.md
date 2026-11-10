@@ -1,6 +1,6 @@
 # Monkobra DEVLOG
 
-## Week 9: Alpha 1.0.0-alpha
+## Week 9: Alpha `1.0.0-alpha`
 
 A first simple playtest of the web build turned up 2 issues:
 
@@ -38,7 +38,7 @@ Our fixes:
 
 
 
-## Week 8: Pre-Alpha 0.9.0
+## Week 8: Pre-Alpha `0.9.0`
 
 - Endless Tree & Difficulty: lowest segment recycles over the top, so a run never ends; climb height maps to 0~1 difficulty driving all hazard chances. Initially fixed stack w/ linear branch count; changed to one shared curve in `GameBalanceConfig`
 - Spider Web Trap: web holds the monkey, mash Space to break free. Initially placed once at start on fixed heights; changed to per-segment rolls to fit the recycled tree

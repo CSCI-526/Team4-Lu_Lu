@@ -22,7 +22,7 @@ While `GameController.IsLeaping` is set, from the grab to the end of the landing
 - Spider Web: `SpiderWebTrap` neither catches nor raises `Encountered`
 - Cobra: `CobraSensor` ignores contact
 
-Slippery bark refuses a slip for the same span. The arms have collisions off while the hands are up and the body is pulled, so they catch on nothing.
+Rough bark refuses a slowdown for the same span. The arms have collisions off while the hands are up and the body is pulled, so they catch on nothing.
 
 ## How Touches Are Detected
 
