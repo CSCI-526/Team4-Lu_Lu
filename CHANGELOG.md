@@ -2,8 +2,6 @@
 
 <!--
 Todo level selection & scene system
-FIXME game play tunning
-FIXME order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coconut, 300m: spider web, 500m: boss fight
 -->
 
 
