@@ -4,8 +4,8 @@
 
 This week closes out the findings still open from the 2026-11-03 in-class pod playtest & the Alpha survey:
 
-- Stages Blur Together: the professor found the levels or stages hard to tell apart, & fruit placement looked random
-- No Reason to Choose: the professor asked for strategic reasons to pick when to collect a banana, pineapple, or coconut
+- Stages Blur Together: found the levels or stages hard to tell apart, & fruit placement looked random
+- No Reason to Choose: asked for strategic reasons to pick when to collect a banana, pineapple, or coconut
 - Unclear Goal: survey respondents & playtesters took the goal to be reaching the top, or simply climbing
 - Mouse Reflex: playtesters kept reaching for the mouse, even clicking bananas
 
@@ -22,25 +22,17 @@ Also this week:
 
 - Analytics Per Launch: 1 session file per launch across scene loads, every run tagged Full or Endless, ready for the next pod playtest
 
-<!-- TODO screen cap: launch the build, wait on the Title screen -->
 ![Title screen](devlog-assets/wk13-title-screen.png)
 *Title screen: any key or click opens Level Select*
 
-<!-- TODO screen cap: from Title press any key, highlight Endless Mode w/ W S (locked state shows greyed out) -->
 ![Level Select screen](devlog-assets/wk13-level-select.png)
 *Level Select: Normal Play, Endless Mode (greyed out until the Cobra King is beaten), Back*
 
-<!-- TODO screen cap: in a run press Esc, highlight Restart w/ S -->
 ![Pause menu](devlog-assets/wk13-pause-menu.png)
 *Pause menu: Resume, Restart & Exit to Title*
 
-<!-- TODO screen cap: Endless Mode run at the tree base, gold armor badge visible -->
 ![Endless Mode start](devlog-assets/wk13-endless-mode.png)
 *Endless Mode: the run starts in gold armor w/ post-boss difficulty*
-
-<!-- TODO screen cap: press F5 or F6 during play, frame the pineapple or coconut branch beside a banana branch -->
-![Fruit branch kinds](devlog-assets/wk13-branch-kinds.png)
-*Branch kinds: each fruit grows on its own branch prefab*
 
 
 
@@ -64,7 +56,7 @@ The 2026-11-03 in-class pod playtest of the class playtest build turned up:
 - Unknown Fruit: players did not know what each fruit does, eg whether the pineapple gives a special ability
 - Unseen Safe Start: a player did not realize the starting area was safe & that the cobra would not chase them there
 - Misread Stamina: a player took the game for a Temple Run, w/ bananas as collectibles & stamina simply draining over time
-- Professor: make stages recognizable, since fruit placement looks random, & give players strategic reasons to choose a fruit
+- make stages recognizable, since fruit placement looks random, & give players strategic reasons to choose a fruit
 
 Still open from the Alpha survey: dizziness & nausea from the camera, & an unclear goal.
 
@@ -75,8 +67,8 @@ Our fixes:
 - Unknown Fruit & Unseen Safe Start → PopUp System: every center message (coconut, cobra warnings, low stamina, web, first fruit grabs) shares 1 look & 1 manager w/ priority & queue, so no hint is drawn over or lost. Initially each widget drew its own text
 - Misread Hazards → Rough Bark: broad, raised patches that slow the monkey in every direction, always leaving a way round. Initially blue slippery bark that slid the monkey down, which players did not recognize; changed to rough terrain w/ painted bark textures that reads as part of the tree
 - Misread Hazards → 1 Chaser Only: the cobra alert shot fires only when the Great Cobra starts chasing, & no longer on falling snake hits, so the falling snake reads as an obstacle
-- Professor's Stages → Stages by Height: difficulty runs 0 at the starting zone exit to 1 at the boss fight & keeps rising after it; each hazard & fruit first appears at its own height: rough bark, pineapple, falling cobra, coconut, web, so the climb has recognizable stages
-- Professor's Stages → Trunk Height Markers: the climbed height in m beside the trunk every 50 u, on both sides; a marker pulses the first time the monkey passes it, so progress is seen on the tree itself. Initially a HUD Height label; changed to markers, so the label was removed
+- Stages by Height: difficulty runs 0 at the starting zone exit to 1 at the boss fight & keeps rising after it; each hazard & fruit first appears at its own height: rough bark, pineapple, falling cobra, coconut, web, so the climb has recognizable stages
+- Trunk Height Markers: the climbed height in m beside the trunk every 50 u, on both sides; a marker pulses the first time the monkey passes it, so progress is seen on the tree itself. Initially a HUD Height label; changed to markers, so the label was removed
 - Unclear Goal → Cobra King Boss Fight: a goal at the top of the climb. The king coils round the tree top & alternates rests w/ bite, tail sweep, minion waves & head butt attacks; bananas grabbed there are also thrown at its crown. A win shatters the king & leaves a Golden Armor that absorbs 1 cobra catch; a loss offers a revive after a mock ad
 - Survey Dizziness → Camera Redesign: every camera follows a yaw-only anchor, so strafing no longer spins the world. The climb view looks up, a grab shifts the aim instead of cutting, & a shot director runs coconut, cobra alert & pineapple leap shots without rapid cuts. Initially side cameras that cut on every grab & a view that spun & juddered
 - Misread Stamina → Progress Bar Redraw: monkey & cobra faces & a distance readout w/ a bracket between them, the cobra gap in m like the markers, so the chase, not a timer, reads as the threat
@@ -87,19 +79,17 @@ Also this week:
 
 Not addressed yet: more stamina for climbing & a 1 s delay before the cobra starts, both suggested by a player
 
-<!-- TODO screen cap: press F4 to jump to the boss fight; capture the king mid-attack w/ a danger zone showing -->
-![Cobra King boss fight](devlog-assets/wk12-boss-fight.png)
+![Cobra King boss fight](devlog-assets/wk12-boss-fight1.png)
+
+![Cobra King boss fight](devlog-assets/wk12-boss-fight2.png)
 *Cobra King: danger zones warn of the next attack while the monkey throws bananas at the crown*
 
-<!-- TODO screen cap: climb past 100 m (or F3 speed buff), frame a rough bark patch beside the monkey -->
 ![Rough bark patch](devlog-assets/wk12-rough-bark.png)
 *Rough bark: a raised patch slows the monkey; the dry bark round it stays open*
 
-<!-- TODO screen cap: climb until a height marker is in view on both trunk edges, progress bar visible -->
 ![Height markers and progress bar](devlog-assets/wk12-height-markers.png)
 *Height markers on both trunk edges, & the redrawn progress bar w/ the cobra gap in m*
 
-<!-- TODO screen cap: grab a coconut (F6), double-tap to throw it, capture the coconut track shot -->
 ![Coconut track shot](devlog-assets/wk12-camera-shot.png)
 *Camera shot: the view follows a thrown coconut down to the cobra*
 
@@ -155,7 +145,6 @@ Taken up in Week 12: the hazard pile-up, by spacing each hazard's first appearan
 ![Pineapple leap up the trunk](devlog-assets/wk11-pineapple-leap.png)
 *Pineapple leap: both arms stretch straight up as the monkey is pulled past the 50 m markers*
 
-<!-- TODO screen cap: lose a run, capture the lose screen w/ the leaderboard -->
 ![Lose screen leaderboard](devlog-assets/wk11-leaderboard.png)
 *Leaderboard: the run's rank among 9 simulated rivals*
 
