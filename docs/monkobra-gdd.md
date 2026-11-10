@@ -116,18 +116,18 @@ graph LR
 ##### Data Collection
 
 Script: [AnalyticsManager.cs](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/AnalyticsManager.cs), the one file that shows the whole collection process. It only gathers data: it never draws a chart and never builds a file path
-Input: the game's own events ([GameController](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/GameController/GameController.cs).StateChanged, [ScoreManager](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Scoring/ScoreManager.cs).BananaCollected, [HitBranchSensor](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Player/HitBranchSensor.cs).BranchHit, [SpiderWebTrap](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/MobSpiderWeb/SpiderWebTrap.cs).Encountered, and others), so no third-party service is needed
+Input: the game's own events (GameController.StateChanged, ScoreManager.BananaCollected, HitBranchSensor.BranchHit, SpiderWebTrap.Encountered, and others), so no third-party service is needed
 Lifetime: a scene singleton kept across scene reloads, so one launch is one session and every attempt in it is one run
 What It Records Per Run: start and end stamps, the final score split into height score and banana score, banana pickups, branch hits, and web encounters (each with time, and height where it matters), and the run status (Lost or Interrupted)
 Timed Samples: height and stamina are sampled together on a fixed interval, plus once at run start and once at run end, so both curves share one time axis
-Death Cause: the game does not report one, so [DeathCauseResolver](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/DeathCauseResolver.cs) infers it when the run closes: a branch hit or web encounter shortly before the loss names the cause, otherwise the great cobra did it
-Tuning: sample interval, autosave interval, and the death cause window live in [AnalyticsConfig.asset](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Settings/Analytics/AnalyticsConfig.asset), never in code
-Hand-Off: everything collected is stored in [RunData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/RunData.cs) and [SessionData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/SessionData.cs), plain data with no logic. They are the only link to the visualization, so either part can change, or the mock generator can stand in for the collection, without touching the other
+Death Cause: the game does not report one, so DeathCauseResolver infers it when the run closes: a branch hit or web encounter shortly before the loss names the cause, otherwise the great cobra did it
+Tuning: sample interval, autosave interval, and the death cause window live in AnalyticsConfig.asset, never in code
+Hand-Off: everything collected is stored in RunData and SessionData, plain data with no logic. They are the only link to the visualization, so either part can change, or the mock generator can stand in for the collection, without touching the other
 
 ##### Data Visualization
 
 Script: [AnalyticsMarkdownWriter.cs](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/AnalyticsMarkdownWriter.cs), the one file that shows the whole visualization. It turns the data into text and charts, and reads no scene and writes no file
-Input: only [SessionData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/SessionData.cs) and [RunData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/RunData.cs), never the live game
+Input: only SessionData and RunData, never the live game
 Output: one markdown document per session with embedded Mermaid charts
 Idea: a chart type is picked by the question it answers. A part of a whole is a pie, a comparison across runs is a bar, a change over time is a line, and a single moment is a table row. The document is split the same way, a summary across runs first, then the detail of each run
 
@@ -148,14 +148,14 @@ Each Run Section answers "how did this one attempt go":
 - Event Tables (rows of time since start, and height where it matters): every banana, coconut, branch hit, web, leap, and boss event; reflect risk against reward, the grabs made against the hits taken (Metric #7), and give the exact moment behind any shape seen in a line
 
 Reading Order: the summary finds the pattern across attempts, then the run sections explain it, so a doubt raised by a bar is answered by the line or table of the run behind it
-Delivery: [AnalyticsSessionFile](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/AnalyticsSessionFile.cs) writes the text to one file per launch in persistentDataPath/Analytics/, rewritten on session open, run start, every recorded event, game over, quit or pause, and on a timer during a run, so a crash or a closed browser tab loses almost nothing; a WebGL player hands it to the browser as a download instead
+Delivery: AnalyticsSessionFile writes the text to one file per launch in persistentDataPath/Analytics/, rewritten on session open, run start, every recorded event, game over, quit or pause, and on a timer during a run, so a crash or a closed browser tab loses almost nothing; a WebGL player hands it to the browser as a download instead
 
-###### Mock Data
+Showcase, all rendered by this same writer, and each report opens directly anywhere markdown renders with Mermaid support, ie GitHub or VS Code:
 
-Script: [MockAnalyticsGenerator.cs](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/MockAnalyticsGenerator.cs) (F12 in the Editor)
-Role: fills [SessionData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/SessionData.cs) and [RunData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/RunData.cs) with a simulated session of real-game curves, skipping the collection, and the same visualization above then renders it
-Output: plain markdown with Mermaid charts, so a report opens directly anywhere markdown renders, ie GitHub, VS Code, or any viewer with Mermaid support
-Showcase: three generated sessions, [session 1](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_24_55-mock.md), [session 2](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_24_56-mock.md), and [session 3](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_25_20-mock.md); the mockups below come from this generator, the one real result from a single live playtest session
+- [Real playtest session](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_12_08_23.md): the actual report from a live playtest
+- [Simulated session 1](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_24_55-mock.md): generated mock data
+- [Simulated session 2](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_24_56-mock.md): generated mock data
+- [Simulated session 3](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_25_20-mock.md): generated mock data
 
 Balance context for the hypotheses is in the Balance Design and Mobs docs
 
@@ -176,12 +176,12 @@ Justification: Chosen because runs are built for quick retries, so a rising scor
 Interpretation: A rising trend means the retry loop works, a flat low trend means players miss the banana grab, and very low early runs mean onboarding is too harsh.
 Testable Hypothesis: Among sessions containing at least three Normal Play runs ending in a loss, the mean final score on the third run will be higher than the mean final score on the first run.
 
-###### Metric #3: Highest Height vs Death Height
+###### Metric #3: Highest Height and Death Height
 
-Description: per run, the highest point the monkey reached and the height at which it died. Both are climbed height above the start, in world units
-Justification: Chosen because difficulty follows height (Balance Design), so death-height clusters reveal difficulty walls and the highest-to-death gap reveals falls, guiding reshaping of the ramped difficulty curve.
-Interpretation: Deaths clustered at one height mean a hazard curve turns on too sharply there, and a death height well below the highest means the branch hit drop is too large.
-Testable Hypothesis: In at least 75% of Normal Play runs ending in a loss, the difference between the highest height reached and the height at death will be no greater than 20 meters.
+Description: two separate readings per lost run, both climbed height above the start in world units. Highest Height is the peak the monkey ever reached, and Death Height is where the cobra caught it. The gap between them is the ground lost to falls before the loss, and zero means the run ended at its peak
+Justification: Chosen because difficulty follows height (Balance Design), so Highest Height shows how far skill carries the player, Death Height clusters reveal difficulty walls, and the gap between the two reveals falls, guiding reshaping of the ramped difficulty curve.
+Interpretation: A Highest Height that barely grows across runs means a skill ceiling, Death Heights clustered at one height mean a hazard curve turns on too sharply there, and a Death Height well below the Highest Height means the branch hit drop is too large.
+Testable Hypothesis: In at least 75% of Normal Play runs ending in a loss, the difference between the Highest Height and the Death Height will be no greater than 20 meters.
 
 ###### Metric #4: Run Duration vs Run
 
