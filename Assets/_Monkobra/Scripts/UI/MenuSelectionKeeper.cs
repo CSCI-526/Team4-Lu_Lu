@@ -1,15 +1,26 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 /// <summary>
-/// on a menu root: keeps one button selected at all times, so keys always
-/// have a highlight, even after a click on empty space
+/// on a menu root: nothing is highlighted until the player first presses
+/// up or down, which selects <see cref="firstSelected"/>; a mouse hover
+/// selects its own button (see <see cref="MenuButtonHover"/>)
 /// </summary>
 public class MenuSelectionKeeper: MonoBehaviour {
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("the button highlighted when the menu opens")]
+    [Tooltip("the button the first up or down press selects")]
     private GameObject firstSelected;
+
+    [SerializeField]
+    [Tooltip("moves the highlight, the UI/Navigate action (W, S, arrows)")]
+    private InputActionReference navigateAction;
+
+    [SerializeField]
+    [Range(0.1f, 1f)]
+    [Tooltip("how far a vertical press must reach to count")]
+    private float pressThreshold = 0.5f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -21,33 +32,43 @@ public class MenuSelectionKeeper: MonoBehaviour {
                 this
             );
         }
+
+        if (navigateAction == null) {
+            Debug.LogError(
+                "MenuSelectionKeeper:\tmust assign Inspector Field: "
+                    + "Navigate Action",
+                this
+            );
+        }
     }
 
+    // the event system's input module owns the action, so it is only
+    // switched on here, never off
     private void OnEnable() {
-        lastSelected = firstSelected;
-        Select(firstSelected);
+        navigateAction?.action.Enable();
+        wasPressed = false;
     }
 
     private void Update() {
-        if (EventSystem.current == null) {
+        if (navigateAction == null || EventSystem.current == null) {
+            return;
+        }
+
+        float vertical = navigateAction.action.ReadValue<Vector2>().y;
+        bool isPressed = Mathf.Abs(vertical) >= pressThreshold;
+        bool isNewPress = isPressed && !wasPressed;
+        wasPressed = isPressed;
+        if (!isNewPress) {
             return;
         }
 
         GameObject current = EventSystem.current.currentSelectedGameObject;
-        if (current != null && current.activeInHierarchy) {
-            lastSelected = current;
-            return;
+        if ((current == null || !current.activeInHierarchy)
+            && firstSelected != null) {
+            EventSystem.current.SetSelectedGameObject(firstSelected);
         }
-
-        Select(lastSelected);
     }
 
     // Private Members  ########################################################
-    private GameObject lastSelected;
-
-    private static void Select(GameObject target) {
-        if (target != null && EventSystem.current != null) {
-            EventSystem.current.SetSelectedGameObject(target);
-        }
-    }
+    private bool wasPressed;
 }
