@@ -12,29 +12,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c79055a3c768036428f6870144ab32a3, type: 3}
   m_Name: WorldBalanceConfig
   m_EditorClassIdentifier: Assembly-CSharp::WorldBalanceConfig
-  rampedDifficultyCurve:
+  preBossRampCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0.0020202
-      outSlope: 0.0020202
+      inSlope: 1
+      outSlope: 1
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 495
+      time: 1
       value: 1
-      inSlope: 0.0020202
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  postBossRampCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0.002
       outSlope: 0.002
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 995
+      time: 500
       value: 2
       inSlope: 0.002
       outSlope: 0.002
@@ -308,6 +323,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  bossTriggerHeightU: 500
+  bossZoneStartU: 500
+  bossTriggerHeightU: 525
+  bossZoneEndU: 550
   bossMaxHealth: 12
   bossBananaDamage: 1

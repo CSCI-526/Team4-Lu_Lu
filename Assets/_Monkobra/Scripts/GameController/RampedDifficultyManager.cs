@@ -47,22 +47,48 @@ public class RampedDifficultyManager: MonoBehaviour {
         return y < RampBaseYPosition;
     }
 
+    /// <param name="y">any y position; world u</param>
+    /// <returns>if <paramref name="y"/> lies in the boss zone, from its start
+    /// to its end in climbed height, where only the boss fight generates
+    /// anything</returns>
+    public bool IsInBossZoneY(float y) {
+        if (worldBalanceConfig == null) {
+            return false;
+        }
+        float climbedY = GetClimbedYDistance(y);
+        return climbedY >= worldBalanceConfig.BossZoneStartU
+            && climbedY <= worldBalanceConfig.BossZoneEndU;
+    }
+
     /// <summary>
-    /// Samples the ramp curve at the height above
-    /// <see cref="RampBaseYPosition"/>.
+    /// Maps a height to the ramped difficulty: 0 up to the starting zone exit,
+    /// the pre boss curve from there to the boss zone start (0~1), a flat 1
+    /// inside the boss zone, the post boss curve from the zone end (1 up).
+    /// Zone heights are climbed heights, measured from the player's start y.
     /// </summary>
     /// <param name="y">any y position; world u</param>
     /// <returns>ramped difficulty, never below 0; above 1 past the boss
-    /// fight height</returns>
+    /// zone</returns>
     public float GetRampedValueFromYPosition(float y) {
         if (worldBalanceConfig == null) {
             return 0f;
         }
-        float rampedY = y - RampBaseYPosition;
-        return Mathf.Max(
-            0f,
-            worldBalanceConfig.RampedDifficultyCurve.Evaluate(rampedY)
-        );
+        float climbedY = GetClimbedYDistance(y);
+        float exitClimbedY = GetClimbedYDistance(RampBaseYPosition);
+        float zoneStartU = worldBalanceConfig.BossZoneStartU;
+        if (climbedY < exitClimbedY || zoneStartU <= exitClimbedY) {
+            // a zone start at or under the exit leaves no pre boss stretch
+            return climbedY < zoneStartU ? 0f : GetPostBossValue(climbedY);
+        }
+        if (climbedY < zoneStartU) {
+            float progress =
+                (climbedY - exitClimbedY) / (zoneStartU - exitClimbedY);
+            return Mathf.Max(
+                0f,
+                worldBalanceConfig.PreBossRampCurve.Evaluate(progress)
+            );
+        }
+        return GetPostBossValue(climbedY);
     }
 
     // Inspector Fields  #######################################################
@@ -115,6 +141,15 @@ public class RampedDifficultyManager: MonoBehaviour {
             return;
         }
         PlayerGameStartYPosition = player.position.y;
+        if (
+            worldBalanceConfig != null
+            && worldBalanceConfig.BossZoneStartU
+                <= GetClimbedYDistance(RampBaseYPosition)
+        ) {
+            Debug.LogWarning(
+                "RampedDifficulty:\tboss zone starts at or below the starting "
+                + "zone exit, the pre boss ramp is skipped", this);
+        }
         if (Debug.isDebugBuild) {
             Debug.Log("RampedDifficulty:\tplayer start y: "
                 + PlayerGameStartYPosition);
@@ -143,4 +178,17 @@ public class RampedDifficultyManager: MonoBehaviour {
 
     // cached references  ######################################################
     private Transform player;
+
+    // private methods  ########################################################
+    // 1 through the boss zone, the post boss curve past its end
+    private float GetPostBossValue(float climbedY) {
+        float zoneEndU = worldBalanceConfig.BossZoneEndU;
+        if (climbedY <= zoneEndU) {
+            return 1f;
+        }
+        return Mathf.Max(
+            1f,
+            worldBalanceConfig.PostBossRampCurve.Evaluate(climbedY - zoneEndU)
+        );
+    }
 }

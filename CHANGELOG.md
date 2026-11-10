@@ -2,8 +2,6 @@
 
 <!--
 FIXME another item for boss fight
-FIXME empty branch as its own curve
-FIXME clean up around boss fight area
 
 Todo level selection & scene system
 -->

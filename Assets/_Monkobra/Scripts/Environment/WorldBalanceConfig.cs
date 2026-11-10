@@ -13,9 +13,13 @@ using UnityEngine;
 )]
 public class WorldBalanceConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>x: player y above the starting zone exit; world u; y: ramped
-    /// difficulty, 0~1 up to the boss fight, 1~2 after it</returns>
-    public AnimationCurve RampedDifficultyCurve => rampedDifficultyCurve;
+    /// <returns>x: progress 0~1 from the starting zone exit to the boss zone
+    /// start; y: ramped difficulty 0~1</returns>
+    public AnimationCurve PreBossRampCurve => preBossRampCurve;
+
+    /// <returns>x: height above the boss zone end; world u; y: ramped
+    /// difficulty from 1 up</returns>
+    public AnimationCurve PostBossRampCurve => postBossRampCurve;
 
     /// <returns>branch creation attempts rolled per segment</returns>
     public int BranchGenerationAttemptCount => branchGenerationAttemptCount;
@@ -64,9 +68,18 @@ public class WorldBalanceConfig: ScriptableObject {
     public AnimationCurve WebSpawnProbabilityCurve =>
         webSpawnProbabilityCurve;
 
+    /// <returns>climbed height where the boss zone begins: the ramp reaches 1
+    /// here and nothing unrelated to the fight is generated from here on; u
+    /// </returns>
+    public float BossZoneStartU => bossZoneStartU;
+
     /// <returns>height climbed since game start at which the boss fight
     /// begins; u</returns>
     public float BossTriggerHeightU => bossTriggerHeightU;
+
+    /// <returns>climbed height where the boss zone ends: ordinary generation
+    /// resumes and the ramp climbs above 1 from here; u</returns>
+    public float BossZoneEndU => bossZoneEndU;
 
     /// <returns>health of the Cobra King</returns>
     public int BossMaxHealth => bossMaxHealth;
@@ -79,13 +92,24 @@ public class WorldBalanceConfig: ScriptableObject {
     [Header("Ramped Difficulty")]
     [SerializeField]
     [Tooltip(
-        "x: player y above the starting zone exit; world u; y: ramped "
-            + "difficulty, 0 at the exit, 1 at the boss fight, 2 at 1000 m"
+        "before the boss zone. x: progress 0~1 from the starting zone exit "
+            + "to the boss zone start; y: ramped difficulty, 0 at the exit, "
+            + "1 at the zone start"
     )]
-    private AnimationCurve rampedDifficultyCurve = new(
-        new Keyframe(0f, 0f, 1f / 495f, 1f / 495f),
-        new Keyframe(495f, 1f, 1f / 495f, 1f / 500f),
-        new Keyframe(995f, 2f, 1f / 500f, 1f / 500f)
+    private AnimationCurve preBossRampCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 1f);
+
+    [SerializeField]
+    [Tooltip(
+        "after the boss zone. x: height above the boss zone end; world u; "
+            + "y: ramped difficulty, 1 at the zone end and rising; the "
+            + "difficulty is a flat 1 inside the zone"
+    )]
+    private AnimationCurve postBossRampCurve = AnimationCurve.Linear(
+        0f,
+        1f,
+        500f,
+        2f
     );
 
     [Header("Branch")]
@@ -180,11 +204,25 @@ public class WorldBalanceConfig: ScriptableObject {
     [Header("Boss Fight")]
     [SerializeField]
     [Tooltip(
-        "height climbed since game start at which the boss fight begins: "
-            + "past where webs, falling cobras, pineapples, coconuts & rough "
-            + "bark have all shown up; lower it to test; u"
+        "climbed height, as the trunk markers show it, where the boss zone "
+            + "begins: the ramp reaches 1 here and only the boss fight "
+            + "generates anything from here to the zone end; u"
     )]
-    private float bossTriggerHeightU = 500f;
+    private float bossZoneStartU = 500f;
+
+    [SerializeField]
+    [Tooltip(
+        "height climbed since game start at which the boss fight begins, "
+            + "inside the boss zone; lower the zone to test; u"
+    )]
+    private float bossTriggerHeightU = 525f;
+
+    [SerializeField]
+    [Tooltip(
+        "climbed height where the boss zone ends: ordinary generation "
+            + "resumes and the ramp climbs above 1 from here; u"
+    )]
+    private float bossZoneEndU = 550f;
 
     [SerializeField]
     [Tooltip("health of the Cobra King")]
@@ -208,7 +246,10 @@ public class WorldBalanceConfig: ScriptableObject {
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
         roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
         webAttemptCount = Mathf.Max(0, webAttemptCount);
-        bossTriggerHeightU = Mathf.Max(0f, bossTriggerHeightU);
+        // the zone is ordered: start <= trigger <= end
+        bossZoneStartU = Mathf.Max(0f, bossZoneStartU);
+        bossTriggerHeightU = Mathf.Max(bossZoneStartU, bossTriggerHeightU);
+        bossZoneEndU = Mathf.Max(bossTriggerHeightU, bossZoneEndU);
         bossMaxHealth = Mathf.Max(1, bossMaxHealth);
         bossBananaDamage = Mathf.Max(1, bossBananaDamage);
     }
