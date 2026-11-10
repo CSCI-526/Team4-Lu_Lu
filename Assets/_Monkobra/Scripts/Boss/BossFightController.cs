@@ -2377,6 +2377,7 @@ public class BossFightController: MonoBehaviour {
     // Victory  ----------------------------------------------------------------
     private void Defeat() {
         phase = Phase.Defeated;
+        ProgressStore.MarkBossBeaten();
         ClearMarkers();
         ClearAttackObjects();
         if (monkeyController != null) {
