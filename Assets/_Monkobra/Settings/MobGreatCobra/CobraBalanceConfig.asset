@@ -193,6 +193,57 @@ MonoBehaviour:
   cobraSurgePerMistakeS: 4
   cobraMaxSurgeS: 10
   cobraSurgeSpeedPerMistakeU: 2.5
+  cobraSurgeStackShareCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: -0.5
+      outSlope: -0.5
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 2
+      value: 0.5
+      inSlope: -0.375
+      outSlope: -0.375
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 3
+      value: 0.25
+      inSlope: -0.1875
+      outSlope: -0.1875
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 4
+      value: 0.125
+      inSlope: -0.09375
+      outSlope: -0.09375
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 5
+      value: 0.0625
+      inSlope: -0.0625
+      outSlope: -0.0625
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   cobraMaxSurgeSpeedU: 9
   cobraSpeedChangeRateU: 6
   cobraExitBoostSpeedU: 3

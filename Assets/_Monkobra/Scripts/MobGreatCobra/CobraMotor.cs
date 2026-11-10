@@ -427,7 +427,7 @@ public class CobraMotor: MonoBehaviour {
                 baseClimbSpeed,
                 Mathf.Min(
                     baseClimbSpeed
-                        + surgeStacks * cobraBalanceConfig.CobraSurgeSpeedPerMistakeU,
+                        + cobraBalanceConfig.GetSurgeSpeedBonusU(surgeStacks),
                     cobraBalanceConfig.CobraMaxSurgeSpeedU
                 )
             );

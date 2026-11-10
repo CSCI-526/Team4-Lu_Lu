@@ -1,7 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug endless mode need to start w/ full heath & no starting zone
+bug endless mode need to start w/ full heath & no starting zone
 todo upd gdd
 -->
 

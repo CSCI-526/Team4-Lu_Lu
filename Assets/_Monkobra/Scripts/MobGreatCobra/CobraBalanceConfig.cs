@@ -68,6 +68,24 @@ public class CobraBalanceConfig: ScriptableObject {
     /// u/s</returns>
     public float CobraSurgeSpeedPerMistakeU => cobraSurgeSpeedPerMistakeU;
 
+    /// <returns>x: stack number 1, 2, 3, ~ of a surge; y: share 0~1 of
+    /// the per-mistake surge speed that stack adds; holds its last value
+    /// past its last key</returns>
+    public AnimationCurve CobraSurgeStackShareCurve =>
+        cobraSurgeStackShareCurve;
+
+    /// <param name="stacks">mistakes stacked in the running surge</param>
+    /// <returns>extra climb speed the surge adds over the base speed, each
+    /// stack scaled by its share on the stack share curve; u/s</returns>
+    public float GetSurgeSpeedBonusU(int stacks) {
+        float bonusU = 0f;
+        for (int i = 1; i <= stacks; i++) {
+            bonusU += cobraSurgeSpeedPerMistakeU
+                * Mathf.Max(0f, cobraSurgeStackShareCurve.Evaluate(i));
+        }
+        return bonusU;
+    }
+
     /// <returns>ceiling on the great cobra's surging climb speed, may pass
     /// the monkey's top climb speed; u/s</returns>
     public float CobraMaxSurgeSpeedU => cobraMaxSurgeSpeedU;
@@ -167,8 +185,25 @@ public class CobraBalanceConfig: ScriptableObject {
     private float cobraMaxSurgeS = 10f;
 
     [SerializeField]
-    [Tooltip("extra climb speed per mistake stacked in the surge; u/s")]
+    [Tooltip(
+        "extra climb speed of the 1st mistake in a surge, scaled per stack "
+            + "by the stack share curve; u/s"
+    )]
     private float cobraSurgeSpeedPerMistakeU = 2.5f;
+
+    [SerializeField]
+    [Tooltip(
+        "x: stack number 1, 2, 3, ~ of a surge; y: share 0~1 of the "
+            + "per-mistake surge speed that stack adds, so later mistakes "
+            + "can add less; holds its last value"
+    )]
+    private AnimationCurve cobraSurgeStackShareCurve = new AnimationCurve(
+        new Keyframe(1f, 1f),
+        new Keyframe(2f, 0.5f),
+        new Keyframe(3f, 0.25f),
+        new Keyframe(4f, 0.125f),
+        new Keyframe(5f, 0.0625f)
+    );
 
     [SerializeField]
     [Tooltip(
