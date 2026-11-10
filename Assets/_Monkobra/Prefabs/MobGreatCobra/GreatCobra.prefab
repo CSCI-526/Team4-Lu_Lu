@@ -1349,9 +1349,6 @@ MonoBehaviour:
   waveLengthU: 2.5
   waveSpeedHz: 1
   eyeSizeU: 0.14
-  slowNearPlayer: 1
-  slowDownDistance: 2
-  minimumSpeedShare: 0.3
 --- !u!114 &260591372920793710
 MonoBehaviour:
   m_ObjectHideFlags: 0
