@@ -565,9 +565,20 @@ public class CobraMotor: MonoBehaviour {
     private float SegmentArcStepU => CoilLengthU / LastIndex;
 
     // private methods  ########################################################
+    /// <returns>vertical gap from the coil top up to the monkey, never
+    /// below 0; U</returns>
+    private float CalcDistanceBelowPlayer() {
+        float coilTopHeight = headHeight - neckLiftU;
+        return Mathf.Max(
+            0f,
+            player.position.y - pathCenter.position.y - coilTopHeight
+        );
+    }
+
     /// <returns>climb speed outside a surge: from the config's base speed
     /// curve at the monkey's ramped difficulty, so the chase tightens as the
-    /// climb goes on, else the inspector's climb speed; u/s</returns>
+    /// climb goes on, scaled by the distance curve so a far-behind cobra
+    /// runs faster, else the inspector's climb speed; u/s</returns>
     private float BaseClimbSpeed() {
         if (
             cobraBalanceConfig == null
@@ -580,9 +591,14 @@ public class CobraMotor: MonoBehaviour {
             RampedDifficultyManager.I.GetRampedValueFromYPosition(
                 player.position.y
             );
+        float distanceMultiplier =
+            cobraBalanceConfig.CobraDistanceSpeedCurve.Evaluate(
+                CalcDistanceBelowPlayer()
+            );
         return Mathf.Max(
             0f,
             cobraBalanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty)
+                * distanceMultiplier
         );
     }
 
