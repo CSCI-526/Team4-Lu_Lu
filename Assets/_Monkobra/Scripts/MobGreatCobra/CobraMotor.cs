@@ -43,6 +43,33 @@ public class CobraMotor: MonoBehaviour {
     public bool IsGuarding => isGuarding;
 
     /// <summary>
+    /// The box round every body segment's position as posed now, head to
+    /// tail, eg for a camera to fit the whole cobra
+    /// </summary>
+    /// <param name="bounds">the box, world space</param>
+    /// <returns>if the body is set up and a box could be made</returns>
+    public bool TryGetBodyBounds(out Bounds bounds) {
+        bounds = new Bounds();
+        if (bodySegments == null || bodySegments.Length == 0) {
+            return false;
+        }
+
+        bool isFirst = true;
+        foreach (Transform segment in bodySegments) {
+            if (segment == null) {
+                continue;
+            }
+            if (isFirst) {
+                bounds = new Bounds(segment.position, Vector3.zero);
+                isFirst = false;
+            } else {
+                bounds.Encapsulate(segment.position);
+            }
+        }
+        return !isFirst;
+    }
+
+    /// <summary>
     /// Stops the chase for the boss fight: the head is set at
     /// <paramref name="headWorldY"/> and held there for good, below the
     /// arena, still circling the trunk, while surges are ignored. Now & then

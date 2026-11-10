@@ -69,6 +69,15 @@ public class PopUpManager: MonoBehaviour {
         RemoveQueued(id);
     }
 
+    /// <summary>
+    /// Finds a popup variant, so its owner can reach the variant's other
+    /// components, e.g. <see cref="PopUpWorldLink"/>.
+    /// </summary>
+    /// <param name="id">the popup variant</param>
+    /// <returns>the variant, or null when no variant has the id</returns>
+    public MessagePopUp GetPopUp(PopUpId id) {
+        return lookup.TryGetValue(id, out MessagePopUp popUp) ? popUp : null;
+    }
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (I != null && I != this) {

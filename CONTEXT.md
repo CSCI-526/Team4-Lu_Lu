@@ -46,7 +46,7 @@ monkobra/
 │   │   ├── Scenes/    Lv1Scene, root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, ItemPineapple/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/, Scoring/, UI/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
-│   │   ├── Prefabs/   Cameras/, Environment/, GameController/, ItemCoconut/, ItemPineapple/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, one variant per popup), TutorialScreen/, UI/, World/ (light, volume, event system)
+│   │   ├── Prefabs/   Cameras/, Environment/, GameController/, ItemCoconut/, ItemPineapple/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup), TutorialScreen/, UI/, World/ (light, volume, event system)
 │   │   ├── Materials/ Environment/, ItemBanana/, ItemCoconut/, ItemPineapple/, MobGreatCobra/, MobSpiderWeb/, Player/
 │   │   ├── Sprites/   ItemBanana/, ItemCoconut/, ItemPineapple/ (fruit art), PopUp/ (popup background)
 │   │   ├── Inputs/    InputSystem_Actions
@@ -67,7 +67,7 @@ monkobra/
 
 | Root | Nests |
 | --- | --- |
-| `Cameras` | the four Cinemachine cameras |
+| `Cameras` | the climb camera, the three event shot cameras (coconut, cobra alert, leap), the camera anchor and two shot targets, the director, framing and shake components |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
 | `Envs` (plain scene object) | `DynamicTreeSegmentPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `RoughBarkSystem` (`RoughBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
@@ -75,7 +75,7 @@ monkobra/
 | `GameController/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
 | `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage` (widget host only), `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt` (widget host only), `HackShortcutHelp`, `SpiderWebPrompt` (escape bar), `_PopUps` (`PopUp/_PopUps`, before `Screens` so the panels draw over it), `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
-Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `Cameras` tracking target) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
+Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `CameraAnchor.monkey`) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
 
 The repository root is the Unity project root. `Library/`, `Temp/`, `Logs/`, `UserSettings/`, `*.csproj`, and `*.slnx` are ignored.
 
@@ -93,7 +93,7 @@ graph LR
   Hit -->|BranchHit| Root
   Hit -->|Hit w/ kind| Shake[CameraHitShakeFeedback]
   Zones[DetectionZoneRelay x2] --> Fruit[UpwardFruitSensor]
-  Fruit --> Cam[CameraRigManager]
+  Fruit --> Cam[CameraClimbFraming]
   Fruit --> Outline[FruitOutlineListener]
   Arm -->|TryCollect| Pickup[ScorePickup]
   Arm -->|Play| Fly[FruitFlyEffect]
@@ -156,18 +156,24 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Player/ArmController` | one arm: climb stroke, reach, release check | [Grab](docs/grab-doc.md#reach-and-release) |
 | `Player/DetectionZoneRelay` | side-tagged trigger forwarding enter and exit | [Grab](docs/grab-doc.md#detection) |
 | `Player/UpwardFruitSensor` | singleton, reachable and grabbable fruit; the target and reach side follow the fruit closest to the monkey, re-picked every physics step | [Grab](docs/grab-doc.md#detection) |
-| `Cameras/CameraRigManager` | swaps the four Cinemachine cameras; shows the look-down view briefly after a coconut throw | [Grab](docs/grab-doc.md#camera) |
-| `Cameras/CameraLookUp` | on the behind camera: tilts the aim point up while climbing, plus `ExtraAimOffsetU` and `ViewDistanceScale`, eg the boss fight view | none |
-| `Cameras/CameraHitShakeFeedback` | on the main camera: fires a light impulse for a branch hit, a heavier one for a falling cobra hit | [Mobs](docs/mob-doc.md#hit-penalty) |
-| `Cameras/CameraCoolDownFeedback` | on the main camera: vignette blackdown and zoom-out pulse on each low-stamina move attempt, a lighter step while low and a stronger one when empty | [TDD](docs/monkobra-tdd.md#camera) |
-| `Cameras/CameraEfxConfig` | ScriptableObject (`Settings/Cameras/CameraEfxConfig.asset`) of the camera efx tuning: both cool-down steps (vignette, zoom-out) and their timing | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraAnchor` | the one transform every camera tracks: the monkey's rendered position with an eased, dead-zoned yaw round the trunk, so strafing never spins the world; reads `CameraConfig` | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraConfig` | ScriptableObject (`Settings/Cameras/CameraConfig.asset`), the one camera tuning asset: anchor, climb framing, the three shots, shake, stamina vignette, comfort | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraClimbFraming` | on the climb camera: the upward rest aim, a lead from the target's real vertical speed, a grab shift toward the fruit side picked once per press, and `SetBossFraming` for the boss fight view | [Grab](docs/grab-doc.md#camera) |
+| `Cameras/CameraRigManager` | the shot director on the `CameraRig`: cuts to the coconut, cobra alert, or leap shot by priority, minimum hold, cap and cooldown, never touches the interact action; blend times per camera pair in `Settings/Cameras/CameraBlends.asset` | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraShotTarget` | the point the coconut shot tracks: the anchor blended with the thrown coconut, anchor yaw kept, holds the last spot when the coconut is gone | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraCobraAlertFraming` | on the cobra alert camera: moves its focus only in height to the middle of the cobra's own coil, stands close at a set horizontal distance looking down by a set angle, widens the field of view to fit the whole cobra | [Mobs](docs/mob-doc.md#camera-alert) |
+| `Cameras/CameraLeapFraming` | on the leap camera: the higher aim and the pull-back along its own direction while a pineapple leap runs | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraHitShakeFeedback` | on the main camera: fires a light impulse for a branch hit, a heavier one for a falling cobra hit, scaled by `CameraConfig` | [Mobs](docs/mob-doc.md#hit-penalty) |
+| `Cameras/CameraRoughBarkShake` | on the `CameraRig`: eases the Perlin noise of every camera up while the monkey moves on rough bark | [Mobs](docs/mob-doc.md#rough-bark-shake) |
+| `Cameras/CameraCoolDownFeedback` | on the main camera: vignette blackdown pulse on each low-stamina move attempt, a lighter step while low and a stronger one when empty, no zoom | [TDD](docs/monkobra-tdd.md#camera) |
 | `Player/HitBranchSensor` | singleton branch sensor: raises `BranchHit` and `Hit` (with a `HitKind`); `ReportHit` applies the same drop for a hazard touching the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
 | `Environment/RoughBarkZone` | raised, irregular bark patch on the trunk that smoothly slows the monkey in every direction while touched; avoidable | [Mobs](docs/mob-doc.md) |
 | `Environment/RoughBarkSpawner` | on the `RoughBarkSystem` prefab: once the score passes `roughBarkStartScore`, rolls broad patches ahead of the monkey, off obstacles | [TDD](docs/monkobra-tdd.md) |
 | `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/TreeSegmentController` | places branches on a segment, skipping spots w/i `startingZoneBranchClearRadiusU` of the monkey before the run is playing, rolling branch and banana chance from the flat `startingZoneBranchChance` and `startingZoneBananaChance` below the exit trigger (`RampedDifficultyManager.IsInStartingZoneY`) and from the curves above it, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/DynamicTreeSegmentPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |
-| `Environment/HeightMarkerSystem` | on `Envs/HeightMarkerSystem`: the climbed height every `intervalU` beside the trunk, on both its left and right as seen from the camera, in world units labelled m, on a generated dark rounded plate, from a pool of TextMeshPro labels keyed to height, never to segments; pulses a marker the first time the monkey passes it; the boss fight's height marker gets a bigger, red, beating plate w/ a small king look-alike, hidden once the fight begins | [TDD](docs/monkobra-tdd.md#ui) |
+| `Environment/HeightMarkerSystem` | on `Envs/HeightMarkerSystem`: the climbed height every `intervalU` beside the trunk, on both its left and right as seen from the camera, in world units labelled m, on a generated dark rounded plate, from a pool of TextMeshPro labels keyed to height, never to segments; pulses a marker the first time the monkey touches its `HeightMarkerTrigger`, a prefab trigger at the marker's exact height while the plate is drawn on its label anchor above; the boss fight's height marker gets a bigger, red, beating plate w/ a small king look-alike, hidden once the fight begins | [TDD](docs/monkobra-tdd.md#ui) |
+| `Environment/HeightMarkerTrigger` | on the `HeightMarker` prefab root: a thin trigger slab at one marker's exact height, raises `Passed` when a physical part of the monkey touches it; its `LabelAnchor` child, a fixed way above, is where the plate is drawn | [TDD](docs/monkobra-tdd.md#ui) |
 | `Environment/BranchFruitPlacementConfig` | ScriptableObject (`Settings/Environment/BranchFruitPlacementConfig.asset`) of branch placement | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit; `TryHangFruit` lets another spawner hang its own fruit on a bare branch's stem tip | [Grab](docs/grab-doc.md#fruit-supply) |
 | `Environment/FruitOutlineListener` | two-tier fruit outline, on the object holding the fruit's collider | [Grab](docs/grab-doc.md#feedback) |
@@ -205,6 +211,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `HackShortcuts/HackShortcutPanel` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself outside a development build | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `PopUp/PopUpManager` | singleton on `Prefabs/PopUp/_PopUps`: shows one popup at a time by `PopUpId`, priority interrupts and queues, run gating, once-per-scene memory, drops all on a loss | [PopUps](docs/pop-up-doc.md#rules) |
 | `PopUp/MessagePopUp` | on each popup variant prefab: text with a `{0}` slot, look, show and fade times, priority, flags; `Show` and `Hide` | [PopUps](docs/pop-up-doc.md#where-config-lives) |
+| `PopUp/PopUpWorldLink` | on `Prefabs/PopUp/_PopUpFruitBase`: line from the popup bottom center to a world target its owner sets (`FruitGrabPrompt` hands over the reach target); hidden without a target | [PopUps](docs/pop-up-doc.md#parts) |
 | `PopUp/PopUpId` | enum of the 8 popup variants, the key callers pass to `Show` | [PopUps](docs/pop-up-doc.md#add-a-popup) |
 | `Scoring/ScoreManager` | singleton, distance and reward score, each pickup scored and counted by its `PickupKind` | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup`, `Scoring/PickupKind` | on a fruit: hands points over once, as a banana or a coconut | [Grab](docs/grab-doc.md#on-a-successful-grab) |

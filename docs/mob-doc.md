@@ -39,7 +39,7 @@ A branch is a prefab (`Prefabs/Environment/BranchWithFruit`) holding a `Branch`-
 
 ### Hit Penalty
 
-1. `HitBranchSensor` sees the `Branch` collider and raises `BranchHit` and `Hit` with a `HitKind` (`Branch` or `FallingCobraController`); `CameraHitShakeFeedback` on the main camera hears `Hit` and fires a light camera shake for a branch, a heavier one for a falling cobra
+1. `HitBranchSensor` sees the `Branch` collider and raises `BranchHit` and `Hit` with a `HitKind` (`Branch` or `FallingCobraController`); `CameraHitShakeFeedback` on the main camera hears `Hit` and fires a light camera shake for a branch, a heavier one for a falling cobra, scaled by `CameraConfig`
 2. `MonkeyController` ignores input for the stun time and drops the monkey a set distance at a set speed, then stops dead on the drop target
 3. a second hit during the stun is ignored, so overlapping branches cost one drop, not two
 4. the stun fall is involuntary, so it drains no movement stamina
@@ -78,6 +78,14 @@ In the starting zone game state the cobra stays active and keeps orbiting, but i
 The cobra's shape, orbit, coil, and slow-down values are fields on `CobraMotor`, set on the `GreatCobra` prefab.
 
 The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)) is above the cobra's base speed, so it can outrun the cobra, but only by spending stamina.
+
+### Camera Alert
+
+`CameraRigManager` cuts to the cobra alert shot only once, on the cobra's `ChaseStarted`, the moment it first starts moving after the monkey leaves the starting zone, then hands back. No other cobra event moves the camera. The shot shows the whole cobra: `CameraCobraAlertFraming` stands the camera close, a set horizontal distance out from the monkey on the anchor's yaw, so it only travels up and down, aims at the middle of the cobra's own coil, wherever it lies below the monkey, from a height that looks down by a set angle, lifted by a y offset so the cobra sits lower in the view, and widens the field of view to fit it, up to a limit. It stays quiet while the cobra guards the boss arena. The shot's priority, cap, and cooldown, and the fit margin, widest field of view, and smoothing, are in `CameraConfig`.
+
+### Rough Bark Shake
+
+While the monkey moves across rough bark (`MonkeyController.RoughBarkSpeedScale` below 1, input held, not held by a web) `CameraRoughBarkShake` eases the Perlin noise of every camera up, and back down when the movement or the contact stops. Gains and ease times are in `CameraConfig`.
 
 ### Coconut Freeze
 
@@ -162,7 +170,7 @@ The `Boss/BossFight` prefab sits at the root of `Lv1Scene` (and of the dev scene
 - Pineapple Leap: a leap never carries the monkey past the arena: `PineappleLeapController` caps its pull at `BossFightController.LeapTopY`, the fight's start height before the fight and the ceiling under the king during it, so a pineapple grabbed just below the arena lands right at its start
 - Keep Away: the monkey can never reach the king: `MonkeyController.SetHeightCeiling` caps its climb `ceilingGapU` below the king's chin however long up is held, and a monkey within `pushRangeU` of the cap gets butted down
 - King: built at runtime from Unity primitives, kept simple (`BossKingBody`): a round bead coil, neck, a big round head with two eyes and a small gold crown; thrown bananas fly at an invisible target on the crown's front
-- Camera: in the arena `CameraLookUp.ViewDistanceScale` pulls the behind camera back to `cameraDistanceScale` (2) times its distance, and `ExtraAimOffsetU` tilts it up by `cameraFocusShare` of the height to the king's head (at most `maxCameraFocusU`), kept low so a knocked-down monkey stays in view
+- Camera: in the arena `CameraClimbFraming.SetBossFraming` pulls the climb camera back to `cameraDistanceScale` times its distance and tilts it up by `cameraFocusShare` of the height to the king's head (at most `maxCameraFocusU`), kept low so a knocked-down monkey stays in view
 
 ### Fight Loop
 

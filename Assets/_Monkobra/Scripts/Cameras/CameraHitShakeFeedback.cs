@@ -6,11 +6,17 @@ using UnityEngine;
 /// main camera, next to the <c>CinemachineImpulseListener</c>. Listens to
 /// <see cref="HitBranchSensor.Hit"/> and fires a light impulse for a
 /// branch, a heavier one for a falling cobra. Each kind has its own
-/// <see cref="CinemachineImpulseSource"/> on the same camera, so amplitude
-/// and duration are tuned per kind in the Inspector.
+/// <see cref="CinemachineImpulseSource"/> on the same camera, so shape and
+/// duration are tuned per kind in the Inspector, and the strength is scaled
+/// per kind and overall by <see cref="CameraConfig"/>. Every camera carries
+/// an impulse listener, so the shake reaches whichever view is live.
 /// </summary>
 public class CameraHitShakeFeedback: MonoBehaviour {
     // Inspector Fields  #######################################################
+    [Tooltip("hit scales and the global shake scale; the comfort switch mutes")]
+    [SerializeField]
+    private CameraConfig config;
+
     [Tooltip("impulse for a branch hit, the lighter shake")]
     [SerializeField]
     private CinemachineImpulseSource lightSource;
@@ -22,6 +28,12 @@ public class CameraHitShakeFeedback: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogWarning(
+                "CameraHitShakeFeedback:\tmust assign Inspector Field: config",
+                this
+            );
+        }
         if (lightSource == null) {
             Debug.LogWarning(
                 "CameraHitShakeFeedback:\tmust assign Inspector Field: "
@@ -66,15 +78,23 @@ public class CameraHitShakeFeedback: MonoBehaviour {
     // a missing heavy source falls back to the light one, so a hit never
     // goes without a shake
     private void OnHit(Collider _, HitBranchSensor.HitKind kind) {
-        CinemachineImpulseSource source =
-            kind == HitBranchSensor.HitKind.FallingCobraController
-                ? (heavySource != null ? heavySource : lightSource)
-                : lightSource;
+        bool isHeavy = kind == HitBranchSensor.HitKind.FallingCobraController;
+        CinemachineImpulseSource source = isHeavy
+            ? (heavySource != null ? heavySource : lightSource)
+            : lightSource;
         if (source == null) {
             return;
         }
 
-        source.GenerateImpulse();
+        float force = 1f;
+        if (config != null) {
+            if (config.IsReduceMotion) {
+                return;
+            }
+            force = config.ShakeScale
+                * (isHeavy ? config.HeavyHitScale : config.LightHitScale);
+        }
+        source.GenerateImpulseWithForce(force);
 
         if (Debug.isDebugBuild) {
             Debug.Log($"CameraHitShakeFeedback:\tshake {kind}", this);

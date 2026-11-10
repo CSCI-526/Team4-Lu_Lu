@@ -59,7 +59,7 @@ graph TD
 
 - Cobra: constant pursuit, so every pause (a web, a miss, a hit, an empty bar) is paid for in distance; each hit or web also makes it surge, stacking with repeated mistakes ([Mobs](mob-doc.md#motion)); a spent coconut freezes it for a while ([Mobs](mob-doc.md#coconut-freeze))
 - Stamina: an empty bar does not end the run, it slows the upward climb, see [Technical Design Document](monkobra-tdd.md#stamina)
-- Attention: a reach turns the camera to the banana's side, away from the branches and webs ahead
+- Attention: a reach slides the camera frame toward the banana's side, away from the branches and webs ahead
 
 ## Win and Lose
 

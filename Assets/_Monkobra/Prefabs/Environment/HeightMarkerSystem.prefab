@@ -45,9 +45,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HeightMarkerSystem
   font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  markerPrefab: {fileID: 6100000000000000004, guid: 2d7b4e9a1c6f4d3b8a5e0f7c9b2d4a68, type: 3}
   intervalU: 50
   showBelowU: 20
-  showAboveU: 18
+  showAboveU: 50
   trunkRadiusU: 5
   sightClearanceU: 0.3
   behindAxisU: 0.5
