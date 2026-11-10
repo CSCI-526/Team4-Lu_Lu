@@ -38,9 +38,9 @@ public class BossFightController: MonoBehaviour {
         get; private set;
     }
 
-    /// <returns>if the monkey is in the boss arena, fighting or done
-    /// </returns>
-    public bool IsInArena => phase != Phase.Waiting;
+    /// <returns>if the monkey is in the boss arena, fighting or done; never
+    /// in the endless run, which skips the fight</returns>
+    public bool IsInArena => phase != Phase.Waiting && !isEndlessStart;
 
     /// <summary>
     /// Builds a small look-alike of the Cobra King for the trunk height
@@ -829,6 +829,14 @@ public class BossFightController: MonoBehaviour {
         colorBlock = new MaterialPropertyBlock();
     }
 
+    // the endless run has no fight: it starts in the state right after one
+    private void Start() {
+        if (I == this && GameController.I != null
+            && GameController.I.Mode == RunMode.Endless) {
+            StartAsDone();
+        }
+    }
+
     private void OnDestroy() {
         if (I == this) {
             I = null;
@@ -916,6 +924,40 @@ public class BossFightController: MonoBehaviour {
         return ramp != null
             && ramp.CurrentPlayerClimbedYDistance
                 >= worldBalanceConfig.BossTriggerHeightU;
+    }
+
+    // the endless start: the armor worn, hazards on, the fight already over;
+    // no arena, no FightStarted, and never marks the king beaten
+    private void StartAsDone() {
+        MonkeyController monkeyController =
+            FindFirstObjectByType<MonkeyController>();
+        if (monkeyController == null
+            || monkeyController.transform.parent == null) {
+            Debug.LogError(
+                "BossFightController:	no MonkeyController under a trunk "
+                    + "root found",
+                this
+            );
+            enabled = false;
+            return;
+        }
+        monkey = monkeyController.transform;
+        this.monkeyController = monkeyController;
+        trunkCenter = monkey.parent.position;
+        greatCobra = FindFirstObjectByType<CobraMotor>();
+        cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
+        struggle = FindFirstObjectByType<SpiderWebStruggle>();
+
+        isEndlessStart = true;
+        BuildShieldRing();
+        hasShield = true;
+        phase = Phase.Done;
+        hud.ShowArmorBadge(true);
+        // no chase call: the cobra is already after the monkey
+        hasWarnedChase = true;
+        if (Debug.isDebugBuild) {
+            Debug.Log("BossFightController:	endless start in armor", this);
+        }
     }
 
     private void BeginFight() {
@@ -2975,6 +3017,7 @@ public class BossFightController: MonoBehaviour {
     private int health;
     private bool hasHit; // the monkey has landed a first hit
     private bool hasShield; // the golden banana's shield is up
+    private bool isEndlessStart; // the endless run skips the fight
     private bool hasThrown; // the first banana has been thrown
     private bool isReturningToStart; // flying back to the fight's start
     private float reviveLeftS; // revive offer time left; unscaled s
