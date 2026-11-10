@@ -17,6 +17,10 @@ todo upd gdd
 
 - great cobra base speed = monkey top climb speed × `cobraBaseSpeedCurve` (now a 0~2 multiplier) × new `cobraDistanceSpeedCurve` (gap below the monkey): a far-behind cobra runs faster, a close one slower; surge & exit boost add on top; `CobraMotor` gains `monkeyClimbConfig`
 
+##### Wenhai Dong
+
+- boss fight difficulty back to its tuning b4 the bare boss zone: the arena grows its own obstacle branches as the climb did there (`SpawnArenaBranches`, ~4.7 per 10 u, 16% w/ fruit), its own rough bark & the low webs the climb had there, at the climb's sizes & chances; `bossMaxHealth` back to 12; webs never overlap; a banner announces the golden watermelon; arena watermelons grow back slower (6 → 9 s); the tail sweep joins once a fifth of the king's health is lost, not a third; the minion call can no longer be lost & is said again after a revive, "Stay away from me!" still taking priority over it; after the win the arena watermelons are taken away, so none is eaten like a banana
+
 ### Deprecated
 
 ### Removed
