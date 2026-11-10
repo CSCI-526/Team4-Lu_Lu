@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BananaReachable
+  m_Name: Pineapple_Reachable
   m_Shader: {fileID: -6465566751694194690, guid: 7afd7d1405b8d3f4a894aa9bae19e3d3, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -102,7 +102,7 @@ Material:
     - _GlossyReflections: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
-    - _Outline_Width: 0.015
+    - _Outline_Width: 0.0083
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
