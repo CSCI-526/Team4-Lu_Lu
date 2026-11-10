@@ -31,7 +31,7 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 
 Gamepad: left stick or D-pad moves, the north button grabs (a double-tap spends a coconut), the south button breaks free of a web.
 
-Dev keys (development builds and the Editor only): F1 toggles the cobra no-clip cheat (the great cobra no longer kills), F2 toggles max energy (the stamina bar stays at max), F3 toggles a 3x speed buff, F4 jumps to the boss fight, F5 spawns a pineapple branch above the monkey, F6 a coconut branch, F7 a falling cobra, F8 a spider web, F10 downloads the analytics session report, F11 starts a new analytics session, F12 saves a mock session; the lose screen also shows a Download Analytics button, top right. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
+Dev keys (active in every build; their hints and the dev-only UI show only in development builds and the Editor): F1 toggles the cobra no-clip cheat (the great cobra no longer kills), F2 toggles max energy (the stamina bar stays at max), F3 toggles a 3x speed buff, F4 jumps to the boss fight, F5 spawns a pineapple branch above the monkey, F6 a coconut branch, F7 a falling cobra, F8 a spider web, F10 downloads the analytics session report, F11 starts a new analytics session, F12 saves a mock session; the lose screen also shows a Download Analytics button, top right. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
 
 ## Getting Started
 

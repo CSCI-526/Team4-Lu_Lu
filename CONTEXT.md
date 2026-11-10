@@ -44,14 +44,11 @@ monkobra/
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
 │   │   ├── Scenes/    TitleScene, LevelSelectScene, FullPlayScene, EndlessScene; the gameplay scenes are root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
-│   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, ItemPineapple/, LevelSelectScreen/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/, SceneFlow/ (+ `Editor/`), Scoring/, TitleScreen/, UI/
+│   │   ├── Scripts/   one folder per module (see Script Index), `SceneFlow/Editor/`
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
-│   │   ├── Prefabs/   Analytics/, Cameras/, Environment/, GameController/, ItemCoconut/, ItemPineapple/, LevelSelectScreen/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup), TitleScreen/, TutorialScreen/, UI/, World/ (light, volume, event system, `MenuEventSystem`, `MenuCamera`)
-│   │   ├── Materials/ Environment/, ItemBanana/, ItemCoconut/, ItemPineapple/, MobGreatCobra/, MobSpiderWeb/, Player/
-│   │   ├── Sprites/   ItemBanana/, ItemCoconut/, ItemPineapple/ (fruit art), PopUp/ (popup background)
-│   │   ├── Inputs/    InputSystem_Actions
-│   │   ├── Shaders/   Environment/FruitOutline (inverted-hull Shader Graph)
-│   │   └── Settings/  _Shared/ (URP assets, volume profiles), Player/ (player balance, monkey arm, climb & input), ItemPineapple/ (leap), Environment/ (world balance, branch placement), MobGreatCobra/ (cobra balance), Cameras/, UI/, Analytics/, HackShortcuts/: one folder per module, assets directly inside
+│   │   ├── Prefabs/   per module; `PopUp/` holds `_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup; `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
+│   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
+│   │   └── Settings/  `_Shared/` (URP assets, volume profiles) plus one folder per module, assets directly inside
 │   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed
 │   ├── TextMesh Pro/  imported TMP essentials, not authored
@@ -79,8 +76,6 @@ Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `FullPl
 | `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage` (widget host only), `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt` (widget host only), `HackShortcutHelp`, `SpiderWebPrompt` (escape bar), `_PopUps` (`PopUp/_PopUps`, before `Screens` so the panels draw over it), `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
 Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `CameraAnchor.monkey`) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
-
-The repository root is the Unity project root. `Library/`, `Temp/`, `Logs/`, `UserSettings/`, `*.csproj`, and `*.slnx` are ignored.
 
 ## How the Pieces Connect
 
@@ -249,7 +244,3 @@ Gaps that belong to one subsystem are listed in [Mobs](docs/mob-doc.md#known-gap
 - No tests or run commands exist: verification means opening `TitleScene` (or a gameplay scene) in the Editor
 - `DynamicTreeSegmentPool` deactivates its mock tree, `Envs/Tree`, at runtime, so a component that must run cannot sit under it
 - Broader difficulty scaling is not yet designed, see the [Game Design Document](docs/monkobra-gdd.md#difficulty)
-
-## Living Document Maintenance
-
-A stale briefing is worse than none. Update this file in the same pull request that adds, moves, or renames a script, or shifts how the pieces connect. The assistant that made the change writes the update as its final step, and the file stays on the pull-request checklist.

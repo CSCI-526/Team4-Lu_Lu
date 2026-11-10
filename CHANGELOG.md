@@ -10,29 +10,59 @@ todo upd gdd
 
 ### Added
 
-- green cobra proximity vignette: bottom half, then full ring as the Great Cobra closes in, stepped beat rate per stage; hidden in the starting zone & while the cobra is frozen, guarding or the monkey leaps
-- stamina & cobra vignettes share one slot & alternate, never overlap
-
 ### Changed
-
-- mock analytics session simulates real play: climb speed, per segment hazard & fruit rolls from the difficulty ramp, the chasing cobra's speed curves & surge, boss fight, Endless only after a king win; generates every event metric, a starting zone exit, and the real score rule, so death heights, durations & scores read like a playtest (`MockAnalyticsGenerator`)
-- great cobra base speed = monkey top climb speed × `cobraBaseSpeedCurve` (now a 0~2 multiplier) × new `cobraDistanceSpeedCurve` (gap below the monkey): a far-behind cobra runs faster, a close one slower; surge & exit boost add on top; `CobraMotor` gains `monkeyClimbConfig`
-
-##### Wenhai Dong
-
-- boss fight difficulty back to its tuning b4 the bare boss zone: the arena grows its own obstacle branches as the climb did there (`SpawnArenaBranches`, ~4.7 per 10 u, 16% w/ fruit), its own rough bark & the low webs the climb had there, at the climb's sizes & chances; `bossMaxHealth` back to 12; webs never overlap; a banner announces the golden watermelon; arena watermelons grow back slower (6 → 9 s); the tail sweep joins once a fifth of the king's health is lost, not a third; the minion call can no longer be lost & is said again after a revive, "Stay away from me!" still taking priority over it; after the win the arena watermelons are taken away, so none is eaten like a banana
 
 ### Deprecated
 
 ### Removed
 
-- great cobra close-range slow-down (`slowNearPlayer`, `slowDownDistance`, `minimumSpeedShare`) ⇐ the distance curve replaces it
-
 ### Fixed
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.0.0-beta.2] - 2026-11-10
+
+### Added
+
+##### Erik
+
+- green cobra proximity vignette: grows from bottom half to full ring as the Great Cobra closes in, beating faster per stage; hidden in the starting zone & while the cobra is frozen, guarding or the monkey leaps
+- stamina & cobra vignettes alternate, never overlap
+
+### Changed
+
+##### Erik
+
+- mock analytics session simulates real play: climb, hazards, fruit, cobra chase, boss fight & score follow the real rules, so death heights, durations & scores read like a playtest
+- Great Cobra speed scales w/ gap to monkey: far-behind cobra runs faster, close one slower; `cobraBaseSpeedCurve` now a 0~2 multiplier of monkey top climb speed, new `cobraDistanceSpeedCurve`
+
+##### Wenhai Dong
+
+- boss fight difficulty restored to pre-bare-zone tuning: arena grows own branches, rough bark & webs like the climb; `bossMaxHealth` back to 12
+- boss fight: tail sweep joins at 1/5 king health lost, not 1/3; arena watermelons regrow slower (6 → 9 s) & are removed after the win; golden watermelon banner; webs never overlap
+- boss fight: minion call never lost, repeated after a revive
+
+### Removed
+
+##### Erik
+
+- Great Cobra close-range slow-down ⇐ distance curve replaces it
+
+[1.0.0-beta.2]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta...v1.0.0-beta.2
 
 
 
