@@ -113,6 +113,8 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F1 | toggle `GameController.CobraNoClip` | `GameController` |
 | F2 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
 | F3 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
+| F5 | toggle god mode: the stamina bar stays at max (`StaminaBarController.IsGodMode`) | `StaminaBarController` |
+| F6 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
 | F8 | download the analytics session report | `AnalyticsManager` |
 | F9 | close the analytics session and open a new file | `AnalyticsManager` |
 | F10 | save a mock analytics session file | `AnalyticsManager` |

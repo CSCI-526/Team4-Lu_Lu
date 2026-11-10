@@ -15,6 +15,7 @@ Todo level selection & scene system
 
 ##### Erik
 
+- hack keys F5 & F6, development builds only, both toggles: F5 god mode keeps the stamina bar at max, F6 speed buff runs climb & orbit at 3x (`HackAction.GodMode`, `HackAction.SpeedBuff`)
 - brown coconut: the whole `SM_Fruits_Coconut_1` model in the world (`Coconut`, `CoconutProjectile`) renders w/ the `Coconut_Brown` material instead of the pack's green
 - coconut counter & flight sprite: use `coconut128x128` instead of `Coconut_Green`; unused `Coconut_Green` sprite & `SM_Fruits_Coconut_4` model rm
 - `Lv1Scene` split into nested prefabs: `World`, `Envs`, `Entities`, `Systems`, `UI` and a leaf prefab per unit, so teammates edit different files

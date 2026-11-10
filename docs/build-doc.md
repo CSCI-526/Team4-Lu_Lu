@@ -47,7 +47,7 @@ Limits: 1,000 files, 240 characters per path, 500 MB total, 200 MB per file.
 
 ## Dev Keys
 
-The hack keys (F1 no-clip, F8 report download, F9 and F10 analytics, see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)) run only when `Debug.isDebugBuild` is true, so the WebGL profiles (`GithubPages`, `ItchIO`) keep Development Build on and a player can press them. A build with it off, e.g. Windows by default, has none of them. The browser needs focus on the game canvas when F8 is pressed.
+The hack keys (F1 no-clip, F5 god mode, F6 speed buff, F8 report download, F9 and F10 analytics, see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)) run only when `Debug.isDebugBuild` is true, so the WebGL profiles (`GithubPages`, `ItchIO`) keep Development Build on and a player can press them. A build with it off, e.g. Windows by default, has none of them. The browser needs focus on the game canvas when F8 is pressed.
 
 ## Windows
 
