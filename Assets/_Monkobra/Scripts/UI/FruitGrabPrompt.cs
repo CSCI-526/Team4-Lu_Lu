@@ -60,6 +60,10 @@ public class FruitGrabPrompt: MonoBehaviour {
         }
 
         ShowPopUp(kind);
+        // the reach target may change while one kind stays shown
+        if (shownLink != null) {
+            shownLink.SetTarget(fruit.transform);
+        }
     }
 
     // Event Handlers  #########################################################
@@ -91,6 +95,7 @@ public class FruitGrabPrompt: MonoBehaviour {
     private UpwardFruitSensor sensor;
     private MonkeyController monkey;
     private FruitKind shownKind = FruitKind.None; // kind whose popup is held
+    private PopUpWorldLink shownLink; // line from the shown popup to its fruit
 
     private enum FruitKind { None, Banana, Pineapple, Coconut }
 
@@ -149,6 +154,9 @@ public class FruitGrabPrompt: MonoBehaviour {
         HidePopUp();
         PopUpManager.I.Show(GetPopUpId(kind));
         shownKind = kind;
+        MessagePopUp popUp = PopUpManager.I.GetPopUp(GetPopUpId(kind));
+        shownLink = popUp != null
+            ? popUp.GetComponent<PopUpWorldLink>() : null;
     }
 
     private void HidePopUp() {
