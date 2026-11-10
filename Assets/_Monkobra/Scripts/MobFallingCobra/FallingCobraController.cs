@@ -14,7 +14,8 @@ using UnityEngine;
 /// Warning: a red pulse for <c>warningDurationS</c>. Falling: a
 /// constant downward speed, while each physics step the cobra re-reads the
 /// monkey's angle about the tree axis and slides round the trunk toward it by
-/// the shortest arc, so it keeps homing on a monkey that orbits. Any part of
+/// the shortest arc, so it keeps homing on a monkey that orbits. Tree
+/// branches block both moves, so a branch holds the snake up. Any part of
 /// the snake touching any part of the monkey (body, tail, hand, or its
 /// branch sensor) applies one branch-hit drop and immediately switches the
 /// snake off. It cannot keep falling or strike the monkey again. After
@@ -357,11 +358,11 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     // constant drop, plus a slide round the trunk toward the monkey's live
-    // angle; the slide is clamped to the remaining arc so it never overshoots
+    // angle; the slide is clamped to the remaining arc so it never overshoots.
+    // Both moves stop short of a tree branch, so a branch holds the snake up
     private void StepFall() {
         float dropU = fallSpeedU * Time.fixedDeltaTime;
         Vector3 position = body.position;
-        position.y -= dropU;
 
         if (
             player != null
@@ -386,14 +387,34 @@ public class FallingCobraController: MonoBehaviour {
                     maxStepDeg
                 );
 
-                float newRad = (angleDeg + stepDeg) * Mathf.Deg2Rad;
-                position.x = axisXZ.x + Mathf.Sin(newRad) * ringRadiusU;
-                position.z = axisXZ.y + Mathf.Cos(newRad) * ringRadiusU;
+                Vector3 slidePosition = RingPosition(
+                    position,
+                    angleDeg + stepDeg
+                );
+                Vector3 chord = slidePosition - position;
+                float chordU = chord.magnitude;
+                if (chordU > MIN_RING_RADIUS_U) {
+                    float clearU = ClearTravelU(
+                        position,
+                        chord / chordU,
+                        chordU
+                    );
+                    // a blocked slide covers only its free share of the arc
+                    slidePosition = RingPosition(
+                        position,
+                        angleDeg + stepDeg * (clearU / chordU)
+                    );
+                }
+                position = slidePosition;
             }
         }
+
+        float freeDropU = ClearTravelU(position, Vector3.down, dropU);
+        position.y -= freeDropU;
         body.MovePosition(position);
 
-        fallenU += dropU;
+        // only a real drop counts, so a snake held by a branch stays armed
+        fallenU += freeDropU;
         if (fallenU >= maxFallDistanceU) {
             state = State.Done;
             hitCollider.enabled = false;
@@ -401,5 +422,74 @@ public class FallingCobraController: MonoBehaviour {
         }
     }
 
+    // the point on the trunk ring at the given angle, at the height of
+    // origin
+    private Vector3 RingPosition(Vector3 origin, float angleDeg) {
+        float rad = angleDeg * Mathf.Deg2Rad;
+        return new Vector3(
+            axisXZ.x + Mathf.Sin(rad) * ringRadiusU,
+            origin.y,
+            axisXZ.y + Mathf.Cos(rad) * ringRadiusU
+        );
+    }
+
+    /// <summary>
+    /// Sweeps the hit capsule from <paramref name="origin"/> and stops it a
+    /// skin short of the nearest tree branch in the way. A branch already
+    /// overlapping the capsule at the start never blocks, so a snake that
+    /// spawned inside one still falls free.
+    /// </summary>
+    /// <returns>how far the snake may travel along
+    /// <paramref name="direction"/>, at most <paramref name="distanceU"/>; u
+    /// </returns>
+    private float ClearTravelU(
+        Vector3 origin,
+        Vector3 direction,
+        float distanceU
+    ) {
+        Vector3 scale = transform.lossyScale;
+        float radiusU =
+            hitCollider.radius
+            * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+        float halfSpanU = Mathf.Max(
+            hitCollider.height * Mathf.Abs(scale.y) * 0.5f - radiusU,
+            0f
+        );
+        Vector3 center =
+            origin
+            + transform.rotation * Vector3.Scale(hitCollider.center, scale);
+        Vector3 axis = transform.up * halfSpanU;
+
+        int hitCnt = Physics.CapsuleCastNonAlloc(
+            center + axis,
+            center - axis,
+            radiusU,
+            direction,
+            sweepHits,
+            distanceU + BLOCK_SKIN_U,
+            Physics.AllLayers,
+            QueryTriggerInteraction.Ignore
+        );
+
+        float nearestU = distanceU + BLOCK_SKIN_U;
+        for (int i = 0; i < hitCnt; i++) {
+            RaycastHit hit = sweepHits[i];
+            bool isStartOverlap =
+                hit.distance <= 0f && hit.point == Vector3.zero;
+            if (
+                isStartOverlap
+                || hit.collider.GetComponentInParent<BranchController>()
+                    == null
+            ) {
+                continue;
+            }
+            nearestU = Mathf.Min(nearestU, hit.distance);
+        }
+        return Mathf.Clamp(nearestU - BLOCK_SKIN_U, 0f, distanceU);
+    }
+
     private const float MIN_RING_RADIUS_U = 0.001f;
+    private const float BLOCK_SKIN_U = 0.02f; // gap kept from a branch; u
+    private const int SWEEP_HIT_CAP = 16;
+    private readonly RaycastHit[] sweepHits = new RaycastHit[SWEEP_HIT_CAP];
 }
