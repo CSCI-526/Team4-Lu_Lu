@@ -934,7 +934,7 @@ public class BossFightController: MonoBehaviour {
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(
-                "BossFightController:	no MonkeyController under a trunk "
+                "BossFightController:\tno MonkeyController under a trunk "
                     + "root found",
                 this
             );
@@ -956,7 +956,7 @@ public class BossFightController: MonoBehaviour {
         // no chase call: the cobra is already after the monkey
         hasWarnedChase = true;
         if (Debug.isDebugBuild) {
-            Debug.Log("BossFightController:	endless start in armor", this);
+            Debug.Log("BossFightController:\tendless start in armor", this);
         }
     }
 

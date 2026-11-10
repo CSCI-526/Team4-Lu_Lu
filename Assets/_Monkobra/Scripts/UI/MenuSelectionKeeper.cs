@@ -16,7 +16,7 @@ public class MenuSelectionKeeper: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (firstSelected == null) {
             Debug.LogError(
-                "MenuSelectionKeeper:	must assign Inspector Field: "
+                "MenuSelectionKeeper:\tmust assign Inspector Field: "
                     + "First Selected",
                 this
             );

@@ -6,14 +6,14 @@ public static class ProgressMenu {
     [MenuItem("Monkobra/Unlock Endless")]
     private static void UnlockEndless() {
         ProgressStore.MarkBossBeaten();
-        Debug.Log("ProgressMenu:	Endless unlocked: "
+        Debug.Log("ProgressMenu:\tEndless unlocked: "
             + ProgressStore.IsEndlessUnlocked);
     }
 
     [MenuItem("Monkobra/Reset Progress")]
     private static void ResetProgress() {
         ProgressStore.ResetProgress();
-        Debug.Log("ProgressMenu:	Endless unlocked: "
+        Debug.Log("ProgressMenu:\tEndless unlocked: "
             + ProgressStore.IsEndlessUnlocked);
     }
 }
