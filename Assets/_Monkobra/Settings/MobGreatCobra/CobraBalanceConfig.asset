@@ -66,36 +66,36 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 3.4
-      inSlope: 1
-      outSlope: 1
+      value: 0.5667
+      inSlope: 0.1667
+      outSlope: 0.1667
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.5
-      value: 3.9
-      inSlope: 1
-      outSlope: 0.2
+      value: 0.65
+      inSlope: 0.1667
+      outSlope: 0.0333
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 4
-      inSlope: 0.2
-      outSlope: 0.6
+      value: 0.6667
+      inSlope: 0.0333
+      outSlope: 0.1
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 2
-      value: 4.6
-      inSlope: 0.6
-      outSlope: 0.6
+      value: 0.7667
+      inSlope: 0.1
+      outSlope: 0.1
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334

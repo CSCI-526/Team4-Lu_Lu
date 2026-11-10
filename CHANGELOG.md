@@ -1,7 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-FIXME cobra more actively chase when distant
 Bug endless mode need to start w/ full heath & no starting zone
 todo upd gdd
 -->
@@ -16,7 +15,7 @@ todo upd gdd
 
 ### Changed
 
-- great cobra base speed scales by its gap below the monkey: a far-behind cobra runs faster, a close one slower, via `cobraDistanceSpeedCurve` in `CobraBalanceConfig`; surge & exit boost add on top
+- great cobra base speed = monkey top climb speed × `cobraBaseSpeedCurve` (now a 0~2 multiplier) × new `cobraDistanceSpeedCurve` (gap below the monkey): a far-behind cobra runs faster, a close one slower; surge & exit boost add on top; `CobraMotor` gains `monkeyClimbConfig`
 
 ### Deprecated
 

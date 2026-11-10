@@ -5,7 +5,8 @@ using UnityEngine;
 /// Cobra that coils round the trunk and climbs after the monkey without ever
 /// stopping or backing down, so once it reaches the monkey, whatever part
 /// touches first ends the run. Its base speed rises with the ramped
-/// difficulty and is scaled by how far it trails the monkey. Each mistake of the monkey (a branch or
+/// difficulty and by how far it trails the monkey, both as multipliers of
+/// the monkey's top climb speed. Each mistake of the monkey (a branch or
 /// falling cobra hit, or a web) makes it surge for a while, and mistakes
 /// stack, faster and longer, possibly past the monkey's own speed; tuned in
 /// <see cref="CobraBalanceConfig"/>. The one exception to never stopping: a
@@ -199,6 +200,13 @@ public class CobraMotor: MonoBehaviour {
             + "none if unset"
     )]
     private PlayerBalanceConfig playerBalanceConfig;
+
+    [SerializeField]
+    [Tooltip(
+        "monkey climb tuning; its top up speed is what the base speed "
+            + "multipliers scale; inspector climb speed if unset"
+    )]
+    private MonkeyClimbConfig monkeyClimbConfig;
 
     [Header("Tree Path")]
     [SerializeField]
@@ -542,13 +550,15 @@ public class CobraMotor: MonoBehaviour {
         );
     }
 
-    /// <returns>climb speed outside a surge: from the config's base speed
-    /// curve at the monkey's ramped difficulty, so the chase tightens as the
-    /// climb goes on, scaled by the distance curve so a far-behind cobra
-    /// runs faster, else the inspector's climb speed; u/s</returns>
+    /// <returns>climb speed outside a surge: the monkey's top climb speed
+    /// times the config's base speed curve at the monkey's ramped difficulty
+    /// (0~2), so the chase tightens as the climb goes on, times the distance
+    /// curve, so a far-behind cobra runs faster; else the inspector's climb
+    /// speed; u/s</returns>
     private float BaseClimbSpeed() {
         if (
             cobraBalanceConfig == null
+            || monkeyClimbConfig == null
             || player == null
             || RampedDifficultyManager.I == null
         ) {
@@ -562,9 +572,15 @@ public class CobraMotor: MonoBehaviour {
             cobraBalanceConfig.CobraDistanceSpeedCurve.Evaluate(
                 CalcDistanceBelowPlayer()
             );
+        float baseMultiplier = Mathf.Clamp(
+            cobraBalanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty),
+            0f,
+            2f
+        );
         return Mathf.Max(
             0f,
-            cobraBalanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty)
+            monkeyClimbConfig.TopClimbUpSpeedU
+                * baseMultiplier
                 * distanceMultiplier
         );
     }

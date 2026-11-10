@@ -125,8 +125,8 @@ MonoBehaviour:
   cobraStageHysteresisU: 1
   cobraStage1PulseHz: 0.8
   cobraStage2PulseHz: 1.6
-  cobraVignetteColor: {r: 0.1, g: 0.85, b: 0.2, a: 1}
-  cobraVignettePeakAlpha: 0.55
+  cobraVignetteColor: {r: 0.1, g: 0.85, b: 0.2, a: 0.39215687}
+  cobraVignettePeakAlpha: 0.3
   cobraVignetteEaseInS: 0.12
   cobraVignetteEaseOutS: 0.3
   reduceMotion: 0
