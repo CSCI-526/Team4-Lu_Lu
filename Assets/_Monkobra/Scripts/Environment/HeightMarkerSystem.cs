@@ -247,8 +247,11 @@ public class HeightMarkerSystem: MonoBehaviour {
         int interval = IntervalU;
         // the boss fight's height gets its own look, no extra words
         BossFightController bossFight = BossFightController.I;
+        // the endless run has no boss, so no boss marker either
+        bool isEndless = GameController.I != null
+            && GameController.I.Mode == RunMode.Endless;
         int bossHeightU = bossFight != null && bossFight.isActiveAndEnabled
-            && bossFight.TriggerHeightU > 0f
+            && !isEndless && bossFight.TriggerHeightU > 0f
             ? Mathf.RoundToInt(bossFight.TriggerHeightU)
             : int.MinValue;
         // once the fight has begun its marker is gone, the real king is there

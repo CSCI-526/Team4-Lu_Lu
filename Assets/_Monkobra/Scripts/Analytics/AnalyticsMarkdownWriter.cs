@@ -25,6 +25,7 @@ public static class AnalyticsMarkdownWriter {
 
         StringBuilder sb = new StringBuilder();
         sb.Append("## Run ").Append(number).Append("\n\n");
+        sb.Append("- Mode: ").Append(run.Mode).Append('\n');
         if (run.Status != RunStatus.Lost) {
             sb.Append("- Status: ").Append(run.Status).Append('\n');
         }
@@ -115,8 +116,22 @@ public static class AnalyticsMarkdownWriter {
         List<DeathCause> causes = session.GetLostDeathCauses();
         if (causes.Count > 0) {
             sb.Append("## Session Summary\n\n");
-            AppendDeathCauses(sb, causes);
-            AppendLostRunBars(sb, session);
+            if (session.HasLostRunsOfBothModes()) {
+                // one summary per mode, as their difficulty differs
+                foreach (RunMode mode in Enum.GetValues(typeof(RunMode))) {
+                    List<DeathCause> modeCauses =
+                        session.GetLostDeathCauses(mode);
+                    if (modeCauses.Count == 0) {
+                        continue;
+                    }
+                    sb.Append("### ").Append(mode).Append(" Runs\n\n");
+                    AppendDeathCauses(sb, modeCauses, " (" + mode + ")");
+                    AppendLostRunBars(sb, session, mode, " (" + mode + ")");
+                }
+            } else {
+                AppendDeathCauses(sb, causes, string.Empty);
+                AppendLostRunBars(sb, session, null, string.Empty);
+            }
         }
         for (int i = 0; i < session.Runs.Count; i++) {
             sb.Append(BuildRun(session.Runs[i], i + 1));
@@ -147,10 +162,12 @@ public static class AnalyticsMarkdownWriter {
     // pie of what ended each lost run of the session
     private static void AppendDeathCauses(
         StringBuilder sb,
-        List<DeathCause> causes
+        List<DeathCause> causes,
+        string titleSuffix
     ) {
-        sb.Append("#### Death Causes\n\n```mermaid\npie showData\n");
-        sb.Append("    title Death Causes\n");
+        sb.Append("#### Death Causes").Append(titleSuffix);
+        sb.Append("\n\n```mermaid\npie showData\n");
+        sb.Append("    title Death Causes").Append(titleSuffix).Append('\n');
         foreach (DeathCause cause in Enum.GetValues(typeof(DeathCause))) {
             int count = causes.FindAll(c => c == cause).Count;
             if (count > 0) {
@@ -164,9 +181,12 @@ public static class AnalyticsMarkdownWriter {
     }
 
     // one bar chart per measure over the lost runs, x is the run number
+    // mode null charts every lost run, else only that mode's
     private static void AppendLostRunBars(
         StringBuilder sb,
-        SessionData session
+        SessionData session,
+        RunMode? mode,
+        string titleSuffix
     ) {
         List<string> labels = new List<string>();
         List<string> scores = new List<string>();
@@ -175,7 +195,8 @@ public static class AnalyticsMarkdownWriter {
         List<string> durations = new List<string>();
         for (int i = 0; i < session.Runs.Count; i++) {
             RunData run = session.Runs[i];
-            if (run.Status != RunStatus.Lost) {
+            if (run.Status != RunStatus.Lost
+                || (mode != null && run.Mode != mode)) {
                 continue;
             }
 
@@ -186,15 +207,20 @@ public static class AnalyticsMarkdownWriter {
             durations.Add(FormatNumber(run.DurationS));
         }
 
-        AppendRunBars(sb, "Final Score vs Run", "Score", labels, scores);
         AppendRunBars(
-            sb, "Highest Height vs Run", "Height (u)", labels, highests
+            sb, "Final Score vs Run" + titleSuffix, "Score", labels, scores
         );
         AppendRunBars(
-            sb, "Death Height vs Run", "Height (u)", labels, heights
+            sb, "Highest Height vs Run" + titleSuffix, "Height (u)", labels,
+            highests
         );
         AppendRunBars(
-            sb, "Duration vs Run", "Duration (s)", labels, durations
+            sb, "Death Height vs Run" + titleSuffix, "Height (u)", labels,
+            heights
+        );
+        AppendRunBars(
+            sb, "Duration vs Run" + titleSuffix, "Duration (s)", labels,
+            durations
         );
     }
 

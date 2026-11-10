@@ -52,6 +52,9 @@ public class RunData {
     // Public Members  #########################################################
     public RunStatus Status = RunStatus.InProgress;
 
+    // which kind of run the scene played, stamped when the run opens
+    public RunMode Mode = RunMode.Full;
+
     // <see cref="UnityEngine.Time.time"/> at run start, base of elapsed secs
     public float StartTime;
     public DateTime StartClock;

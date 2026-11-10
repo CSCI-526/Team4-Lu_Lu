@@ -68,7 +68,23 @@ public class GameController: MonoBehaviour {
         }
     }
 
+    /// <summary>which kind of run this scene plays</summary>
+    public RunMode Mode => runMode;
+
+    /// <summary>
+    /// if the run is over and the restart input delay has passed, so a
+    /// restart press counts
+    /// </summary>
+    public bool CanRestartNow =>
+        (State == GameState.Lost || State == GameState.Won)
+        && Time.unscaledTime - lostTime >= restartInputDelay;
+
     // Public Methods  #########################################################
+    /// <summary>starts a fresh run in the same scene</summary>
+    public void RestartRun() {
+        ReloadScene();
+    }
+
     public void EndStartingZone() {
         if (State == GameState.StartingZone) {
             SetState(GameState.Playing);
@@ -150,6 +166,11 @@ public class GameController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
+    [Tooltip("Full: the normal run with the boss fight; Endless: starts "
+        + "after the boss, no boss fight, hazards keep ramping")]
+    private RunMode runMode = RunMode.Full;
+
+    [SerializeField]
     [Min(0f)]
     [Tooltip("unscaled seconds the lose screen ignores restart input")]
     private float restartInputDelay = 0.5f;
@@ -166,7 +187,7 @@ public class GameController: MonoBehaviour {
 
     [SerializeField]
     [Tooltip("restarts the run from the lose screen, the "
-        + "Player/RestartAfterLose action (R or Space)")]
+        + "Player/RestartAfterLose action (R)")]
     private InputActionReference restartAfterLoseAction;
 
     [SerializeField]
@@ -314,7 +335,7 @@ public class GameController: MonoBehaviour {
 
     // a fresh run; OnDestroy resets the time scale and audio for the new scene
     private static void ReloadScene() {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneNames.Load(SceneManager.GetActiveScene().name);
     }
 
     // frozen outside a live run and during a pause

@@ -52,7 +52,8 @@ public class RampedDifficultyManager: MonoBehaviour {
     /// to its end in climbed height, where only the boss fight generates
     /// anything</returns>
     public bool IsInBossZoneY(float y) {
-        if (worldBalanceConfig == null) {
+        // the endless tree has no boss zone, so no hazard-free gap
+        if (worldBalanceConfig == null || IsEndless) {
             return false;
         }
         float climbedY = GetClimbedYDistance(y);
@@ -75,6 +76,13 @@ public class RampedDifficultyManager: MonoBehaviour {
         }
         float climbedY = GetClimbedYDistance(y);
         float exitClimbedY = GetClimbedYDistance(RampBaseYPosition);
+        if (IsEndless) {
+            // endless opens at the post boss level at the exit and keeps
+            // ramping from there
+            return climbedY < exitClimbedY ? 0f : GetPostBossValue(
+                climbedY - exitClimbedY + worldBalanceConfig.BossZoneEndU
+            );
+        }
         float zoneStartU = worldBalanceConfig.BossZoneStartU;
         if (climbedY < exitClimbedY || zoneStartU <= exitClimbedY) {
             // a zone start at or under the exit leaves no pre boss stretch
@@ -180,6 +188,10 @@ public class RampedDifficultyManager: MonoBehaviour {
     private Transform player;
 
     // private methods  ########################################################
+    // if this scene plays the endless run
+    private bool IsEndless =>
+        GameController.I != null && GameController.I.Mode == RunMode.Endless;
+
     // 1 through the boss zone, the post boss curve past its end
     private float GetPostBossValue(float climbedY) {
         float zoneEndU = worldBalanceConfig.BossZoneEndU;
