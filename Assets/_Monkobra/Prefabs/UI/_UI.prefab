@@ -670,10 +670,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: FreezeTimerHUD
       objectReference: {fileID: 0}
-    - target: {fileID: 2417445946199558659, guid: e45dbb5ad585482c897bd12583038cf3, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2704974959411911580, guid: e45dbb5ad585482c897bd12583038cf3, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
