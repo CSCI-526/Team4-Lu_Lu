@@ -1,11 +1,14 @@
 using Unity.Cinemachine;
+using Unity.Cinemachine.TargetTracking;
 using UnityEngine;
 
 /// <summary>
 /// Frames the pineapple leap shot: the aim point rises above the monkey to
 /// show the landing area, the camera drops below the monkey so it looks up
 /// from under, and it pulls back from the tree, so the view widens by
-/// distance and never by field of view. Both values
+/// distance and never by field of view. The camera also trails the
+/// monkey's climb, with a long vertical follow damping, so the monkey rises
+/// ahead of the view instead of being tracked strictly. Both values
 /// come from <see cref="CameraConfig"/>; the comfort switch turns the
 /// pull-back off. Sits on the leap camera, next to its
 /// <see cref="CinemachineRotationComposer"/> and
@@ -36,6 +39,8 @@ public class CameraLeapFraming: MonoBehaviour {
         composer = GetComponent<CinemachineRotationComposer>();
         follow = GetComponent<CinemachineFollow>();
         baseFollowOffset = follow.FollowOffset;
+        baseDamping = follow.TrackerSettings.PositionDamping;
+        baseAimDamping = composer.Damping;
     }
 
     private void LateUpdate() {
@@ -50,10 +55,25 @@ public class CameraLeapFraming: MonoBehaviour {
             followOffset.z *= config.LeapDistanceScale;
         }
         follow.FollowOffset = followOffset;
+
+        // the camera trails the monkey's climb instead of tracking it
+        // strictly; comfort keeps the authored damping
+        TrackerSettings tracker = follow.TrackerSettings;
+        Vector3 damping = baseDamping;
+        Vector2 aimDamping = baseAimDamping;
+        if (!config.IsReduceMotion) {
+            damping.y = Mathf.Max(damping.y, config.LeapFollowLagS);
+            aimDamping.y = Mathf.Max(aimDamping.y, config.LeapAimLagS);
+        }
+        tracker.PositionDamping = damping;
+        follow.TrackerSettings = tracker;
+        composer.Damping = aimDamping;
     }
 
     // private members  ########################################################
     private Vector3 baseFollowOffset; // follow offset as authored
+    private Vector3 baseDamping; // follow damping as authored
+    private Vector2 baseAimDamping; // composer damping as authored
 
     // cached references  ------------------------------------------------------
     private CinemachineRotationComposer composer;

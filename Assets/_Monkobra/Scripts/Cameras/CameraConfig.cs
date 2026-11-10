@@ -134,6 +134,13 @@ public class CameraConfig: ScriptableObject {
     /// is below, so the view looks up from under; u</returns>
     public float LeapCameraHeightU => leapCameraHeightU;
 
+    /// <returns>time the leap camera takes to catch up vertically with the
+    /// monkey, so it trails the climb instead of tracking it; s</returns>
+    public float LeapFollowLagS => leapFollowLagS;
+
+    /// <returns>time the leap camera's aim takes to catch up; s</returns>
+    public float LeapAimLagS => leapAimLagS;
+
     // shake  ------------------------------------------------------------------
     /// <returns>scale on every shake, 0 silences all of it</returns>
     public float ShakeScale => shakeScale;
@@ -262,6 +269,15 @@ public class CameraConfig: ScriptableObject {
         + "from below; u")]
     private float leapCameraHeightU = 0f;
 
+    [SerializeField]
+    [Tooltip("time the leap camera takes to catch up vertically, so it lags "
+        + "behind the monkey; s")]
+    private float leapFollowLagS = 1.2f;
+
+    [SerializeField]
+    [Tooltip("time the leap camera's aim takes to catch up; s")]
+    private float leapAimLagS = 0.6f;
+
     [Header("Shake")]
     [SerializeField]
     [Range(0f, 1f)]
@@ -339,6 +355,8 @@ public class CameraConfig: ScriptableObject {
         coconutLandHoldS = Mathf.Max(0f, coconutLandHoldS);
         cobraProximityU = Mathf.Max(0f, cobraProximityU);
         leapDistanceScale = Mathf.Max(1f, leapDistanceScale);
+        leapFollowLagS = Mathf.Max(0f, leapFollowLagS);
+        leapAimLagS = Mathf.Max(0f, leapAimLagS);
         roughBarkEaseInS = Mathf.Max(0f, roughBarkEaseInS);
         roughBarkEaseOutS = Mathf.Max(0f, roughBarkEaseOutS);
         lightHitScale = Mathf.Max(0f, lightHitScale);
