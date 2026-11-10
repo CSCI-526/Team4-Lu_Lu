@@ -57,13 +57,10 @@ public class PlayerBalanceConfig: ScriptableObject {
     public float StartingZoneIdleRecoveryMultiplier =>
         startingZoneIdleRecoveryMultiplier;
 
-    /// <returns>coconuts start hanging on branches once the monkey's climbed
-    /// height (as on the trunk height markers) reaches this; u</returns>
-    public float CoconutStartHeightU => coconutStartHeightU;
-
-    /// <returns>chance 0~1 that a segment above the start height grows one
-    /// coconut on a bare branch</returns>
-    public float CoconutSpawnChancePerSegment => coconutSpawnChancePerSegment;
+    /// <returns>x: ramped difficulty; y: chance 0~1 that a segment grows one
+    /// coconut on a bare branch; zero where coconuts do not appear yet</returns>
+    public AnimationCurve CoconutSpawnProbabilityCurve =>
+        coconutSpawnProbabilityCurve;
 
     /// <returns>coconut points as a multiple of
     /// <see cref="ScoreRewardPoints"/></returns>
@@ -164,20 +161,16 @@ public class PlayerBalanceConfig: ScriptableObject {
 
     [Header("Coconut")]
     [SerializeField]
-    [Min(0f)]
     [Tooltip(
-        "coconuts appear once the climbed height on the trunk markers reaches "
-            + "this; u"
+        "x: ramped difficulty; y: chance 0~1 that a segment grows one "
+            + "coconut on a bare branch; 0 below the first appearance"
     )]
-    private float coconutStartHeightU = 150f;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    [Tooltip(
-        "chance a segment above the start height grows one coconut on a "
-            + "bare branch; 0.1 = about 1 per 100 u"
-    )]
-    private float coconutSpawnChancePerSegment = 0.1f;
+    private AnimationCurve coconutSpawnProbabilityCurve = new(
+        new Keyframe(0f, 0f),
+        new Keyframe(0.495f, 0f),
+        new Keyframe(0.55f, 0.1f),
+        new Keyframe(2f, 0.1f)
+    );
 
     [SerializeField]
     [Min(0f)]
@@ -217,10 +210,6 @@ public class PlayerBalanceConfig: ScriptableObject {
         pointsPerMeter = Mathf.Max(0, pointsPerMeter);
         unitsPerMeter = Mathf.Max(0.001f, unitsPerMeter);
         scoreRewardPoints = Mathf.Max(0, scoreRewardPoints);
-        coconutStartHeightU = Mathf.Max(0f, coconutStartHeightU);
-        coconutSpawnChancePerSegment = Mathf.Clamp01(
-            coconutSpawnChancePerSegment
-        );
         coconutScoreMultiplier = Mathf.Max(0f, coconutScoreMultiplier);
         cobraFreezeDurationS = Mathf.Max(0f, cobraFreezeDurationS);
         coconutThrowSpeedU = Mathf.Max(0.1f, coconutThrowSpeedU);

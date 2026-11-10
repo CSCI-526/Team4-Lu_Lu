@@ -51,7 +51,7 @@ public class CoconutSpawner: MonoBehaviour {
     [Header("Testing")]
     [SerializeField]
     [Tooltip(
-        "replace the balance start height & chance w/ the test values below. "
+        "replace the balance chance curve w/ the test values below. "
             + "Tick it b4 Play, only in a dev scene, never in Lv1Scene"
     )]
     private bool useTestOverride = false;
@@ -161,13 +161,21 @@ public class CoconutSpawner: MonoBehaviour {
     private readonly List<ScorePickup> spawnedCoconuts = new();
     private readonly List<BranchController> candidates = new();
 
-    private float StartHeightU => useTestOverride
-        ? testStartHeightU
-        : playerBalanceConfig.CoconutStartHeightU;
-
-    private float SpawnChance => useTestOverride
-        ? testSpawnChance
-        : playerBalanceConfig.CoconutSpawnChancePerSegment;
+    // chance 0~1 of a coconut on a segment whose middle sits at y, read off
+    // the ramp; the test override takes a flat chance instead
+    private float GetSpawnChance(
+        RampedDifficultyManager difficulty,
+        float segmentY
+    ) {
+        if (useTestOverride) {
+            return testSpawnChance;
+        }
+        return Mathf.Clamp01(
+            playerBalanceConfig.CoconutSpawnProbabilityCurve.Evaluate(
+                difficulty.GetRampedValueFromYPosition(segmentY)
+            )
+        );
+    }
 
     // private methods  ########################################################
     // rolls this segment's coconut, the segment already holds its branches
@@ -190,8 +198,16 @@ public class CoconutSpawner: MonoBehaviour {
 
         ClearCoconuts(segment);
 
+        float spawnChance = GetSpawnChance(
+            difficulty,
+            segment.transform.position.y
+        );
+        if (spawnChance <= 0f) {
+            return;
+        }
+
         CollectCandidates(segment, difficulty);
-        if (candidates.Count == 0 || Random.value >= SpawnChance) {
+        if (candidates.Count == 0 || Random.value >= spawnChance) {
             return;
         }
 
@@ -233,13 +249,13 @@ public class CoconutSpawner: MonoBehaviour {
         }
     }
 
-    // live branches of the segment w/o fruit, high enough for a coconut
+    // live branches of the segment w/o fruit; while testing, also high
+    // enough for the test start height
     private void CollectCandidates(
         TreeSegmentController segment,
         RampedDifficultyManager difficulty
     ) {
         candidates.Clear();
-        float startHeightU = StartHeightU;
         foreach (
             BranchController branch
             in segment.GetComponentsInChildren<BranchController>()
@@ -249,7 +265,7 @@ public class CoconutSpawner: MonoBehaviour {
             }
             float climbedU =
                 difficulty.GetClimbedYDistance(branch.transform.position.y);
-            if (climbedU >= startHeightU) {
+            if (!useTestOverride || climbedU >= testStartHeightU) {
                 candidates.Add(branch);
             }
         }
