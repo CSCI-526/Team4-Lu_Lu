@@ -51,6 +51,7 @@ Todo level selection & scene system
 - boss zone: `bossZoneStartU`, `bossTriggerHeightU` & `bossZoneEndU` in `WorldBalanceConfig` set a stretch of the trunk where nothing but the boss fight is generated; ramped difficulty is 0~1 up to the zone start (`preBossRampCurve`), a flat 1 inside, and above 1 after the zone end (`postBossRampCurve`); `RampedDifficultyManager.IsInBossZoneY`; the fight's own spawner stop & non-banana sweep are gone
 - 4 branch kinds: empty, banana, coconut & pineapple branches are separate prefab variants of `BranchWithFruit` (`BranchEmpty`, `BranchBanana`, `BranchCoconut`, `BranchPineapple`), each w/ its own attempt count & chance curve in `WorldBalanceConfig`, rolled by `TreeSegmentController`; `BranchController.Setup` by `BranchKind`, `BranchKind` enum
 - `CoconutSpawner`, the `CoconutSystem` prefab & `coconutSpawnProbabilityCurve` retired for the coconut branch kind; F2 & F3 hack keys spawn the pineapple & coconut branch variants
+- guaranteed fruit branches: 1 pineapple branch at 150 m & 1 coconut branch at 250 m always grow, at exactly that height, on top of the curve rolls & before them so nothing crowds them out (`pineappleGuaranteedHeightU`, `coconutGuaranteedHeightU` in `WorldBalanceConfig`; `TreeSegmentController`); negative turns one off
 
 ##### Wenhai Dong
 
@@ -111,6 +112,10 @@ Todo level selection & scene system
 - height markers show up to 50 u ahead (`showAboveU`) & pulse when the monkey touches their trigger, not at a polled height
 - ramped difficulty runs 0 at the starting zone exit to 1 at the boss fight (500 m), no longer to 1200 u; `RampedDifficultyManager` floors it at 0 instead of clamping to 0~1
 - first appearances follow height: rough bark 100 m, pineapple 150 m, falling cobra 200 m, coconut 250 m, web 300 m, each the zero stretch of its own curve in the ramped difficulty (falling cobra curve linear after its knee)
+
+- first-grab fruit popup also detects an unlearned fruit w/i `fruitPopUpDetectRadiusU` (`PlayerBalanceConfig`) of the monkey, any side of the tree; a fruit in arm reach still wins, a rarer kind outranks a nearer banana (`FruitGrabPrompt`)
+- falling cobra stops against tree branches: drop & slide are swept & halt short of any branch collider, so a branch holds it up; it keeps homing & may slip off the edge (`FallingCobraController`)
+- boss arena fruit shows the watermelon model `SM_Fruits_Watermelon_1` instead of the banana, thrown copy & golden banana word included; grab & throw unchanged (`BossFightController`); credited in `CREDITS.md`
 
 ##### Yuqing Lu
 
