@@ -309,6 +309,14 @@ public class BossFightController: MonoBehaviour {
 
     [Header("Fight Loop")]
     [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "the tail sweep joins the rounds once the king has lost this share "
+            + "of its health, a little b4 the first third"
+    )]
+    private float sweepFromLostShare = 0.2f;
+
+    [SerializeField]
     [Tooltip("rest with the jewel lit between attack rounds; s")]
     private float restS = 2f;
 
@@ -423,6 +431,27 @@ public class BossFightController: MonoBehaviour {
     private float webBelowEntryU = 4f;
 
     [SerializeField]
+    [Tooltip("least gap b/t two webs' centers, so none overlap; u")]
+    private float webSeparationU = 4.5f;
+
+    [SerializeField]
+    [Tooltip("least gap b/t a web & a branch's root on the trunk; u")]
+    private float webBranchGapU = 3f;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip(
+        "the climb's web attempts per 10 u, below the arena floor from the "
+            + "guard up, as it had there b4 the boss zone"
+    )]
+    private int lowWebAttemptsPer10U = 3;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip("chance one such attempt grows a web, the climb's curve there")]
+    private float lowWebChance = 0.44f;
+
+    [SerializeField]
     [Tooltip("in the arena each escape press counts this many times the "
         + "normal, so a web is shaken off within the king's attack gaps")]
     private float webEscapeGainScale = 2f;
@@ -436,6 +465,13 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Tooltip("the tree segments' banana branch prefab")]
     private GameObject bananaBranchPrefab;
+
+    [SerializeField]
+    [Tooltip(
+        "bare branch prefab, the tree's empty kind, for the arena's own "
+            + "obstacle branches"
+    )]
+    private GameObject branchEmptyPrefab;
 
     [SerializeField]
     [Tooltip("mesh shown in place of the banana on every arena fruit, "
@@ -470,9 +506,47 @@ public class BossFightController: MonoBehaviour {
         + "BranchFruitPlacementConfig.branchRadius; u")]
     private float branchRadiusU = 6.6f;
 
+    [Header("Arena Branches")]
+    [SerializeField]
+    [Min(0)]
+    [Tooltip(
+        "branch attempts per 10 u of arena height; the boss zone grows no "
+            + "tree branches, so the fight grows its own, as many as the climb "
+            + "had there b4 the zone"
+    )]
+    private int arenaBranchAttemptsPer10U = 10;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "chance one attempt grows a branch: the climb's branch curve at the "
+            + "fight's height b4 the boss zone"
+    )]
+    private float arenaBranchChance = 0.47f;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "chance an arena branch bears fruit, the climb's banana chance there; "
+            + "it is thrown at the king like any arena fruit, but never grows "
+            + "back"
+    )]
+    private float arenaBranchFruitChance = 0.16f;
+
+    [SerializeField]
+    [Tooltip("least gap b/t two branches, the climb's own; u")]
+    private float arenaBranchSeparationU = 3f;
+
+    [SerializeField]
+    [Tooltip(
+        "no arena branch grows this close to the monkey's start spot, so the "
+            + "fight never opens w/ a hit; u"
+    )]
+    private float arenaBranchStartClearU = 6f;
+
     [SerializeField]
     [Tooltip("a taken banana grows back on its branch after this; s")]
-    private float bananaRespawnS = 6f;
+    private float bananaRespawnS = 9f;
 
     [SerializeField]
     [Tooltip("banana grow-back time as a share of the normal, once 1 and 2 "
@@ -514,23 +588,41 @@ public class BossFightController: MonoBehaviour {
 
     [SerializeField]
     [Min(0)]
-    [Tooltip("rough bark patches on the arena's trunk, slowing the monkey")]
-    private int roughBarkCount = 2;
-
-    [SerializeField]
-    [Tooltip("patch height range; u")]
-    private Vector2 roughBarkHeightRangeU = new Vector2(3f, 4.5f);
-
-    [SerializeField]
-    [Tooltip("patch width round the trunk; deg")]
-    private Vector2 roughBarkArcRangeDeg = new Vector2(70f, 100f);
-
-    [SerializeField]
     [Tooltip(
-        "patches keep this far round the trunk from the monkey's start "
-            + "spot & the banana branches; deg"
+        "rough bark attempts per 10 u of arena height, as the climb's "
+            + "RoughBarkSpawner had there b4 the boss zone"
     )]
-    private float roughBarkClearDeg = 40f;
+    private int roughBarkAttemptsPer10U = 2;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "chance one attempt grows a patch: the climb's rough bark curve at "
+            + "the fight's height b4 the boss zone"
+    )]
+    private float roughBarkChance = 0.35f;
+
+    [SerializeField]
+    [Tooltip("patch height range, the climb's own; u")]
+    private Vector2 roughBarkHeightRangeU = new Vector2(5f, 8.5f);
+
+    [SerializeField]
+    [Tooltip("patch width round the trunk, the climb's own; deg")]
+    private Vector2 roughBarkArcRangeDeg = new Vector2(110f, 170f);
+
+    [Header("Golden Hint")]
+    [SerializeField]
+    [Tooltip("banner title when the golden watermelon shows up")]
+    private string goldenHintTitle = "Golden watermelon!";
+
+    [SerializeField]
+    [Tooltip("line under it")]
+    private string goldenHintLine = "Grab it for a Golden Armor";
+
+    [SerializeField]
+    [Min(0.5f)]
+    [Tooltip("how long that banner stays; s")]
+    private float goldenHintS = 3f;
 
     [Header("Golden Banana")]
     [SerializeField]
@@ -903,6 +995,7 @@ public class BossFightController: MonoBehaviour {
         UpdateCameraFocus();
         if (phase == Phase.Fighting) {
             UpdateReturnToStart();
+            UpdatePendingLine();
             UpdateWarnings();
             UpdateChoiceTags();
             UpdateFirstThrowHint();
@@ -1004,7 +1097,9 @@ public class BossFightController: MonoBehaviour {
         body.SetWeakSpotLit(true);
         // the first try is normal mode; the mode choice comes w/ a revive
         SpawnFruits();
+        SpawnArenaBranches();
         SpawnWebs(webCount);
+        SpawnLowWebs();
         SpawnRoughBark();
         struggle = FindFirstObjectByType<SpiderWebStruggle>();
         if (struggle != null) {
@@ -1024,6 +1119,81 @@ public class BossFightController: MonoBehaviour {
                 "BossFightController:\tboss fight begins at y " + entryY,
                 this
             );
+        }
+    }
+
+    // the boss zone grows no tree branches, but the fight was tuned w/ the
+    // climb's own around it: the same count, spread & fruit, from the guard
+    // up to the nest, grown here once & kept through a restart
+    private void SpawnArenaBranches() {
+        if (branchEmptyPrefab == null || bananaBranchPrefab == null) {
+            return;
+        }
+        float bottomY = entryY - guardDepthU;
+        float topY = coilBottomY - body.HangDepthU - nestClearanceU;
+        List<Vector3> placed = new List<Vector3>();
+        foreach (ArenaFruit fruit in fruits) {
+            if (fruit.branch != null) {
+                placed.Add(fruit.branch.transform.position);
+            }
+        }
+        for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
+            float sliceTopY = Mathf.Min(topY, sliceY + 10f);
+            int attempts = Mathf.RoundToInt(
+                arenaBranchAttemptsPer10U * (sliceTopY - sliceY) / 10f
+            );
+            for (int i = 0; i < attempts; i++) {
+                if (Random.value >= arenaBranchChance) {
+                    continue;
+                }
+                TryAddArenaBranch(sliceY, sliceTopY, placed);
+            }
+        }
+    }
+
+    private void TryAddArenaBranch(
+        float minY, float maxY, List<Vector3> placed
+    ) {
+        for (int attempt = 0; attempt < 30; attempt++) {
+            float angle = Random.Range(0f, 360f);
+            Vector3 position = PointOnTrunk(
+                angle, Random.Range(minY, maxY), branchRadiusU
+            );
+            if (Vector3.Distance(position, entryPosition) < arenaBranchStartClearU) {
+                continue;
+            }
+            bool isClear = true;
+            foreach (Vector3 other in placed) {
+                if (Vector3.Distance(position, other) < arenaBranchSeparationU) {
+                    isClear = false;
+                    break;
+                }
+            }
+            if (!isClear) {
+                continue;
+            }
+            bool hasFruit = Random.value < arenaBranchFruitChance;
+            GameObject branch = Instantiate(
+                hasFruit ? bananaBranchPrefab : branchEmptyPrefab, transform
+            );
+            branch.transform.SetPositionAndRotation(
+                position, Quaternion.Euler(0f, 90f - angle, 0f)
+            );
+            BranchController controller = branch.GetComponent<BranchController>();
+            if (controller != null) {
+                controller.Setup();
+            }
+            if (hasFruit) {
+                ScorePickup pickup =
+                    branch.GetComponentInChildren<ScorePickup>(true);
+                if (pickup != null) {
+                    ApplyWatermelon(pickup.gameObject);
+                    arenaBranchFruits.Add(pickup.gameObject);
+                }
+            }
+            placed.Add(position);
+            arenaBranchSpots.Add(PointOnTrunk(angle, position.y, trunkRadiusU));
+            return;
         }
     }
 
@@ -1186,86 +1356,180 @@ public class BossFightController: MonoBehaviour {
         }
         float topY = body.LowestY - ceilingGapU - 1.5f;
         for (int i = 0; i < count; i++) {
-            for (int attempt = 0; attempt < 12; attempt++) {
-                float angle = Random.Range(0f, 360f);
-                if (IsNearFruit(angle)) {
-                    continue;
+            TryAddWeb(entryY - webBelowEntryU, Mathf.Max(entryY + 1f, topY));
+        }
+    }
+
+    // the climb's own webs below the arena floor, as it had there b4 the
+    // boss zone: a few rolls per 10 u from the guard up to just under the
+    // entry
+    private void SpawnLowWebs() {
+        if (webPrefab == null) {
+            return;
+        }
+        float bottomY = entryY - guardDepthU;
+        float topY = entryY - 3f;
+        for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
+            float sliceTopY = Mathf.Min(topY, sliceY + 10f);
+            int attempts = Mathf.RoundToInt(
+                lowWebAttemptsPer10U * (sliceTopY - sliceY) / 10f
+            );
+            for (int i = 0; i < attempts; i++) {
+                if (Random.value < lowWebChance) {
+                    TryAddWeb(sliceY, sliceTopY);
                 }
-                float y = Random.Range(entryY - webBelowEntryU, Mathf.Max(entryY + 1f, topY));
-                // never right on the monkey
-                // never right on the monkey, nor on its start spot, where
-                // a restart brings it back
-                bool isOnMonkey = IsNearSpot(angle, y, monkey.position)
-                    || IsNearSpot(angle, y, entryPosition);
-                if (isOnMonkey) {
-                    continue;
-                }
-                // as the segments' spawner: the web's face looks away from
-                // the trunk
-                SpiderWebTrap web = Instantiate(
-                    webPrefab,
-                    PointOnTrunk(angle, y, trunkRadiusU + 0.02f),
-                    Quaternion.Euler(0f, -angle, 0f),
-                    transform
-                );
-                webs.Add(web);
-                break;
             }
         }
+    }
+
+    // a web at a free spot b/t minY & maxY: off the fruit's branch lines, the
+    // monkey & its start, & never overlapping another web or a branch
+    private void TryAddWeb(float minY, float maxY) {
+        for (int attempt = 0; attempt < 16; attempt++) {
+            float angle = Random.Range(0f, 360f);
+            if (IsNearFruit(angle)) {
+                continue;
+            }
+            float y = Random.Range(minY, maxY);
+            Vector3 spot = PointOnTrunk(angle, y, trunkRadiusU + 0.02f);
+            if (IsWebCrowded(spot)) {
+                continue;
+            }
+            // never right on the monkey, nor on its start spot, where
+            // a restart brings it back
+            bool isOnMonkey = IsNearSpot(angle, y, monkey.position)
+                || IsNearSpot(angle, y, entryPosition);
+            if (isOnMonkey) {
+                continue;
+            }
+            // as the segments' spawner: the web's face looks away from
+            // the trunk
+            SpiderWebTrap web = Instantiate(
+                webPrefab,
+                PointOnTrunk(angle, y, trunkRadiusU + 0.02f),
+                Quaternion.Euler(0f, -angle, 0f),
+                transform
+            );
+            webs.Add(web);
+            return;
+        }
+    }
+
+    private bool IsWebCrowded(Vector3 spot) {
+        foreach (SpiderWebTrap other in webs) {
+            if (other != null
+                && Vector3.Distance(other.transform.position, spot)
+                    < webSeparationU) {
+                return true;
+            }
+        }
+        foreach (Vector3 branch in arenaBranchSpots) {
+            if (Vector3.Distance(branch, spot) < webBranchGapU) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // the teammates' rough bark, a few patches in the arena that slow the
     // monkey while it touches them; kept off its start spot & the banana
     // branches, & kept through a restart
     private void SpawnRoughBark() {
-        if (roughBarkMaterial == null || roughBarkCount <= 0) {
+        if (roughBarkMaterial == null || roughBarkAttemptsPer10U <= 0) {
             return;
         }
-        float topY = body.LowestY - ceilingGapU;
-        List<float> usedAngles = new List<float>();
-        for (int i = 0; i < roughBarkCount; i++) {
-            for (int attempt = 0; attempt < 16; attempt++) {
-                float height = Random.Range(
-                    roughBarkHeightRangeU.x, roughBarkHeightRangeU.y
-                );
-                float arc = Random.Range(
-                    roughBarkArcRangeDeg.x, roughBarkArcRangeDeg.y
-                );
-                float extent = RoughBarkZone.GetVerticalExtent(height);
-                float minY = entryY - 2f + extent;
-                float maxY = Mathf.Max(minY, topY - extent);
-                float y = Random.Range(minY, maxY);
-                float angle = Random.Range(0f, 360f);
-                if (!IsRoughBarkClear(angle, arc, usedAngles)) {
+        // as the climb's spawner: per 10 u a few rolls, each patch kept
+        // clear of the others' heights, of branches & webs, & here of the
+        // monkey's start spot
+        float bottomY = entryY - guardDepthU;
+        float topY = coilBottomY - body.HangDepthU - nestClearanceU;
+        List<Vector3> patches = new List<Vector3>(); // x angle, y y, z extent
+        Physics.SyncTransforms();
+        for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
+            float sliceTopY = Mathf.Min(topY, sliceY + 10f);
+            for (int i = 0; i < roughBarkAttemptsPer10U; i++) {
+                if (Random.value >= roughBarkChance) {
                     continue;
                 }
-                AddRoughBark(angle, y, height, arc);
-                usedAngles.Add(angle);
-                break;
+                TryAddRoughBark(sliceY, sliceTopY, patches);
             }
+        }
+        // the rolls can come up empty where the monkey fights; one patch
+        // there is sure
+        bool hasPlayPatch = false;
+        foreach (Vector3 patch in patches) {
+            if (patch.y + patch.z > entryY - 2f && patch.y - patch.z < topY) {
+                hasPlayPatch = true;
+            }
+        }
+        if (!hasPlayPatch) {
+            TryAddRoughBark(entryY - 2f, topY, patches);
         }
     }
 
-    private bool IsRoughBarkClear(
-        float angle, float arc, List<float> usedAngles
+    private void TryAddRoughBark(
+        float minY, float maxY, List<Vector3> patches
     ) {
-        float clear = arc * 0.5f + roughBarkClearDeg;
-        if (Mathf.Abs(Mathf.DeltaAngle(angle, AngleOf(entryPosition))) < clear) {
-            return false;
+        for (int attempt = 0; attempt < 16; attempt++) {
+            float height = Random.Range(
+                roughBarkHeightRangeU.x, roughBarkHeightRangeU.y
+            );
+            float arc = Random.Range(
+                roughBarkArcRangeDeg.x, roughBarkArcRangeDeg.y
+            );
+            float extent = RoughBarkZone.GetVerticalExtent(height);
+            float y = Random.Range(minY, maxY);
+            float angle = Random.Range(0f, 360f);
+            bool isClear = true;
+            foreach (Vector3 other in patches) {
+                if (Mathf.Abs(other.y - y) < extent + other.z + 1f) {
+                    isClear = false;
+                    break;
+                }
+            }
+            bool isOnStart = Mathf.Abs(
+                Mathf.DeltaAngle(angle, AngleOf(entryPosition))
+            ) < arc * 0.5f + 15f && Mathf.Abs(y - entryY) < extent + 1f;
+            if (!isClear || isOnStart || IsArcBlocked(angle, y, extent, arc)) {
+                continue;
+            }
+            AddRoughBark(angle, y, height, arc);
+            patches.Add(new Vector3(angle, y, extent));
+            return;
         }
+    }
+
+    private bool IsFruitBranch(Transform part) {
         foreach (ArenaFruit fruit in fruits) {
-            if (fruit.root != null && Mathf.Abs(Mathf.DeltaAngle(
-                angle, AngleOf(fruit.root.transform.position)
-            )) < clear) {
-                return false;
+            if (fruit.branch != null && part.IsChildOf(fruit.branch.transform)) {
+                return true;
             }
         }
-        foreach (float used in usedAngles) {
-            if (Mathf.Abs(Mathf.DeltaAngle(angle, used)) < arc + 20f) {
-                return false;
+        return false;
+    }
+
+    // the climb's check: no fruit or web on the patch's arc
+    private bool IsArcBlocked(float angle, float y, float extent, float arc) {
+        float radius = trunkRadiusU + 0.05f;
+        int steps = Mathf.Max(
+            1, Mathf.CeilToInt(radius * arc * Mathf.Deg2Rad / 0.7f)
+        );
+        for (int i = 0; i <= steps; i++) {
+            float sample = angle + (i / (float)steps - 0.5f) * arc;
+            Vector3 point = PointOnTrunk(sample, y, radius);
+            foreach (Collider hit in Physics.OverlapCapsule(
+                point - Vector3.up * extent, point + Vector3.up * extent, 0.7f,
+                Physics.AllLayers, QueryTriggerInteraction.Collide
+            )) {
+                // an obstacle branch may stick out over a patch; only a
+                // fruit's branch & a web keep it off
+                if (hit.GetComponentInParent<SpiderWebTrap>() != null
+                    || IsFruitBranch(hit.transform)) {
+                    return true;
+                }
             }
         }
-        return true;
+        return false;
     }
 
     // built on the tree segment at its height, so its mesh hugs the
@@ -1428,6 +1692,10 @@ public class BossFightController: MonoBehaviour {
         hud.PopText(
             "Golden watermelon!", golden.root.transform.position, goldenColor
         );
+        // & a banner low on screen, so it is never missed
+        hud.ShowBannerFor(
+            goldenHintTitle, goldenHintLine, goldenColor, goldenHintS
+        );
     }
 
     private void HideGolden() {
@@ -1521,7 +1789,8 @@ public class BossFightController: MonoBehaviour {
             attackQueue.Enqueue(Attack.Minions);
         }
         attackQueue.Enqueue(Attack.Bite);
-        if (Third >= 1) {
+        // the tail joins a little b4 the first third is lost
+        if (LostShare >= sweepFromLostShare) {
             attackQueue.Enqueue(Attack.Sweep);
         }
         attackQueue.Enqueue(Attack.Bite);
@@ -1692,7 +1961,7 @@ public class BossFightController: MonoBehaviour {
         // the king calls its minions once a game, the first time they come
         if (!hasCalledMinions) {
             hasCalledMinions = true;
-            SayNow(minionCallLine, true);
+            SayNow(minionCallLine, LinePriority.Key);
         }
         waveIndex = 0;
         StartWave();
@@ -1758,7 +2027,7 @@ public class BossFightController: MonoBehaviour {
             isMinionStreaming = true;
             if (!hasCalledMinions) {
                 hasCalledMinions = true;
-                SayNow(minionCallLine, true);
+                SayNow(minionCallLine, LinePriority.Key);
             }
             StartWave();
             return;
@@ -2063,6 +2332,8 @@ public class BossFightController: MonoBehaviour {
         isFinaleSweepNext = false;
         hasHit = false;
         hasThrown = false;
+        // a new try, so the minion call is heard again
+        hasCalledMinions = false;
         isEasy = false;
         maxHealth = worldBalanceConfig.BossMaxHealth;
         health = maxHealth;
@@ -2090,6 +2361,7 @@ public class BossFightController: MonoBehaviour {
         }
         SpawnChoices();
         SpawnWebs(webCount);
+        SpawnLowWebs();
         hud.Flash(goldenColor);
         hud.ShowBannerFor(armorIntroTitle, ChoiceLine, goldenColor, 0f);
         if (Debug.isDebugBuild) {
@@ -2194,7 +2466,7 @@ public class BossFightController: MonoBehaviour {
             return;
         }
         nextPushTime = Time.time + pushCooldownS;
-        SayNow(approachLine, false);
+        SayNow(approachLine, LinePriority.Urgent);
         if (body.IsStriking) {
             KnockDown(body.HeadCollider);
             return;
@@ -2407,6 +2679,11 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
+    /// <returns>share of its health the king has lost, 0~1</returns>
+    private float LostShare => maxHealth > 0
+        ? 1f - health / (float)maxHealth
+        : 0f;
+
     /// <returns>how many thirds of its health the king has lost: 0, 1, 2
     /// </returns>
     private int Third {
@@ -2422,6 +2699,7 @@ public class BossFightController: MonoBehaviour {
         ProgressStore.MarkBossBeaten();
         ClearMarkers();
         ClearAttackObjects();
+        RemoveArenaFruit();
         if (monkeyController != null) {
             monkeyController.ClearHeightCeiling();
         }
@@ -2595,7 +2873,28 @@ public class BossFightController: MonoBehaviour {
     }
 
     // a taken banana grows back on its branch
+    // the arena's watermelons belong to the fight: once it is won they go,
+    // their branches left bare, so none is eaten like a banana after
+    private void RemoveArenaFruit() {
+        isArenaFruitGone = true;
+        foreach (ArenaFruit fruit in fruits) {
+            if (fruit.root != null) {
+                ForgetFruits(fruit.root);
+                fruit.root.SetActive(false);
+            }
+        }
+        foreach (GameObject melon in arenaBranchFruits) {
+            if (melon != null) {
+                ForgetFruits(melon);
+                melon.SetActive(false);
+            }
+        }
+    }
+
     private void UpdateFruits() {
+        if (isArenaFruitGone) {
+            return;
+        }
         for (int i = 0; i < fruits.Count; i++) {
             ArenaFruit fruit = fruits[i];
             if (fruit.isGolden || fruit.root.activeSelf
@@ -2846,20 +3145,47 @@ public class BossFightController: MonoBehaviour {
         if (line == lastLine && Time.time < nextSameLineTime) {
             return;
         }
-        SayNow(line, false);
+        SayNow(line, LinePriority.Normal);
     }
 
     // a key line holds the bubble for a while, so no other line cuts it off
-    private void SayNow(string line, bool isKeyLine) {
-        if (Time.time < keyLineEndTime) {
+    // "Stay away from me!" comes first, then the minion call, then the rest;
+    // a held line blocks lower ones, & a minion call cut short by the push
+    // line is said again right after it
+    private void SayNow(string line, LinePriority priority) {
+        bool isHeld = Time.time < keyLineEndTime;
+        if (isHeld && priority < heldPriority) {
+            if (priority == LinePriority.Key) {
+                pendingKeyLine = line;
+            }
             return;
+        }
+        if (isHeld && heldPriority == LinePriority.Key
+            && priority == LinePriority.Urgent) {
+            pendingKeyLine = lastLine;
         }
         lastLine = line;
         nextSameLineTime = Time.time + speechCooldownS;
-        if (isKeyLine) {
-            keyLineEndTime = Time.time + keyLineHoldS;
-        }
+        heldPriority = priority;
+        keyLineEndTime = priority > LinePriority.Normal
+            ? Time.time + keyLineHoldS
+            : 0f;
         hud.Say(line);
+    }
+
+    private void UpdatePendingLine() {
+        if (pendingKeyLine == null || Time.time < keyLineEndTime) {
+            return;
+        }
+        string line = pendingKeyLine;
+        pendingKeyLine = null;
+        SayNow(line, LinePriority.Key);
+    }
+
+    private enum LinePriority {
+        Normal,
+        Key, // the minion call
+        Urgent, // "Stay away from me!"
     }
 
     // horizontal distance from the trunk axis to the monkey
@@ -3011,6 +3337,8 @@ public class BossFightController: MonoBehaviour {
     private bool biteStarted;
     private int waveIndex; // minion wave under way
     private bool hasCalledMinions; // the minion call was said this game
+    private LinePriority heldPriority; // of the line held in the bubble
+    private string pendingKeyLine; // a key line to say once the bubble frees
     private float waveTimeS; // time into the minion wave
     private Vector3 biteSpot; // world point the running bite dives at
     private bool tailHit;
@@ -3035,6 +3363,9 @@ public class BossFightController: MonoBehaviour {
     private bool isFinisherWin;
     private float finisherTimeS; // real time into the finisher; s
     private readonly List<SpiderWebTrap> webs = new List<SpiderWebTrap>();
+    private readonly List<Vector3> arenaBranchSpots = new List<Vector3>();
+    private readonly List<GameObject> arenaBranchFruits = new List<GameObject>();
+    private bool isArenaFruitGone; // the fight is won, its fruit taken away
     private int goldenIndex = -1; // the golden banana in the fruit list
     private float nextGoldenTime; // Time.time the next visit starts
     private float goldenHideTime; // Time.time the current visit ends

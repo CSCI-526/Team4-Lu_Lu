@@ -804,5 +804,5 @@ MonoBehaviour:
   bossZoneStartU: 500
   bossTriggerHeightU: 525
   bossZoneEndU: 550
-  bossMaxHealth: 10
+  bossMaxHealth: 12
   bossBananaDamage: 1
