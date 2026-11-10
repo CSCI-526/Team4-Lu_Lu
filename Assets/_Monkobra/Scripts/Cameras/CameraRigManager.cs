@@ -25,6 +25,7 @@ public class CameraRigManager: MonoBehaviour {
     public enum ShotKind {
         Coconut,
         CobraAlert,
+        Leap,
     }
 
     // Public Methods  #########################################################
@@ -114,6 +115,10 @@ public class CameraRigManager: MonoBehaviour {
     [SerializeField]
     private CameraShotTarget cobraTarget;
 
+    [Tooltip("shot that looks up and pulls back during a pineapple leap")]
+    [SerializeField]
+    private CinemachineCamera leapCamera;
+
     [Tooltip("the camera anchor, the monkey's height for the proximity alert")]
     [SerializeField]
     private Transform anchor;
@@ -154,6 +159,12 @@ public class CameraRigManager: MonoBehaviour {
                 this
             );
         }
+        if (leapCamera == null) {
+            Debug.LogWarning(
+                "CameraRigManager:\tmust assign Inspector Field: leapCamera",
+                this
+            );
+        }
         if (cobraTarget == null) {
             Debug.LogWarning(
                 "CameraRigManager:\tmust assign Inspector Field: "
@@ -170,6 +181,16 @@ public class CameraRigManager: MonoBehaviour {
 
     private void Start() {
         SubscribeCobra();
+        game = GameController.I;
+        if (game == null) {
+            Debug.LogWarning(
+                "CameraRigManager:\tfail to get singleton: GameController, "
+                    + "no leap shot",
+                this
+            );
+        } else {
+            game.LeapChanged += OnLeapChanged;
+        }
         coconuts = CoconutManager.I;
         if (coconuts == null) {
             Debug.LogWarning(
@@ -195,6 +216,9 @@ public class CameraRigManager: MonoBehaviour {
 
     private void OnDestroy() {
         UnsubscribeCobra();
+        if (game != null) {
+            game.LeapChanged -= OnLeapChanged;
+        }
         if (coconuts != null) {
             coconuts.Thrown -= OnCoconutThrown;
             coconuts.Landed -= OnCoconutLanded;
@@ -234,6 +258,15 @@ public class CameraRigManager: MonoBehaviour {
         }
     }
 
+    // the leap shot lasts as long as the leap, capped by its duration
+    private void OnLeapChanged(bool isLeaping) {
+        if (isLeaping) {
+            RequestShot(ShotKind.Leap);
+        } else {
+            ReleaseShot(ShotKind.Leap);
+        }
+    }
+
     // a cobra event worth a look, but not while it guards the boss arena
     private void OnCobraChaseStarted() {
         RequestCobraAlert();
@@ -267,6 +300,7 @@ public class CameraRigManager: MonoBehaviour {
         new ShotState[System.Enum.GetValues(typeof(ShotKind)).Length];
     private ShotKind? liveKind;
     private CoconutManager coconuts;
+    private GameController game;
     private CobraMotor cobra;
     private HitBranchSensor hitSensor;
 
@@ -343,6 +377,7 @@ public class CameraRigManager: MonoBehaviour {
         return kind switch {
             ShotKind.Coconut => config.CoconutShot,
             ShotKind.CobraAlert => config.CobraAlertShot,
+            ShotKind.Leap => config.LeapShot,
             _ => null,
         };
     }
@@ -351,6 +386,7 @@ public class CameraRigManager: MonoBehaviour {
         return kind switch {
             ShotKind.Coconut => coconutCamera,
             ShotKind.CobraAlert => cobraAlertCamera,
+            ShotKind.Leap => leapCamera,
             _ => null,
         };
     }
