@@ -16,9 +16,13 @@ todo upd gdd
 
 ### Changed
 
+- great cobra base speed scales by its gap below the monkey: a far-behind cobra runs faster, a close one slower, via `cobraDistanceSpeedCurve` in `CobraBalanceConfig`; surge & exit boost add on top
+
 ### Deprecated
 
 ### Removed
+
+- great cobra close-range slow-down (`slowNearPlayer`, `slowDownDistance`, `minimumSpeedShare`) ⇐ the distance curve replaces it
 
 ### Fixed
 
