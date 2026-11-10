@@ -43,7 +43,7 @@ monkobra/
 ├── builds/            local build output of all three builds, ignored by git
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
-│   │   ├── Scenes/    TitleScene, LevelSelectScene, Lv1Scene, EndlessScene; the gameplay scenes are root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
+│   │   ├── Scenes/    TitleScene, LevelSelectScene, FullPlayScene, EndlessScene; the gameplay scenes are root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, ItemPineapple/, LevelSelectScreen/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/, SceneFlow/ (+ `Editor/`), Scoring/, TitleScreen/, UI/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
 │   │   ├── Prefabs/   Analytics/, Cameras/, Environment/, GameController/, ItemCoconut/, ItemPineapple/, LevelSelectScreen/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup), TitleScreen/, TutorialScreen/, UI/, World/ (light, volume, event system, `MenuEventSystem`, `MenuCamera`)
@@ -63,9 +63,9 @@ monkobra/
 
 ## Scene Hierarchy
 
-Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `Lv1Scene` (the normal run), `EndlessScene`. The two menu scenes are shells of `MenuCamera`, `MenuEventSystem`, their screen prefab (`TitleScreen` or `LevelSelectScreen`) and `Analytics`; the menus read the `InputSystem_Actions` UI map through their own event system, so the gameplay `EventSystem` stays unchanged. `EndlessScene` is a copy of `Lv1Scene` whose only difference is the `GameController.runMode` override (`Endless`), so a gameplay edit inside a shared prefab reaches both scenes, while the plain `Envs` object and the scene-level overrides exist once per scene and are kept in step by hand.
+Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `FullPlayScene` (the normal run), `EndlessScene`. The two menu scenes are shells of `MenuCamera`, `MenuEventSystem`, their screen prefab (`TitleScreen` or `LevelSelectScreen`) and `Analytics`; the menus read the `InputSystem_Actions` UI map through their own event system, so the gameplay `EventSystem` stays unchanged. `EndlessScene` is a copy of `FullPlayScene` whose only difference is the `GameController.runMode` override (`Endless`), so a gameplay edit inside a shared prefab reaches both scenes, while the plain `Envs` object and the scene-level overrides exist once per scene and are kept in step by hand.
 
-`Lv1Scene`'s root is 9 prefab instances, so teammates edit different files, plus two plain scene objects: `Envs` and a Cinemachine `Target Group`. `Envs`, `Entities` and `UI` nest one prefab per unit. `Envs` has no prefab of its own, so adding or removing one of its children edits `Lv1Scene.unity` itself.
+`FullPlayScene`'s root is 9 prefab instances, so teammates edit different files, plus two plain scene objects: `Envs` and a Cinemachine `Target Group`. `Envs`, `Entities` and `UI` nest one prefab per unit. `Envs` has no prefab of its own, so adding or removing one of its children edits `FullPlayScene.unity` itself.
 
 | Root | Nests |
 | --- | --- |
@@ -226,7 +226,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while stamina is low | [TDD](docs/monkobra-tdd.md#stamina) |
 | `UI/FruitFlyEffect`, `UI/FruitFlyTarget` | singleton on `InGameHUD/FruitFlyLayer`: flies a grabbed fruit's sprite to the stamina bar, a top-right anchor, or the monkey, then runs the grab's arrival callback | [Grab](docs/grab-doc.md#fruit-fly) |
 | `UI/FruitFlyConfig` | ScriptableObject (`Settings/UI/FruitFlyConfig.asset`): flight duration, look, and easing | [Grab](docs/grab-doc.md#fruit-fly) |
-| `UI/ScreensManager`, `UI/ProgressBarWidget`, `UI/ScoreWidget`, `LoseScreen/LoseScreen` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress, with the surge and chase-start warnings handed to `PopUpManager`, red cobra marker and the cobra gap in world units labelled m, score label, final height, score, and banana count on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
+| `UI/ScreensManager`, `UI/ProgressBarWidget`, `UI/ScoreWidget`, `LoseScreen/LoseScreen` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress, with the surge and chase-start warnings handed to `PopUpManager`, red cobra marker and the cobra gap in world units labelled m, score label, final height, score, and the banana, pineapple, and coconut count rows (`LoseScreen/LoseScreenCountRow`, icon plus "x12", from `ScoreManager` counts) on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/CoconutWidget` | on `InGameHUD/CoconutHUD`, inactive until the first coconut: icon, count, and a double-tap hint until the first use of the session | [Grab](docs/grab-doc.md#coconut) |
 | `UI/FreezeTimerWidget` | on the `FreezeTimerHUD` prefab under `_UI`, inactive except while the cobra is frozen: countdown and shrinking bar | [Grab](docs/grab-doc.md#coconut) |
 | `UI/CoconutMessageWidget` | on `InGameHUD/CoconutMessage`: turns the coconut events into `PopUpManager.Show` calls for the first coconut, a freeze, a refused freeze, and the thaw | [Grab](docs/grab-doc.md#coconut) |

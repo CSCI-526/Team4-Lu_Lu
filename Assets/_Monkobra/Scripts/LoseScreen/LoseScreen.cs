@@ -2,13 +2,14 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Fills the lose screen's final height, final score, and banana collected
-/// labels each time the screen is enabled. Attach to the lose screen panel.
+/// Fills the lose screen's final height and final score labels, and the
+/// banana, pineapple, and coconut count rows, each time the screen is
+/// enabled. Attach to the lose screen panel.
 /// <para>
 /// Height is the highest point reached, read from
 /// <see cref="RampedDifficultyManager.HighestPlayerClimbedYDistance"/>, shown
-/// as whole units. Score is <see cref="ScoreManager.TotalScore"/>, bananas
-/// <see cref="ScoreManager.BananaCollectedCount"/>.
+/// as whole units. Score is <see cref="ScoreManager.TotalScore"/>. Each fruit
+/// row shows its <see cref="ScoreManager"/> collected count.
 /// </para>
 /// </summary>
 public class LoseScreen: MonoBehaviour {
@@ -22,8 +23,16 @@ public class LoseScreen: MonoBehaviour {
     private TMP_Text finalScoreText;
 
     [SerializeField]
-    [Tooltip("label for the banana collected count")]
-    private TMP_Text bananaCollectedText;
+    [Tooltip("icon and count row for the bananas collected")]
+    private LoseScreenCountRow bananaRow;
+
+    [SerializeField]
+    [Tooltip("icon and count row for the pineapples collected")]
+    private LoseScreenCountRow pineappleRow;
+
+    [SerializeField]
+    [Tooltip("icon and count row for the coconuts collected")]
+    private LoseScreenCountRow coconutRow;
 
     [SerializeField]
     [Tooltip("text before the final height number")]
@@ -32,10 +41,6 @@ public class LoseScreen: MonoBehaviour {
     [SerializeField]
     [Tooltip("text before the final score number")]
     private string scorePrefix = "Final Score: ";
-
-    [SerializeField]
-    [Tooltip("text before the banana collected number")]
-    private string bananaPrefix = "Banana Collected: ";
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -54,10 +59,21 @@ public class LoseScreen: MonoBehaviour {
                 this
             );
         }
-        if (bananaCollectedText == null) {
+        if (bananaRow == null) {
             Debug.LogError(
-                "LoseScreen:\tmust assign Inspector Field: "
-                    + "Banana Collected Text",
+                "LoseScreen:\tmust assign Inspector Field: Banana Row",
+                this
+            );
+        }
+        if (pineappleRow == null) {
+            Debug.LogError(
+                "LoseScreen:\tmust assign Inspector Field: Pineapple Row",
+                this
+            );
+        }
+        if (coconutRow == null) {
+            Debug.LogError(
+                "LoseScreen:\tmust assign Inspector Field: Coconut Row",
                 this
             );
         }
@@ -66,7 +82,7 @@ public class LoseScreen: MonoBehaviour {
     private void OnEnable() {
         RefreshFinalHeight();
         RefreshFinalScore();
-        RefreshBananaCollected();
+        RefreshFruitCounts();
     }
 
     // private methods  ########################################################
@@ -115,23 +131,32 @@ public class LoseScreen: MonoBehaviour {
         }
     }
 
-    private void RefreshBananaCollected() {
-        if (bananaCollectedText == null) {
-            return;
-        }
+    private void RefreshFruitCounts() {
         if (ScoreManager.I == null) {
             Debug.LogWarning(
-                "LoseScreen:\tScoreManager not found",
+                "LoseScreen:	ScoreManager not found",
                 this
             );
             return;
         }
 
-        int count = ScoreManager.I.BananaCollectedCount;
-        bananaCollectedText.text = bananaPrefix + count.ToString("N0");
+        ScoreManager score = ScoreManager.I;
+        if (bananaRow != null) {
+            bananaRow.SetCount(score.BananaCollectedCount);
+        }
+        if (pineappleRow != null) {
+            pineappleRow.SetCount(score.PineappleCollectedCount);
+        }
+        if (coconutRow != null) {
+            coconutRow.SetCount(score.CoconutCollectedCount);
+        }
 
         if (Debug.isDebugBuild) {
-            Debug.Log($"LoseScreen:\tbanana collected {count}");
+            Debug.Log(
+                $"LoseScreen:	banana {score.BananaCollectedCount}, "
+                    + $"pineapple {score.PineappleCollectedCount}, "
+                    + $"coconut {score.CoconutCollectedCount}"
+            );
         }
     }
 }

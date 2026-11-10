@@ -11,6 +11,8 @@ public class ScoreManager: MonoBehaviour {
     public long RewardScore { get; private set; }
     public int BananaCollectedCount { get; private set; }
     public int CoconutCollectedCount { get; private set; }
+    // pineapple grabs, counted when each leap starts
+    public int PineappleCollectedCount { get; private set; }
     // part of RewardScore that came from coconuts
     public long CoconutRewardScore { get; private set; }
     public double HighestClimbedMeters => highestClimbedUnits / unitsPerMeter;
@@ -101,7 +103,12 @@ public class ScoreManager: MonoBehaviour {
         RewardScore = 0;
         BananaCollectedCount = 0;
         CoconutCollectedCount = 0;
+        PineappleCollectedCount = 0;
         CoconutRewardScore = 0;
+        leapController = FindFirstObjectByType<PineappleLeapController>();
+        if (leapController != null) {
+            leapController.Begun += OnPineappleLeapBegun;
+        }
         isRunEnded = GameController.I != null
             && GameController.I.State == GameState.Lost;
         hasStarted = true;
@@ -121,6 +128,9 @@ public class ScoreManager: MonoBehaviour {
     }
 
     private void OnDestroy() {
+        if (leapController != null) {
+            leapController.Begun -= OnPineappleLeapBegun;
+        }
         if (I == this) {
             I = null;
         }
@@ -132,8 +142,16 @@ public class ScoreManager: MonoBehaviour {
     private double highestClimbedUnits;
     private double unitsPerMeter = 1d;
     private int pointsPerMeter;
+    private PineappleLeapController leapController;
 
     // private methods  ########################################################
+    // each pineapple grab starts 1 leap
+    private void OnPineappleLeapBegun() {
+        if (hasStarted && !isRunEnded) {
+            PineappleCollectedCount++;
+        }
+    }
+
     private void SampleHeight() {
         if (RampedDifficultyManager.I == null) {
             return;

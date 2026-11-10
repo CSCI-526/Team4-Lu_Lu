@@ -1,7 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-BUG spider web occurs in boss zone
 todo upd gdd
 bug endless mode need to start w/ full heath & no starting zone
 -->

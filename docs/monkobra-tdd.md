@@ -37,13 +37,13 @@ A system gets its own document when it spans several scripts and carries rules a
 | --- | --- |
 | `TitleScene` | the startup scene of every build: any key or click opens the level selection |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
-| `Lv1Scene` | the normal run; its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
-| `EndlessScene` | a copy of `Lv1Scene` with `GameController.runMode` set to `Endless` |
+| `FullPlayScene` | the normal run; its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `EndlessScene` | a copy of `FullPlayScene` with `GameController.runMode` set to `Endless` |
 
 ```mermaid
 graph LR
   Title[TitleScene] -->|any key| Select[LevelSelectScene]
-  Select -->|Normal Play| Full[Lv1Scene]
+  Select -->|Normal Play| Full[FullPlayScene]
   Select -->|Endless Mode, unlocked| Endless[EndlessScene]
   Select -->|Back, Esc| Title
   Full -->|R restarts| Full
@@ -56,7 +56,7 @@ Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, from the `runMode`
 
 Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `BossFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Unlock Endless` and `Monkobra/Reset Progress` flip it for testing.
 
-Personal copies of `Lv1Scene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
+Personal copies of `FullPlayScene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
 The folder layout and a script-by-script index are in [CONTEXT.md](../CONTEXT.md#repository-layout).
 
@@ -190,11 +190,11 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`, whic
 - Extent: `TreeManager` (singleton `I`) holds `MinY` and `MaxY`, 0 and 100 by default, from the finite tree; nothing reads them any more; `FallingCobraSpawner` takes each segment's pivot as the trunk axis
 - Climb Height: heights that drive difficulty are measured above the monkey's start y by `RampedDifficultyManager.GetClimbedYDistance`: branch density, banana chance, web chance, falling cobra chance, the score, and the trunk height markers. Nothing shifts the world origin; if something ever does, it only has to move `PlayerGameStartYPosition` along
 - Segments: each `TreeSegmentController` places branches on itself in `Start` and in every `Restart` ([Mobs](mob-doc.md#placement)), then raises the static `BranchesGenerated`, which `SpiderWebSpawner` answers with webs ([Mobs](mob-doc.md#placement-1)) and `FallingCobraSpawner` with falling cobras ([Mobs](mob-doc.md#spawning))
-- Pool: `DynamicTreeSegmentPool` sits on an empty object, finds the `Player`-tagged object once, and instantiates `segmentCount` copies of `segmentPrefab` end to end, the first (lowest) one created at the world height `firstSegmentY`. It keeps them in a FIFO: only when the stack top is less than `lookAheadU` above the player, and the lowest segment lies wholly under the player, that lowest one is moved over the stack top by `TreeSegmentController.Restart`, which clears its branches and webs and rolls branches again; the webs follow through `BranchesGenerated`, the pool never calls the spawner. Its `mockTree` field names an editor-only stand-in, `Envs/Tree` in `Lv1Scene`, that is deactivated at runtime, so nothing that must run may sit under it
+- Pool: `DynamicTreeSegmentPool` sits on an empty object, finds the `Player`-tagged object once, and instantiates `segmentCount` copies of `segmentPrefab` end to end, the first (lowest) one created at the world height `firstSegmentY`. It keeps them in a FIFO: only when the stack top is less than `lookAheadU` above the player, and the lowest segment lies wholly under the player, that lowest one is moved over the stack top by `TreeSegmentController.Restart`, which clears its branches and webs and rolls branches again; the webs follow through `BranchesGenerated`, the pool never calls the spawner. Its `mockTree` field names an editor-only stand-in, `Envs/Tree` in `FullPlayScene`, that is deactivated at runtime, so nothing that must run may sit under it
 
 ## Stamina
 
-`StaminaBarController` is a singleton `Slider` that reads `PlayerBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `LowStaminaMoveAttempted`, which `MonkeyController` triggers through `NotifyMoveAttempt` while an input is held and stamina is below the `lowStaminaFraction` field of `StaminaBarController` (10% by default, 20% on the `Lv1Scene` instance) of the maximum. That threshold is feedback only and sits outside `PlayerBalanceConfig`; only an empty bar changes movement.
+`StaminaBarController` is a singleton `Slider` that reads `PlayerBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `LowStaminaMoveAttempted`, which `MonkeyController` triggers through `NotifyMoveAttempt` while an input is held and stamina is below the `lowStaminaFraction` field of `StaminaBarController` (10% by default, 20% on the `FullPlayScene` instance) of the maximum. That threshold is feedback only and sits outside `PlayerBalanceConfig`; only an empty bar changes movement.
 
 - Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways; it is the only drain, nothing lowers the bar on a timer or while the monkey stands still
 - Restore: `AddStaminaByFruit` adds the per-banana amount, capped at the maximum, when the grabbed fruit's flight lands, so the bar rises and punches together ([Grab System](grab-doc.md#fruit-fly))
@@ -290,7 +290,7 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 
 Every center message is a `PopUp` variant; the rules, the parts, and how to add one are in [PopUps](pop-up-doc.md).
 
-The tutorial in `Lv1Scene` uses editable uGUI Images under `TutorialScreen/KeyboardControls` for the WASD cluster and a wide Space key. Thin white Image rectangles form each outline without a sprite dependency; the WASD keys also have inset keycap frames and diagonal bevel lines. Each key has an explicit, stretched Background child with a dark gray Image (alpha 0.82), ordered before its outlines and label to preserve contrast over the white overlay. Letters are white, and `space` sits inside the long rectangular key at the bottom left. Its uGUI Text captions show `Move`, `Grab Banana`, and `Hold to reach, release to grab`; the existing start prompt remains below them. The original translucent white overlay (alpha 0.392) washes out the game behind the tutorial to indicate that the run has not started. `ScreensManager` shows and hides the whole panel as before.
+The tutorial in `FullPlayScene` uses editable uGUI Images under `TutorialScreen/KeyboardControls` for the WASD cluster and a wide Space key. Thin white Image rectangles form each outline without a sprite dependency; the WASD keys also have inset keycap frames and diagonal bevel lines. Each key has an explicit, stretched Background child with a dark gray Image (alpha 0.82), ordered before its outlines and label to preserve contrast over the white overlay. Letters are white, and `space` sits inside the long rectangular key at the bottom left. Its uGUI Text captions show `Move`, `Grab Banana`, and `Hold to reach, release to grab`; the existing start prompt remains below them. The original translucent white overlay (alpha 0.392) washes out the game behind the tutorial to indicate that the run has not started. `ScreensManager` shows and hides the whole panel as before.
 
 `Fonts/UI/MonkobraTutorial-SemiBold.ttf` is a renamed, static weight-600 subset of [Noto Sans TC](https://github.com/google/fonts/tree/main/ofl/notosanstc), distributed with its SIL Open Font License in `Fonts/UI/OFL.txt`. It embeds printable ASCII and a small set of Chinese glyphs, so the tutorial renders in WebGL without system fonts. Wording that uses other characters requires extending the font subset or supplying a font with those glyphs. The subset has no em dash `—`; the TMP `LiberationSans SDF` atlas has one, so the low-stamina hint uses that font.
 

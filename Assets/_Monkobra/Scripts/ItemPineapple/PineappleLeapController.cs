@@ -26,6 +26,13 @@ public class PineappleLeapController: MonoBehaviour {
     /// </summary>
     public event System.Action Landed;
 
+    /// <summary>
+    /// Raised once each time a pineapple grab starts a leap, unlike
+    /// <see cref="GameController.LeapChanged"/>, which the boss fight also
+    /// raises.
+    /// </summary>
+    public event System.Action Begun;
+
     // Public Methods  #########################################################
     /// <summary>Starts the leap, unless <see cref="CanBegin"/> is false.
     /// </summary>
@@ -47,6 +54,7 @@ public class PineappleLeapController: MonoBehaviour {
                 leapConfig.ArmExtendS
             );
         }
+        Begun?.Invoke();
         if (Debug.isDebugBuild) {
             Debug.Log("PineappleLeapController:\thands up", this);
         }

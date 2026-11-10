@@ -10,7 +10,7 @@ public static class SceneNames {
     // Public Members  #########################################################
     public const string TITLE = "TitleScene";
     public const string LEVEL_SELECT = "LevelSelectScene";
-    public const string FULL = "Lv1Scene";
+    public const string FULL = "FullPlayScene";
     public const string ENDLESS = "EndlessScene";
 
     /// <summary>raised just before any load through <see cref="Load"/>, while

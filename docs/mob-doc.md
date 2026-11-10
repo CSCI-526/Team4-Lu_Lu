@@ -104,11 +104,11 @@ While the monkey moves across rough bark (`MonkeyController.RoughBarkSpeedScale`
 
 ## Falling Cobra
 
-A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree.
+A hazard from above, spawned in `FullPlayScene` as the monkey climbs the endless tree.
 
 ### Spawning
 
-`FallingCobraSpawner` sits on the active `DynamicTreeSegmentPool` object in `Lv1Scene`, never under the pool's mock tree, which the pool deactivates at runtime (it logs a warning if one is left there). Like the web spawner it listens to `TreeSegmentController.BranchesGenerated`, so each roll of a segment's branches gets exactly one roll of falling cobras. Only the first enabled spawner listens.
+`FallingCobraSpawner` sits on the active `DynamicTreeSegmentPool` object in `FullPlayScene`, never under the pool's mock tree, which the pool deactivates at runtime (it logs a warning if one is left there). Like the web spawner it listens to `TreeSegmentController.BranchesGenerated`, so each roll of a segment's branches gets exactly one roll of falling cobras. Only the first enabled spawner listens.
 
 - Count: a fixed `fallingCobraAttemptCount` per segment (`CobraBalanceConfig`); each attempt samples `fallingCobraSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
 - Spot: a cobra hangs on a ring of `spawnRadiusU` about the segment's pivot, on the trunk axis, at a random angle and a random height that keeps the whole snake inside its segment. A spot too close to another cobra of the segment is retried, then skipped
@@ -133,7 +133,7 @@ A static trap on the trunk that holds the monkey in place while the cobra keeps 
 
 ### Placement
 
-`SpiderWebSpawner` sits on `Envs/DynamicTreeSegmentPool` in `Lv1Scene`, and on any object that stays active from scene load, never under the pool's mock tree, which `DynamicTreeSegmentPool` deactivates at runtime (it logs a warning if one is left there). It listens to `TreeSegmentController.BranchesGenerated`, raised each time a segment has rolled its branches, on its first `Start` and after every `DynamicTreeSegmentPool` restart, so each roll of branches gets exactly one roll of webs. Only the first enabled spawner listens.
+`SpiderWebSpawner` sits on `Envs/DynamicTreeSegmentPool` in `FullPlayScene`, and on any object that stays active from scene load, never under the pool's mock tree, which `DynamicTreeSegmentPool` deactivates at runtime (it logs a warning if one is left there). It listens to `TreeSegmentController.BranchesGenerated`, raised each time a segment has rolled its branches, on its first `Start` and after every `DynamicTreeSegmentPool` restart, so each roll of branches gets exactly one roll of webs. Only the first enabled spawner listens.
 
 - Count: a fixed `webAttemptCount` per segment (`WorldBalanceConfig`); each attempt samples `webSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
 - Spot: a web lies flat on its segment's bark facing outward. A spot is dropped if it is too close to another live web, or its trigger volume (plus clearance) overlaps a branch or fruit. After the retry cap the web is skipped rather than placed overlapping
@@ -157,11 +157,11 @@ The struggle suspends interact because of a shared Space binding, see [Input](mo
 
 ### Testing
 
-Webs are in `Lv1Scene` and follow the web probability curve. For a quick test select `Envs/DynamicTreeSegmentPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Spawn Chance per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/Environment/WorldBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
+Webs are in `FullPlayScene` and follow the web probability curve. For a quick test select `Envs/DynamicTreeSegmentPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Spawn Chance per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/Environment/WorldBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
 
 ## Cobra King (Boss)
 
-The `Boss/BossFight` prefab sits at the root of `Lv1Scene` (and of the dev scene `devWenhaiBossFightScene`); everything in the arena is built at runtime around the trunk.
+The `Boss/BossFight` prefab sits at the root of `FullPlayScene`; everything in the arena is built at runtime around the trunk.
 
 - Trigger: once the monkey has climbed `bossTriggerHeightU` (`WorldBalanceConfig`, the number on the trunk height markers, inside the boss zone between `bossZoneStartU` and `bossZoneEndU`) in Playing, the screen flashes white and the run enters the boss arena. The zone sits well past the basic run's whole cast, so a player has met and practised each hazard first: webs, pineapples, falling cobras, coconuts and rough bark, each first appearing where its own curve leaves zero; lower the 3 heights in the asset to test
 - Bare Zone: from `bossZoneStartU` to `bossZoneEndU` nothing but the fight is generated: branches of every kind, webs, falling cobras and rough bark each skip any spot whose own height falls in the zone (`RampedDifficultyManager.IsInBossZoneY`), so the trunk is bare there and the arena's own branches only ever bear bananas; the ramp holds its top value through the zone and ordinary generation resumes above the zone end
@@ -226,4 +226,4 @@ UI (`BossFightHud`) is built at runtime on the root Canvas, under the screens: e
 
 - Mob tuning for the web escape and web geometry lives on scene components, not in a shared ScriptableObject; only the web spawn rates and attempt counts are in `WorldBalanceConfig`, and the falling cobra and great cobra numbers in `CobraBalanceConfig`
 - Stamina is not linked to branch hits
-- `Lv1Scene`'s Canvas holds 2 objects named `ProgressBar`, the climb progress and the web escape bar, so look them up by path
+- `FullPlayScene`'s Canvas holds 2 objects named `ProgressBar`, the climb progress and the web escape bar, so look them up by path
