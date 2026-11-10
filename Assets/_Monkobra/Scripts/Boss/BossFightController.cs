@@ -438,6 +438,19 @@ public class BossFightController: MonoBehaviour {
     private GameObject bananaBranchPrefab;
 
     [SerializeField]
+    [Tooltip("mesh shown in place of the banana on every arena fruit, "
+        + "grabbed & thrown; the watermelon")]
+    private Mesh watermelonMesh;
+
+    [SerializeField]
+    [Tooltip("local scale of the watermelon on its branch")]
+    private Vector3 watermelonScale = new Vector3(6f, 6f, 6f);
+
+    [SerializeField]
+    [Tooltip("local offset of the watermelon on its branch; u")]
+    private Vector3 watermelonOffset = new Vector3(0f, -0.629f, 0.06f);
+
+    [SerializeField]
     [Min(1)]
     [Tooltip("banana branches in the arena")]
     private int bananaCount = 3;
@@ -480,7 +493,7 @@ public class BossFightController: MonoBehaviour {
     private float thrownBananaScale = 1.6f;
 
     [SerializeField]
-    private Color trailColor = new Color(1f, 0.85f, 0.2f);
+    private Color trailColor = new Color(0.3f, 0.8f, 0.3f);
 
     [Header("Height Marker")]
     [SerializeField]
@@ -1274,6 +1287,7 @@ public class BossFightController: MonoBehaviour {
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject banana = pickup != null ? pickup.gameObject : branch;
+        ApplyWatermelon(banana);
         if (isGolden) {
             MakeGolden(banana);
         }
@@ -1295,6 +1309,21 @@ public class BossFightController: MonoBehaviour {
             PointOnTrunk(angle, fruitY + BANANA_HANG_U, branchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
         );
+    }
+
+    // the arena's fruit looks like a watermelon: the banana model's mesh is
+    // swapped, its collider & scripts stay, so grab & throw work as before
+    private void ApplyWatermelon(GameObject fruit) {
+        if (watermelonMesh == null || fruit == null) {
+            return;
+        }
+        foreach (MeshFilter filter in
+            fruit.GetComponentsInChildren<MeshFilter>(true)) {
+            filter.sharedMesh = watermelonMesh;
+            filter.transform.localRotation = Quaternion.identity;
+            filter.transform.localScale = watermelonScale;
+            filter.transform.localPosition = watermelonOffset;
+        }
     }
 
     private void MakeGolden(GameObject banana) {
@@ -1355,7 +1384,7 @@ public class BossFightController: MonoBehaviour {
         golden.root.SetActive(true);
         goldenHideTime = Time.time + goldenShowS;
         hud.PopText(
-            "Golden banana!", golden.root.transform.position, goldenColor
+            "Golden watermelon!", golden.root.transform.position, goldenColor
         );
     }
 

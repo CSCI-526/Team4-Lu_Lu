@@ -1,8 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-FIXME another item for boss fight
-
 Todo level selection & scene system
 -->
 
