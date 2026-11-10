@@ -10,14 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 193dc9cb97caa314da2175dceafd2e91, type: 3}
-  m_Name: CameraEfxConfig
-  m_EditorClassIdentifier: Assembly-CSharp::CameraEfxConfig
-  lowLevel:
-    vignetteIntensity: 0.4
-    fovDeltaDeg: 6
-  emptyLevel:
-    vignetteIntensity: 0.7
-    fovDeltaDeg: 12
+  m_Name: CameraConfig
+  m_EditorClassIdentifier: Assembly-CSharp::CameraConfig
+  lowVignetteIntensity: 0.4
+  emptyVignetteIntensity: 0.7
   easeInS: 0.1
   easeOutS: 1.2
   retriggerCooldownS: 0.5

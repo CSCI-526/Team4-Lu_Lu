@@ -1,23 +1,22 @@
-using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Cool-down feedback on the whole view while stamina is low: a
-/// circular blackdown from the URP Vignette plus a zoom-out from widening
-/// the live <see cref="CinemachineCamera"/>'s field of view, both easing in
-/// and back out. Two steps: a lighter one while stamina is low, a stronger
-/// one once the bar is empty, both tuned in <see cref="CameraEfxConfig"/>.
-/// Sits on the main camera, next to the <c>CinemachineBrain</c>. Pulses on
-/// every <see cref="StaminaBarController.LowStaminaMoveAttempted"/>, and both
-/// values return to rest when the pulse ends or this component is disabled.
+/// Cool-down feedback on the whole view while stamina is low: a circular
+/// blackdown from the URP Vignette, easing in and back out. No zoom, since
+/// a moving field of view reads as motion and tires the eye. Two steps: a
+/// lighter one while stamina is low, a stronger one once the bar is empty,
+/// both tuned in <see cref="CameraConfig"/>. Sits on the main camera. Pulses
+/// on every <see cref="StaminaBarController.LowStaminaMoveAttempted"/>, and
+/// the vignette returns to rest when the pulse ends or this component is
+/// disabled.
 /// </summary>
 public class CameraCoolDownFeedback: MonoBehaviour {
     // Inspector Fields  #######################################################
-    [Tooltip("tuning for both cool-down steps and their timing")]
+    [Tooltip("tuning for both vignette steps and their timing")]
     [SerializeField]
-    private CameraEfxConfig config;
+    private CameraConfig config;
 
     [Tooltip("global volume whose profile holds a Vignette override")]
     [SerializeField]
@@ -37,14 +36,10 @@ public class CameraCoolDownFeedback: MonoBehaviour {
         if (!isPulsing) {
             baseIntensity = vignette.intensity.value;
             baseIsOverridden = vignette.intensity.overrideState;
-            fovCamera = brain != null
-                ? brain.ActiveVirtualCamera as CinemachineCamera
-                : null;
-            if (fovCamera != null) {
-                baseFovDeg = fovCamera.Lens.FieldOfView;
-            }
         }
-        level = isEmpty ? config.EmptyLevel : config.LowLevel;
+        peakIntensity = isEmpty
+            ? config.EmptyVignetteIntensity
+            : config.LowVignetteIntensity;
         isEmptyPulse = isEmpty;
         elapsedS = 0f;
         isPulsing = true;
@@ -77,14 +72,6 @@ public class CameraCoolDownFeedback: MonoBehaviour {
         if (config == null) {
             enabled = false;
             return;
-        }
-
-        brain = GetComponent<CinemachineBrain>();
-        if (brain == null) {
-            Debug.LogWarning(
-                "CameraCoolDownFeedback:\tfail to get Component: CinemachineBrain",
-                this
-            );
         }
 
         if (volume == null) {
@@ -134,13 +121,9 @@ public class CameraCoolDownFeedback: MonoBehaviour {
         float weight = CalcWeight(elapsedS);
         vignette.intensity.value = Mathf.Lerp(
             baseIntensity,
-            level.VignetteIntensity,
+            peakIntensity,
             weight
         );
-        if (fovCamera != null) {
-            fovCamera.Lens.FieldOfView =
-                baseFovDeg + level.FovDeltaDeg * weight;
-        }
 
         if (elapsedS >= config.EaseInS + config.EaseOutS) {
             ResetPose();
@@ -155,7 +138,7 @@ public class CameraCoolDownFeedback: MonoBehaviour {
     private void OnLowStaminaMoveAttempted() {
         bool isEmpty = !staminaBar.HasStamina;
         if (isPulsing && isEmpty && !isEmptyPulse) {
-            level = config.EmptyLevel;
+            peakIntensity = config.EmptyVignetteIntensity;
             isEmptyPulse = true;
             elapsedS = Mathf.Min(elapsedS, config.EaseInS);
             return;
@@ -170,17 +153,14 @@ public class CameraCoolDownFeedback: MonoBehaviour {
     // private members  ########################################################
     private bool isPulsing;
     private bool isEmptyPulse;
-    private CameraEfxConfig.CoolDownLevel level;
+    private float peakIntensity;
     private float elapsedS;
     private float nextPulseTimeS;
     private float baseIntensity;
     private bool baseIsOverridden;
-    private float baseFovDeg;
 
     // cached references  ------------------------------------------------------
     private Vignette vignette;
-    private CinemachineBrain brain;
-    private CinemachineCamera fovCamera;
     private StaminaBarController staminaBar;
 
     // private methods  ########################################################
@@ -198,12 +178,8 @@ public class CameraCoolDownFeedback: MonoBehaviour {
         if (isPulsing && vignette != null) {
             vignette.intensity.value = baseIntensity;
             vignette.intensity.overrideState = baseIsOverridden;
-            if (fovCamera != null) {
-                fovCamera.Lens.FieldOfView = baseFovDeg;
-            }
         }
         isPulsing = false;
-        fovCamera = null;
     }
 
     private void Unsubscribe() {

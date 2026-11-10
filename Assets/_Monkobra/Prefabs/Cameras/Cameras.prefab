@@ -984,6 +984,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraAnchor
   monkey: {fileID: 0}
-  yawSmoothTimeS: 0.35
-  yawDeadZoneDeg: 4
-  maxYawSpeedDeg: 90
+  config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}

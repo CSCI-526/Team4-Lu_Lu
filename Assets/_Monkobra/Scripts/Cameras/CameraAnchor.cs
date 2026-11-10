@@ -36,18 +36,9 @@ public class CameraAnchor: MonoBehaviour {
     [SerializeField]
     private Transform monkey;
 
-    [Header("Yaw Easing")]
+    [Tooltip("yaw easing values, the Anchor section")]
     [SerializeField]
-    [Tooltip("how long the view takes to catch up with the orbit angle; s")]
-    private float yawSmoothTimeS = 0.35f;
-
-    [SerializeField]
-    [Tooltip("orbit angle the monkey may lead by before the view turns; deg")]
-    private float yawDeadZoneDeg = 4f;
-
-    [SerializeField]
-    [Tooltip("fastest the view may turn; deg/s")]
-    private float maxYawSpeedDeg = 90f;
+    private CameraConfig config;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -57,12 +48,22 @@ public class CameraAnchor: MonoBehaviour {
                 "CameraAnchor:\tmust assign Inspector Field: monkey",
                 this
             );
+        }
+        if (config == null) {
+            Debug.LogWarning(
+                "CameraAnchor:\tmust assign Inspector Field: config",
+                this
+            );
+        }
+        if (monkey == null || config == null) {
             enabled = false;
         }
     }
 
     private void OnEnable() {
-        Snap();
+        if (monkey != null && config != null) {
+            Snap();
+        }
     }
 
     private void LateUpdate() {
@@ -70,25 +71,18 @@ public class CameraAnchor: MonoBehaviour {
         float errorDeg = Mathf.DeltaAngle(yawDeg, targetDeg);
         float absErrorDeg = Mathf.Abs(errorDeg);
         // inside the dead zone the view stays put
-        float desiredDeg = absErrorDeg <= yawDeadZoneDeg
+        float desiredDeg = absErrorDeg <= config.AnchorYawDeadZoneDeg
             ? yawDeg
-            : targetDeg - Mathf.Sign(errorDeg) * yawDeadZoneDeg;
+            : targetDeg - Mathf.Sign(errorDeg) * config.AnchorYawDeadZoneDeg;
         yawDeg = Mathf.SmoothDampAngle(
             yawDeg,
             desiredDeg,
             ref yawVelocityDeg,
-            yawSmoothTimeS,
-            maxYawSpeedDeg,
+            config.AnchorYawSmoothTimeS,
+            config.AnchorMaxYawSpeedDeg,
             Time.deltaTime
         );
         ApplyPose();
-    }
-
-    // Editor Validation  ######################################################
-    private void OnValidate() {
-        yawSmoothTimeS = Mathf.Max(0f, yawSmoothTimeS);
-        yawDeadZoneDeg = Mathf.Max(0f, yawDeadZoneDeg);
-        maxYawSpeedDeg = Mathf.Max(1f, maxYawSpeedDeg);
     }
 
     // private members  ########################################################
