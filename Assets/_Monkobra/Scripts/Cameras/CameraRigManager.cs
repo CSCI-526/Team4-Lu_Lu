@@ -191,6 +191,10 @@ public class CameraRigManager: MonoBehaviour {
         } else {
             game.LeapChanged += OnLeapChanged;
         }
+        leapController = FindFirstObjectByType<PineappleLeapController>();
+        if (leapController != null) {
+            leapController.Landed += OnLeapLanded;
+        }
         coconuts = CoconutManager.I;
         if (coconuts == null) {
             Debug.LogWarning(
@@ -218,6 +222,9 @@ public class CameraRigManager: MonoBehaviour {
         UnsubscribeCobra();
         if (game != null) {
             game.LeapChanged -= OnLeapChanged;
+        }
+        if (leapController != null) {
+            leapController.Landed -= OnLeapLanded;
         }
         if (coconuts != null) {
             coconuts.Thrown -= OnCoconutThrown;
@@ -272,6 +279,11 @@ public class CameraRigManager: MonoBehaviour {
         }
     }
 
+    // the view hands back the moment the body lands, not after the grace
+    private void OnLeapLanded() {
+        ReleaseShot(ShotKind.Leap);
+    }
+
     // a cobra event worth a look, but not while it guards the boss arena
     private void OnCobraChaseStarted() {
         RequestCobraAlert();
@@ -306,6 +318,7 @@ public class CameraRigManager: MonoBehaviour {
     private ShotKind? liveKind;
     private CoconutManager coconuts;
     private GameController game;
+    private PineappleLeapController leapController;
     private CobraMotor cobra;
     private HitBranchSensor hitSensor;
 

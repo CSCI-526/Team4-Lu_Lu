@@ -130,6 +130,10 @@ public class CameraConfig: ScriptableObject {
     /// back</returns>
     public float LeapDistanceScale => leapDistanceScale;
 
+    /// <returns>camera height relative to the monkey during a leap, negative
+    /// is below, so the view looks up from under; u</returns>
+    public float LeapCameraHeightU => leapCameraHeightU;
+
     // shake  ------------------------------------------------------------------
     /// <returns>scale on every shake, 0 silences all of it</returns>
     public float ShakeScale => shakeScale;
@@ -243,7 +247,7 @@ public class CameraConfig: ScriptableObject {
 
     [Header("Shot: Pineapple Leap")]
     [SerializeField]
-    private ShotSettings leapShot = new ShotSettings(5f, 0.5f, 0f, 40);
+    private ShotSettings leapShot = new ShotSettings(5f, 0f, 0f, 40);
 
     [SerializeField]
     [Tooltip("extra aim height during a leap; u")]
@@ -252,6 +256,11 @@ public class CameraConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("scale on the follow distance during a leap, above 1 pulls back")]
     private float leapDistanceScale = 1.5f;
+
+    [SerializeField]
+    [Tooltip("camera height vs the monkey during a leap, negative looks up "
+        + "from below; u")]
+    private float leapCameraHeightU = -3f;
 
     [Header("Shake")]
     [SerializeField]

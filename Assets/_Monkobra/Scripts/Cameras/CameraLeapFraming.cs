@@ -3,8 +3,9 @@ using UnityEngine;
 
 /// <summary>
 /// Frames the pineapple leap shot: the aim point rises above the monkey to
-/// show the landing area, and the camera pulls back along its own direction,
-/// so the view widens by distance and never by field of view. Both values
+/// show the landing area, the camera drops below the monkey so it looks up
+/// from under, and it pulls back from the tree, so the view widens by
+/// distance and never by field of view. Both values
 /// come from <see cref="CameraConfig"/>; the comfort switch turns the
 /// pull-back off. Sits on the leap camera, next to its
 /// <see cref="CinemachineRotationComposer"/> and
@@ -42,8 +43,13 @@ public class CameraLeapFraming: MonoBehaviour {
         offset.y = config.LeapAimOffsetU;
         composer.TargetOffset = offset;
 
-        float scale = config.IsReduceMotion ? 1f : config.LeapDistanceScale;
-        follow.FollowOffset = baseFollowOffset * scale;
+        // comfort: keep the authored height and distance, only aim higher
+        Vector3 followOffset = baseFollowOffset;
+        if (!config.IsReduceMotion) {
+            followOffset.y = config.LeapCameraHeightU;
+            followOffset.z *= config.LeapDistanceScale;
+        }
+        follow.FollowOffset = followOffset;
     }
 
     // private members  ########################################################
