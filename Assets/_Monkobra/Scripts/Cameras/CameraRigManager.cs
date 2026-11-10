@@ -230,6 +230,11 @@ public class CameraRigManager: MonoBehaviour {
             return;
         }
         CheckCobraProximity();
+        // the leap shot follows the leap itself, polled as well as heard, so
+        // a missed event can never leave the view stuck up
+        if (liveKind == ShotKind.Leap && game != null && !game.IsLeaping) {
+            ReleaseShot(ShotKind.Leap);
+        }
         if (!liveKind.HasValue) {
             return;
         }

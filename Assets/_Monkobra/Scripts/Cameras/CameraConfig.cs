@@ -243,11 +243,11 @@ public class CameraConfig: ScriptableObject {
 
     [Header("Shot: Pineapple Leap")]
     [SerializeField]
-    private ShotSettings leapShot = new ShotSettings(3f, 1f, 0f, 40);
+    private ShotSettings leapShot = new ShotSettings(5f, 0.5f, 0f, 40);
 
     [SerializeField]
     [Tooltip("extra aim height during a leap; u")]
-    private float leapAimOffsetU = 4f;
+    private float leapAimOffsetU = 10f;
 
     [SerializeField]
     [Tooltip("scale on the follow distance during a leap, above 1 pulls back")]
