@@ -1,6 +1,10 @@
 # Monkobra CHANGELOG
 
 <!--
+FIXME another item for both fight
+FIXME empty branch as its own curve
+FIXME clean up around boss fight area
+
 Todo level selection & scene system
 -->
 
