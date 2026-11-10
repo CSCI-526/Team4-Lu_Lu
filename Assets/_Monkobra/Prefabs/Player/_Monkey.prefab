@@ -224,6 +224,7 @@ MonoBehaviour:
   playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
   climbConfig: {fileID: 11400000, guid: 5f758de8d78c4f6194921d44e5a0aab0, type: 2}
+  hackShortcuts: {fileID: 11400000, guid: 6f67fb399ca4433b8cfe8ef24d234f71, type: 2}
 --- !u!114 &9198043481806832196
 MonoBehaviour:
   m_ObjectHideFlags: 0

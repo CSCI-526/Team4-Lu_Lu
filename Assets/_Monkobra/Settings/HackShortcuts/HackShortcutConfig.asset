@@ -34,3 +34,6 @@ MonoBehaviour:
   - action: 6
     key: 98
     description: god mode
+  - action: 7
+    key: 99
+    description: speed x3

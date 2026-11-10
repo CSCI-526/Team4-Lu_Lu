@@ -25,4 +25,8 @@ public enum HackAction {
     /// <summary>toggles <see cref="StaminaBarController.IsGodMode"/>: the
     /// stamina bar stays at max</summary>
     GodMode,
+
+    /// <summary>toggles <see cref="MonkeyController.IsSpeedBuff"/>: all
+    /// monkey movement runs at 3 times its normal speed</summary>
+    SpeedBuff,
 }
