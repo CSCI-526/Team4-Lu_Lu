@@ -1,7 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-Todo upd all docs base on codebase
 Todo update dev log
 todo upd gdd
 -->
@@ -23,13 +22,28 @@ todo upd gdd
 
 [unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta...dev
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## [1.0.0-beta] - 2026-11-10
 
 ### Added
 
 ##### Belle Dai
 
-- rough bark: avoidable raised patches on the trunk smoothly slow the monkey, replacing slippery bark (`RoughBarkZone`, `RoughBarkSpawner`)
+- rough bark: broad, raised, wavy-edged patches that hug the faceted trunk & smoothly slow climbing & circling alike while touched; overlaps never stack the slowdown (`RoughBarkZone`)
+- rough bark placement: patches rolled per tree segment off the ramped difficulty, arcs kept apart so they never close into a full ring, so a path round always stays open (`RoughBarkSpawner`)
+- rough bark art: painted albedo & normal map textures on the `RoughBark` material
+- slippery bark prototype, reworked into rough bark before release: wet patches w/ a guaranteed tutorial band, a short eased slide & loosened grip that slowed the arm stroke, own test scene, an Editor installer & an automated play-mode smoke check driving the real monkey
 
 ##### Erik
 
@@ -73,10 +87,17 @@ todo upd gdd
 
 ##### Houdong Pan
 
-- lose screen leaderboard: simulated rivals, fixed per launch, ranked against the final score
-- fruit grab prompt: keycap "space, hold, then release" teaches the first grab of each fruit kind per run
+- lose screen leaderboard: 9 rivals named from a joke pool (BananaKing, PeelMeDaddy, CSCI526, ~) w/ scores rolled in a range, ranked w/ this run's final score, ties going to the player, & a "YOUR RANK #n / 10" line (`LeaderboardWidget`, `Leaderboard` & `LeaderboardRow` prefabs)
+- rivals stay fixed for the whole playtest, so every restart faces the same board; rolled on their own random generator, so hazard spawns are untouched (`SessionLeaderboard`)
+- fruit grab prompt: a keycap "space, hold, then release" follows the fruit in reach & teaches the first grab of each fruit kind per run, hiding while a screen is open (`FruitGrabPrompt`)
+- reusable keycap widget: the boss fight's keycap pulled out into 1 runtime widget, built in code w/o sprites or prefabs, now shared by the fruit tutorial & boss HUD (`KeyPromptWidget`)
+- `ArmController.FruitGrabbed` event after every successful grab, for tutorials & HUD to listen to
 
 ### Changed
+
+##### Belle Dai
+
+- falling cobra strikes once: after dropping the monkey it switches itself off, so it can neither keep falling nor hit again; the monkey sensor & the snake share 1 hit guard, so a contact never counts twice (`FallingCobraController`)
 
 ##### Erik
 
@@ -101,14 +122,10 @@ todo upd gdd
 
 ##### Houdong Pan
 
-- progress bar redrawn from generated antialiased sprites w/ an upright readout
-- boss fight key prompt reuses the keycap of the fruit tutorial
+- progress bar redrawn: monkey & cobra faces drawn from 1 generated antialiased circle, no imported art; an upright distance readout & bracket span both markers; the cobra face slides aside when the 2 get close (`ProgressBarWidget`, `ProgressBar` prefab)
+- tutorial & HUD wording: "Grab Banana" → "Grab Fruit", low stamina hint reads "Low Energy"
 
 ### Removed
-
-##### Belle Dai
-
-- falling cobras removed on hit
 
 ##### Erik
 
@@ -188,8 +205,8 @@ todo upd gdd
 
 ##### Belle Dai
 
-- keyboard-style tutorial controls: WASD cluster & Space key w/ captions
-- tutorial UI font w/ WebGL support, no system fonts needed
+- keyboard-style tutorial controls: a WASD cluster & wide Space key built from editable uGUI rectangles, no sprites, w/ inset keycap frames, bevel lines & a caption per key
+- tutorial UI font: a static subset of Noto Sans TC holding ASCII & the Chinese glyphs used, so WebGL needs no system font; shipped w/ its SIL Open Font License
 
 ##### Erik
 
@@ -217,6 +234,10 @@ todo upd gdd
 
 - web builds lock to 720p w/ scaling UI layout, fit any screen & density
 - web builds use new `FitWindow` template: 16:9, scales to browser window, sharp on Retina & 4K
+
+##### Houdong Pan
+
+- more falling cobras: 3 spawn attempts per segment (was 2), & the chance curve climbs to full instead of topping out at 0.4
 
 ### Removed
 
@@ -266,11 +287,15 @@ todo upd gdd
 
 ##### Belle Dai
 
-- falling cobra: warns, then drops on the monkey; in `Lv1Scene` & the `FallingCobraDemo` test scene
+- falling cobra: a new hazard that perches on a real branch just above the monkey's path round the trunk, flashes a red warning, then drops on it; built w/ its own `FallingCobraDemo` test scene, then placed in `Lv1Scene`
+- falling cobra spawns grow more frequent the higher the monkey climbs
+- falling cobra hit: 1 trigger covers the whole snake, so a hit makes 1 drop & 1 camera shake, not 1 per body segment
 
 ##### Houdong Pan
 
-- scoring: distance score from the highest climb plus a reward per banana, shown live on a HUD score label
+- scoring system: points per meter of new best height only, so falling & re-climbing earns nothing, plus a reward per banana, shown live on a HUD score label; the score freezes when the run ends (`ScoreManager`, `ScoreDisplay`)
+- each fruit pays its reward exactly once, even when both hands claim it, & never after the run ends (`ScorePickup`, `ScoreReward`)
+- `ScoreConfig` asset: points per meter & units per meter; rewards open to future sources through `ScoreManager.TryAddReward`
 
 ##### Wenhai Dong
 
