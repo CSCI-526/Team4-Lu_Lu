@@ -50,7 +50,6 @@ public class WorldBalanceConfig: ScriptableObject {
     public AnimationCurve PineappleSpawnProbabilityCurve =>
         pineappleSpawnProbabilityCurve;
 
-    public int RoughBarkStartScore => roughBarkStartScore;
     public float RoughBarkSpeedMultiplier => roughBarkSpeedMultiplier;
     public float RoughBarkBlendS => roughBarkBlendS;
     public int RoughBarkAttemptCount => roughBarkAttemptCount;
@@ -144,10 +143,6 @@ public class WorldBalanceConfig: ScriptableObject {
         AnimationCurve.Linear(0f, 0f, 1f, 0.1f);
 
     [Header("Rough Bark")]
-    [SerializeField, Min(0)]
-    [Tooltip("minimum total HUD score before rough patches begin appearing")]
-    private int roughBarkStartScore = 3000;
-
     [SerializeField, Range(0.1f, 1f)]
     [Tooltip(
         "movement speed on rough bark, applied equally to climbing and "
@@ -164,7 +159,7 @@ public class WorldBalanceConfig: ScriptableObject {
     private int roughBarkAttemptCount = 2;
 
     [SerializeField]
-    [Tooltip("x: height difficulty 0~1; y: rough patch chance 0~1")]
+    [Tooltip("x: ramped difficulty; y: rough patch chance 0~1")]
     private AnimationCurve roughBarkSpawnProbabilityCurve =
         AnimationCurve.Linear(0f, 0.1f, 1f, 0.7f);
 
@@ -205,7 +200,6 @@ public class WorldBalanceConfig: ScriptableObject {
             0,
             branchGenerationAttemptCount
         );
-        roughBarkStartScore = Mathf.Max(0, roughBarkStartScore);
         roughBarkSpeedMultiplier = Mathf.Clamp(
             roughBarkSpeedMultiplier,
             0.1f,

@@ -175,7 +175,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  roughBarkStartScore: 3000
   roughBarkSpeedMultiplier: 0.35
   roughBarkBlendS: 0.18
   roughBarkAttemptCount: 2
@@ -184,19 +183,37 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.192
+      value: 0
+      inSlope: 0
+      outSlope: 1.7241379
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.25
       value: 0.1
-      inSlope: 0.6
-      outSlope: 0.6
-      tangentMode: 0
+      inSlope: 1.7241379
+      outSlope: 0.8
+      tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
       value: 0.7
-      inSlope: 0.6
-      outSlope: 0.6
-      tangentMode: 0
+      inSlope: 0.8
+      outSlope: 0.8
+      tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
