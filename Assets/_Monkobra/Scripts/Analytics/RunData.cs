@@ -59,6 +59,8 @@ public class RunData {
     public float StartTime;
     public DateTime StartClock;
     public readonly List<RunSample> Samples = new List<RunSample>();
+    // top of the stamina bar, the y range of the stamina chart
+    public float MaxStamina = 1f;
 
     // starting zone  -----------------------------------------------------------
     // if the run opened in the starting zone, so it holds the zone's events

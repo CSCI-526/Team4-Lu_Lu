@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using UnityEngine;
 
 /// <summary>
-/// renders analytics data to markdown, holds no state of its own
+/// The data visualization half of analytics: renders <see cref="SessionData"/>
+/// to markdown text, tables and Mermaid charts. Reads only the data it is
+/// given, holds no state, and touches no file or scene; the collection half is
+/// <see cref="AnalyticsManager"/>, the file half is
+/// <see cref="AnalyticsSessionFile"/>.
 /// </summary>
 public static class AnalyticsMarkdownWriter {
     // Public Methods  #########################################################
@@ -96,7 +99,7 @@ public static class AnalyticsMarkdownWriter {
             );
             // stamina is refilled by bananas, so its curve sits under them
             if (metric == AnalyticsMetric.Banana) {
-                AppendStaminaCurve(sb, run.Samples);
+                AppendStaminaCurve(sb, run.Samples, run.MaxStamina);
             }
         }
 
@@ -138,21 +141,6 @@ public static class AnalyticsMarkdownWriter {
         }
 
         return sb.ToString();
-    }
-
-    /// <summary>
-    /// whether <paramref name="text"/> was written to
-    /// <paramref name="path"/>, a failure logs a warning
-    /// </summary>
-    public static bool WriteFile(string path, string text) {
-        try {
-            File.WriteAllText(path, text, new UTF8Encoding(false));
-        } catch (Exception e) {
-            Debug.LogWarning("Analytics:\tfail to write session: " + e);
-            return false;
-        }
-
-        return true;
     }
 
     // constants  ##############################################################
@@ -302,17 +290,14 @@ public static class AnalyticsMarkdownWriter {
     // line of sampled stamina over the run, skipped w/o 2 samples
     private static void AppendStaminaCurve(
         StringBuilder sb,
-        List<RunSample> samples
+        List<RunSample> samples,
+        float staminaCap
     ) {
         if (samples.Count < 2) {
             return;
         }
 
-        StaminaBarController bar = StaminaBarController.I;
-        int maxStamina = Mathf.Max(
-            1,
-            Mathf.CeilToInt(bar != null ? bar.MaxStamina : 0f)
-        );
+        int maxStamina = Mathf.Max(1, Mathf.CeilToInt(staminaCap));
         List<string> times = new List<string>();
         List<string> values = new List<string>();
         for (int i = 0; i < samples.Count; i++) {

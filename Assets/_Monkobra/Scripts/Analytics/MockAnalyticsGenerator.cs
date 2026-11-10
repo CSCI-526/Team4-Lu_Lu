@@ -43,7 +43,7 @@ public static class MockAnalyticsGenerator {
             new System.Random(),
             windowS
         );
-        bool isWritten = AnalyticsMarkdownWriter.WriteFile(
+        bool isWritten = AnalyticsSessionFile.WriteFile(
             path,
             AnalyticsMarkdownWriter.BuildSession(session)
         );
@@ -241,6 +241,7 @@ public static class MockAnalyticsGenerator {
         RunData run = new RunData {
             Status = plan.IsLost ? RunStatus.Lost : RunStatus.Interrupted,
             Mode = plan.Mode,
+            MaxStamina = MAX_STAMINA,
             StartClock = start,
             DurationS = plan.DurationS,
             HighestHeight = plan.HighestHeight

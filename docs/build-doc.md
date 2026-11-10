@@ -1,6 +1,6 @@
 # MonKobra: Build Documentation
 
-Unity `6000.3.22f1`. Every build uses its own Build Profile in `Assets/Settings/Build Profiles/` and goes to `builds/Monkobra v<version>+<Target>`, version from Player Settings. No build is committed; `builds/` stays gitignored. Build only from the profile; change a setting in the profile, never per build.
+Unity `6000.3.22f1`. Every build uses its own Build Profile in `Assets/Settings/Build Profiles/` and goes to `builds/Monkobra v<version>+<Target>`, version from Player Settings. Each profile keeps its own copy of the Player Settings version, so `BuildVersionSync` (Editor script, also `Monkobra > Sync Build Profile Version`) copies the project one into every profile when the Editor loads; bump the version in Player Settings only. No build is committed; `builds/` stays gitignored. Build only from the profile; change a setting in the profile, never per build.
 
 ## GitHub Pages
 

@@ -20,7 +20,8 @@ graph LR
   More[Leap, Pause, Boss Fight, ~] -->|events| AM
   AM --> Data[SessionData and RunData]
   Data --> Writer[AnalyticsMarkdownWriter]
-  Writer --> File[Session markdown file]
+  Writer --> SF[AnalyticsSessionFile]
+  SF --> File[Session markdown file]
 ```
 
 ## Session Lifecycle
@@ -150,11 +151,18 @@ The lose screen also carries a Download Analytics button at the top right (`Lose
 
 All under `Assets/_Monkobra/Scripts/Analytics/`.
 
-- `AnalyticsManager`: observes the game, fills the data, saves
-- `SessionData`, `RunData`: plain data of a session and a run
+Collection, data, and visualization each have one file to open:
+
+- Collection: `AnalyticsManager` observes the game, stamps events, samples, opens and closes runs, and asks for a save
+- Data: `SessionData`, `RunData` are the plain data between the two
+- Visualization: `AnalyticsMarkdownWriter` renders the data to markdown tables and Mermaid charts; it reads only the data it is given, so a chart never depends on the live scene
+
+Around them:
+
+- `AnalyticsSessionFile`: session file path, saving, browser download
+- `AnalyticsHackKeys`: polls the dev keys
 - `AnalyticsMetric`, `AnalyticsMetrics`: the event kinds and their report headings
 - `LoseScreenDownloadWidget` (under `Scripts/LoseScreen/`): the dev-only download button
-- `AnalyticsMarkdownWriter`: renders the data to markdown, writes the file
 - `DeathCause`, `DeathCauseResolver`: infers and names the death cause
 - `AnalyticsConfig`: tuning asset
 - `MockAnalyticsGenerator`: builds the mock session
