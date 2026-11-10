@@ -1,6 +1,6 @@
 # Monkobra Grab System
 
-How the monkey reaches for and picks fruit: the detection zones, the arm reach, the release check, the pineapple leap, the camera swap, and the feedback. Design intent is in the [Game Design Document](monkobra-gdd.md), the wider system map in the [Technical Design Document](monkobra-tdd.md), and what a web does to a reach in [Mobs](mob-doc.md#trap-and-escape).
+How the monkey reaches for and picks fruit: the detection zones, the arm reach, the release check, the pineapple leap, the camera framing, and the feedback. Design intent is in the [Game Design Document](monkobra-gdd.md), the wider system map in the [Technical Design Document](monkobra-tdd.md), and what a web does to a reach in [Mobs](mob-doc.md#trap-and-escape).
 
 ## Flow
 
@@ -22,7 +22,7 @@ graph TD
 ```
 
 1. a banana enters a side's detection zone and becomes reachable
-2. the player presses interact: the matching arm locks onto the banana closest to the monkey on that side and the camera swings to that side
+2. the player presses interact: the matching arm locks onto the banana closest to the monkey on that side and the camera frame shifts toward that side
 3. while interact is held the arm keeps re-aiming at the locked banana every physics step while it stretches
 4. on release, the grab succeeds only if the hand overlaps the banana at that instant
 
@@ -34,8 +34,8 @@ graph TD
 | `Player/UpwardFruitSensor` | singleton (`I`) that keeps the reachable fruit per side, picks the reach side, and relays the grabbable fruit |
 | `Player/ArmController` | one arm: hand-over-hand climb stroke, or the reach and the release check |
 | `Player/MonkeyArmConfig` | reach speed and stroke tuning both arms read |
-| `Player/MonkeyInputConfig` | the interact action both arms and the camera read |
-| `Cameras/CameraRigManager` | swaps the behind, look-left, look-right, and look-down Cinemachine cameras |
+| `Player/MonkeyInputConfig` | the interact action both arms read and the camera polls |
+| `Cameras/CameraClimbFraming` | shifts the climb camera's aim toward the fruit side while interact is held |
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
@@ -124,7 +124,7 @@ For a quick test select `Envs/CoconutSystem`, tick `CoconutSpawner` > Use Test O
 
 ## Camera
 
-`CameraRigManager` owns four Cinemachine cameras. The behind view is the default. While interact is held it switches to look-right if only the right side has fruit, else look-left, even with no fruit. Releasing returns to behind. For `coconutLookDownS` after a coconut is thrown, the look-down view takes over from behind to follow the fall, and yields to look-left or look-right while interact is held. A swap raises the chosen camera's priority above the others and the `CinemachineBrain` on the main camera blends. If a web traps the monkey, the interact action is disabled, which counts as a release for the camera too.
+`CameraClimbFraming` on the climb camera polls the interact action, never enabling or disabling it. At the press it picks the side once: right if only the right side has fruit, left if the left has any, no shift when neither has; the side holds until the release, so the view never flips while the key is held. The aim point slides toward that side, with no camera cut and no field of view change. If a web traps the monkey, the interact action is disabled, which counts as a release for the camera too. The other views are the event shots of the [Technical Design Document](monkobra-tdd.md#camera).
 
 ## Feedback
 

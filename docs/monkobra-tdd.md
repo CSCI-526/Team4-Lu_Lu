@@ -26,7 +26,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | Engine | Unity 6 (`6000.3.22f1`) |
 | Render Pipeline | URP 17.3.0, with a PC and a Mobile asset under `Settings/_Shared/` |
 | Input | Input System 1.20.0 |
-| Camera | Cinemachine 3.1.7 (view swaps, impulse shake) |
+| Camera | Cinemachine 3.1.7 (event shots, impulse shake, noise) |
 | UI | uGUI 2.0.0 with TextMesh Pro |
 | Target | WebGL on GitHub Pages, built from the Editor |
 | Tests | none yet, `com.unity.test-framework` is installed |
@@ -196,19 +196,37 @@ The test scenes have no `ScoreManager`.
 
 ## Camera
 
-Four Cinemachine cameras (behind, look-left, look-right, look-down) are swapped by priority. Every camera script sits on the main camera, next to the `CinemachineBrain`, and finds gameplay objects through their `I` singletons.
+One tuning asset, `Settings/Cameras/CameraConfig.asset`, holds every camera value: the anchor easing, the climb framing, the three shots, the shake, the stamina vignette, and the comfort switch. Cinemachine owns blend curves (`Settings/Cameras/CameraBlends.asset`, per camera pair), the impulse shapes (the two `CinemachineImpulseSource` components) and the noise profile, so those stay in their own assets and the config scales them.
 
-- Hit shake: `CameraHitShakeFeedback` reads `HitBranchSensor.I` and fires one of two `CinemachineImpulseSource` components on the camera by hit kind, light for a branch, heavy for a falling cobra. Amplitude and duration are tuned on the sources, and the strength a view feels also scales with its camera's impulse listener gain
-- Cool-down: `CameraCoolDownFeedback` listens to `StaminaBarController.LowStaminaMoveAttempted` and pulses a URP Vignette on a global Volume plus a field-of-view widen on the live Cinemachine camera, easing both back to rest. It has two steps: a lighter one while stamina is below the low fraction, a stronger one once the bar is empty, and a low pulse in flight steps up when the bar empties. Both steps and the timing live in the `CameraEfxConfig` asset (the hit shake stays on its two impulse sources, since Cinemachine owns those values). A running pulse ignores repeats and a short cooldown follows
+```mermaid
+graph LR
+  Body[Monkey, interpolated] --> Anchor[CameraAnchor]
+  Anchor --> Climb[CameraClimb]
+  Anchor --> Leap[CameraLeap]
+  Anchor --> Targets[CameraShotTarget x2]
+  Cobra[Cobra head] --> Targets
+  Coco[Thrown coconut] --> Targets
+  Targets --> Alert[CameraCobraAlert]
+  Targets --> Track[CameraCoconutTrack]
+  Dir[CameraRigManager] -->|priority| Climb & Alert & Track & Leap
+```
 
-The swap rules are in the [Grab System](grab-doc.md#camera), the hit trigger in [Mobs](mob-doc.md#hit-penalty).
+- Anchor: every gameplay camera tracks `CameraAnchor`, never the body. It sits on the interpolated position and turns only about the world up axis, from the monkey's angle round the trunk, eased and behind a dead zone, so strafing swings the view gently and a body spin (the boss finisher) never reaches it. The brain updates in `LateUpdate` and the monkey's rigidbody is interpolated, so the world does not judder at the physics rate
+- Climb view: the default. `CameraClimbFraming` looks up by default, leads by the target's real vertical speed (not the raw input, so a blocked monkey never tilts the view), and shifts the aim toward the fruit side while grab is held, the side picked once per press. The boss fight asks for its framing through `SetBossFraming`
+- Shots: `CameraRigManager` is the shot director. Coconut track follows a thrown coconut and lingers on the landing, cobra alert looks down at the cobra after a chase start, a surge, or a falling cobra hit, and the leap shot looks up and pulls back during a pineapple leap. Each shot has a priority, a minimum hold, a duration cap, and a cooldown in the config, so events never chain into rapid cuts: a shot of the same or lower priority than the live one is refused, a higher one preempts it. The coconut and cobra shots frame the monkey and their subject through a `CameraShotTarget`, which keeps the anchor's yaw. An optional proximity alert fires when the cobra head comes close below the monkey
+- Hit shake: `CameraHitShakeFeedback` reads `HitBranchSensor.I` and fires one of two `CinemachineImpulseSource` components by hit kind, light for a branch, heavy for a falling cobra, with a force from the config. Every camera carries an impulse listener, so every view shakes
+- Rough bark shake: `CameraRoughBarkShake` drives the Perlin noise gains of every camera while the monkey moves on rough bark, easing in and out; standing still on the bark stays calm
+- Cool-down: `CameraCoolDownFeedback` listens to `StaminaBarController.LowStaminaMoveAttempted` and pulses a URP Vignette on a global Volume, easing it back to rest, in two steps (below the low fraction, and empty). There is no zoom, since a moving field of view reads as motion. A running pulse ignores repeats and a short cooldown follows
+- Comfort: one switch in the config silences the shake and the noise, and drops the lead and the pull-back; a global shake scale also scales every shake
+
+The grab shift is in the [Grab System](grab-doc.md#camera), the hit trigger in [Mobs](mob-doc.md#hit-penalty).
 
 ## Input
 
 One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. No mouse button is bound (left, right, middle), so clicking does nothing in the game or on a uGUI button; keyboard and touch bindings stay. Pause (Esc or P), `RestartAfterLose` (R or Space), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
 
 - Move: shared by the body and both arms through `MonkeyInputConfig`
-- Interact: the grab, read by both arms and the camera rig; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
+- Interact: the grab, read by both arms and polled by the climb camera framing; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
 - Jump: the web escape press, read by `SpiderWebStruggle`, and the Space press that starts the run from the tutorial, read by `GameController`
 - Collision: Space is bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped
 
