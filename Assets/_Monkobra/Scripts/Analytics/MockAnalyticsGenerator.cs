@@ -68,6 +68,8 @@ public static class MockAnalyticsGenerator {
                 0.1f + i * (0.7f / runCount) + Range(rng, -0.1f, 0.1f)
             );
             RunPlan plan = SimulateRun(skill, rng);
+            // every 3rd run is endless, so both modes show in a mock file
+            plan.Mode = i % 3 == 2 ? RunMode.Endless : RunMode.Full;
             if (i == runCount - 1) {
                 CutShort(plan, Range(rng, 0.3f, 0.8f));
             }
@@ -137,6 +139,7 @@ public static class MockAnalyticsGenerator {
         public float EndHeight;
         public float HighestHeight;
         public bool IsLost = true;
+        public RunMode Mode = RunMode.Full;
         public readonly List<Moment> Bananas = new List<Moment>();
         public readonly List<Moment> Webs = new List<Moment>();
         public readonly List<Moment> Branches = new List<Moment>();
@@ -237,6 +240,7 @@ public static class MockAnalyticsGenerator {
     ) {
         RunData run = new RunData {
             Status = plan.IsLost ? RunStatus.Lost : RunStatus.Interrupted,
+            Mode = plan.Mode,
             StartClock = start,
             DurationS = plan.DurationS,
             HighestHeight = plan.HighestHeight

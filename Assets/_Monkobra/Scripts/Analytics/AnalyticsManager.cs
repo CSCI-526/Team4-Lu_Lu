@@ -476,7 +476,8 @@ public class AnalyticsManager: MonoBehaviour {
         currentRun = new RunData {
             StartTime = Time.time,
             StartClock = DateTime.Now,
-            StartedInZone = isInZone
+            StartedInZone = isInZone,
+            Mode = observedGame != null ? observedGame.Mode : RunMode.Full
         };
         AddSample();
         nextSampleTime = Time.time + config.SampleIntervalS;
