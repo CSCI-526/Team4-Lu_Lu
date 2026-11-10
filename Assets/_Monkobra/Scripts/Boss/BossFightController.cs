@@ -843,9 +843,8 @@ public class BossFightController: MonoBehaviour {
         if (monkeyController != null) {
             monkeyController.ClearHeightCeiling();
         }
-        if (cameraLookUp != null) {
-            cameraLookUp.ExtraAimOffsetU = 0f;
-            cameraLookUp.ViewDistanceScale = 1f;
+        if (cameraFraming != null) {
+            cameraFraming.SetBossFraming(0f, 1f);
         }
     }
 
@@ -946,7 +945,7 @@ public class BossFightController: MonoBehaviour {
         );
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
 
-        cameraLookUp = FindFirstObjectByType<CameraLookUp>();
+        cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         greatCobra = FindFirstObjectByType<CobraMotor>();
         if (greatCobra != null) {
             greatCobra.StartGuard(entryY - guardDepthU);
@@ -2640,7 +2639,7 @@ public class BossFightController: MonoBehaviour {
 
     // the camera aims up between the monkey & the king, so both stay in view
     private void UpdateCameraFocus() {
-        if (cameraLookUp == null) {
+        if (cameraFraming == null) {
             return;
         }
         bool isFighting = phase == Phase.Fighting
@@ -2652,12 +2651,13 @@ public class BossFightController: MonoBehaviour {
                 maxCameraFocusU
             )
             : 0f;
-        cameraLookUp.ExtraAimOffsetU = focus;
         // pulled back through the fight & the crown's flight
-        cameraLookUp.ViewDistanceScale =
+        cameraFraming.SetBossFraming(
+            focus,
             phase != Phase.Waiting && phase != Phase.Done
                 ? cameraDistanceScale
-                : 1f;
+                : 1f
+        );
     }
 
     // Markers & Helpers  ------------------------------------------------------
@@ -3098,6 +3098,6 @@ public class BossFightController: MonoBehaviour {
     private SpiderWebStruggle struggle;
     private Transform crown;
     private CobraMotor greatCobra;
-    private CameraLookUp cameraLookUp;
+    private CameraClimbFraming cameraFraming;
     private MaterialPropertyBlock colorBlock;
 }

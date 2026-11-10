@@ -288,7 +288,7 @@ public class SpiderWebStruggle: MonoBehaviour {
 
     // disabling a held action cancels it: ArmController ends its reach, grabbing
     // only if the hand already overlaps the fruit as on any release, and
-    // CameraRigManager swings back to the behind view
+    // CameraClimbFraming drops its grab shift
     private void SuspendInteract() {
         if (isInteractSuspended || InteractAction == null) {
             return;

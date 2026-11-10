@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 /// <see cref="MonkeyClimbConfig"/>, balance numbers in
 /// <see cref="PlayerBalanceConfig"/>. Consumed by
 /// <see cref="ArmController"/>, <see cref="MonkeyController"/>,
-/// <see cref="SpiderWebStruggle"/> and <see cref="CameraLookUp"/>.
+/// <see cref="SpiderWebStruggle"/>.
 /// </summary>
 [CreateAssetMenu(
     fileName = "MonkeyInputConfig",
@@ -35,7 +35,7 @@ public class MonkeyInputConfig: ScriptableObject {
     [SerializeField]
     [Tooltip(
         "action held to reach an arm out for fruit, the same action "
-            + "CameraRigManager reads"
+            + "CameraClimbFraming polls"
     )]
     private InputActionReference interactAction;
 }

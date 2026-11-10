@@ -20,6 +20,12 @@ public class PineappleLeapController: MonoBehaviour {
         && !monkey.IsHeld
         && leapConfig != null;
 
+    /// <summary>
+    /// Raised once when the body reaches the leap's end and the landing
+    /// grace begins, b4 <see cref="GameController.IsLeaping"/> ends.
+    /// </summary>
+    public event System.Action Landed;
+
     // Public Methods  #########################################################
     /// <summary>Starts the leap, unless <see cref="CanBegin"/> is false.
     /// </summary>
@@ -151,6 +157,7 @@ public class PineappleLeapController: MonoBehaviour {
         phase = Phase.Grace;
         phaseEndTime = Time.time + leapConfig.LandGraceS;
         monkey.IsHeld = false;
+        Landed?.Invoke();
         foreach (ArmController arm in arms) {
             arm.EndLeapReach();
         }

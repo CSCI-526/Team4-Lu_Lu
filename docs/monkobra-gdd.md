@@ -9,7 +9,7 @@ Monkobra is a 3D vertical upward-scrolling game. You are a monkey climbing a ver
 - Genre: 3D obstacle-running, turned vertical
 - Reference Games: *Temple Run 2*, *Subway Surfers*, *Minion Rush*
 - Timing Reference: the hold-and-release reach borrows from *Gold Miner*
-- Camera: monkey held at the center of view, tree and sky behind, swinging to a side view while the arm reaches
+- Camera: monkey held low in view, looking up the tree, the frame sliding toward the fruit while the arm reaches; a brief look down at the cobra when it acts, a follow of a thrown coconut, a higher, wider view during a pineapple leap
 - Session: short runs, built for quick retries
 
 ## Design Pillars

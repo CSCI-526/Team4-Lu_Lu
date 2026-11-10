@@ -1,7 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme camera adjust
 Fixme game play tunning
 Fixme order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coconut, 300m: spider web, 500m: boss fight
 -->
@@ -35,6 +34,16 @@ Fixme order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coco
 - analytics records pineapple leaps, rough bark contacts, cobra freezes, pauses, boss fight starts, armor saves & boss revives; `BossFightController` raises `FightStarted`, `ArmorAbsorbed` & `Revived`, `MonkeyController` raises `RoughBarkTouched`
 - analytics report prints a Starting Zone Exit line (time & height)
 - Download Analytics button at the top right of the lose screen (`LoseScreenDownloadWidget`), development builds & the Editor only: it hides itself otherwise
+- camera redesign: every gameplay camera tracks `CameraAnchor`, a yaw-only proxy w/ eased, dead-zoned yaw round the trunk; monkey body interpolated, brain on `LateUpdate`, so strafing no longer spins the view
+- `CameraConfig` asset: one place for all camera tuning: anchor, climb framing, the 3 shots, shake, stamina vignette, comfort switch (`reduceMotion`, `shakeScale`)
+- climb framing (`CameraClimbFraming`): looks up by default, lead from real vertical speed, grab shifts the aim toward the fruit side, picked once per press, no cut
+- hold curves in `CameraConfig`: look-up height & FOV (base → final view) vs time the up input is held, settle back on release
+- shot director (`CameraRigManager`): coconut track, cobra alert & pineapple leap shots by priority, min hold, cap & cooldown, so events never chain into rapid cuts; blend times in `CameraBlends` asset; `CameraShotTarget` frames monkey w/ coconut
+- coconut track shot follows a thrown coconut, ends at the landing or `Duration S`, whichever is first (`CoconutManager.Thrown` & `Landed`)
+- cobra alert shot, once, when the cobra first starts chasing: `CameraCobraAlertFraming` moves only up & down, close, looking down, w/ a y offset, FOV fitted to the whole coil (`CobraMotor.TryGetBodyBounds`)
+- pineapple leap shot: camera looks up, pulls back & trails the climb, hands back at the landing (`CameraLeapFraming`, `PineappleLeapController.Landed`)
+- rough bark shake: Perlin noise eases up while moving on rough bark (`CameraRoughBarkShake`); every camera has an impulse listener & noise
+- height marker pass trigger: `HeightMarker` prefab w/ a trigger at the exact height, the plate drawn 5 u above on its label anchor (`HeightMarkerTrigger`)
 
 ##### Wenhai Dong
 
@@ -87,6 +96,12 @@ Fixme order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coco
 - banana model: the 3 stretched capsules of `BranchWithFruit` replaced by `SM_Fruits_Banana_Y1` from the PolyOne Free Fruits pack (child `BananaModel` of `Banana`); `BananaReachable` & `BananaGrabbable` outline widths thinned to fit the mesh
 - config reorganization: `GameBalanceConfig` split by concern into `PlayerBalanceConfig`, `WorldBalanceConfig` & `CobraBalanceConfig`; `MonkeyConfig` into `MonkeyArmConfig` & `MonkeyInputConfig`; `MovementConfig` → `MonkeyClimbConfig`, now also holding orbit speed & deceleration; `PineappleLeapConfig` takes the hand rise time & landing grace; every tuned value carried over unchanged
 - `Settings/` is `_Shared/` plus one folder per module (`Player/`, `Environment/`, `Mob/`, `Cameras/`, `UI/`, ~), assets directly inside
+- `CameraEfxConfig` → `CameraConfig`; `CameraLookUp` → `CameraClimbFraming`, boss fight view via `SetBossFraming`
+- `CameraRigManager` no longer enables or disables the shared Interact action
+- low stamina pulse: vignette only, no FOV zoom
+- hit shake force scaled per kind & overall by `CameraConfig`
+- `DynamicTreeSegmentPool`: 20 segments, look-ahead 60, first segment at y -40, so trunk exists far above & below the camera
+- height markers show up to 50 u ahead (`showAboveU`) & pulse when the monkey touches their trigger, not at a polled height
 
 ##### Yuqing Lu
 
@@ -115,6 +130,8 @@ Fixme order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coco
 - `SlipTestScene` dev scene, after slippery bark landed in `Lv1Scene`
 - `upSpeedU` & `downSpeedU` (`GameBalanceConfig`), replaced by the `MovementConfig` curves; `accelerationU` (`MonkeyConfig`)
 - orphan `GoalText` object in `Lv1Scene` (never drawn, no parent Canvas) and its mention in the TDD
+- look-left & look-right cameras: grab shifts the climb view instead of cutting; `CameraLookDown` → `CameraCoconutTrack`
+- cobra alert on surges, falling cobra hits & proximity
 
 ##### Yuqing Lu
 
@@ -126,6 +143,8 @@ Fixme order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coco
 
 - restart could spawn monkey inside a tree branch: no branch grows w/i `startingZoneBranchClearRadiusU` of monkey before the run is playing
 - analytics dropped starting zone data: a run opened only when the zone ended, so zone bananas, webs, branch hits, height samples & the run time were lost; it now opens when the starting zone begins
+- camera dizziness: world spin on strafe, 50 Hz background judder, side flip while grab held, nod on every up press
+- hit shake reached only the behind view; stamina pulse could leave a widened FOV on the old camera
 
 ##### Yuqing Lu
 
