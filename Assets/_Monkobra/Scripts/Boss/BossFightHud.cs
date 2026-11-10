@@ -515,7 +515,7 @@ public class BossFightHud: MonoBehaviour {
         speechRect.gameObject.SetActive(false);
 
         // Same keycap component as the fruit tutorial.
-        keyPrompt = KeyPromptUI.Create(rootRect);
+        keyPrompt = KeyPromptWidget.Create(rootRect);
 
         // banner, screen center
         bannerLabel = CreateLabel(
@@ -978,7 +978,7 @@ public class BossFightHud: MonoBehaviour {
     private TextMeshProUGUI nameLabel;
     private RectTransform speechRect;
     private TextMeshProUGUI speechLabel;
-    private KeyPromptUI keyPrompt;
+    private KeyPromptWidget keyPrompt;
     private TextMeshProUGUI bannerLabel;
     private GameObject revivePanel;
     private TextMeshProUGUI reviveCountLabel;

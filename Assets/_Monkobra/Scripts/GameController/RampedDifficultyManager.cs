@@ -39,6 +39,13 @@ public class RampedDifficultyManager: MonoBehaviour {
         return y - PlayerGameStartYPosition;
     }
 
+    /// <param name="y">any y position; world u</param>
+    /// <returns>if <paramref name="y"/> lies below the starting zone exit,
+    /// ie in the starting zone</returns>
+    public bool IsInStartingZoneY(float y) {
+        return y < RampBaseYPosition;
+    }
+
     /// <summary>
     /// Samples the ramp curve at the height above
     /// <see cref="RampBaseYPosition"/>.

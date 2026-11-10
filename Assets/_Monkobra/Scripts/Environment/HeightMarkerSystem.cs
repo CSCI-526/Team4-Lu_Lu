@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Height markers beside the trunk: a whole number every <c>intervalU</c> of
-/// climbed height (<see cref="RampedDifficultyManager.GetClimbedYDistance"/>),
+/// Height markers beside the trunk, on both its left and its right as seen
+/// from the camera: a whole number every <c>intervalU</c> of climbed height
+/// (<see cref="RampedDifficultyManager.GetClimbedYDistance"/>),
 /// shown to the player as meters, so a height tuned in
 /// <see cref="PlayerBalanceConfig"/>, e.g. the coconut start height, can be
 /// read off the trunk. Put it on an object on the trunk axis, active from
@@ -14,12 +15,13 @@ using UnityEngine.Rendering;
 /// Markers are keyed to height, not to tree segments: a small pool of
 /// TextMeshPro labels, built here, shows only the markers from
 /// <c>showBelowU</c> under to <c>showAboveU</c> over the monkey, marker k
-/// always on label k mod pool size. A recycled segment thus can neither leave
-/// a marker behind nor show one twice, and the segments are never touched.
+/// always on label pair k mod pair count, one label per trunk side. A
+/// recycled segment thus can neither leave a marker behind nor show one
+/// twice, and the segments are never touched.
 /// </para>
 /// <para>
 /// Each frame, once the camera has moved, the labels are placed beside the
-/// trunk's silhouette on one side as seen from the camera, just far enough
+/// trunk's silhouette on each side as seen from the camera, just far enough
 /// out that the trunk never hides them, and turned to face the screen. The
 /// monkey climbs on the trunk's camera-facing front, so a label never covers
 /// it. Each number sits on a dark rounded plate, the look of the progress
@@ -58,7 +60,8 @@ public class HeightMarkerSystem: MonoBehaviour {
     [Min(0f)]
     [Tooltip(
         "markers show up to this far above the monkey; keep it under the "
-            + "DTSPool lookAheadU, so no marker floats over the trunk top; u"
+            + "DynamicTreeSegmentPool lookAheadU, so no marker floats over the "
+            + "trunk top; u"
     )]
     private float showAboveU = 18f;
 
@@ -82,13 +85,6 @@ public class HeightMarkerSystem: MonoBehaviour {
             + "so branches & fruit at their height draw over them; u"
     )]
     private float behindAxisU = 0.5f;
-
-    [SerializeField]
-    [Tooltip(
-        "labels on the trunk's right side as seen from the camera, else on "
-            + "its left"
-    )]
-    private bool isOnRightSide = true;
 
     [Header("Text")]
     [SerializeField]
@@ -244,19 +240,25 @@ public class HeightMarkerSystem: MonoBehaviour {
             HideAll();
             return;
         }
-        EnsureLabels(highest - lowest + 1);
+        EnsureLabels((highest - lowest + 1) * SIDE_COUNT);
 
-        if (!TryGetAnchor(view.position, out Vector3 anchor)) {
+        if (
+            !TryGetAnchor(view.position, true, out Vector3 rightAnchor)
+            || !TryGetAnchor(view.position, false, out Vector3 leftAnchor)
+        ) {
             HideAll();
             return;
         }
 
-        // marker k always on label k mod count, so consecutive markers never
-        // share a label
+        // marker k always on label pair k mod pair count, so consecutive
+        // markers never share a label; each pair is a right & a left label
         int count = labels.Count;
+        int pairCount = count / SIDE_COUNT;
         for (int i = 0; i < count; i++) {
             TextMeshPro label = labels[i];
-            int marker = lowest + Mod(i - lowest, count);
+            bool isRight = IsRightLabel(i);
+            Vector3 anchor = isRight ? rightAnchor : leftAnchor;
+            int marker = lowest + Mod(i / SIDE_COUNT - lowest, pairCount);
             int heightU = marker * interval;
             bool isBoss = heightU == bossHeightU;
             if (marker > highest || (isBoss && isBossMarkerDone)) {
@@ -299,7 +301,11 @@ public class HeightMarkerSystem: MonoBehaviour {
                     bossPlateColor, bossPlateBeatColor, beat
                 );
                 label.transform.localScale *= bossScale * (1f + 0.06f * beat);
-                isFigureShown = PlaceBossFigure(bossFight, label, plates[i]);
+                // one king look-alike, on the right-hand plate
+                if (isRight) {
+                    isFigureShown =
+                        PlaceBossFigure(bossFight, label, plates[i]);
+                }
             }
         }
         if (!isFigureShown && bossFigure != null) {
@@ -361,6 +367,8 @@ public class HeightMarkerSystem: MonoBehaviour {
     // constants  ##############################################################
     private const string LABEL_NAME = "HeightMarkerLabel";
     private const string PLATE_NAME = "Plate";
+    // each marker shows on the trunk's right & left, as seen from the camera
+    private const int SIDE_COUNT = 2;
     // label rect; the text overflows it, only its pivot end matters; u
     private const float LABEL_WIDTH_U = 6f;
     private const float LABEL_HEIGHT_U = 2f;
@@ -399,6 +407,11 @@ public class HeightMarkerSystem: MonoBehaviour {
     // private methods  ########################################################
     private int IntervalU => useTestOverride ? testIntervalU : intervalU;
 
+    // label pairs are right, left, right, left, ~
+    private static bool IsRightLabel(int index) {
+        return index % SIDE_COUNT == 0;
+    }
+
     private static int Mod(int value, int divisor) {
         return ((value % divisor) + divisor) % divisor;
     }
@@ -412,15 +425,19 @@ public class HeightMarkerSystem: MonoBehaviour {
     }
 
     /// <summary>
-    /// The world spot, y aside, for every label's trunk-side end: beside the
-    /// silhouette on the chosen side, as seen from
+    /// The world spot, y aside, for every label's trunk-side end on one side:
+    /// beside the silhouette on the chosen side, as seen from
     /// <paramref name="viewPosition"/>, pushed <c>behindAxisU</c> past the
     /// axis and out just far enough that the line of sight keeps
     /// <c>sightClearanceU</c> from the trunk.
     /// </summary>
     /// <returns>false iff the camera is too close to the trunk for any spot
     /// to be clear</returns>
-    private bool TryGetAnchor(Vector3 viewPosition, out Vector3 anchor) {
+    private bool TryGetAnchor(
+        Vector3 viewPosition,
+        bool isRight,
+        out Vector3 anchor
+    ) {
         anchor = Vector3.zero;
 
         // the trunk is an upright cylinder, so only the horizontal plane
@@ -436,7 +453,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         toView /= viewDistanceU;
 
         // right of the axis as seen from the camera, or left
-        Vector3 side = isOnRightSide
+        Vector3 side = isRight
             ? Vector3.Cross(toView, Vector3.up)
             : Vector3.Cross(Vector3.up, toView);
 
@@ -552,11 +569,12 @@ public class HeightMarkerSystem: MonoBehaviour {
 
         // the trunk-side end sits on the anchor, the number grows away from
         // the trunk, and the margin there leaves room for the plate's padding
-        label.alignment = isOnRightSide
+        bool isRight = IsRightLabel(index);
+        label.alignment = isRight
             ? TextAlignmentOptions.MidlineLeft
             : TextAlignmentOptions.MidlineRight;
-        label.rectTransform.pivot = new Vector2(isOnRightSide ? 0f : 1f, 0.5f);
-        label.margin = isOnRightSide
+        label.rectTransform.pivot = new Vector2(isRight ? 0f : 1f, 0.5f);
+        label.margin = isRight
             ? new Vector4(platePaddingXU, 0f, 0f, 0f)
             : new Vector4(0f, 0f, platePaddingXU, 0f);
 

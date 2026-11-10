@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Hangs a coconut on a bare branch of each <see cref="TreeSegmentController"/>
 /// as soon as it has rolled its branches, on its first Start and after every
-/// restart by <see cref="DTSPool"/>, by listening to
+/// restart by <see cref="DynamicTreeSegmentPool"/>, by listening to
 /// <see cref="TreeSegmentController.BranchesGenerated"/>. Put one on any
 /// object active from scene load, never under the pool's mock tree.
 /// <para>

@@ -3,6 +3,7 @@
 <!--
 Fixme camera adjust
 Fixme game play tunning
+Fixme order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coconut, 300m: spider web, 500m: boss fight
 -->
 
 
@@ -52,7 +53,7 @@ Fixme game play tunning
 - coconut analytics: pickups, uses & coconut score per run in the session report
 - `CoconutSpawner` test override for coconuts from Height 5 on every segment
 - whole green coconut model `SM_Fruits_Coconut_1` from the PolyOne Free Fruits pack, & a matching UI sprite rendered from it (`coconut-green-256x256`, credited in `CREDITS.md`)
-- trunk height markers: every 50 u of climbed height a number beside the trunk in world units labelled m (e.g. `150 m`), white bold on a dark rounded plate like the progress bar readout, kept on the trunk's right edge as seen from the camera so the trunk never hides it; a marker grows & its plate brightens the first time the monkey passes it (`HeightMarkerSystem` on `Envs/HeightMarkerSystem`, test override for a 5 u interval)
+- trunk height markers: every 50 u of climbed height a number beside the trunk in world units labelled m (e.g. `150 m`), white bold on a dark rounded plate like the progress bar readout, one on each of the trunk's left and right edges as seen from the camera so the trunk never hides it; a marker grows & its plate brightens the first time the monkey passes it (`HeightMarkerSystem` on `Envs/HeightMarkerSystem`, test override for a 5 u interval)
 
 ##### Houdong Pan
 

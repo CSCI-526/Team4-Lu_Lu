@@ -1,6 +1,6 @@
 /// <summary>Phases of one run, owned by <see cref="GameController"/>.</summary>
 public enum GameState {
-    /// <summary>Paused on the tutorial screen, any key starts the run.</summary>
+    /// <summary>Paused on the tutorial screen, Space starts the run.</summary>
     Tutorial,
 
     /// <summary>

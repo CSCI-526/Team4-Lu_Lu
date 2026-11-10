@@ -42,9 +42,9 @@ graph TD
 | `UI/StaminaBarController` | `AddStaminaByFruit` restores stamina when a grab's flight lands |
 | `UI/FruitFlyEffect` | flies a grabbed fruit's sprite to its target, then calls back |
 | `Environment/FruitFlyOnGrab` | on a fruit: which target and sprite its flight uses |
-| `Environment/LeapOnGrab` | marks a fruit whose grab starts a leap |
-| `Player/PineappleLeapController` | on the monkey root: runs the leap |
-| `Player/PineappleLeapConfig` | the leap's distance, speed curve, hand rise, and landing grace |
+| `ItemPineapple/LeapOnGrab` | marks a fruit whose grab starts a leap |
+| `ItemPineapple/PineappleLeapController` | on the monkey root: runs the leap |
+| `ItemPineapple/PineappleLeapConfig` | the leap's distance, speed curve, hand rise, and landing grace |
 
 ## Detection
 

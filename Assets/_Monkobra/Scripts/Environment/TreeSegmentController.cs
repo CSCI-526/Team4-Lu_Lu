@@ -165,13 +165,16 @@ public class TreeSegmentController: MonoBehaviour {
         List<Vector3> placedPositions = new();
 
         // fixed attempt count, each attempt spawns a branch by the chance the
-        // curve gives at this segment's ramped difficulty
-        float difficulty = GetRampedDifficulty(
-            segmentCollider.bounds.center.y
-        );
-        float spawnProbability = Mathf.Clamp01(
-            worldBalanceConfig.BranchSpawnProbabilityCurve.Evaluate(difficulty)
-        );
+        // curve gives at this segment's ramped difficulty, or by the flat
+        // starting zone chance when the segment's middle lies in the zone
+        float centerY = segmentCollider.bounds.center.y;
+        float spawnProbability = IsInStartingZone(centerY)
+            ? worldBalanceConfig.StartingZoneBranchChance
+            : Mathf.Clamp01(
+                worldBalanceConfig.BranchSpawnProbabilityCurve.Evaluate(
+                    GetRampedDifficulty(centerY)
+                )
+            );
 
         int attemptCount = worldBalanceConfig.BranchGenerationAttemptCount;
         for (int i = 0; i < attemptCount; i++) {
@@ -222,9 +225,13 @@ public class TreeSegmentController: MonoBehaviour {
         // fruit chances follow the difficulty at the branch's own height
         float rampedDifficulty =
             GetRampedDifficulty(branch.transform.position.y);
-        float bananaProbability = Mathf.Clamp01(
-            worldBalanceConfig.BananaSpawnProbabilityCurve.Evaluate(rampedDifficulty)
-        );
+        float bananaProbability = IsInStartingZone(branch.transform.position.y)
+            ? worldBalanceConfig.StartingZoneBananaChance
+            : Mathf.Clamp01(
+                worldBalanceConfig.BananaSpawnProbabilityCurve.Evaluate(
+                    rampedDifficulty
+                )
+            );
         float pineappleProbability = Mathf.Clamp01(
             worldBalanceConfig.PineappleSpawnProbabilityCurve.Evaluate(
                 rampedDifficulty
@@ -241,6 +248,12 @@ public class TreeSegmentController: MonoBehaviour {
         } else {
             branchRoot.Initialize(bananaProbability, pineappleProbability);
         }
+    }
+
+    // iff the y lies below the starting zone exit; false w/o a service
+    private bool IsInStartingZone(float worldY) {
+        return RampedDifficultyManager.I != null
+            && RampedDifficultyManager.I.IsInStartingZoneY(worldY);
     }
 
     // 0 when no service in scene

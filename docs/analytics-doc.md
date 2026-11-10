@@ -152,7 +152,7 @@ All under `Assets/_Monkobra/Scripts/Analytics/`.
 - `AnalyticsManager`: observes the game, fills the data, saves
 - `SessionData`, `RunData`: plain data of a session and a run
 - `AnalyticsMetric`, `AnalyticsMetrics`: the event kinds and their report headings
-- `LoseScreenDownloadWidget` (under `Scripts/UI/`): the dev-only download button
+- `LoseScreenDownloadWidget` (under `Scripts/LoseScreen/`): the dev-only download button
 - `AnalyticsMarkdownWriter`: renders the data to markdown, writes the file
 - `DeathCause`, `DeathCauseResolver`: infers and names the death cause
 - `AnalyticsConfig`: tuning asset
