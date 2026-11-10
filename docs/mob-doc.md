@@ -81,7 +81,7 @@ The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)
 
 ### Camera Alert
 
-`CameraRigManager` cuts to the cobra alert shot, a look down at the cobra head framed with the monkey, on the cobra's `ChaseStarted` and `CatchUpStarted` and on a falling cobra hit, then hands back. It stays quiet while the cobra guards the boss arena. The shot's priority, hold, cap, and cooldown, and the optional proximity trigger, are in `CameraConfig`.
+`CameraRigManager` cuts to the cobra alert shot only once, on the cobra's `ChaseStarted`, the moment it first starts moving after the monkey leaves the starting zone, then hands back. No other cobra event moves the camera. The shot shows the whole cobra: `CameraCobraAlertFraming` stands the camera close, a set horizontal distance out from the monkey on the anchor's yaw, so it only travels up and down, aims at the middle of the cobra's own coil, wherever it lies below the monkey, from a height that looks down by a set angle, lifted by a y offset so the cobra sits lower in the view, and widens the field of view to fit it, up to a limit. It stays quiet while the cobra guards the boss arena. The shot's priority, cap, and cooldown, and the fit margin, widest field of view, and smoothing, are in `CameraConfig`.
 
 ### Rough Bark Shake
 

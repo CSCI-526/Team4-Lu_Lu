@@ -137,12 +137,34 @@ public class CameraConfig: ScriptableObject {
     /// at its duration, whichever comes first</returns>
     public ShotSettings CoconutShot => coconutShot;
 
-    /// <returns>looks down at the cobra after a cobra event</returns>
+    /// <returns>the view of the whole cobra when it first starts moving
+    /// out of the starting zone</returns>
     public ShotSettings CobraAlertShot => cobraAlertShot;
 
-    /// <returns>cobra head distance below the monkey that raises an alert,
-    /// 0 turns it off; u</returns>
-    public float CobraProximityU => cobraProximityU;
+    /// <returns>how far out from the monkey the cobra alert camera stands,
+    /// horizontally, so it is close; u</returns>
+    public float CobraAlertDistanceU => cobraAlertDistanceU;
+
+    /// <returns>height added to the cobra alert's aim point and with it the
+    /// camera, above the cobra's middle; raises the shot, so the cobra sits
+    /// lower in the view; u</returns>
+    public float CobraAlertYOffsetU => cobraAlertYOffsetU;
+
+    /// <returns>how far the cobra alert looks down, the camera standing
+    /// above its aim point; deg</returns>
+    public float CobraAlertPitchDeg => cobraAlertPitchDeg;
+
+    /// <returns>room kept round the cobra when the view is fitted to it;
+    /// above 1 is looser</returns>
+    public float CobraAlertFitMargin => cobraAlertFitMargin;
+
+    /// <returns>widest field of view the cobra alert may use to fit the
+    /// cobra; deg</returns>
+    public float CobraAlertMaxFovDeg => cobraAlertMaxFovDeg;
+
+    /// <returns>time the cobra alert's height and field of view take to
+    /// follow the cobra; s</returns>
+    public float CobraAlertSmoothTimeS => cobraAlertSmoothTimeS;
 
     /// <returns>looks up and pulls back while a pineapple leap runs</returns>
     public ShotSettings LeapShot => leapShot;
@@ -294,11 +316,33 @@ public class CameraConfig: ScriptableObject {
     private ShotSettings cobraAlertShot = new ShotSettings(1.5f, 0.8f, 4f, 20);
 
     [SerializeField]
-    [Tooltip(
-        "cobra head distance below the monkey that raises an alert, "
-            + "0 turns it off; u"
-    )]
-    private float cobraProximityU = 0f;
+    [Tooltip("how far out from the monkey the alert camera stands, "
+        + "horizontally; u")]
+    private float cobraAlertDistanceU = 5f;
+
+    [SerializeField]
+    [Tooltip("height added to the aim point and the camera above the cobra's "
+        + "middle; raises the shot so the cobra sits lower in the view, "
+        + "negative lowers it; u")]
+    private float cobraAlertYOffsetU = 3f;
+
+    [SerializeField]
+    [Range(0f, 60f)]
+    [Tooltip("how far the alert looks down; deg")]
+    private float cobraAlertPitchDeg = 15f;
+
+    [SerializeField]
+    [Tooltip("room kept round the cobra when fitted; above 1 is looser")]
+    private float cobraAlertFitMargin = 1.2f;
+
+    [SerializeField]
+    [Tooltip("widest field of view the alert may use to fit the cobra; deg")]
+    private float cobraAlertMaxFovDeg = 100f;
+
+    [SerializeField]
+    [Tooltip("time the alert's height and field of view take to follow the "
+        + "cobra; s")]
+    private float cobraAlertSmoothTimeS = 0.3f;
 
     [Header("Shot: Pineapple Leap")]
     [SerializeField]
@@ -402,7 +446,10 @@ public class CameraConfig: ScriptableObject {
         holdLookUpSmoothTimeS = Mathf.Max(0f, holdLookUpSmoothTimeS);
         holdZoomSmoothTimeS = Mathf.Max(0f, holdZoomSmoothTimeS);
         grabShiftSmoothTimeS = Mathf.Max(0f, grabShiftSmoothTimeS);
-        cobraProximityU = Mathf.Max(0f, cobraProximityU);
+        cobraAlertDistanceU = Mathf.Max(0.5f, cobraAlertDistanceU);
+        cobraAlertFitMargin = Mathf.Max(1f, cobraAlertFitMargin);
+        cobraAlertMaxFovDeg = Mathf.Clamp(cobraAlertMaxFovDeg, 30f, 150f);
+        cobraAlertSmoothTimeS = Mathf.Max(0f, cobraAlertSmoothTimeS);
         leapDistanceScale = Mathf.Max(1f, leapDistanceScale);
         leapFollowLagS = Mathf.Max(0f, leapFollowLagS);
         leapAimLagS = Mathf.Max(0f, leapAimLagS);

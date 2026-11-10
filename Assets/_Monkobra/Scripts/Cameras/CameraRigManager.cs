@@ -116,21 +116,13 @@ public class CameraRigManager: MonoBehaviour {
     [SerializeField]
     private CameraShotTarget coconutTarget;
 
-    [Tooltip("shot that looks down at the cobra after a cobra event")]
+    [Tooltip("shot that shows the whole cobra when it starts chasing")]
     [SerializeField]
     private CinemachineCamera cobraAlertCamera;
-
-    [Tooltip("point the cobra alert tracks, set to the cobra's head")]
-    [SerializeField]
-    private CameraShotTarget cobraTarget;
 
     [Tooltip("shot that looks up and pulls back during a pineapple leap")]
     [SerializeField]
     private CinemachineCamera leapCamera;
-
-    [Tooltip("the camera anchor, the monkey's height for the proximity alert")]
-    [SerializeField]
-    private Transform anchor;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -171,13 +163,6 @@ public class CameraRigManager: MonoBehaviour {
         if (leapCamera == null) {
             Debug.LogWarning(
                 "CameraRigManager:\tmust assign Inspector Field: leapCamera",
-                this
-            );
-        }
-        if (cobraTarget == null) {
-            Debug.LogWarning(
-                "CameraRigManager:\tmust assign Inspector Field: "
-                    + "cobraTarget",
                 this
             );
         }
@@ -245,7 +230,6 @@ public class CameraRigManager: MonoBehaviour {
         if (config == null) {
             return;
         }
-        CheckCobraProximity();
         // the leap shot follows the leap itself, polled as well as heard, so
         // a missed event can never leave the view stuck up
         if (liveKind == ShotKind.Leap && game != null && !game.IsLeaping) {
@@ -291,19 +275,10 @@ public class CameraRigManager: MonoBehaviour {
         ReleaseShot(ShotKind.Leap);
     }
 
-    // a cobra event worth a look, but not while it guards the boss arena
+    // the one cobra event that gets a look: it first starts moving, once the
+    // monkey is out of the starting zone
     private void OnCobraChaseStarted() {
         RequestCobraAlert();
-    }
-
-    private void OnCobraCatchUpStarted(int stacks) {
-        RequestCobraAlert();
-    }
-
-    private void OnMonkeyHit(Collider _, HitBranchSensor.HitKind kind) {
-        if (kind == HitBranchSensor.HitKind.FallingCobraController) {
-            RequestCobraAlert();
-        }
     }
 
     // constants  ##############################################################
@@ -327,22 +302,13 @@ public class CameraRigManager: MonoBehaviour {
     private GameController game;
     private PineappleLeapController leapController;
     private CobraMotor cobra;
-    private HitBranchSensor hitSensor;
 
     // private methods  ########################################################
     private void SubscribeCobra() {
-        // each source on its own, since a singleton may wake after this
         if (cobra == null) {
             cobra = FindFirstObjectByType<CobraMotor>();
             if (cobra != null) {
                 cobra.ChaseStarted += OnCobraChaseStarted;
-                cobra.CatchUpStarted += OnCobraCatchUpStarted;
-            }
-        }
-        if (hitSensor == null) {
-            hitSensor = HitBranchSensor.I;
-            if (hitSensor != null) {
-                hitSensor.Hit += OnMonkeyHit;
             }
         }
     }
@@ -350,49 +316,16 @@ public class CameraRigManager: MonoBehaviour {
     private void UnsubscribeCobra() {
         if (cobra != null) {
             cobra.ChaseStarted -= OnCobraChaseStarted;
-            cobra.CatchUpStarted -= OnCobraCatchUpStarted;
             cobra = null;
         }
-        if (hitSensor != null) {
-            hitSensor.Hit -= OnMonkeyHit;
-            hitSensor = null;
-        }
     }
 
-    // looks down at the cobra, framed with the monkey
+    // shows the whole cobra, but not while it guards the boss arena
     private void RequestCobraAlert() {
-        if (config == null || cobra == null || cobraTarget == null
-            || cobra.IsGuarding) {
+        if (config == null || cobra == null || cobra.IsGuarding) {
             return;
-        }
-        Transform head = cobra.HeadTransform;
-        if (head == null) {
-            return;
-        }
-
-        if (!IsShotLive(ShotKind.CobraAlert)) {
-            cobraTarget.SetSubject(head);
         }
         RequestShot(ShotKind.CobraAlert, config.CobraAlertShot.DurationS);
-    }
-
-    // optional: an alert whenever the cobra head comes within the configured
-    // distance below the monkey, off while the distance is 0
-    private void CheckCobraProximity() {
-        float rangeU = config.CobraProximityU;
-        if (rangeU <= 0f || cobra == null || anchor == null
-            || cobra.IsGuarding || cobra.IsFrozen) {
-            return;
-        }
-        Transform head = cobra.HeadTransform;
-        if (head == null) {
-            return;
-        }
-
-        float belowU = anchor.position.y - head.position.y;
-        if (belowU > 0f && belowU < rangeU) {
-            RequestCobraAlert();
-        }
     }
 
     private CameraConfig.ShotSettings GetSettings(ShotKind kind) {

@@ -693,9 +693,7 @@ MonoBehaviour:
   coconutCamera: {fileID: 8435269618182790152}
   coconutTarget: {fileID: 2222222222222222203}
   cobraAlertCamera: {fileID: 3333333333333333303}
-  cobraTarget: {fileID: 3333333333333333313}
   leapCamera: {fileID: 4444444444444444403}
-  anchor: {fileID: 1111111111111111102}
 --- !u!1 &1111111111111111101
 GameObject:
   m_ObjectHideFlags: 0
@@ -798,6 +796,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+  - component: {fileID: 3333333333333333321}
   - component: {fileID: 5555555555555550203}
   - component: {fileID: 5555555555555550103}
   - component: {fileID: 3333333333333333302}
@@ -883,7 +882,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineFollow
   TrackerSettings:
     BindingMode: 1
-    PositionDamping: {x: 0.25, y: 0.35, z: 0.35}
+    PositionDamping: {x: 0.25, y: 0.05, z: 0.35}
     AngularDampingMode: 0
     RotationDamping: {x: 0.2, y: 0.2, z: 0.2}
     QuaternionDamping: 1
@@ -911,7 +910,7 @@ MonoBehaviour:
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 0.5, y: 0.5}
+  Damping: {x: 0.3, y: 0}
   Lookahead:
     Enabled: 0
     Time: 0
@@ -926,7 +925,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3333333333333333312}
-  - component: {fileID: 3333333333333333313}
   m_Layer: 0
   m_Name: CobraShotTarget
   m_TagString: Untagged
@@ -949,22 +947,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8377228619459044113}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3333333333333333313
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3333333333333333311}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b9e5c7d2a1f4d8e8c0a6b4f9d2e7a15, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::CameraShotTarget
-  anchor: {fileID: 1111111111111111102}
-  subjectWeight: 0.65
-  subjectSmoothTimeS: 0.25
-  weightEaseS: 0.3
 --- !u!1 &4444444444444444401
 GameObject:
   m_ObjectHideFlags: 0
@@ -1256,3 +1238,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraRoughBarkShake
   config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}
   inputConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
+--- !u!114 &3333333333333333321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3333333333333333301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a9c2e7b3d1f4c8a9e6b0d4f2a8c1e93, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CameraCobraAlertFraming
+  config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}
+  anchor: {fileID: 1111111111111111102}
+  focus: {fileID: 3333333333333333312}
