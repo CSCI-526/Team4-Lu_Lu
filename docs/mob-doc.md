@@ -140,7 +140,7 @@ A static trap on the trunk that holds the monkey in place while the cobra keeps 
 
 The attempt count and spawn probability curve are in `Settings/Environment/WorldBalanceConfig.asset`; the minimum separation is on `SpiderWebSpawner` on `Envs/DynamicTreeSegmentPool`.
 
-The curve is the only gate: webs appear wherever it is above 0, and the ramped difficulty is 0 until the climb reaches the start of `rampedDifficultyCurve`.
+The curve is the only gate: webs appear wherever it is above 0, and the curve sits at 0 until the difficulty of the web's first appearance height.
 
 ### Trap and Escape
 

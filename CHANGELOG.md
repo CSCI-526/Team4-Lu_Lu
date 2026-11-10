@@ -45,6 +45,8 @@ FIXME order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coco
 - pineapple leap shot: camera looks up, pulls back & trails the climb, hands back at the landing (`CameraLeapFraming`, `PineappleLeapController.Landed`)
 - rough bark shake: Perlin noise eases up while moving on rough bark (`CameraRoughBarkShake`); every camera has an impulse listener & noise
 - height marker pass trigger: `HeightMarker` prefab w/ a trigger at the exact height, the plate drawn 5 u above on its label anchor (`HeightMarkerTrigger`)
+- post-boss ramp: difficulty keeps rising past 1 after the boss fight, linear to 2 at 1000 m; every ramp-read curve (branch, banana, pineapple, web, rough bark, falling cobra, cobra base speed) has a key at 2
+- `coconutSpawnProbabilityCurve` in `PlayerBalanceConfig`: coconut chance per segment read off the ramped difficulty like every other hazard
 
 ##### Wenhai Dong
 
@@ -103,6 +105,8 @@ FIXME order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coco
 - hit shake force scaled per kind & overall by `CameraConfig`
 - `DynamicTreeSegmentPool`: 20 segments, look-ahead 60, first segment at y -40, so trunk exists far above & below the camera
 - height markers show up to 50 u ahead (`showAboveU`) & pulse when the monkey touches their trigger, not at a polled height
+- ramped difficulty runs 0 at the starting zone exit to 1 at the boss fight (500 m), no longer to 1200 u; `RampedDifficultyManager` floors it at 0 instead of clamping to 0~1
+- first appearances follow height: rough bark 100 m, pineapple 150 m, falling cobra 200 m, coconut 250 m, web 300 m, each the zero stretch of its own curve in the ramped difficulty (falling cobra curve linear after its knee)
 
 ##### Yuqing Lu
 
@@ -133,6 +137,7 @@ FIXME order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coco
 - orphan `GoalText` object in `Lv1Scene` (never drawn, no parent Canvas) and its mention in the TDD
 - look-left & look-right cameras: grab shifts the climb view instead of cutting; `CameraLookDown` → `CameraCoconutTrack`
 - cobra alert on surges, falling cobra hits & proximity
+- `coconutStartHeightU` & `coconutSpawnChancePerSegment` (`PlayerBalanceConfig`), `roughBarkStartScore` (`WorldBalanceConfig`) & the rough bark forced first patch: no fixed gate left, the ramp decides
 
 ##### Yuqing Lu
 

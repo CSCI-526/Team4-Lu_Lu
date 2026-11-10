@@ -129,10 +129,10 @@ Game balance numbers live in 3 assets, split by what they tune (how height becom
 | 〃 | Starting Zone | `startingZoneStartStaminaFraction`, `startingZoneExhaustedSpeedMultiplier`, `startingZoneIdleRecoveryMultiplier` | `StaminaBarController`, `MonkeyController` |
 | 〃 | Branch Hit | `hitStunDurationS`, `hitDropDistanceU`, `hitDropSpeedU` | `MonkeyController`, `CobraMotor` |
 | 〃 | Score | `pointsPerMeter`, `unitsPerMeter`, `scoreRewardPoints` | `ScoreManager` |
-| 〃 | Coconut | `coconutStartHeightU`, `coconutSpawnChancePerSegment`, `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutSpawner`, `ScoreManager`, `CoconutManager` |
+| 〃 | Coconut | `coconutSpawnProbabilityCurve`, `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutSpawner`, `ScoreManager`, `CoconutManager` |
 | `WorldBalanceConfig` | Ramped Difficulty | `rampedDifficultyCurve` | `RampedDifficultyManager` |
 | 〃 | Branch | `branchGenerationAttemptCount`, `startingZoneBranchClearRadiusU`, `startingZoneBranchChance`, `startingZoneBananaChance`, `branchSpawnProbabilityCurve`, `bananaSpawnProbabilityCurve`, `pineappleSpawnProbabilityCurve` | `TreeSegmentController` |
-| 〃 | Rough Bark | `roughBarkStartScore`, `roughBarkSpeedMultiplier`, `roughBarkBlendS`, `roughBarkAttemptCount`, `roughBarkSpawnProbabilityCurve` | `RoughBarkSpawner`, `MonkeyController` |
+| 〃 | Rough Bark | `roughBarkSpeedMultiplier`, `roughBarkBlendS`, `roughBarkAttemptCount`, `roughBarkSpawnProbabilityCurve` | `RoughBarkSpawner`, `MonkeyController` |
 | 〃 | Spider Web | `webAttemptCount`, `webSpawnProbabilityCurve` | `SpiderWebSpawner` |
 | 〃 | Boss Fight | `bossTriggerHeightU`, `bossMaxHealth`, `bossBananaDamage` | `BossFightController` |
 | `CobraBalanceConfig` | Falling Cobra | `fallingCobraAttemptCount`, `fallingCobraSpawnProbabilityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU`, `fallingCobraReachWakeDistanceU`, `fallingCobraBananaAmbushChance`, `fallingCobraRehitGraceS`, `fallingCobraMaxHits` | `FallingCobraSpawner`, `FallingCobraController` |
@@ -252,7 +252,7 @@ The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressB
 The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Envs/HeightMarkerSystem`, whose position marks the trunk axis, and works as follows:
 
 - Pool: TextMeshPro labels are built at runtime in right and left pairs, marker k always on pair k mod pair count, so every marker shows on both sides of the trunk, and only markers from `showBelowU` under to `showAboveU` over the monkey show. Markers follow height, not tree segments, so a recycled segment can neither leave one behind nor show one twice
-- Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in `PlayerBalanceConfig`, e.g. `coconutStartHeightU`, reads straight off the trunk
+- Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in a config, e.g. `bossTriggerHeightU`, reads straight off the trunk
 - Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
 - Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette, one on each side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
 - Boss Marker: the marker at `BossFightController.TriggerHeightU` gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `BossFightController.BuildMarkerFigure` on top of it, kept on whichever pooled label shows it; once `BossFightController.IsInArena` it is no longer shown
