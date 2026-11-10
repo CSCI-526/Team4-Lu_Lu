@@ -26,6 +26,15 @@ public class WorldBalanceConfig: ScriptableObject {
     public float StartingZoneBranchClearRadiusU =>
         startingZoneBranchClearRadiusU;
 
+    /// <returns>chance 0~1 that one attempt creates a branch on a segment
+    /// whose middle lies in the starting zone, in place of the branch
+    /// curve</returns>
+    public float StartingZoneBranchChance => startingZoneBranchChance;
+
+    /// <returns>chance 0~1 that a branch grown in the starting zone bears a
+    /// banana, in place of the banana curve</returns>
+    public float StartingZoneBananaChance => startingZoneBananaChance;
+
     /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that one attempt
     /// creates a branch</returns>
     public AnimationCurve BranchSpawnProbabilityCurve =>
@@ -87,6 +96,22 @@ public class WorldBalanceConfig: ScriptableObject {
             + "starting zone lasts; 0 turns it off; u"
     )]
     private float startingZoneBranchClearRadiusU = 6f;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "chance that one branch attempt succeeds on a segment in the starting "
+            + "zone, below the exit trigger; replaces the branch curve there"
+    )]
+    private float startingZoneBranchChance = 0.4f;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip(
+        "chance that a branch grown in the starting zone bears a banana; "
+            + "replaces the banana curve there"
+    )]
+    private float startingZoneBananaChance = 1f;
 
     [SerializeField]
     [Tooltip(
