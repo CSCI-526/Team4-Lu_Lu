@@ -70,7 +70,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FruitFlyOnGrab
   target: 1
-  sprite: {fileID: 21300000, guid: 6863cf55da93949a3b30a0277051c096, type: 3}
+  sprite: {fileID: 21300000, guid: c5df4545aea2520489a327b188bfce88, type: 3}
 --- !u!114 &7052468613854869901
 MonoBehaviour:
   m_ObjectHideFlags: 0

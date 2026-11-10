@@ -15,7 +15,8 @@ Todo level selection & scene system
 
 ##### Erik
 
-- brown coconut: the whole `SM_Fruits_Coconut_1` model in the world (`Coconut`, `CoconutProjectile`) renders w/ the `Coconut_Brown` material instead of the pack's green; the UI sprite stays green
+- brown coconut: the whole `SM_Fruits_Coconut_1` model in the world (`Coconut`, `CoconutProjectile`) renders w/ the `Coconut_Brown` material instead of the pack's green
+- coconut counter & flight sprite: use `coconut128x128` instead of `Coconut_Green`; unused `Coconut_Green` sprite & `SM_Fruits_Coconut_4` model rm
 - `Lv1Scene` split into nested prefabs: `World`, `Envs`, `Entities`, `Systems`, `UI` and a leaf prefab per unit, so teammates edit different files
 - Great Cobra exit boost: extra climb speed for a while after the monkey leaves the starting zone, w/ center warning "Run! The Great Cobra is chasing you!"; `cobraExitBoostSpeedU` & `cobraExitBoostDurationS` in `GameBalanceConfig`
 - `MovementConfig` asset: climb speed builds up along 2 curves (up, down) of how long the key is held, instead of a fixed acceleration
