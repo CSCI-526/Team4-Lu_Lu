@@ -768,18 +768,14 @@ PrefabInstance:
       propertyPath: TargetOffset.y
       value: -5
       objectReference: {fileID: 0}
+    - target: {fileID: 1111111111111111103, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: monkey
+      value: 
+      objectReference: {fileID: 504779541}
     - target: {fileID: 1228166508856545886, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
       propertyPath: volume
       value: 
       objectReference: {fileID: 1931554831}
-    - target: {fileID: 2167007332462591705, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
-      propertyPath: Target.TrackingTarget
-      value: 
-      objectReference: {fileID: 504779541}
-    - target: {fileID: 2691093320959511463, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
-      propertyPath: Target.TrackingTarget
-      value: 
-      objectReference: {fileID: 504779541}
     - target: {fileID: 3143951949233661795, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
       propertyPath: field of view
       value: 65
@@ -788,10 +784,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cameras
       objectReference: {fileID: 0}
-    - target: {fileID: 5154206856915366031, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
-      propertyPath: Target.TrackingTarget
-      value: 
-      objectReference: {fileID: 504779541}
     - target: {fileID: 5912103275275959521, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.35504013
@@ -860,10 +852,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8435269618182790152, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
-      propertyPath: Target.TrackingTarget
-      value: 
-      objectReference: {fileID: 2102550754}
     - target: {fileID: 9089522967842758483, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.09784402
