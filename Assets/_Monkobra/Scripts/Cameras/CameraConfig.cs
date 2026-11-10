@@ -88,6 +88,33 @@ public class CameraConfig: ScriptableObject {
     /// </returns>
     public float DescendLeadU => descendLeadU;
 
+    /// <summary>
+    /// How far the aim rises for a time of holding up, from the hold curve
+    /// </summary>
+    /// <param name="heldS">time the up input has been held; s</param>
+    /// <returns>extra aim height; u</returns>
+    public float EvaluateHoldLookUpU(float heldS) {
+        return Mathf.Max(0f, holdLookUpCurve.Evaluate(heldS));
+    }
+
+    /// <summary>
+    /// The field of view for a time of holding up, from the zoom-out curve:
+    /// its value at 0 s is the base view, at its last key the final view
+    /// </summary>
+    /// <param name="heldS">time the up input has been held; s</param>
+    /// <returns>field of view; deg</returns>
+    public float EvaluateHoldFovDeg(float heldS) {
+        return holdFovCurve.Evaluate(heldS);
+    }
+
+    /// <returns>time the zoom-out takes to follow its curve, and to settle
+    /// back once up is released; s</returns>
+    public float HoldZoomSmoothTimeS => holdZoomSmoothTimeS;
+
+    /// <returns>time the hold look-up takes to follow its curve, and to
+    /// settle back once up is released; s</returns>
+    public float HoldLookUpSmoothTimeS => holdLookUpSmoothTimeS;
+
     /// <returns>vertical speed that counts as full lead; u/s</returns>
     public float FullLeadSpeedU => fullLeadSpeedU;
 
@@ -212,6 +239,34 @@ public class CameraConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("extra aim offset at full descent speed, negative is below; u")]
     private float descendLeadU = -1.5f;
+
+    [SerializeField]
+    [Tooltip(
+        "extra aim height (y, u) vs time the up input has been held "
+            + "(x, s): the longer up is held the higher the view looks, up "
+            + "to the last key's value. Releasing up settles back"
+    )]
+    private AnimationCurve holdLookUpCurve =
+        AnimationCurve.EaseInOut(0f, 0f, 3f, 4f);
+
+    [SerializeField]
+    [Tooltip(
+        "field of view (y, deg) vs time the up input has been held (x, s), "
+            + "the zoom out: the value at 0 s is the base view, the last "
+            + "key's value the final view. Releasing up settles back"
+    )]
+    private AnimationCurve holdFovCurve =
+        AnimationCurve.EaseInOut(0f, 65f, 3f, 75f);
+
+    [SerializeField]
+    [Tooltip("time the zoom-out takes to follow its curve and to settle back "
+        + "after release; s")]
+    private float holdZoomSmoothTimeS = 0.5f;
+
+    [SerializeField]
+    [Tooltip("time the hold look-up takes to follow its curve and to settle "
+        + "back after release; s")]
+    private float holdLookUpSmoothTimeS = 0.3f;
 
     [SerializeField]
     [Tooltip("vertical speed that counts as full lead; u/s")]
@@ -351,6 +406,8 @@ public class CameraConfig: ScriptableObject {
             fullLeadSpeedU
         );
         leadSmoothTimeS = Mathf.Max(0f, leadSmoothTimeS);
+        holdLookUpSmoothTimeS = Mathf.Max(0f, holdLookUpSmoothTimeS);
+        holdZoomSmoothTimeS = Mathf.Max(0f, holdZoomSmoothTimeS);
         grabShiftSmoothTimeS = Mathf.Max(0f, grabShiftSmoothTimeS);
         coconutLandHoldS = Mathf.Max(0f, coconutLandHoldS);
         cobraProximityU = Mathf.Max(0f, cobraProximityU);

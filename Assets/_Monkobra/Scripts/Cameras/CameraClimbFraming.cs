@@ -5,8 +5,15 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Frames the climb view: the camera looks up by default, since the goal is
 /// always above, and the monkey sits low on the screen. On top of that rest
-/// aim it adds three eased offsets, all from <see cref="CameraConfig"/>:
+/// aim it adds four eased offsets, all from <see cref="CameraConfig"/>:
 /// <list type="bullet">
+/// <item>a hold zoom-out: the field of view follows an animation curve of
+/// degrees vs time the up input is held, from the base view to the final
+/// view, so a long climb shows more tree, and it settles back once up is
+/// released</item>
+/// <item>a hold look-up: the longer the up input is held, the higher the
+/// view looks, along an animation curve of height vs hold time up to its
+/// last key, and it settles back once up is released</item>
 /// <item>a lead that follows the real vertical speed of the tracked target,
 /// not the raw input, behind a dead zone, so a blocked or trapped monkey
 /// never tilts the view and a tap on the key never nods it</item>
@@ -17,8 +24,9 @@ using UnityEngine.InputSystem;
 /// </list>
 /// Moves the <see cref="CinemachineRotationComposer"/> aim point and scales
 /// the <see cref="CinemachineFollow"/> offset, so the camera changes its
-/// angle and distance, never its field of view. Set the composer's Damping Y
-/// to 0, this script does the vertical smoothing.
+/// angle and distance, and only the hold zoom-out changes its field of view.
+/// Set the composer's Damping Y to 0, this script does the vertical
+/// smoothing.
 /// </summary>
 [RequireComponent(typeof(CinemachineRotationComposer))]
 public class CameraClimbFraming: MonoBehaviour {
@@ -40,6 +48,10 @@ public class CameraClimbFraming: MonoBehaviour {
     [SerializeField]
     private CameraConfig config;
 
+    [Tooltip("shared input tuning, supplies the move action, only polled")]
+    [SerializeField]
+    private MonkeyInputConfig inputConfig;
+
     [Tooltip("the interact action; only polled here, never enabled")]
     [SerializeField]
     private InputActionReference interactAction;
@@ -50,6 +62,13 @@ public class CameraClimbFraming: MonoBehaviour {
         if (config == null) {
             Debug.LogWarning(
                 "CameraClimbFraming:\tmust assign Inspector Field: config",
+                this
+            );
+        }
+        if (inputConfig == null || inputConfig.MoveAction == null) {
+            Debug.LogWarning(
+                "CameraClimbFraming:\tmust assign Inspector Field: "
+                    + "inputConfig with a move action, no hold look-up",
                 this
             );
         }
@@ -70,7 +89,9 @@ public class CameraClimbFraming: MonoBehaviour {
 
         if (config == null) {
             enabled = false;
+            return;
         }
+        fovDeg = config.EvaluateHoldFovDeg(0f);
     }
 
     private void LateUpdate() {
@@ -81,6 +102,7 @@ public class CameraClimbFraming: MonoBehaviour {
 
         UpdateVerticalSpeed(dt);
         UpdateGrabSide();
+        UpdateUpHeld(dt);
 
         float leadTargetU = config.IsReduceMotion ? 0f : CalcLeadTargetU();
         leadU = Mathf.SmoothDamp(
@@ -88,6 +110,24 @@ public class CameraClimbFraming: MonoBehaviour {
             leadTargetU,
             ref leadVelocityU,
             config.LeadSmoothTimeS
+        );
+        float holdTargetU = config.IsReduceMotion
+            ? 0f
+            : config.EvaluateHoldLookUpU(upHeldS);
+        holdU = Mathf.SmoothDamp(
+            holdU,
+            holdTargetU,
+            ref holdVelocityU,
+            config.HoldLookUpSmoothTimeS
+        );
+        float fovTargetDeg = config.EvaluateHoldFovDeg(
+            config.IsReduceMotion ? 0f : upHeldS
+        );
+        fovDeg = Mathf.SmoothDamp(
+            fovDeg,
+            fovTargetDeg,
+            ref fovVelocityDeg,
+            config.HoldZoomSmoothTimeS
         );
         bossAimU = Mathf.SmoothDamp(
             bossAimU,
@@ -110,10 +150,13 @@ public class CameraClimbFraming: MonoBehaviour {
 
         Vector3 offset = composer.TargetOffset;
         offset.x = shiftU;
-        offset.y = config.RestAimOffsetU + leadU + bossAimU;
+        offset.y = config.RestAimOffsetU + leadU + holdU + bossAimU;
         composer.TargetOffset = offset;
         if (follow != null) {
             follow.FollowOffset = baseFollowOffset * distanceScale;
+        }
+        if (vcam != null) {
+            vcam.Lens.FieldOfView = Mathf.Clamp(fovDeg, 5f, 120f);
         }
     }
 
@@ -122,10 +165,16 @@ public class CameraClimbFraming: MonoBehaviour {
     // fruit and -x for the right one
     private const float LEFT_SIGN = 1f;
     private const float RIGHT_SIGN = -1f;
+    private const float UP_INPUT_THRESHOLD = 0.1f;
 
     private float verticalSpeedU; // target climb speed, up positive; u/s
     private float lastTargetY;
     private bool hasLastTargetY;
+    private float upHeldS; // time the up input has been held
+    private float fovDeg; // eased field of view
+    private float fovVelocityDeg; // SmoothDamp state
+    private float holdU; // eased hold look-up
+    private float holdVelocityU; // SmoothDamp state
     private float leadU; // eased lead
     private float leadVelocityU; // SmoothDamp state
     private float bossAimTargetU; // extra aim height asked for
@@ -160,6 +209,15 @@ public class CameraClimbFraming: MonoBehaviour {
         verticalSpeedU = hasLastTargetY ? (y - lastTargetY) / dt : 0f;
         lastTargetY = y;
         hasLastTargetY = true;
+    }
+
+    // counts while up is held, from the input as the player presses it; a
+    // release resets it, and the eased offset settles back on its own
+    private void UpdateUpHeld(float dt) {
+        float inputY = inputConfig != null && inputConfig.MoveAction != null
+            ? inputConfig.MoveAction.action.ReadValue<Vector2>().y
+            : 0f;
+        upHeldS = inputY > UP_INPUT_THRESHOLD ? upHeldS + dt : 0f;
     }
 
     // up leads by the climb lead, down by the descent lead, both scaled by
