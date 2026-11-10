@@ -58,6 +58,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - Gameplay input comes from actions of the Input Actions asset `InputSystem_Actions`, read through `InputAction` events or polling; timing such as a double-tap is an interaction on the action (`UseCoconut` is a MultiTap), never a hand-rolled key tracker in a script
 - Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive`; never hard-code a dev key or let one run in a release build; dev-only UI (e.g. `LoseScreenDownloadWidget`) hides itself unless `HackShortcutConfig.IsActive`
 - Analytics events: a new run event is an `AnalyticsMetric` entry, a row in `AnalyticsMetrics`, and one `RecordEvent` call from a subscription in `AnalyticsManager`; never a new list in `RunData` or a hand-written section in the writer, see [Analytics](docs/analytics-doc.md#adding-a-metric)
+- Camera: gameplay cameras track `CameraAnchor`, never the monkey body, so strafing never spins the view; every camera value lives in `CameraConfig` and an event shot (coconut, cobra alert, leap) is a `ShotKind` asked of `CameraRigManager`, never a camera enabled by hand; a camera script only polls a shared input action, never enables or disables it, see [Technical Design Document](docs/monkobra-tdd.md#camera)
 
 ## Testing Instructions
 
