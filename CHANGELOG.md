@@ -1,8 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme cobra more actively chase when distant
-Todo show halo during cobra too close
+FIXME cobra more actively chase when distant
+TODO show halo during cobra too close
 Bug endless mode need to start w/ full heath & no starting zone
 todo upd gdd
 -->
