@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,11 +13,16 @@ public static class SceneNames {
     public const string FULL = "Lv1Scene";
     public const string ENDLESS = "EndlessScene";
 
+    /// <summary>raised just before any load through <see cref="Load"/>, while
+    /// the outgoing scene is still intact</summary>
+    public static event Action Loading;
+
     /// <summary>
     /// loads a scene by name, first undoing a pause or freeze, so the next
     /// scene never starts frozen or muted
     /// </summary>
     public static void Load(string sceneName) {
+        Loading?.Invoke();
         Time.timeScale = 1f;
         AudioListener.pause = false;
         SceneManager.LoadScene(sceneName);

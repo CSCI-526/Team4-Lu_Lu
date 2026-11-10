@@ -156,14 +156,31 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         I = this;
+        // one session spans the whole launch, across every scene load
+        DontDestroyOnLoad(gameObject);
         if (config == null) {
             config = ScriptableObject.CreateInstance<AnalyticsConfig>();
         }
         SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneNames.Loading += OnSceneLoading;
         // static event, webs spawn at runtime so none can be looked up here
         SpiderWebTrap.Encountered += OnWebEncountered;
         StartNewSession();
-        ObserveScene();
+    }
+
+    // the first scene is observed once every Awake ran, as this object is no
+    // longer on the GameController, so the singletons are not set in Awake
+    private void Start() {
+        if (I != this) {
+            return;
+        }
+
+        ObserveScene(SceneManager.GetActiveScene());
+        // a run already live when observing began, eg a dev scene
+        if (observedGame != null && observedGame.IsRunLive
+            && currentRun == null) {
+            OpenRun(observedGame.IsInStartingZone);
+        }
     }
 
     private void Update() {
@@ -204,6 +221,7 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneNames.Loading -= OnSceneLoading;
         SpiderWebTrap.Encountered -= OnWebEncountered;
         Observe(null, null, null, null, null, null);
         I = null;
@@ -249,9 +267,17 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     // Event Handlers  #########################################################
+    // a run cut by a load ends here, while its scene still holds the score
+    private void OnSceneLoading() {
+        CloseRun(RunStatus.Interrupted);
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
-        // each reload builds fresh instances of every observed subject
-        ObserveScene();
+        // a load that skipped SceneNames.Load still closes the open run
+        CloseRun(RunStatus.Interrupted);
+        // each load builds fresh instances of every observed subject; a menu
+        // scene has none, so nothing is observed there
+        ObserveScene(scene);
     }
 
     private void OnGameStateChanged(GameState state) {
@@ -349,15 +375,23 @@ public class AnalyticsManager: MonoBehaviour {
     private BossFightController observedBoss;
 
     // private methods  ########################################################
-    private void ObserveScene() {
+    // observes the subjects of <scene> only: right after a load the old
+    // scene's objects still exist
+    private void ObserveScene(Scene scene) {
         Observe(
-            GameController.I,
-            ScoreManager.I,
-            FindFirstObjectByType<HitBranchSensor>(),
-            CoconutManager.I,
-            FindFirstObjectByType<MonkeyController>(),
-            BossFightController.I
+            InScene(GameController.I, scene),
+            InScene(ScoreManager.I, scene),
+            InScene(FindFirstObjectByType<HitBranchSensor>(), scene),
+            InScene(CoconutManager.I, scene),
+            InScene(FindFirstObjectByType<MonkeyController>(), scene),
+            InScene(BossFightController.I, scene)
         );
+    }
+
+    private static T InScene<T>(T subject, Scene scene) where T: Component {
+        return subject != null && subject.gameObject.scene == scene
+            ? subject
+            : null;
     }
 
     private void Observe(

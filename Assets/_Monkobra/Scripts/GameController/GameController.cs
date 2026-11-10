@@ -322,7 +322,7 @@ public class GameController: MonoBehaviour {
 
     // a fresh run; OnDestroy resets the time scale and audio for the new scene
     private static void ReloadScene() {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneNames.Load(SceneManager.GetActiveScene().name);
     }
 
     // frozen outside a live run and during a pause
