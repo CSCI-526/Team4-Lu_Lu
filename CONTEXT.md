@@ -46,9 +46,9 @@ monkobra/
 │   │   ├── Scenes/    Lv1Scene, root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, PopUp/, Scoring/, UI/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
-│   │   ├── Prefabs/   Environment/, Mob/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, one variant per popup), Systems/ (GameController), UI/, World/ (light, volume, event system)
+│   │   ├── Prefabs/   Cameras/, Environment/, GameController/, Mob/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, one variant per popup), UI/, World/ (light, volume, event system)
 │   │   ├── Materials/ Environment/, Mob/, Player/
-│   │   ├── Input/     InputSystem_Actions
+│   │   ├── Inputs/    InputSystem_Actions
 │   │   ├── Shaders/   Environment/FruitOutline (inverted-hull Shader Graph)
 │   │   └── Settings/  _Shared/ (URP assets, volume profiles), Player/ (player balance, monkey arm, climb & input, leap), Environment/ (world balance, branch placement), Mob/ (cobra balance), Cameras/, UI/, Analytics/, HackShortcuts/: one folder per module, assets directly inside
 │   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page
@@ -71,7 +71,7 @@ monkobra/
 | `Envs` (plain scene object) | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `RoughBarkSystem` (`RoughBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Boss/BossFight` | `BossFightController`, `BossKingBody`, `BossFightHud`; builds the Cobra King arena at runtime, its position does not matter |
-| `Systems/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
+| `GameController/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
 | `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage` (widget host only), `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt` (widget host only), `HackShortcutHelp`, `SpiderWebPrompt` (escape bar), `_PopUps` (`PopUp/_PopUps`, before `Screens` so the panels draw over it), `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
 Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `Cameras` tracking target) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
