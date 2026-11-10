@@ -227,6 +227,37 @@ public class CameraConfig: ScriptableObject {
     /// <returns>wait after a pulse ends before the next may start; s</returns>
     public float RetriggerCooldownS => retriggerCooldownS;
 
+    // cobra proximity vignette  -----------------------------------------------
+    /// <returns>height gap to the great cobra below which the first stage
+    /// (bottom half of the screen) shows; u</returns>
+    public float CobraStage1DistanceU => cobraStage1DistanceU;
+
+    /// <returns>height gap below which the second stage (full ring) shows;
+    /// never above the first stage's; u</returns>
+    public float CobraStage2DistanceU => cobraStage2DistanceU;
+
+    /// <returns>extra gap a stage is kept for after crossing its distance,
+    /// so a gap hovering on a boundary never flickers; u</returns>
+    public float CobraStageHysteresisU => cobraStageHysteresisU;
+
+    /// <returns>beats per s in the first stage</returns>
+    public float CobraStage1PulseHz => cobraStage1PulseHz;
+
+    /// <returns>beats per s in the second stage</returns>
+    public float CobraStage2PulseHz => cobraStage2PulseHz;
+
+    /// <returns>color of the cobra vignette; its alpha is ignored</returns>
+    public Color CobraVignetteColor => cobraVignetteColor;
+
+    /// <returns>alpha at the peak of a beat, 0 none, 1 solid</returns>
+    public float CobraVignettePeakAlpha => cobraVignettePeakAlpha;
+
+    /// <returns>ease from rest to peak in a beat; s</returns>
+    public float CobraVignetteEaseInS => cobraVignetteEaseInS;
+
+    /// <returns>ease from peak back to rest in a beat; s</returns>
+    public float CobraVignetteEaseOutS => cobraVignetteEaseOutS;
+
     // comfort  ----------------------------------------------------------------
     /// <returns>if the camera should move as little as it can: no shake, no
     /// continuous noise, no look-ahead lead, no extra pull-back</returns>
@@ -423,6 +454,53 @@ public class CameraConfig: ScriptableObject {
     [Tooltip("wait after a pulse ends before the next may start; s")]
     private float retriggerCooldownS = 0.5f;
 
+    [Header("Cobra Proximity Vignette")]
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("height gap to the great cobra below which stage 1 (bottom "
+        + "half) shows; u")]
+    private float cobraStage1DistanceU = 12f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("height gap below which stage 2 (full ring) shows, at most "
+        + "the stage 1 gap; u")]
+    private float cobraStage2DistanceU = 6f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("extra gap a stage is held for after crossing, no flicker; u")]
+    private float cobraStageHysteresisU = 1f;
+
+    [SerializeField]
+    [Min(0.05f)]
+    [Tooltip("beats per s in stage 1")]
+    private float cobraStage1PulseHz = 0.6f;
+
+    [SerializeField]
+    [Min(0.05f)]
+    [Tooltip("beats per s in stage 2")]
+    private float cobraStage2PulseHz = 1.8f;
+
+    [SerializeField]
+    [Tooltip("vignette color, alpha ignored")]
+    private Color cobraVignetteColor = new Color(0.1f, 0.85f, 0.2f, 1f);
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip("alpha at the peak of a beat")]
+    private float cobraVignettePeakAlpha = 0.55f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("ease from rest to peak in a beat; s")]
+    private float cobraVignetteEaseInS = 0.12f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("ease from peak back to rest in a beat; s")]
+    private float cobraVignetteEaseOutS = 0.3f;
+
     [Header("Comfort")]
     [SerializeField]
     [Tooltip("move as little as possible: no shake, noise, lead or pull-back")]
@@ -460,5 +538,16 @@ public class CameraConfig: ScriptableObject {
         easeInS = Mathf.Max(0f, easeInS);
         easeOutS = Mathf.Max(0f, easeOutS);
         retriggerCooldownS = Mathf.Max(0f, retriggerCooldownS);
+        cobraStage1DistanceU = Mathf.Max(0f, cobraStage1DistanceU);
+        cobraStage2DistanceU = Mathf.Clamp(
+            cobraStage2DistanceU,
+            0f,
+            cobraStage1DistanceU
+        );
+        cobraStageHysteresisU = Mathf.Max(0f, cobraStageHysteresisU);
+        cobraStage1PulseHz = Mathf.Max(0.05f, cobraStage1PulseHz);
+        cobraStage2PulseHz = Mathf.Max(0.05f, cobraStage2PulseHz);
+        cobraVignetteEaseInS = Mathf.Max(0f, cobraVignetteEaseInS);
+        cobraVignetteEaseOutS = Mathf.Max(0f, cobraVignetteEaseOutS);
     }
 }
