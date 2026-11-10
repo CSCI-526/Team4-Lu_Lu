@@ -5,7 +5,7 @@ using UnityEngine;
 /// Sticks <see cref="SpiderWebTrap"/> webs flat on the trunk of each
 /// <see cref="TreeSegmentController"/> as soon as it has rolled its
 /// branches, on its first Start and after every restart by
-/// <see cref="DTSPool"/>, by listening to
+/// <see cref="DynamicTreeSegmentPool"/>, by listening to
 /// <see cref="TreeSegmentController.BranchesGenerated"/>. Put one on
 /// any object active from scene load, never under the pool's mock tree,
 /// which is deactivated at runtime.

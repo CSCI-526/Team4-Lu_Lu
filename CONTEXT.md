@@ -69,7 +69,7 @@ monkobra/
 | --- | --- |
 | `Cameras` | the four Cinemachine cameras |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
-| `Envs` (plain scene object) | `DTSPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `RoughBarkSystem` (`RoughBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
+| `Envs` (plain scene object) | `DynamicTreeSegmentPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `CoconutSystem` (`CoconutSpawner`), `RoughBarkSystem` (`RoughBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Boss/BossFight` | `BossFightController`, `BossKingBody`, `BossFightHud`; builds the Cobra King arena at runtime, its position does not matter |
 | `GameController/GameController` | one GameObject carrying `GameController`, `AnalyticsManager`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
@@ -107,7 +107,7 @@ graph LR
   Stamina[StaminaBarController] --> Game
   Game --> Screens[ScreensManager]
   Game -->|EndRun| Score
-  Pool[DTSPool] -->|Restart| Segment[TreeSegmentController]
+  Pool[DynamicTreeSegmentPool] -->|Restart| Segment[TreeSegmentController]
   Segment -->|BranchesGenerated| Spawner[SpiderWebSpawner]
   Segment -->|BranchesGenerated| CobraSpawner[FallingCobraSpawner]
   CobraSpawner --> FallCobra[FallingCobraController]
@@ -163,17 +163,17 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Cameras/CameraEfxConfig` | ScriptableObject (`Settings/Cameras/CameraEfxConfig.asset`) of the camera efx tuning: both cool-down steps (vignette, zoom-out) and their timing | [TDD](docs/monkobra-tdd.md#camera) |
 | `Player/HitBranchSensor` | singleton branch sensor: raises `BranchHit` and `Hit` (with a `HitKind`); `ReportHit` applies the same drop for a hazard touching the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
 | `Environment/RoughBarkZone` | raised, irregular bark patch on the trunk that smoothly slows the monkey in every direction while touched; avoidable | [Mobs](docs/mob-doc.md) |
-| `Environment/RoughBarkSpawner` | on the `RoughBarkSystem` prefab: once the score passes `roughBarkStartScore`, rolls broad patches ahead of the monkey, off obstacles; `RoughBarkSetup` & `RoughBarkSmokeCheck` are Editor tools | [TDD](docs/monkobra-tdd.md) |
+| `Environment/RoughBarkSpawner` | on the `RoughBarkSystem` prefab: once the score passes `roughBarkStartScore`, rolls broad patches ahead of the monkey, off obstacles | [TDD](docs/monkobra-tdd.md) |
 | `Environment/TreeManager` | singleton on the mock tree, marks the trunk axis | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/TreeSegmentController` | places branches on a segment, skipping spots w/i `startingZoneBranchClearRadiusU` of the monkey before the run is playing, rolling branch and banana chance from the flat `startingZoneBranchChance` and `startingZoneBananaChance` below the exit trigger (`RampedDifficultyManager.IsInStartingZoneY`) and from the curves above it, then raises the static `BranchesGenerated` | [Mobs](docs/mob-doc.md#placement) |
-| `Environment/DTSPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |
+| `Environment/DynamicTreeSegmentPool` | on an empty base marker: instantiates the segments, then recycles the lowest segment over the top, restarting it, for an endless tree | [TDD](docs/monkobra-tdd.md#tree) |
 | `Environment/HeightMarkerSystem` | on `Envs/HeightMarkerSystem`: the climbed height every `intervalU` beside the trunk, on both its left and right as seen from the camera, in world units labelled m, on a generated dark rounded plate, from a pool of TextMeshPro labels keyed to height, never to segments; pulses a marker the first time the monkey passes it; the boss fight's height marker gets a bigger, red, beating plate w/ a small king look-alike, hidden once the fight begins | [TDD](docs/monkobra-tdd.md#ui) |
 | `Environment/BranchFruitPlacementConfig` | ScriptableObject (`Settings/Environment/BranchFruitPlacementConfig.asset`) of branch placement | [Mobs](docs/mob-doc.md#placement) |
 | `Environment/BranchController` | decides whether a branch bears a pineapple, a banana, or no fruit; `TryHangFruit` lets another spawner hang its own fruit on a bare branch's stem tip | [Grab](docs/grab-doc.md#fruit-supply) |
 | `Environment/FruitOutlineListener` | two-tier fruit outline, on the object holding the fruit's collider | [Grab](docs/grab-doc.md#feedback) |
 | `Environment/FruitFlyOnGrab` | on a fruit's root: its fly target and sprite; the `Coconut` and `Pineapple` prefabs carry one, the banana none | [Grab](docs/grab-doc.md#fruit-fly) |
 | `ItemPineapple/LeapOnGrab` | marks a fruit whose grab starts a leap | [Grab](docs/grab-doc.md#pineapple-leap) |
-| `MobSpiderWeb/SpiderWebSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, rolls webs on that segment's trunk against a probability curve at its ramped difficulty | [Mobs](docs/mob-doc.md#placement-1) |
+| `MobSpiderWeb/SpiderWebSpawner` | on `Envs/DynamicTreeSegmentPool`: on each `BranchesGenerated`, rolls webs on that segment's trunk against a probability curve at its ramped difficulty | [Mobs](docs/mob-doc.md#placement-1) |
 | `MobSpiderWeb/SpiderWebTrap` | web prefab root with one deepened trigger box | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `MobSpiderWeb/SpiderWebStruggle` | on the monkey: trap state, escape bar, immunity; `ForceRelease` frees the monkey at once, eg for the boss fight | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `MobSpiderWeb/SpiderWebBuilder` | `Build Web` context menu that builds the web strands out of cubes, a one-off authoring aid | none |
@@ -187,7 +187,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Boss/BossKingBody` | the Cobra King built at runtime from simple primitives: head tracking the monkey, strikes (butt & bite), crown jewel weak spot glow, hit flash, shatter into cubes freeing the crown; `BuildFigure` makes a small look-alike for the trunk height marker | [Mobs](docs/mob-doc.md#cobra-king-boss) |
 | `Boss/BossKingContact` | on the king's root: raises `Touched` while a physical part of the monkey overlaps the king | [Mobs](docs/mob-doc.md#cobra-king-boss) |
 | `Boss/BossFightHud` | boss fight UI built at runtime: entry flash, health bar, speech bubble, first-throw key prompt, EASY / NORMAL tags, damage numbers & words, banners, the kept-armor badge, the win's reward panel (Continue button), revive card & mock course ad | [Mobs](docs/mob-doc.md#cobra-king-boss) |
-| `MobFallingCobra/FallingCobraSpawner` | on `Envs/DTSPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment against a probability curve at its ramped difficulty, some ambushing just above a banana | [Mobs](docs/mob-doc.md#falling-cobra) |
+| `MobFallingCobra/FallingCobraSpawner` | on `Envs/DynamicTreeSegmentPool`: on each `BranchesGenerated`, hangs dormant falling cobras on that segment against a probability curve at its ramped difficulty, some ambushing just above a banana | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `MobFallingCobra/FallingCobraController` | dormant until the monkey is near (farther while it reaches for a banana), then warning, a constant fall that slides toward the monkey's angle, and a hit capsule that drops the monkey on any-part contact, at most twice per snake | [Mobs](docs/mob-doc.md#falling-cobra) |
 | `GameController/RampedDifficultyManager` | singleton, measures any y above the player's start y (`GetClimbedYDistance`), the climb baseline, and maps any y above the `rampBase` trigger's y (`RampBaseYPosition`) to a 0~1 ramped difficulty via the `rampedDifficultyCurve` in `WorldBalanceConfig` | [Balance Design](docs/balance-doc.md#difficulty-follows-height) |
 | `Analytics/AnalyticsManager` | singleton component on the `GameController` prefab, so a reload starts a fresh session and file: observes the game, fills `SessionData` & the open `RunData`, saves one markdown session file per scene load to `persistentDataPath/Analytics/` on run events, a timer, and quit or pause; samples height & stamina; dev keys from `HackShortcutConfig`: restart session, mock save, download report (`DownloadReport`) | [TDD](docs/monkobra-tdd.md#analytics) |
@@ -227,7 +227,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 Gaps that belong to one subsystem are listed in [Mobs](docs/mob-doc.md#known-gaps) and the [Grab System](docs/grab-doc.md#known-gaps). Project-wide ones:
 
 - No tests or run commands exist: verification means opening `Lv1Scene` in the Editor
-- `DTSPool` deactivates its mock tree, `Envs/Tree`, at runtime, so a component that must run cannot sit under it
+- `DynamicTreeSegmentPool` deactivates its mock tree, `Envs/Tree`, at runtime, so a component that must run cannot sit under it
 - Broader difficulty scaling is not yet designed, see the [Game Design Document](docs/monkobra-gdd.md#difficulty)
 
 ## Living Document Maintenance

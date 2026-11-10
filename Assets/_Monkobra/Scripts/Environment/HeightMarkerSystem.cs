@@ -60,7 +60,8 @@ public class HeightMarkerSystem: MonoBehaviour {
     [Min(0f)]
     [Tooltip(
         "markers show up to this far above the monkey; keep it under the "
-            + "DTSPool lookAheadU, so no marker floats over the trunk top; u"
+            + "DynamicTreeSegmentPool lookAheadU, so no marker floats over the "
+            + "trunk top; u"
     )]
     private float showAboveU = 18f;
 

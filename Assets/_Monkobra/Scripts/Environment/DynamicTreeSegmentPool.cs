@@ -24,7 +24,7 @@ using UnityEngine;
 /// </summary>
 // after every segment's own Start, which rolls its branches
 [DefaultExecutionOrder(50)]
-public class DTSPool: MonoBehaviour {
+public class DynamicTreeSegmentPool: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
@@ -66,7 +66,8 @@ public class DTSPool: MonoBehaviour {
         if (mockTree != null) {
             if (transform.IsChildOf(mockTree.transform)) {
                 Debug.LogWarning(
-                    "DTSPool:\tmockTree holds the pool, keep it active",
+                    "DynamicTreeSegmentPool:\tmockTree holds the pool, "
+                        + "keep it active",
                     this
                 );
             } else {
@@ -76,9 +77,9 @@ public class DTSPool: MonoBehaviour {
                     != null
                 ) {
                     Debug.LogWarning(
-                        "DTSPool:\ta SpiderWebSpawner under mockTree is "
-                            + "deactivated with it, no webs will spawn; move "
-                            + "it off the mock tree",
+                        "DynamicTreeSegmentPool:\ta SpiderWebSpawner under "
+                            + "mockTree is deactivated with it, no webs will "
+                            + "spawn; move it off the mock tree",
                         mockTree
                     );
                 }
@@ -87,9 +88,9 @@ public class DTSPool: MonoBehaviour {
                     != null
                 ) {
                     Debug.LogWarning(
-                        "DTSPool:\ta FallingCobraSpawner under mockTree is "
-                            + "deactivated with it, no falling cobras will "
-                            + "spawn; move it off the mock tree",
+                        "DynamicTreeSegmentPool:\ta FallingCobraSpawner under "
+                            + "mockTree is deactivated with it, no falling "
+                            + "cobras will spawn; move it off the mock tree",
                         mockTree
                     );
                 }
@@ -100,7 +101,8 @@ public class DTSPool: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (segmentPrefab == null) {
             Debug.LogWarning(
-                "DTSPool:\tmust assign Inspector Field: segmentPrefab",
+                "DynamicTreeSegmentPool:\tmust assign Inspector Field: "
+                    + "segmentPrefab",
                 this
             );
             enabled = false;
@@ -112,7 +114,8 @@ public class DTSPool: MonoBehaviour {
         GameObject player = GameObject.FindGameObjectWithTag(PLAYER_TAG);
         if (player == null) {
             Debug.LogWarning(
-                $"DTSPool:\tno object tagged {PLAYER_TAG} in scene, pool idle",
+                $"DynamicTreeSegmentPool:\tno object tagged {PLAYER_TAG} in "
+                    + "scene, pool idle",
                 this
             );
             enabled = false;
@@ -126,7 +129,7 @@ public class DTSPool: MonoBehaviour {
     private void Start() {
         if (Debug.isDebugBuild) {
             Debug.Log(
-                $"DTSPool:\tready, {segments.Count} segments, "
+                $"DynamicTreeSegmentPool:\tready, {segments.Count} segments, "
                     + $"following {target.name}"
             );
         }
