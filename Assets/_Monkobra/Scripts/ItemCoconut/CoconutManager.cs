@@ -93,6 +93,18 @@ public class CoconutManager: MonoBehaviour {
     public event Action Used;
 
     /// <summary>
+    /// Raised once a coconut is in the air, with the flying coconut, eg for
+    /// a camera to follow it.
+    /// </summary>
+    public event Action<Transform> Thrown;
+
+    /// <summary>
+    /// Raised once the coconut hit the cobra or fell its full distance, just
+    /// b4 the freeze is tried.
+    /// </summary>
+    public event Action Landed;
+
+    /// <summary>
     /// Raised on a double-tap w/ coconuts in hand while the cobra is already
     /// frozen; nothing is used.
     /// </summary>
@@ -389,6 +401,7 @@ public class CoconutManager: MonoBehaviour {
             playerBalanceConfig.CoconutThrowDistanceU,
             OnCoconutLanded
         );
+        Thrown?.Invoke(flyingCoconut.transform);
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CoconutManager:\tcoconut thrown, " + count + " left",
@@ -400,6 +413,7 @@ public class CoconutManager: MonoBehaviour {
     // the coconut hit the cobra or fell its full distance: the freeze starts
     private void OnCoconutLanded(bool isHit) {
         flyingCoconut = null;
+        Landed?.Invoke();
         if (cobra == null) {
             return;
         }

@@ -2,50 +2,137 @@ using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
-/// Owns the camera views under the monkey's <c>CameraRig</c> and swaps which
-/// one is live. Defaults to the climb view. For a moment after a coconut is
-/// thrown (<see cref="CoconutManager.Used"/>) the look-down view takes over,
-/// to follow the fall. Swap is done by raising the live camera's
-/// <see cref="CinemachineCamera.Priority"/> above the others. The
-/// <c>CinemachineBrain</c> on the main camera handles the actual blend.
+/// The shot director. The climb camera is the default view; an event shot
+/// (coconut track, later cobra alert and leap) takes over for a moment and
+/// hands back. Each shot has a priority, a minimum hold, a hard duration cap
+/// and a cooldown, all in <see cref="CameraConfig"/>, so events never chain
+/// into rapid cuts: a shot of the same or a lower priority than the live one
+/// is refused, a higher one preempts it, and a shot that just ended waits out
+/// its cooldown. Swap is done by raising the live camera's
+/// <see cref="CinemachineCamera.Priority"/>, the <c>CinemachineBrain</c> on
+/// the main camera blends, with the per-pair times of its blender settings.
+/// <para>
+/// Reads no input: the grab framing lives in
+/// <see cref="CameraClimbFraming"/>, so nothing here touches the shared
+/// interact action.
+/// </para>
 /// </summary>
 public class CameraRigManager: MonoBehaviour {
+    // Public Members  #########################################################
+    /// <summary>
+    /// the event shots the director can cut to
+    /// </summary>
+    public enum ShotKind {
+        Coconut,
+    }
+
+    // Public Methods  #########################################################
+    /// <summary>
+    /// Asks for an event shot. Extends the shot if it is already live
+    /// </summary>
+    /// <param name="kind">which shot</param>
+    /// <param name="holdS">how long to stay, capped by the shot's duration;
+    /// infinite until <see cref="ReleaseShot"/>; s</param>
+    /// <returns>if the shot is live now</returns>
+    public bool RequestShot(ShotKind kind, float holdS = float.PositiveInfinity) {
+        CameraConfig.ShotSettings settings = GetSettings(kind);
+        if (config == null || settings == null || GetCamera(kind) == null) {
+            return false;
+        }
+
+        float now = Time.time;
+        ShotState state = states[(int)kind];
+        if (state.isLive) {
+            state.endTimeS = now + holdS;
+            return true;
+        }
+        if (now < state.cooldownEndS) {
+            return false;
+        }
+        if (liveKind.HasValue) {
+            int livePriority = GetSettings(liveKind.Value).Priority;
+            if (livePriority >= settings.Priority) {
+                return false;
+            }
+            EndShot(liveKind.Value);
+        }
+
+        state.isLive = true;
+        state.startTimeS = now;
+        state.endTimeS = now + holdS;
+        state.minHoldEndS = now + settings.MinHoldS;
+        liveKind = kind;
+        ApplyPriorities();
+        if (Debug.isDebugBuild) {
+            Debug.Log($"CameraRigManager:\tshot live: {kind}", this);
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Lets a live shot end soon, never before its minimum hold
+    /// </summary>
+    /// <param name="kind">which shot</param>
+    /// <param name="extraHoldS">time to linger first; s</param>
+    public void ReleaseShot(ShotKind kind, float extraHoldS = 0f) {
+        ShotState state = states[(int)kind];
+        if (!state.isLive) {
+            return;
+        }
+        state.endTimeS = Mathf.Max(Time.time + extraHoldS, state.minHoldEndS);
+    }
+
     // Inspector Fields  #######################################################
-    [Tooltip("view tracking the monkey from behind, looking up")]
+    [Tooltip("shot priorities, holds, cooldowns and durations")]
     [SerializeField]
-    private CinemachineCamera behindCamera;
+    private CameraConfig config;
 
-    [Tooltip("view looking down, live for a moment after a coconut is thrown")]
+    [Tooltip("the default view, looking up the tree behind the monkey")]
     [SerializeField]
-    private CinemachineCamera lookDownCamera;
+    private CinemachineCamera climbCamera;
 
-    [Tooltip("the look-down view stays live this long after a throw; s")]
+    [Tooltip("shot that follows a thrown coconut down")]
     [SerializeField]
-    [Min(0f)]
-    private float coconutLookDownS = 1.2f;
+    private CinemachineCamera coconutCamera;
+
+    [Tooltip("point the coconut shot tracks, set to the thrown coconut")]
+    [SerializeField]
+    private CameraShotTarget coconutTarget;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (behindCamera == null) {
+        if (config == null) {
             Debug.LogWarning(
-                "CameraRigManager:\tmust assign Inspector Field: behindCamera",
+                "CameraRigManager:\tmust assign Inspector Field: config",
                 this
             );
         }
-        if (lookDownCamera == null) {
+        if (climbCamera == null) {
+            Debug.LogWarning(
+                "CameraRigManager:\tmust assign Inspector Field: climbCamera",
+                this
+            );
+        }
+        if (coconutCamera == null) {
             Debug.LogWarning(
                 "CameraRigManager:\tmust assign Inspector Field: "
-                    + "lookDownCamera",
+                    + "coconutCamera",
+                this
+            );
+        }
+        if (coconutTarget == null) {
+            Debug.LogWarning(
+                "CameraRigManager:\tmust assign Inspector Field: "
+                    + "coconutTarget",
                 this
             );
         }
 
-        activeView = CameraView.Behind;
-        ApplyPriorities();
-        if (Debug.isDebugBuild) {
-            Debug.Log($"CameraRigManager:\tactiveView changed: {activeView}");
+        for (int i = 0; i < states.Length; i++) {
+            states[i] = new ShotState();
         }
+        ApplyPriorities();
     }
 
     private void Start() {
@@ -53,73 +140,118 @@ public class CameraRigManager: MonoBehaviour {
         if (coconuts == null) {
             Debug.LogWarning(
                 "CameraRigManager:\tfail to get singleton: CoconutManager, "
-                    + "no look-down view after a throw",
+                    + "no coconut shot",
                 this
             );
             return;
         }
-        coconuts.Used += OnCoconutUsed;
+        coconuts.Thrown += OnCoconutThrown;
+        coconuts.Landed += OnCoconutLanded;
     }
 
     private void OnDestroy() {
         if (coconuts != null) {
-            coconuts.Used -= OnCoconutUsed;
+            coconuts.Thrown -= OnCoconutThrown;
+            coconuts.Landed -= OnCoconutLanded;
         }
     }
 
-    // a look-down view ends on its own
     private void Update() {
-        if (activeView == CameraView.Down) {
-            UpdateActiveView();
+        if (!liveKind.HasValue || config == null) {
+            return;
+        }
+
+        ShotKind kind = liveKind.Value;
+        ShotState state = states[(int)kind];
+        float now = Time.time;
+        float capS = state.startTimeS + GetSettings(kind).DurationS;
+        if (now >= state.endTimeS || now >= capS) {
+            EndShot(kind);
         }
     }
 
     // Event Handlers  #########################################################
-    private void OnCoconutUsed() {
-        lookDownEndTime = Time.time + coconutLookDownS;
-        UpdateActiveView();
+    private void OnCoconutThrown(Transform coconut) {
+        if (coconutTarget != null) {
+            coconutTarget.SetSubject(coconut);
+        }
+        RequestShot(ShotKind.Coconut);
+    }
+
+    // the shot lingers a moment on the landing spot
+    private void OnCoconutLanded() {
+        if (config != null) {
+            ReleaseShot(ShotKind.Coconut, config.CoconutLandHoldS);
+        }
     }
 
     // constants  ##############################################################
-    private const int LIVE_PRIORITY = 20;
-    private const int STANDBY_PRIORITY = 10;
+    private const int CLIMB_PRIORITY = 10;
+    private const int SHOT_LIVE_PRIORITY = 20;
+    private const int SHOT_STANDBY_PRIORITY = 0;
 
     // private members  ########################################################
-    private enum CameraView {
-        Behind,
-        Down,
+    private class ShotState {
+        public bool isLive;
+        public float startTimeS;
+        public float endTimeS;
+        public float minHoldEndS;
+        public float cooldownEndS;
     }
 
-    private CameraView activeView;
-    private float lookDownEndTime; // Time.time the look-down view ends
+    private readonly ShotState[] states =
+        new ShotState[System.Enum.GetValues(typeof(ShotKind)).Length];
+    private ShotKind? liveKind;
     private CoconutManager coconuts;
 
     // private methods  ########################################################
-    private void UpdateActiveView() {
-        CameraView desiredView = Time.time < lookDownEndTime
-            ? CameraView.Down
-            : CameraView.Behind;
-        if (desiredView == activeView) {
-            return;
+    private CameraConfig.ShotSettings GetSettings(ShotKind kind) {
+        if (config == null) {
+            return null;
         }
+        return kind switch {
+            ShotKind.Coconut => config.CoconutShot,
+            _ => null,
+        };
+    }
 
-        activeView = desiredView;
+    private CinemachineCamera GetCamera(ShotKind kind) {
+        return kind switch {
+            ShotKind.Coconut => coconutCamera,
+            _ => null,
+        };
+    }
+
+    private void EndShot(ShotKind kind) {
+        ShotState state = states[(int)kind];
+        state.isLive = false;
+        state.cooldownEndS = Time.time + GetSettings(kind).CooldownS;
+        liveKind = null;
         ApplyPriorities();
+        if (Debug.isDebugBuild) {
+            Debug.Log($"CameraRigManager:\tshot ended: {kind}", this);
+        }
     }
 
+    // the climb view always stands ready, the live shot rises above it
     private void ApplyPriorities() {
-        SetPriority(behindCamera, CameraView.Behind);
-        SetPriority(lookDownCamera, CameraView.Down);
+        SetPriority(climbCamera, CLIMB_PRIORITY);
+        foreach (ShotKind kind in System.Enum.GetValues(typeof(ShotKind))) {
+            bool isLive = liveKind.HasValue && liveKind.Value == kind;
+            SetPriority(
+                GetCamera(kind),
+                isLive ? SHOT_LIVE_PRIORITY : SHOT_STANDBY_PRIORITY
+            );
+        }
     }
 
-    // the camera of the active view goes live, every other one stands by
-    private void SetPriority(CinemachineCamera view, CameraView viewKind) {
+    private static void SetPriority(CinemachineCamera view, int value) {
         if (view == null) {
             return;
         }
         view.Priority = new PrioritySettings {
             Enabled = true,
-            Value = activeView == viewKind ? LIVE_PRIORITY : STANDBY_PRIORITY,
+            Value = value,
         };
     }
 }

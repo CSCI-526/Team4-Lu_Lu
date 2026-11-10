@@ -32,6 +32,7 @@ Transform:
   - {fileID: 5912103275275959521}
   - {fileID: 5109030492090726729}
   - {fileID: 1111111111111111102}
+  - {fileID: 2222222222222222202}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7003407125759535268
@@ -47,7 +48,7 @@ GameObject:
   - component: {fileID: 5030604754495974576}
   - component: {fileID: 50176472590352766}
   m_Layer: 0
-  m_Name: CameraLookDown
+  m_Name: CameraCoconutTrack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -88,7 +89,7 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 1111111111111111102}
+    TrackingTarget: {fileID: 2222222222222222202}
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
@@ -129,7 +130,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 0.2, y: 0.2, z: 0.2}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 4, z: 3}
+  FollowOffset: {x: 0, y: 7, z: 10}
 --- !u!114 &50176472590352766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -332,7 +333,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  CustomBlends: {fileID: 0}
+  CustomBlends: {fileID: 11400000, guid: 9a6d3e1f5b7c4a2d8e0f1c3b5a7d9e24, type: 2}
 --- !u!114 &7998443396189865468
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -678,9 +679,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f1bb4a1f655fd94a88096075c6547ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraRigManager
-  behindCamera: {fileID: 2167007332462591705}
-  lookDownCamera: {fileID: 8435269618182790152}
-  coconutLookDownS: 1.2
+  config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}
+  climbCamera: {fileID: 2167007332462591705}
+  coconutCamera: {fileID: 8435269618182790152}
+  coconutTarget: {fileID: 2222222222222222203}
 --- !u!1 &1111111111111111101
 GameObject:
   m_ObjectHideFlags: 0
@@ -727,3 +729,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraAnchor
   monkey: {fileID: 0}
   config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}
+--- !u!1 &2222222222222222201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2222222222222222202}
+  - component: {fileID: 2222222222222222203}
+  m_Layer: 0
+  m_Name: CoconutShotTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2222222222222222202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2222222222222222201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8377228619459044113}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2222222222222222203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2222222222222222201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b9e5c7d2a1f4d8e8c0a6b4f9d2e7a15, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CameraShotTarget
+  anchor: {fileID: 1111111111111111102}
+  subjectWeight: 0.6
+  subjectSmoothTimeS: 0.25
+  weightEaseS: 0.3
