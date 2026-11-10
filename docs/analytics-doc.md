@@ -136,7 +136,7 @@ Values are in `Settings/Analytics/AnalyticsConfig.asset`, never hard-coded.
 
 ## Dev Keys
 
-The keys work only in a development build or the Editor, and live in `HackShortcutConfig` (see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)).
+The keys work in every build, their hints show only in a development build or the Editor, and they live in `HackShortcutConfig` (see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)).
 
 | Action | Default Key | Effect |
 | --- | --- | --- |

@@ -48,7 +48,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - the export lives in `Monkobra/` at the repo root, never named `Build/` or `Builds/`, and is committed as-is
 - never hand-edit a file inside `Monkobra/`; re-export from Unity and re-commit instead
 - Compression Format stays `Disabled`: GitHub Pages cannot set the `Content-Encoding` header a compressed export needs
-- Development Build is on for the WebGL profiles (`GithubPages`, `ItchIO`): the hack keys only run in a development build
+- Development Build is on for the WebGL profiles (`GithubPages`, `ItchIO`): the hack hints and dev-only UI show only in a development build, while the hack keys run in every build
 
 ## Code Style
 
@@ -57,7 +57,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - Line endings: keep a file's existing endings; `PlayerBalanceConfig.cs` is CRLF, so edit it in a way that preserves them
 - Gameplay input comes from actions of the Input Actions asset `InputSystem_Actions`, read through `InputAction` events or polling; timing such as a double-tap is an interaction on the action (`UseCoconut` is a MultiTap), never a hand-rolled key tracker in a script
 - Scene loads: always `SceneNames.Load(SceneNames.X)`, never `SceneManager.LoadScene` or a typed scene name; it resets the time scale and audio pause and raises `Loading`, which closes the open analytics run; a menu is a `MenuEventSystem` scene reading the `InputSystem_Actions` UI map, a gameplay scene's `EventSystem` reads it too
-- Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive`; never hard-code a dev key or let one run in a release build; dev-only UI (e.g. `LoseScreenDownloadWidget`) hides itself unless `HackShortcutConfig.IsActive`
+- Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive` (true in every build); never hard-code a dev key; hints and dev-only UI (e.g. `HackShortcutPanel`, `LoseScreenDownloadWidget`) hide themselves unless `HackShortcutConfig.AreHintsShown` (development build or Editor)
 - Analytics events: a new run event is an `AnalyticsMetric` entry, a row in `AnalyticsMetrics`, and one `RecordEvent` call from a subscription in `AnalyticsManager`; never a new list in `RunData` or a hand-written section in the writer, see [Analytics](docs/analytics-doc.md#adding-a-metric)
 - Camera: gameplay cameras track `CameraAnchor`, never the monkey body, so strafing never spins the view; every camera value lives in `CameraConfig` and an event shot (coconut, cobra alert, leap) is a `ShotKind` asked of `CameraRigManager`, never a camera enabled by hand; a camera script only polls a shared input action, never enables or disables it, see [Technical Design Document](docs/monkobra-tdd.md#camera)
 

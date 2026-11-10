@@ -35,9 +35,6 @@ public class LoseScreenDownloadWidget: MonoBehaviour {
 
     // Event Handlers  #########################################################
     private void OnButtonClicked() {
-        if (!HackShortcutConfig.IsActive) {
-            return;
-        }
         if (AnalyticsManager.I == null) {
             Debug.LogWarning(
                 "LoseScreenDownloadWidget:\tAnalyticsManager not found",
@@ -56,7 +53,7 @@ public class LoseScreenDownloadWidget: MonoBehaviour {
     // Private Helpers  ########################################################
     // whether the object was turned off, ie this is not a development build
     private bool HideOutsideDevBuild() {
-        if (HackShortcutConfig.IsActive) {
+        if (HackShortcutConfig.AreHintsShown) {
             return false;
         }
 

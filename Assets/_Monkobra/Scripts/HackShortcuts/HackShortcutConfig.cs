@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 /// Every dev/hack key in one place: the key, the action it triggers, and a
 /// one-line description for the on-screen help. Consumers look a key up by
 /// <see cref="HackAction"/> and gate on <see cref="IsActive"/>, so the keys
-/// only work in a development build.
+/// work in every build; hints show only per <see cref="AreHintsShown"/>.
 /// </summary>
 [CreateAssetMenu(
     fileName = "HackShortcutConfig",
@@ -44,9 +44,13 @@ public class HackShortcutConfig: ScriptableObject {
     }
 
     // Public Members  #########################################################
-    /// <returns>if hack keys may run, ie a development build or the Editor
+    /// <returns>if hack keys may run, ie every build, release included
     /// </returns>
-    public static bool IsActive => Debug.isDebugBuild;
+    public static bool IsActive => true;
+
+    /// <returns>if hack hints and dev-only UI may show, ie a development
+    /// build or the Editor</returns>
+    public static bool AreHintsShown => Debug.isDebugBuild;
 
     /// <returns>every hack key, in the order the help text lists them
     /// </returns>

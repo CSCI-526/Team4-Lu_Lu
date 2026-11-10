@@ -125,7 +125,7 @@ A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB file
 
 ## Hack Shortcuts
 
-Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.asset`, an instance of the `HackShortcutConfig` ScriptableObject: a list of entries, each a `HackAction`, a key, and a one-line description. Consumers look a key up with `GetKey(HackAction)` and skip it unless `HackShortcutConfig.IsActive`, ie a development build or the Editor, so none of them work in a release build.
+Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.asset`, an instance of the `HackShortcutConfig` ScriptableObject: a list of entries, each a `HackAction`, a key, and a one-line description. Consumers look a key up with `GetKey(HackAction)` and skip it unless `HackShortcutConfig.IsActive`, which is true in every build, so the keys work in a release build too. Hints and dev-only UI follow `HackShortcutConfig.AreHintsShown` instead, ie a development build or the Editor.
 
 | Key | Action | Read by |
 | --- | --- | --- |
@@ -141,7 +141,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F11 | close the analytics session and open a new file | `AnalyticsManager` |
 | F12 | save a mock analytics session file | `AnalyticsManager` |
 
-`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
+`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
 
 ## Game Balance
 
