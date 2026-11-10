@@ -8,14 +8,14 @@ using UnityEngine.UI;
 /// </summary>
 // Follow this frame's camera pose after CinemachineBrain (order 100).
 [DefaultExecutionOrder(200)]
-public class KeyPromptUI: MonoBehaviour {
+public class KeyPromptWidget: MonoBehaviour {
     // Public Members  #########################################################
     public static Vector2 DefaultOffset => new Vector2(0f, 80f);
 
     // Public Methods  #########################################################
     /// <summary>Builds the same keycap used by the boss, initially hidden.
     /// </summary>
-    public static KeyPromptUI Create(
+    public static KeyPromptWidget Create(
         RectTransform parent,
         string objectName = "Prompt"
     ) {
@@ -24,7 +24,8 @@ public class KeyPromptUI: MonoBehaviour {
         }
 
         RectTransform rect = CreateRect(objectName, parent);
-        KeyPromptUI prompt = rect.gameObject.AddComponent<KeyPromptUI>();
+        KeyPromptWidget prompt =
+            rect.gameObject.AddComponent<KeyPromptWidget>();
         prompt.Build(rect, parent);
         rect.gameObject.SetActive(false);
         return prompt;
