@@ -51,6 +51,10 @@ public class CobraBalanceConfig: ScriptableObject {
     /// outside a surge; u/s</returns>
     public AnimationCurve CobraBaseSpeedCurve => cobraBaseSpeedCurve;
 
+    /// <returns>x: gap the great cobra's coil top trails below the monkey,
+    /// U; y: multiplier on its base climb speed</returns>
+    public AnimationCurve CobraDistanceSpeedCurve => cobraDistanceSpeedCurve;
+
     /// <returns>surge time each mistake (hit or web) adds to the great
     /// cobra; 0 turns surges off; s</returns>
     public float CobraSurgePerMistakeS => cobraSurgePerMistakeS;
@@ -138,6 +142,14 @@ public class CobraBalanceConfig: ScriptableObject {
     )]
     private AnimationCurve cobraBaseSpeedCurve =
         AnimationCurve.Linear(0f, 3.4f, 1f, 4.0f);
+
+    [SerializeField]
+    [Tooltip(
+        "x: gap the coil top trails below the monkey, U; y: multiplier on "
+            + "the base climb speed; surge & exit boost add on top"
+    )]
+    private AnimationCurve cobraDistanceSpeedCurve =
+        AnimationCurve.Linear(0f, 0.5f, 100f, 1.2f);
 
     [SerializeField]
     [Tooltip(
