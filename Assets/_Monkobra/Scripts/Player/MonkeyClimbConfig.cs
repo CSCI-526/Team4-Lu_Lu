@@ -19,6 +19,13 @@ public class MonkeyClimbConfig: ScriptableObject {
     /// up; u/s</returns>
     public AnimationCurve ClimbUpSpeedCurve => climbUpSpeedCurve;
 
+    /// <returns>top climb speed moving up, the end value of the up speed
+    /// curve; 0 if the curve is empty; u/s</returns>
+    public float TopClimbUpSpeedU =>
+        climbUpSpeedCurve.length == 0
+            ? 0f
+            : climbUpSpeedCurve[climbUpSpeedCurve.length - 1].value;
+
     /// <returns>x: seconds the down key has been held; y: climb speed moving
     /// down; u/s</returns>
     public AnimationCurve ClimbDownSpeedCurve => climbDownSpeedCurve;

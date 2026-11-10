@@ -1,12 +1,12 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// Cobra that coils round the trunk and climbs after the monkey without ever
 /// stopping or backing down, so once it reaches the monkey, whatever part
 /// touches first ends the run. Its base speed rises with the ramped
-/// difficulty. Each mistake of the monkey (a branch or
+/// difficulty and by how far it trails the monkey, both as multipliers of
+/// the monkey's top climb speed. Each mistake of the monkey (a branch or
 /// falling cobra hit, or a web) makes it surge for a while, and mistakes
 /// stack, faster and longer, possibly past the monkey's own speed; tuned in
 /// <see cref="CobraBalanceConfig"/>. The one exception to never stopping: a
@@ -201,6 +201,13 @@ public class CobraMotor: MonoBehaviour {
     )]
     private PlayerBalanceConfig playerBalanceConfig;
 
+    [SerializeField]
+    [Tooltip(
+        "monkey climb tuning; its top up speed is what the base speed "
+            + "multipliers scale; inspector climb speed if unset"
+    )]
+    private MonkeyClimbConfig monkeyClimbConfig;
+
     [Header("Tree Path")]
     [SerializeField]
     [Tooltip("distance from path center to the body; U")]
@@ -327,22 +334,6 @@ public class CobraMotor: MonoBehaviour {
     [Tooltip("peek: time up, held, & back down; s")]
     private Vector3 peekTimesS = new Vector3(0.25f, 0.4f, 0.5f);
 
-    [Header("Closing In")]
-    [SerializeField]
-    [FormerlySerializedAs("limitToPlayerHeight")]
-    [Tooltip(
-        "slow the climb as the coil nears the player, it still never stops"
-    )]
-    private bool slowNearPlayer = true;
-
-    [SerializeField]
-    [Tooltip("coil starts slowing within this distance below the player; U")]
-    private float slowDownDistance = 2f;
-
-    [SerializeField]
-    [Tooltip("share of climb speed kept when the coil is right below")]
-    private float minimumSpeedShare = 0.15f;
-
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -436,7 +427,7 @@ public class CobraMotor: MonoBehaviour {
                 baseClimbSpeed,
                 Mathf.Min(
                     baseClimbSpeed
-                        + surgeStacks * cobraBalanceConfig.CobraSurgeSpeedPerMistakeU,
+                        + cobraBalanceConfig.GetSurgeSpeedBonusU(surgeStacks),
                     cobraBalanceConfig.CobraMaxSurgeSpeedU
                 )
             );
@@ -444,20 +435,6 @@ public class CobraMotor: MonoBehaviour {
             // leaving the starting zone releases the cobra with a burst
             targetClimbSpeed = baseClimbSpeed
                 + cobraBalanceConfig.CobraExitBoostSpeedU;
-        } else if (player != null && slowNearPlayer) {
-            float coilTopHeight = headHeight - neckLiftU;
-            float distanceBelowPlayer =
-                player.position.y - pathCenter.position.y - coilTopHeight;
-
-            if (distanceBelowPlayer > 0f
-                && distanceBelowPlayer < slowDownDistance) {
-                // closing in: slow down for suspense, but never stop
-                targetClimbSpeed *= Mathf.Lerp(
-                    minimumSpeedShare,
-                    1f,
-                    distanceBelowPlayer / slowDownDistance
-                );
-            }
         }
 
         // ease toward the target, so a speed-up or a slow-down never jumps
@@ -512,8 +489,6 @@ public class CobraMotor: MonoBehaviour {
         waveAmplitudeU = Mathf.Max(0f, waveAmplitudeU);
         waveLengthU = Mathf.Max(0.01f, waveLengthU);
         eyeSizeU = Mathf.Max(0f, eyeSizeU);
-        slowDownDistance = Mathf.Max(0.01f, slowDownDistance);
-        minimumSpeedShare = Mathf.Clamp01(minimumSpeedShare);
     }
 
     // private members  ########################################################
@@ -565,12 +540,25 @@ public class CobraMotor: MonoBehaviour {
     private float SegmentArcStepU => CoilLengthU / LastIndex;
 
     // private methods  ########################################################
-    /// <returns>climb speed outside a surge: from the config's base speed
-    /// curve at the monkey's ramped difficulty, so the chase tightens as the
-    /// climb goes on, else the inspector's climb speed; u/s</returns>
+    /// <returns>vertical gap from the coil top up to the monkey, never
+    /// below 0; U</returns>
+    private float CalcDistanceBelowPlayer() {
+        float coilTopHeight = headHeight - neckLiftU;
+        return Mathf.Max(
+            0f,
+            player.position.y - pathCenter.position.y - coilTopHeight
+        );
+    }
+
+    /// <returns>climb speed outside a surge: the monkey's top climb speed
+    /// times the config's base speed curve at the monkey's ramped difficulty
+    /// (0~2), so the chase tightens as the climb goes on, times the distance
+    /// curve, so a far-behind cobra runs faster; else the inspector's climb
+    /// speed; u/s</returns>
     private float BaseClimbSpeed() {
         if (
             cobraBalanceConfig == null
+            || monkeyClimbConfig == null
             || player == null
             || RampedDifficultyManager.I == null
         ) {
@@ -580,9 +568,20 @@ public class CobraMotor: MonoBehaviour {
             RampedDifficultyManager.I.GetRampedValueFromYPosition(
                 player.position.y
             );
+        float distanceMultiplier =
+            cobraBalanceConfig.CobraDistanceSpeedCurve.Evaluate(
+                CalcDistanceBelowPlayer()
+            );
+        float baseMultiplier = Mathf.Clamp(
+            cobraBalanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty),
+            0f,
+            2f
+        );
         return Mathf.Max(
             0f,
-            cobraBalanceConfig.CobraBaseSpeedCurve.Evaluate(difficulty)
+            monkeyClimbConfig.TopClimbUpSpeedU
+                * baseMultiplier
+                * distanceMultiplier
         );
     }
 

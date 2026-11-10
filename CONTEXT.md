@@ -44,14 +44,11 @@ monkobra/
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
 │   │   ├── Scenes/    TitleScene, LevelSelectScene, FullPlayScene, EndlessScene; the gameplay scenes are root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
-│   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, ItemPineapple/, LevelSelectScreen/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/, SceneFlow/ (+ `Editor/`), Scoring/, TitleScreen/, UI/
+│   │   ├── Scripts/   one folder per module (see Script Index), `SceneFlow/Editor/`
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
-│   │   ├── Prefabs/   Analytics/, Cameras/, Environment/, GameController/, ItemCoconut/, ItemPineapple/, LevelSelectScreen/, LoseScreen/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, PauseScreen/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup), TitleScreen/, TutorialScreen/, UI/, World/ (light, volume, event system, `MenuEventSystem`, `MenuCamera`)
-│   │   ├── Materials/ Environment/, ItemBanana/, ItemCoconut/, ItemPineapple/, MobGreatCobra/, MobSpiderWeb/, Player/
-│   │   ├── Sprites/   ItemBanana/, ItemCoconut/, ItemPineapple/ (fruit art), PopUp/ (popup background)
-│   │   ├── Inputs/    InputSystem_Actions
-│   │   ├── Shaders/   Environment/FruitOutline (inverted-hull Shader Graph)
-│   │   └── Settings/  _Shared/ (URP assets, volume profiles), Player/ (player balance, monkey arm, climb & input), ItemPineapple/ (leap), Environment/ (world balance, branch placement), MobGreatCobra/ (cobra balance), Cameras/, UI/, Analytics/, HackShortcuts/: one folder per module, assets directly inside
+│   │   ├── Prefabs/   per module; `PopUp/` holds `_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup; `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
+│   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
+│   │   └── Settings/  `_Shared/` (URP assets, volume profiles) plus one folder per module, assets directly inside
 │   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed
 │   ├── TextMesh Pro/  imported TMP essentials, not authored
@@ -79,8 +76,6 @@ Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `FullPl
 | `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage` (widget host only), `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt` (widget host only), `HackShortcutHelp`, `SpiderWebPrompt` (escape bar), `_PopUps` (`PopUp/_PopUps`, before `Screens` so the panels draw over it), `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
 Unity drops a reference between two prefab assets, so every link that crosses a root (e.g. `LoseScreen.scoreManager`, `CameraAnchor.monkey`) is a property override on the scene instance. Each object rests in its original active state: owners such as `ScreensManager` switch screens on, managers stay active.
-
-The repository root is the Unity project root. `Library/`, `Temp/`, `Logs/`, `UserSettings/`, `*.csproj`, and `*.slnx` are ignored.
 
 ## How the Pieces Connect
 
@@ -167,7 +162,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Cameras/CameraLeapFraming` | on the leap camera: the higher aim and the pull-back along its own direction while a pineapple leap runs | [TDD](docs/monkobra-tdd.md#camera) |
 | `Cameras/CameraHitShakeFeedback` | on the main camera: fires a light impulse for a branch hit, a heavier one for a falling cobra hit, scaled by `CameraConfig` | [Mobs](docs/mob-doc.md#hit-penalty) |
 | `Cameras/CameraRoughBarkShake` | on the `CameraRig`: eases the Perlin noise of every camera up while the monkey moves on rough bark | [Mobs](docs/mob-doc.md#rough-bark-shake) |
-| `Cameras/CameraCoolDownFeedback` | on the main camera: vignette blackdown pulse on each low-stamina move attempt, a lighter step while low and a stronger one when empty, no zoom | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/CameraCoolDownFeedback` | on the main camera: vignette blackdown pulse on each low-stamina move attempt, a lighter step while low and a stronger one when empty, no zoom; takes the shared screen-edge slot first | [TDD](docs/monkobra-tdd.md#camera) |
+| `Cameras/ScreenVignetteArbiter` | singleton on the `CobraProximityVignette` prefab: the one slot the stamina and cobra vignettes share, a refused ask waits so the two alternate | [TDD](docs/monkobra-tdd.md#camera) |
 | `Player/HitBranchSensor` | singleton branch sensor: raises `BranchHit` and `Hit` (with a `HitKind`); `ReportHit` applies the same drop for a hazard touching the monkey outside the sensor | [Mobs](docs/mob-doc.md#hit-penalty) |
 | `Environment/RoughBarkZone` | raised, irregular bark patch on the trunk that smoothly slows the monkey in every direction while touched; avoidable | [Mobs](docs/mob-doc.md) |
 | `Environment/RoughBarkSpawner` | on the `RoughBarkSystem` prefab: rolls broad patches ahead of the monkey, off obstacles, from `roughBarkSpawnProbabilityCurve` at the ramped difficulty | [TDD](docs/monkobra-tdd.md) |
@@ -205,17 +201,20 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `LevelSelectScreen/LevelSelectScreen` | Normal Play, Endless Mode (greyed out until unlocked), Back; Esc is Back | [TDD](docs/monkobra-tdd.md#scenes) |
 | `UI/MenuButtonHover`, `UI/MenuSelectionKeeper` | menu helpers: hover selects a button so mouse and keys share one highlight; the keeper reselects the last button after a click on empty space | [TDD](docs/monkobra-tdd.md#scenes) |
 | `Analytics/AnalyticsMetric`, `AnalyticsMetrics` | enum of every event kind a run records, plus the static title & height-column table the report reads; add a metric here | [Analytics](docs/analytics-doc.md#adding-a-metric) |
-| `LoseScreen/LoseScreenDownloadWidget` | dev-only button on `LoseScreen` that calls `AnalyticsManager.DownloadReport()`; turns its object off unless `HackShortcutConfig.IsActive`; takes the sibling `Button`, no Inspector Field | [Analytics](docs/analytics-doc.md#dev-keys) |
+| `LoseScreen/LoseScreenDownloadWidget` | dev-only button on `LoseScreen` that calls `AnalyticsManager.DownloadReport()`; turns its object off unless `HackShortcutConfig.AreHintsShown`; takes the sibling `Button`, no Inspector Field | [Analytics](docs/analytics-doc.md#dev-keys) |
 | `Analytics/RunData` | plain data of one run: events by `AnalyticsMetric` (`GetEvents`, `CountOf`), starting zone exit stamp, timed samples of height & stamina, status (`InProgress`, `Lost`, `Interrupted`), end, death cause, scores; also `EventStamp`, `RunSample`, `RunStatus` | none |
 | `Analytics/DeathCause`, `Analytics/DeathCauseResolver` | static: infers a lost run's cause from its stamps: a branch hit or web encounter w/i `DeathCauseWindowS` before the loss, else `GreatCobra`; also the display names | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `Analytics/MockAnalyticsGenerator` | static: builds a fully mocked `SessionData` & saves it as `0<stamp>-mock.md` beside the real files, live session untouched | none |
 | `Analytics/AnalyticsConfig` | ScriptableObject (`Settings/Analytics/AnalyticsConfig.asset`): every analytics tuning value, ie sample & autosave intervals, death cause window | none |
 | `Analytics/SessionData` | plain data of one session: title, app version, runs | none |
-| `Analytics/AnalyticsMarkdownWriter` | static: renders a run entry with Mermaid graphs & the whole session file with a summary of `Lost` runs, writes the file | none |
+| `Analytics/AnalyticsMarkdownWriter` | static, the visualization file: renders a run entry with Mermaid graphs & the whole session file with a summary of `Lost` runs; reads only the data it is given, no file or scene access | none |
+| `Analytics/AnalyticsSessionFile` | plain class: session file path, save, browser download try, `WriteFile`; holds no analytics data | none |
+| `Analytics/AnalyticsHackKeys` | plain class: polls the analytics dev keys & fires restart, download, mock actions of `AnalyticsManager` | [Analytics](docs/analytics-doc.md#dev-keys) |
 | `Analytics/WebDownload` | static: hands a text file to the browser through `Plugins/WebGL/Download.jslib`; false outside a WebGL player | [TDD](docs/monkobra-tdd.md#analytics) |
-| `HackShortcuts/HackShortcutConfig`, `HackShortcuts/HackAction` | ScriptableObject (`Settings/HackShortcuts/HackShortcutConfig.asset`): every dev/hack key with its action & help line; `IsActive` is true in development builds only; read by `AnalyticsManager`, `GameController` & `HackPineappleSpawner` | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
+| `Build/Editor/BuildVersionSync` | Editor script: copies the `ProjectSettings.asset` `bundleVersion` into every Build Profile on Editor load, and from `Monkobra/Sync Build Profile Version` | [Build](docs/build-doc.md) |
+| `HackShortcuts/HackShortcutConfig`, `HackShortcuts/HackAction` | ScriptableObject (`Settings/HackShortcuts/HackShortcutConfig.asset`): every dev/hack key with its action & help line; `IsActive` is true in every build, `AreHintsShown` in development builds only; read by `AnalyticsManager`, `GameController` & `HackPineappleSpawner` | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `HackShortcuts/HackPineappleSpawner` | on the monkey: its F5 to F8 hack keys spawn a pineapple branch, a coconut branch, a falling cobra or a spider web straight above the monkey, belonging to no segment | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
-| `HackShortcuts/HackShortcutPanel` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself outside a development build | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
+| `HackShortcuts/HackShortcutPanel` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself unless `AreHintsShown` (keys still work) | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `PopUp/PopUpManager` | singleton on `Prefabs/PopUp/_PopUps`: shows one popup at a time by `PopUpId`, priority interrupts and queues, run gating, once-per-scene memory, drops all on a loss | [PopUps](docs/pop-up-doc.md#rules) |
 | `PopUp/MessagePopUp` | on each popup variant prefab: text with a `{0}` slot, look, show and fade times, priority, flags; `Show` and `Hide` | [PopUps](docs/pop-up-doc.md#where-config-lives) |
 | `PopUp/PopUpWorldLink` | on `Prefabs/PopUp/_PopUpFruitBase`: line from the popup bottom center to a world target its owner sets (`FruitGrabPrompt` hands over the reach target); hidden without a target | [PopUps](docs/pop-up-doc.md#parts) |
@@ -228,6 +227,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `UI/FruitFlyConfig` | ScriptableObject (`Settings/UI/FruitFlyConfig.asset`): flight duration, look, and easing | [Grab](docs/grab-doc.md#fruit-fly) |
 | `UI/ScreensManager`, `UI/ProgressBarWidget`, `UI/ScoreWidget`, `LoseScreen/LoseScreen` | tutorial panel (goal line, then keyboard-key controls drawn from uGUI Images, `Fonts/UI` subset font) and lose panel, climb progress, with the surge and chase-start warnings handed to `PopUpManager`, red cobra marker and the cobra gap in world units labelled m, score label, final height, score, and the banana, pineapple, and coconut count rows (`LoseScreen/LoseScreenCountRow`, icon plus "x12", from `ScoreManager` counts) on the lose panel | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/CoconutWidget` | on `InGameHUD/CoconutHUD`, inactive until the first coconut: icon, count, and a double-tap hint until the first use of the session | [Grab](docs/grab-doc.md#coconut) |
+| `UI/CobraProximityVignette` | on the `CobraProximityVignette` prefab, first child of `InGameHUD`: green UI overlay warning of the great cobra close below, bottom half then full ring by height gap, a stepped beat rate per stage, hidden in the starting zone, while frozen, guarding or leaping | [TDD](docs/monkobra-tdd.md#camera) |
 | `UI/FreezeTimerWidget` | on the `FreezeTimerHUD` prefab under `_UI`, inactive except while the cobra is frozen: countdown and shrinking bar | [Grab](docs/grab-doc.md#coconut) |
 | `UI/CoconutMessageWidget` | on `InGameHUD/CoconutMessage`: turns the coconut events into `PopUpManager.Show` calls for the first coconut, a freeze, a refused freeze, and the thaw | [Grab](docs/grab-doc.md#coconut) |
 | `UI/SpiderWebWidget` | escape bar, and the first-trap hint through `PopUpManager`, hidden on escape | [Mobs](docs/mob-doc.md#trap-and-escape) |
@@ -244,7 +244,3 @@ Gaps that belong to one subsystem are listed in [Mobs](docs/mob-doc.md#known-gap
 - No tests or run commands exist: verification means opening `TitleScene` (or a gameplay scene) in the Editor
 - `DynamicTreeSegmentPool` deactivates its mock tree, `Envs/Tree`, at runtime, so a component that must run cannot sit under it
 - Broader difficulty scaling is not yet designed, see the [Game Design Document](docs/monkobra-gdd.md#difficulty)
-
-## Living Document Maintenance
-
-A stale briefing is worse than none. Update this file in the same pull request that adds, moves, or renames a script, or shifts how the pieces connect. The assistant that made the change writes the update as its final step, and the file stays on the pull-request checklist.

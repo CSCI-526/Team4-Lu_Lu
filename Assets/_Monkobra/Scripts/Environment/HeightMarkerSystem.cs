@@ -250,9 +250,11 @@ public class HeightMarkerSystem: MonoBehaviour {
         // the endless run has no boss, so no boss marker either
         bool isEndless = GameController.I != null
             && GameController.I.Mode == RunMode.Endless;
+        // the trigger height rarely lands on a marker (525 vs. every 50), so
+        // the boss look goes to the marker just below it, the 500 m one
         int bossHeightU = bossFight != null && bossFight.isActiveAndEnabled
             && !isEndless && bossFight.TriggerHeightU > 0f
-            ? Mathf.RoundToInt(bossFight.TriggerHeightU)
+            ? Mathf.FloorToInt(bossFight.TriggerHeightU / interval) * interval
             : int.MinValue;
         // once the fight has begun its marker is gone, the real king is there
         bool isBossMarkerDone = bossFight != null && bossFight.IsInArena;

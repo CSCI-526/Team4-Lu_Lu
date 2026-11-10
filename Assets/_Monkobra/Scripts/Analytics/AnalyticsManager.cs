@@ -1,20 +1,22 @@
 using System;
 using System.Globalization;
-using System.IO;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Writes playtest analytics to a markdown file per session. A session is one
-/// game launch: the file opens with an h1 timestamp, and every game over
-/// appends one run entry. Scene restarts keep the same session, and the
-/// <see cref="HackAction.RestartSession"/> key forces a fresh file
-/// mid-launch.
+/// The data collection half of analytics: observes the game, stamps every
+/// event, samples height and stamina, and opens and closes the runs of a
+/// session. What it collects is <see cref="SessionData"/>; how it looks is
+/// <see cref="AnalyticsMarkdownWriter"/>, where it is saved is
+/// <see cref="AnalyticsSessionFile"/>.
+/// <para>
+/// A session is one game launch, and every run adds one entry. Scene restarts
+/// keep the same session, and the <see cref="HackAction.RestartSession"/> key
+/// forces a fresh file mid-launch.
+/// </para>
 /// <para>
 /// Attach to a root GameObject of the first scene. It is kept across scene
-/// reloads, and the copy each reload brings in destroys itself. Files land in
-/// <c>Application.persistentDataPath/Analytics/</c>.
+/// reloads, and the copy each reload brings in destroys itself.
 /// </para>
 /// </summary>
 public class AnalyticsManager: MonoBehaviour {
@@ -27,8 +29,10 @@ public class AnalyticsManager: MonoBehaviour {
     /// full path of the current session file, empty until one opens
     /// </summary>
     public string SessionFilePath {
-        get; private set;
-    } = string.Empty;
+        get {
+            return file.FilePath;
+        }
+    }
 
     /// <summary>
     /// runs recorded in the current session
@@ -57,26 +61,11 @@ public class AnalyticsManager: MonoBehaviour {
         };
         currentRun = null;
 
-        string stamp = now.ToString(
-            "yyyy-MM-dd_HH_mm_ss",
-            CultureInfo.InvariantCulture
-        );
-        string dir = Path.Combine(Application.persistentDataPath, FOLDER_NAME);
-
-        try {
-            Directory.CreateDirectory(dir);
-        } catch (Exception e) {
-            SessionFilePath = string.Empty;
-            Debug.LogWarning(
-                "Analytics:\tfail to open session file: " + e,
-                this
-            );
+        if (!file.Open(now)) {
             return;
         }
-
-        SessionFilePath = Path.Combine(dir, "0" + stamp + ".md");
         if (!SaveSession()) {
-            SessionFilePath = string.Empty;
+            file.Close();
             return;
         }
 
@@ -91,7 +80,7 @@ public class AnalyticsManager: MonoBehaviour {
     /// </summary>
     public void SaveMockSession() {
         string path = MockAnalyticsGenerator.SaveMockSession(
-            Path.Combine(Application.persistentDataPath, FOLDER_NAME),
+            AnalyticsSessionFile.FolderPath,
             DateTime.Now,
             config.DeathCauseWindowS
         );
@@ -108,12 +97,7 @@ public class AnalyticsManager: MonoBehaviour {
     /// stands and keeps recording.
     /// </summary>
     public void DownloadReport() {
-        string text = AnalyticsMarkdownWriter.BuildSession(session);
-        string filename = "0" + session.StartClock.ToString(
-            "yyyy-MM-dd_HH_mm_ss",
-            CultureInfo.InvariantCulture
-        ) + ".md";
-        if (WebDownload.SaveText(filename, text)) {
+        if (file.TryDownload(session)) {
             return;
         }
 
@@ -161,6 +145,12 @@ public class AnalyticsManager: MonoBehaviour {
         if (config == null) {
             config = ScriptableObject.CreateInstance<AnalyticsConfig>();
         }
+        hackKeys = new AnalyticsHackKeys(
+            hackShortcuts,
+            OnRestartSessionKey,
+            DownloadReport,
+            SaveMockSession
+        );
         SceneManager.sceneLoaded += OnSceneLoaded;
         SceneNames.Loading += OnSceneLoading;
         // static event, webs spawn at runtime so none can be looked up here
@@ -201,7 +191,10 @@ public class AnalyticsManager: MonoBehaviour {
             }
         }
 
-        UpdateHackKeys();
+        // a duplicate instance destroys itself in Awake and has no keys
+        if (hackKeys != null) {
+            hackKeys.Poll();
+        }
     }
 
     // covers Play mode stop in the Editor
@@ -227,46 +220,16 @@ public class AnalyticsManager: MonoBehaviour {
         I = null;
     }
 
-    // Private Helpers  ########################################################
-    // dev/hack keys, off outside a development build
-    private void UpdateHackKeys() {
-        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
-            return;
-        }
-
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null) {
-            return;
-        }
-
-        Key restartKey = hackShortcuts.GetKey(HackAction.RestartSession);
-        if (
-            restartKey != Key.None
-            && keyboard[restartKey].wasPressedThisFrame
-        ) {
-            Debug.LogWarning(
-                "Analytics:\trestart session key pressed, closing session "
-                    + SessionFilePath,
-                this
-            );
-            StartNewSession();
-        }
-
-        Key downloadKey = hackShortcuts.GetKey(HackAction.DownloadReport);
-        if (
-            downloadKey != Key.None
-            && keyboard[downloadKey].wasPressedThisFrame
-        ) {
-            DownloadReport();
-        }
-
-        Key mockKey = hackShortcuts.GetKey(HackAction.MockSession);
-        if (mockKey != Key.None && keyboard[mockKey].wasPressedThisFrame) {
-            SaveMockSession();
-        }
+    // Event Handlers  #########################################################
+    private void OnRestartSessionKey() {
+        Debug.LogWarning(
+            "Analytics:\trestart session key pressed, closing session "
+                + SessionFilePath,
+            this
+        );
+        StartNewSession();
     }
 
-    // Event Handlers  #########################################################
     // a run cut by a load ends here, while its scene still holds the score
     private void OnSceneLoading() {
         CloseRun(RunStatus.Interrupted);
@@ -356,10 +319,9 @@ public class AnalyticsManager: MonoBehaviour {
         RecordEvent(AnalyticsMetric.BossRevive);
     }
 
-    // constants  ##############################################################
-    private const string FOLDER_NAME = "Analytics";
-
     // private members  ########################################################
+    private readonly AnalyticsSessionFile file = new AnalyticsSessionFile();
+    private AnalyticsHackKeys hackKeys;
     private SessionData session = new SessionData();
     // run being played, null b/t a game over and the next start
     private RunData currentRun;
@@ -480,6 +442,11 @@ public class AnalyticsManager: MonoBehaviour {
             Mode = observedGame != null ? observedGame.Mode : RunMode.Full
         };
         AddSample();
+        // the bar is gone from a menu scene, the chart then keeps its default
+        StaminaBarController bar = StaminaBarController.I;
+        if (bar != null) {
+            currentRun.MaxStamina = bar.MaxStamina;
+        }
         nextSampleTime = Time.time + config.SampleIntervalS;
         session.Runs.Add(currentRun);
         SaveSession();
@@ -513,20 +480,13 @@ public class AnalyticsManager: MonoBehaviour {
     // timed, restarts the timed save countdown
     private bool SaveSession() {
         nextAutosaveTime = Time.time + config.AutosaveIntervalS;
-        if (string.IsNullOrEmpty(SessionFilePath)) {
-            return false;
-        }
-
-        return AnalyticsMarkdownWriter.WriteFile(
-            SessionFilePath,
-            AnalyticsMarkdownWriter.BuildSession(session)
-        );
+        return file.Save(session);
     }
 
     // closes the open run w/ status & saves, the run joined the session at its
     // start; death cause is inferred only for a lost run
     private void CloseRun(RunStatus status) {
-        if (string.IsNullOrEmpty(SessionFilePath) || currentRun == null) {
+        if (!file.IsOpen || currentRun == null) {
             return;
         }
 

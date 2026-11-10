@@ -1289,6 +1289,7 @@ MonoBehaviour:
   - {fileID: 8282021799308646717}
   cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
   playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  monkeyClimbConfig: {fileID: 11400000, guid: 5f758de8d78c4f6194921d44e5a0aab0, type: 2}
   orbitRadius: 5.5
   startHeight: -10
   climbSpeed: 3
@@ -1349,9 +1350,6 @@ MonoBehaviour:
   waveLengthU: 2.5
   waveSpeedHz: 1
   eyeSizeU: 0.14
-  slowNearPlayer: 1
-  slowDownDistance: 2
-  minimumSpeedShare: 0.3
 --- !u!114 &260591372920793710
 MonoBehaviour:
   m_ObjectHideFlags: 0

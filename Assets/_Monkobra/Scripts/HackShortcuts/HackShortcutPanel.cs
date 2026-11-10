@@ -5,8 +5,8 @@ using UnityEngine;
 /// <summary>
 /// Fills the TMP text it sits on with one line per hack key, ie
 /// <c>F8: download the analytics session report</c>, so a tester can see what
-/// each dev key does. Outside a development build the keys are off, so it
-/// switches its own object off instead.
+/// each dev key does. Outside a development build the hints are off, so it
+/// switches its own object off; the keys still work.
 /// <para>
 /// Put it on the TMP text object itself. The text is written once, in
 /// <c>Awake</c>.
@@ -21,7 +21,7 @@ public class HackShortcutPanel: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        if (!HackShortcutConfig.IsActive) {
+        if (!HackShortcutConfig.AreHintsShown) {
             gameObject.SetActive(false);
             return;
         }

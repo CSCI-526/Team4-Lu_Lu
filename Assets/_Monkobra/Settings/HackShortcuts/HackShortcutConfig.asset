@@ -24,7 +24,7 @@ MonoBehaviour:
     description: speed x3
   - action: 3
     key: 97
-    description: jump to boss fight
+    description: jump to boss zone start
   - action: 4
     key: 98
     description: spawn pineapple

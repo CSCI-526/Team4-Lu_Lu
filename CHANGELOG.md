@@ -1,8 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
-todo upd gdd
 bug endless mode need to start w/ full heath & no starting zone
+todo upd gdd
 -->
 
 
@@ -20,7 +20,49 @@ bug endless mode need to start w/ full heath & no starting zone
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.0.0-beta.2] - 2026-11-10
+
+### Added
+
+##### Erik
+
+- green cobra proximity vignette: grows from bottom half to full ring as the Great Cobra closes in, beating faster per stage; hidden in the starting zone & while the cobra is frozen, guarding or the monkey leaps
+- stamina & cobra vignettes alternate, never overlap
+
+### Changed
+
+##### Erik
+
+- mock analytics session simulates real play: climb, hazards, fruit, cobra chase, boss fight & score follow the real rules, so death heights, durations & scores read like a playtest
+- Great Cobra speed scales w/ gap to monkey: far-behind cobra runs faster, close one slower; `cobraBaseSpeedCurve` now a 0~2 multiplier of monkey top climb speed, new `cobraDistanceSpeedCurve`
+
+##### Wenhai Dong
+
+- boss fight difficulty restored to pre-bare-zone tuning: arena grows own branches, rough bark & webs like the climb; `bossMaxHealth` back to 12
+- boss fight: tail sweep joins at 1/5 king health lost, not 1/3; arena watermelons regrow slower (6 → 9 s) & are removed after the win; golden watermelon banner; webs never overlap
+- boss fight: minion call never lost, repeated after a revive
+
+### Removed
+
+##### Erik
+
+- Great Cobra close-range slow-down ⇐ distance curve replaces it
+
+[1.0.0-beta.2]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta...v1.0.0-beta.2
 
 
 

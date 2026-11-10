@@ -125,14 +125,14 @@ A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB file
 
 ## Hack Shortcuts
 
-Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.asset`, an instance of the `HackShortcutConfig` ScriptableObject: a list of entries, each a `HackAction`, a key, and a one-line description. Consumers look a key up with `GetKey(HackAction)` and skip it unless `HackShortcutConfig.IsActive`, ie a development build or the Editor, so none of them work in a release build.
+Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.asset`, an instance of the `HackShortcutConfig` ScriptableObject: a list of entries, each a `HackAction`, a key, and a one-line description. Consumers look a key up with `GetKey(HackAction)` and skip it unless `HackShortcutConfig.IsActive`, which is true in every build, so the keys work in a release build too. Hints and dev-only UI follow `HackShortcutConfig.AreHintsShown` instead, ie a development build or the Editor.
 
 | Key | Action | Read by |
 | --- | --- | --- |
 | F1 | toggle `GameController.CobraNoClip`, the great cobra no longer kills | `GameController` |
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
-| F4 | jump to the boss fight: teleport the monkey to the boss trigger height (`BossTriggerHeightU`), live run only | `MonkeyController` |
+| F4 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
 | F5 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
 | F6 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | F7 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
@@ -141,7 +141,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F11 | close the analytics session and open a new file | `AnalyticsManager` |
 | F12 | save a mock analytics session file | `AnalyticsManager` |
 
-`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
+`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
 
 ## Game Balance
 
@@ -161,7 +161,7 @@ Game balance numbers live in 3 assets, split by what they tune (how height becom
 | 〃 | Spider Web | `webAttemptCount`, `webSpawnProbabilityCurve` | `SpiderWebSpawner` |
 | 〃 | Boss Fight | `bossZoneStartU`, `bossTriggerHeightU`, `bossZoneEndU`, `bossMaxHealth`, `bossBananaDamage` | `BossFightController`, `RampedDifficultyManager` |
 | `CobraBalanceConfig` | Falling Cobra | `fallingCobraAttemptCount`, `fallingCobraSpawnProbabilityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU`, `fallingCobraReachWakeDistanceU`, `fallingCobraBananaAmbushChance`, `fallingCobraRehitGraceS`, `fallingCobraMaxHits` | `FallingCobraSpawner`, `FallingCobraController` |
-| 〃 | Great Cobra | `cobraBaseSpeedCurve`, `cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraMaxSurgeSpeedU`, `cobraExitBoostSpeedU`, `cobraExitBoostDurationS`, `cobraSpeedChangeRateU` | `CobraMotor` |
+| 〃 | Great Cobra | `cobraBaseSpeedCurve`, `cobraDistanceSpeedCurve`, `cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraSurgeStackShareCurve`, `cobraMaxSurgeSpeedU`, `cobraExitBoostSpeedU`, `cobraExitBoostDurationS`, `cobraSpeedChangeRateU` | `CobraMotor` |
 
 - Wiring: each reader holds an inspector field for every slice it needs, never more: `playerBalanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `CoconutManager`, and `CobraMotor` (hit stun only); `worldBalanceConfig` on `MonkeyController` (rough bark), `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `RoughBarkSpawner`, and `BossFightController` (boss fight); `cobraBalanceConfig` on `FallingCobraSpawner` and `CobraMotor`, each pointing at the one asset of its slice
 - Not Balance: the arm stroke and reach are in `MonkeyArmConfig`; climb build-up, exhaustion, idle recovery, orbit speed, and deceleration are in `MonkeyClimbConfig`; input actions are in `MonkeyInputConfig`; the leap's distance, speed curve, hand rise, and landing grace are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab; the web escape grace and the throw start offset on `CoconutManager`; the height markers' interval, placement, look, and test override stay on `HeightMarkerSystem`
@@ -242,6 +242,8 @@ graph LR
 - Hit shake: `CameraHitShakeFeedback` reads `HitBranchSensor.I` and fires one of two `CinemachineImpulseSource` components by hit kind, light for a branch, heavy for a falling cobra, with a force from the config. Every camera carries an impulse listener, so every view shakes
 - Rough bark shake: `CameraRoughBarkShake` drives the Perlin noise gains of every camera while the monkey moves on rough bark, easing in and out; standing still on the bark stays calm
 - Cool-down: `CameraCoolDownFeedback` listens to `StaminaBarController.LowStaminaMoveAttempted` and pulses a URP Vignette on a global Volume, easing it back to rest, in two steps (below the low fraction, and empty). There is no zoom, since a moving field of view reads as motion. A running pulse ignores repeats and a short cooldown follows
+- Cobra proximity: `CobraProximityVignette` (HUD, first child of `InGameHUD`) draws a green UI overlay, since the URP Vignette is black and round only. The height gap to the great cobra's head picks the stage: bottom half, then full ring, each kept a little past its distance so a gap on the edge does not flicker. The overlay beats at a rate per stage, a step and never a ramp. It never shows in the starting zone, nor while the cobra is frozen or guarding, nor during a leap or outside a live run. Distances, rates, color and alpha are in `CameraConfig`
+- Vignette slot: `ScreenVignetteArbiter` holds one slot for both vignettes. A stamina pulse or a cobra beat starts only with the slot and frees it at its end; a refused ask is remembered, and the owner that played last yields to a waiting other, so the two alternate. Without an arbiter in the scene both run unchecked
 - Comfort: one switch in the config silences the shake and the noise, and drops the lead and the pull-back; a global shake scale also scales every shake
 
 The grab shift is in the [Grab System](grab-doc.md#camera), the hit trigger in [Mobs](mob-doc.md#hit-penalty).
@@ -280,7 +282,7 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 - Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in a config, e.g. `bossTriggerHeightU`, reads straight off the trunk
 - Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
 - Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette, one on each side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
-- Boss Marker: the marker at `BossFightController.TriggerHeightU` gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `BossFightController.BuildMarkerFigure` on top of it, kept on whichever pooled label shows it; once `BossFightController.IsInArena` it is no longer shown
+- Boss Marker: the marker at or just below `BossFightController.TriggerHeightU` (the trigger height rarely lands on a marker, so it snaps down to the interval) gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `BossFightController.BuildMarkerFigure` on top of it, kept on whichever pooled label shows it; once `BossFightController.IsInArena` it is no longer shown
 - Passing: a collision, not a height poll. Each label pair has one pooled `HeightMarkerTrigger` (the `HeightMarker` prefab, `markerPrefab` field) standing at the marker's exact height on the trunk axis, a thin trigger slab wider than the monkey's orbit ring; the plates are drawn at the height of its `LabelAnchor` child, a fixed way above, so a marker is drawn above the height at which it counts as passed. Only the monkey's physical parts trigger it (`CobraSensor.IsMonkeyPart`)
 - Pulse: the first time the monkey touches a marker's trigger, the label grows to `pulseScale` and its plate brightens for `pulseDurationS`; re-climbing after a drop does not repeat it
 - Physics: neither label nor plate has a collider, so no spawner's overlap check or grab sees them

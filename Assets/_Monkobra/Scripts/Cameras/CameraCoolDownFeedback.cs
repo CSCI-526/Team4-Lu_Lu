@@ -7,7 +7,9 @@ using UnityEngine.Rendering.Universal;
 /// blackdown from the URP Vignette, easing in and back out. No zoom, since
 /// a moving field of view reads as motion and tires the eye. Two steps: a
 /// lighter one while stamina is low, a stronger one once the bar is empty,
-/// both tuned in <see cref="CameraConfig"/>. Sits on the main camera. Pulses
+/// both tuned in <see cref="CameraConfig"/>. Shares the screen edge with the
+/// cobra proximity vignette through <see cref="ScreenVignetteArbiter"/>.
+/// Sits on the main camera. Pulses
 /// on every <see cref="StaminaBarController.LowStaminaMoveAttempted"/>, and
 /// the vignette returns to rest when the pulse ends or this component is
 /// disabled.
@@ -30,6 +32,16 @@ public class CameraCoolDownFeedback: MonoBehaviour {
     /// step otherwise</param>
     public void Pulse(bool isEmpty) {
         if (vignette == null || config == null) {
+            return;
+        }
+
+        // the cobra vignette may hold the screen edge; the pulse is dropped
+        // then, and the ask lets the cobra vignette yield next time
+        if (
+            !isPulsing
+            && ScreenVignetteArbiter.I != null
+            && !ScreenVignetteArbiter.I.TryAcquire(VignetteOwner.Stamina)
+        ) {
             return;
         }
 
@@ -180,6 +192,10 @@ public class CameraCoolDownFeedback: MonoBehaviour {
             vignette.intensity.overrideState = baseIsOverridden;
         }
         isPulsing = false;
+
+        if (ScreenVignetteArbiter.I != null) {
+            ScreenVignetteArbiter.I.Release(VignetteOwner.Stamina);
+        }
     }
 
     private void Unsubscribe() {

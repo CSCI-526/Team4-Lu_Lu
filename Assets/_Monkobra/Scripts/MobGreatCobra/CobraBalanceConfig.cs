@@ -47,9 +47,15 @@ public class CobraBalanceConfig: ScriptableObject {
     /// </returns>
     public int FallingCobraMaxHits => fallingCobraMaxHits;
 
-    /// <returns>x: ramped difficulty 0~1; y: the great cobra's climb speed
-    /// outside a surge; u/s</returns>
+    /// <returns>x: ramped difficulty 0~1; y: multiplier 0~2 of the monkey's
+    /// top climb speed, 1 = that speed; the great cobra's base climb speed
+    /// outside a surge</returns>
     public AnimationCurve CobraBaseSpeedCurve => cobraBaseSpeedCurve;
+
+    /// <returns>x: gap the great cobra's coil top trails below the monkey,
+    /// U; y: multiplier on its base climb speed, mux the base speed
+    /// curve's</returns>
+    public AnimationCurve CobraDistanceSpeedCurve => cobraDistanceSpeedCurve;
 
     /// <returns>surge time each mistake (hit or web) adds to the great
     /// cobra; 0 turns surges off; s</returns>
@@ -61,6 +67,24 @@ public class CobraBalanceConfig: ScriptableObject {
     /// <returns>extra climb speed per mistake stacked in the current surge;
     /// u/s</returns>
     public float CobraSurgeSpeedPerMistakeU => cobraSurgeSpeedPerMistakeU;
+
+    /// <returns>x: stack number 1, 2, 3, ~ of a surge; y: share 0~1 of
+    /// the per-mistake surge speed that stack adds; holds its last value
+    /// past its last key</returns>
+    public AnimationCurve CobraSurgeStackShareCurve =>
+        cobraSurgeStackShareCurve;
+
+    /// <param name="stacks">mistakes stacked in the running surge</param>
+    /// <returns>extra climb speed the surge adds over the base speed, each
+    /// stack scaled by its share on the stack share curve; u/s</returns>
+    public float GetSurgeSpeedBonusU(int stacks) {
+        float bonusU = 0f;
+        for (int i = 1; i <= stacks; i++) {
+            bonusU += cobraSurgeSpeedPerMistakeU
+                * Mathf.Max(0f, cobraSurgeStackShareCurve.Evaluate(i));
+        }
+        return bonusU;
+    }
 
     /// <returns>ceiling on the great cobra's surging climb speed, may pass
     /// the monkey's top climb speed; u/s</returns>
@@ -133,11 +157,21 @@ public class CobraBalanceConfig: ScriptableObject {
     [Header("Great Cobra")]
     [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~1; y: climb speed outside a surge, keep "
-            + "below the monkey's up speed; u/s"
+        "x: ramped difficulty 0~1; y: multiplier 0~2 of the monkey's top "
+            + "climb speed, 1 = that speed; mux the distance curve; surge & "
+            + "exit boost add on top"
     )]
     private AnimationCurve cobraBaseSpeedCurve =
-        AnimationCurve.Linear(0f, 3.4f, 1f, 4.0f);
+        AnimationCurve.Linear(0f, 0.567f, 1f, 0.667f);
+
+    [SerializeField]
+    [Tooltip(
+        "x: gap the coil top trails below the monkey, U; y: multiplier on "
+            + "the base speed curve's, mux the monkey's top climb speed; "
+            + "surge & exit boost add on top"
+    )]
+    private AnimationCurve cobraDistanceSpeedCurve =
+        AnimationCurve.Linear(0f, 0.5f, 100f, 1.2f);
 
     [SerializeField]
     [Tooltip(
@@ -151,8 +185,25 @@ public class CobraBalanceConfig: ScriptableObject {
     private float cobraMaxSurgeS = 10f;
 
     [SerializeField]
-    [Tooltip("extra climb speed per mistake stacked in the surge; u/s")]
+    [Tooltip(
+        "extra climb speed of the 1st mistake in a surge, scaled per stack "
+            + "by the stack share curve; u/s"
+    )]
     private float cobraSurgeSpeedPerMistakeU = 2.5f;
+
+    [SerializeField]
+    [Tooltip(
+        "x: stack number 1, 2, 3, ~ of a surge; y: share 0~1 of the "
+            + "per-mistake surge speed that stack adds, so later mistakes "
+            + "can add less; holds its last value"
+    )]
+    private AnimationCurve cobraSurgeStackShareCurve = new AnimationCurve(
+        new Keyframe(1f, 1f),
+        new Keyframe(2f, 0.5f),
+        new Keyframe(3f, 0.25f),
+        new Keyframe(4f, 0.125f),
+        new Keyframe(5f, 0.0625f)
+    );
 
     [SerializeField]
     [Tooltip(
