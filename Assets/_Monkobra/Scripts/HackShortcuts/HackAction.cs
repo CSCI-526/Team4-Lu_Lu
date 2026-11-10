@@ -21,4 +21,8 @@ public enum HackAction {
     /// <summary>spawns a branch bearing a coconut above the monkey, to test
     /// the cobra freeze w/o climbing to the coconuts</summary>
     SpawnCoconut,
+
+    /// <summary>toggles <see cref="StaminaBarController.IsGodMode"/>: the
+    /// stamina bar stays at max</summary>
+    GodMode,
 }

@@ -31,3 +31,6 @@ MonoBehaviour:
   - action: 5
     key: 96
     description: spawn coconut
+  - action: 6
+    key: 98
+    description: god mode
