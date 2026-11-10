@@ -591,17 +591,6 @@
                 },
                 {
                     "name": "",
-                    "id": "4be76a06-fc2e-4180-aec3-79819a31b53a",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "RestartAfterLose",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "589f333c-8e94-4094-a0e5-034194828ae5",
                     "path": "<Keyboard>/r",
                     "interactions": "",

@@ -104,14 +104,14 @@ stateDiagram-v2
 | Tutorial | 0 | tutorial panel, only Space starts the run |
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
-| Lost | 0 | lose panel, `RestartAfterLose` (R or Space) reloads the scene after `restartInputDelay` |
+| Lost | 0 | lose panel with Restart and Exit to Title (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
 | Won | 0 | a won run, time frozen, the same restart key reloads the scene |
 
 `LoseGame()` runs once, from StartingZone or Playing: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
 `WinGame()` currently has no caller: a Cobra King win now continues the run with an armor reward ([Mobs](mob-doc.md#win-reward)). When called it runs once, from StartingZone or Playing: like `LoseGame` it settles the score, then enters Won, which freezes time, and the lose screen's restart key reloads the scene. The boss fight's own win stops time on a reward panel instead, without entering Won. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
 
-Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R or Space). Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
+Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit to Title goes through `SceneNames.Load`. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
 
 A pineapple leap is a flag too: `GameController.SetLeaping` sets `IsLeaping` and raises `LeapChanged` while `State` keeps its value, for the same reason, and because the checks of `State == Playing` below must keep passing. It starts only in a live run and ends the starting zone. Hazards check the flag themselves ([Mobs](mob-doc.md#during-a-pineapple-leap)); the sequence is in the [Grab System](grab-doc.md#pineapple-leap).
 
@@ -248,7 +248,7 @@ The grab shift is in the [Grab System](grab-doc.md#camera), the hit trigger in [
 
 ## Input
 
-One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. No mouse button is bound (left, right, middle), so clicking does nothing in the game or on a uGUI button; keyboard and touch bindings stay. Pause (Esc or P), `RestartAfterLose` (R or Space), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
+One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. The left mouse button is bound only in the `UI` map, for uGUI buttons; the `Player` map binds none. Pause (Esc or P), `RestartAfterLose` (R), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
 
 - Move: shared by the body and both arms through `MonkeyInputConfig`
 - Interact: the grab, read by both arms and polled by the climb camera framing; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields

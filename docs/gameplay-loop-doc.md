@@ -77,10 +77,12 @@ graph TD
   Select -->|Back| Title
   Run --> Lose[Lose]
   Endless --> Lose
-  Lose -->|R or Space| Run
+  Lose -->|R, or Restart| Run
+  Lose -->|Exit to Title| Title
+  Run -.->|pause: Exit to Title| Title
   Lose -.->|from Endless| Endless
 ```
 
 - Start: the game opens on the title, then the level selection, where Normal Play or Endless Mode begins a run
 - Restart: R restarts inside the same scene, so an Endless run restarts as Endless
-- Known Gap: no menu route leads back from the lose or pause screen, only a restart
+- Exit: the pause and lose screens each offer Exit to Title, next to Restart (and Resume while paused)

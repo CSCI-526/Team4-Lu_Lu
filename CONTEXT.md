@@ -231,6 +231,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `UI/FreezeTimerWidget` | on the `FreezeTimerHUD` prefab under `_UI`, inactive except while the cobra is frozen: countdown and shrinking bar | [Grab](docs/grab-doc.md#coconut) |
 | `UI/CoconutMessageWidget` | on `InGameHUD/CoconutMessage`: turns the coconut events into `PopUpManager.Show` calls for the first coconut, a freeze, a refused freeze, and the thaw | [Grab](docs/grab-doc.md#coconut) |
 | `UI/SpiderWebWidget` | escape bar, and the first-trap hint through `PopUpManager`, hidden on escape | [Mobs](docs/mob-doc.md#trap-and-escape) |
+| `UI/RunScreenMenu` | options of the pause (Resume, Restart, Exit to Title) and lose (Restart, Exit to Title) screens, next to a `MenuSelectionKeeper`; Exit loads `TitleScene`; on the lose screen a confirm press with nothing highlighted restarts | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `PauseScreen/PauseScreenWidget` | pause panel, shown while `GameController.IsPaused` (Esc or P; R restarts), toggled on `PauseChanged` | [TDD](docs/monkobra-tdd.md#ui) |
 | `UI/KeyPromptWidget`, `UI/FruitGrabPrompt` | runtime keycap ("space", "hold, then release") following a world point, used by the boss HUD; `FruitGrabPrompt` on the Canvas teaches the grab of each fruit kind with a held popup (`BananaFirst`, `PineappleFirst`, `CoconutGrab`) while an unlearned fruit is in reach or w/i `fruitPopUpDetectRadiusU`, until one of that kind is grabbed in the run | [Grab](docs/grab-doc.md) |
 | `Scoring/SessionLeaderboard`, `UI/LeaderboardWidget`, `UI/LeaderboardRowWidget` | simulated rivals fixed per launch; the widget fills the leaderboard nested in `LoseScreen` with the player's rank when it opens | none |
@@ -241,7 +242,6 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 Gaps that belong to one subsystem are listed in [Mobs](docs/mob-doc.md#known-gaps) and the [Grab System](docs/grab-doc.md#known-gaps). Project-wide ones:
 
 - No tests or run commands exist: verification means opening `TitleScene` (or a gameplay scene) in the Editor
-- No menu route from the lose or pause screen: the way out of a run is a restart (R) or quitting
 - `DynamicTreeSegmentPool` deactivates its mock tree, `Envs/Tree`, at runtime, so a component that must run cannot sit under it
 - Broader difficulty scaling is not yet designed, see the [Game Design Document](docs/monkobra-gdd.md#difficulty)
 
