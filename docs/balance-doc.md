@@ -52,6 +52,7 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 - Why Attempts: a fixed count of small independent rolls gives natural variety segment to segment without any hazard clumping to a quota
 - Why The Middle: a segment is one difficulty step, not a gradient, so every hazard in it shares the same value and a segment reads as one coherent chunk of the climb
 - Four Branch Kinds: a branch is not one roll that then picks a fruit; empty, banana, coconut and pineapple branches are 4 separate things, each its own prefab, attempt count and chance curve, rolled per segment like any hazard, rarest first so a common kind never crowds a rare one out of its spot. Only the banana kind grows in the starting zone, at a flat chance
+- Guaranteed Fruit: the coconut and the pineapple each also have a fixed climbed height in `WorldBalanceConfig`; the segment covering it always grows one branch of that kind at exactly that height, placed before every roll, so the first of each is never left to luck
 - Order Matters: branches are placed first, then webs, falling cobras, and rough bark answer `BranchesGenerated`, so late hazards can keep clear of what already stands
 - A Roll Can Place Nothing: webs and falling cobras are skipped when no clear spot is found, so the curve gives the chance of trying, not a guarantee
 

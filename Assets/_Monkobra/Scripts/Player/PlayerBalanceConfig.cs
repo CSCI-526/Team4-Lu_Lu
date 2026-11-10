@@ -77,6 +77,11 @@ public class PlayerBalanceConfig: ScriptableObject {
     /// w/o a hit; u</returns>
     public float CoconutThrowDistanceU => coconutThrowDistanceU;
 
+    /// <returns>an unlearned fruit within this distance of the monkey
+    /// raises its first-grab popup, whatever side of the tree it hangs on;
+    /// u</returns>
+    public float FruitPopUpDetectRadiusU => fruitPopUpDetectRadiusU;
+
     // Inspector Fields  #######################################################
     [Header("Stamina")]
     [SerializeField]
@@ -177,6 +182,15 @@ public class PlayerBalanceConfig: ScriptableObject {
             + "this far; u"
     )]
     private float coconutThrowDistanceU = 25f;
+
+    [Header("Fruit Popup")]
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "an unlearned fruit within this distance of the monkey raises its "
+            + "first-grab popup, whatever side of the tree it hangs on; u"
+    )]
+    private float fruitPopUpDetectRadiusU = 25f;
 
     // Editor Validation  ######################################################
     private void OnValidate() {

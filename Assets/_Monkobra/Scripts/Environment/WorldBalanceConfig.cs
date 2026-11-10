@@ -59,6 +59,18 @@ public class WorldBalanceConfig: ScriptableObject {
         };
     }
 
+    /// <param name="kind">which of the 4 branch kinds</param>
+    /// <returns>climbed height where one branch of that kind always grows,
+    /// whatever its chance curve rolls; negative for a kind w/o one; u
+    /// </returns>
+    public float GetGuaranteedBranchHeightU(BranchKind kind) {
+        return kind switch {
+            BranchKind.Coconut => coconutGuaranteedHeightU,
+            BranchKind.Pineapple => pineappleGuaranteedHeightU,
+            _ => -1f
+        };
+    }
+
     public float RoughBarkSpeedMultiplier => roughBarkSpeedMultiplier;
     public float RoughBarkBlendS => roughBarkBlendS;
     public int RoughBarkAttemptCount => roughBarkAttemptCount;
@@ -171,6 +183,14 @@ public class WorldBalanceConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip(
+        "climbed height, as the trunk markers show it, where one coconut "
+            + "branch always grows, on top of the curve rolls; negative "
+            + "turns it off; u"
+    )]
+    private float coconutGuaranteedHeightU = 250f;
+
+    [SerializeField]
+    [Tooltip(
         "x: ramped difficulty; y: chance 0~1 that one attempt grows a "
             + "branch bearing a coconut; 0 below the first appearance"
     )]
@@ -186,6 +206,14 @@ public class WorldBalanceConfig: ScriptableObject {
     [Min(0)]
     [Tooltip("pineapple branch attempts rolled per segment")]
     private int pineappleBranchAttemptCount = 10;
+
+    [SerializeField]
+    [Tooltip(
+        "climbed height, as the trunk markers show it, where one pineapple "
+            + "branch always grows, on top of the curve rolls; negative "
+            + "turns it off; u"
+    )]
+    private float pineappleGuaranteedHeightU = 150f;
 
     [SerializeField]
     [Tooltip(

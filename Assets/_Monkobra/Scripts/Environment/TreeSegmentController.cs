@@ -199,6 +199,25 @@ public class TreeSegmentController: MonoBehaviour {
         bool isInStartingZone = IsInStartingZone(centerY);
         float rampedDifficulty = GetRampedDifficulty(centerY);
 
+        // the fixed-height branches go first, so nothing crowds them out
+        foreach (BranchKind kind in ROLL_ORDER) {
+            float guaranteedY = GetGuaranteedWorldY(kind);
+            if (
+                !float.IsNaN(guaranteedY)
+                && guaranteedY >= segmentCollider.bounds.min.y
+                && guaranteedY < segmentCollider.bounds.max.y
+            ) {
+                SpawnBranch(
+                    kind,
+                    segmentHeight,
+                    placedPositions,
+                    transform.InverseTransformPoint(
+                        new Vector3(0f, guaranteedY, 0f)
+                    ).y
+                );
+            }
+        }
+
         foreach (BranchKind kind in ROLL_ORDER) {
             float spawnProbability = GetSpawnProbability(
                 kind,
@@ -248,10 +267,21 @@ public class TreeSegmentController: MonoBehaviour {
         };
     }
 
+    // world y of the kind's guaranteed branch, NaN when it has none
+    private float GetGuaranteedWorldY(BranchKind kind) {
+        float climbedY = worldBalanceConfig.GetGuaranteedBranchHeightU(kind);
+        if (climbedY < 0f || RampedDifficultyManager.I == null) {
+            return float.NaN;
+        }
+        return RampedDifficultyManager.I.PlayerGameStartYPosition + climbedY;
+    }
+
+    // fixedLocalHeight: segment-local y to grow at, NaN for a random one
     private void SpawnBranch(
         BranchKind kind,
         float segmentHeight,
-        List<Vector3> placedPositions
+        List<Vector3> placedPositions,
+        float fixedLocalHeight = float.NaN
     ) {
         Quaternion branchRotation = Quaternion.identity;
         Vector3 branchPosition = Vector3.zero;
@@ -260,7 +290,9 @@ public class TreeSegmentController: MonoBehaviour {
         bool isClear = false;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
             branchRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            float branchHeight = Random.Range(0f, segmentHeight);
+            float branchHeight = float.IsNaN(fixedLocalHeight)
+                ? Random.Range(0f, segmentHeight)
+                : fixedLocalHeight;
             branchPosition =
                 branchRotation * Vector3.forward * placementConfig.BranchRadius
                 + Vector3.up * branchHeight;
