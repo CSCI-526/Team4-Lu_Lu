@@ -205,7 +205,7 @@ The swap rules are in the [Grab System](grab-doc.md#camera), the hit trigger in 
 
 ## Input
 
-One asset, `Input/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. Pause (Esc or P), `RestartAfterLose` (R or Space), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
+One asset, `Input/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. No mouse button is bound (left, right, middle), so clicking does nothing in the game or on a uGUI button; keyboard and touch bindings stay. Pause (Esc or P), `RestartAfterLose` (R or Space), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
 
 - Move: shared by the body and both arms through `MonkeyInputConfig`
 - Interact: the grab, read by both arms and the camera rig; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
