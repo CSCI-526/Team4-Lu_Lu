@@ -251,7 +251,7 @@ public class CameraConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("extra aim height during a leap; u")]
-    private float leapAimOffsetU = 10f;
+    private float leapAimOffsetU = 6f;
 
     [SerializeField]
     [Tooltip("scale on the follow distance during a leap, above 1 pulls back")]
@@ -260,7 +260,7 @@ public class CameraConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("camera height vs the monkey during a leap, negative looks up "
         + "from below; u")]
-    private float leapCameraHeightU = -3f;
+    private float leapCameraHeightU = 0f;
 
     [Header("Shake")]
     [SerializeField]
