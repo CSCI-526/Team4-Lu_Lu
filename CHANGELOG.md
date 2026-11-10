@@ -1,8 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme game play tunning
-Fixme order: banana, 100m: bark, 150m: pineapple, 200m falling snake, 250m: coconut, 300m: spider web, 500m: boss fight
+Todo level selection & scene system
 -->
 
 
