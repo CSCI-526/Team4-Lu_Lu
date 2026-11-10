@@ -110,14 +110,17 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 
 | Key | Action | Read by |
 | --- | --- | --- |
-| F1 | toggle `GameController.CobraNoClip` | `GameController` |
-| F2 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
-| F3 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
-| F5 | toggle god mode: the stamina bar stays at max (`StaminaBarController.IsGodMode`) | `StaminaBarController` |
-| F6 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
-| F8 | download the analytics session report | `AnalyticsManager` |
-| F9 | close the analytics session and open a new file | `AnalyticsManager` |
-| F10 | save a mock analytics session file | `AnalyticsManager` |
+| F1 | toggle `GameController.CobraNoClip`, the great cobra no longer kills | `GameController` |
+| F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
+| F3 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
+| F4 | jump to the boss fight: teleport the monkey to the boss trigger height (`BossTriggerHeightU`), live run only | `MonkeyController` |
+| F5 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
+| F6 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
+| F7 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
+| F8 | stick a spider web on the trunk above the monkey | `HackPineappleSpawner` |
+| F10 | download the analytics session report | `AnalyticsManager` |
+| F11 | close the analytics session and open a new file | `AnalyticsManager` |
+| F12 | save a mock analytics session file | `AnalyticsManager` |
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
 

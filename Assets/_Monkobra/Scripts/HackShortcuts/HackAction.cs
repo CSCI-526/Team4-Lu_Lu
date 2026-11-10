@@ -5,15 +5,17 @@ public enum HackAction {
     /// <summary>toggles <see cref="GameController.CobraNoClip"/></summary>
     NoClip,
 
-    /// <summary>downloads the analytics session report in the browser</summary>
-    DownloadReport,
+    /// <summary>toggles <see cref="StaminaBarController.IsMaxStamina"/>: the
+    /// stamina bar stays at max</summary>
+    MaxStamina,
 
-    /// <summary>closes the analytics session and opens a new file</summary>
-    RestartSession,
+    /// <summary>toggles <see cref="MonkeyController.IsSpeedBuff"/>: all monkey
+    /// movement runs at 3 times its normal speed</summary>
+    SpeedBuff,
 
-    /// <summary>saves a mock analytics session file, for layout checks
-    /// </summary>
-    MockSession,
+    /// <summary>teleports the monkey to the boss fight trigger height, so
+    /// the fight begins</summary>
+    BossJump,
 
     /// <summary>spawns a pineapple branch above the monkey</summary>
     SpawnPineapple,
@@ -22,11 +24,18 @@ public enum HackAction {
     /// the cobra freeze w/o climbing to the coconuts</summary>
     SpawnCoconut,
 
-    /// <summary>toggles <see cref="StaminaBarController.IsGodMode"/>: the
-    /// stamina bar stays at max</summary>
-    GodMode,
+    /// <summary>hangs a dormant falling cobra above the monkey</summary>
+    SpawnFallingCobra,
 
-    /// <summary>toggles <see cref="MonkeyController.IsSpeedBuff"/>: all
-    /// monkey movement runs at 3 times its normal speed</summary>
-    SpeedBuff,
+    /// <summary>sticks a spider web on the trunk above the monkey</summary>
+    SpawnSpiderWeb,
+
+    /// <summary>downloads the analytics session report in the browser</summary>
+    DownloadReport,
+
+    /// <summary>closes the analytics session and opens a new file</summary>
+    RestartSession,
+
+    /// <summary>saves a mock analytics session file, for layout checks</summary>
+    MockSession,
 }

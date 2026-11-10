@@ -13,9 +13,9 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
-    /// <returns>if the dev god mode keeps the bar at max, toggled by the
-    /// <see cref="HackAction.GodMode"/> key in a development build</returns>
-    public bool IsGodMode {
+    /// <returns>if the dev max stamina mode keeps the bar at max, toggled by the
+    /// <see cref="HackAction.MaxStamina"/> key in a development build</returns>
+    public bool IsMaxStamina {
         get; private set;
     }
 
@@ -85,7 +85,7 @@ public class StaminaBarController: MonoBehaviour {
     /// <param name="climbedU">upward distance covered this step; u</param>
     /// <param name="orbitedU">sideways arc length covered this step; u</param>
     public void DrainByMovement(float climbedU, float orbitedU) {
-        if (IsGodMode || !HasStamina) {
+        if (IsMaxStamina || !HasStamina) {
             return;
         }
 
@@ -115,7 +115,7 @@ public class StaminaBarController: MonoBehaviour {
     private float lowStaminaFraction = 0.1f;
 
     [SerializeField]
-    [Tooltip("dev/hack keys, its god mode key works in a development build "
+    [Tooltip("dev/hack keys, its max stamina key works in a development build "
         + "only")]
     private HackShortcutConfig hackShortcuts;
 
@@ -156,7 +156,7 @@ public class StaminaBarController: MonoBehaviour {
     }
 
     private void Update() {
-        UpdateGodModeKey();
+        UpdateMaxStaminaKey();
     }
 
     private void OnDestroy() {
@@ -166,28 +166,31 @@ public class StaminaBarController: MonoBehaviour {
     }
 
     // private methods  ########################################################
-    // dev/hack key toggling god mode; turning it on fills the bar at once
-    private void UpdateGodModeKey() {
+    // dev/hack key toggling max stamina; turning it on fills the bar at once
+    private void UpdateMaxStaminaKey() {
         if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
             return;
         }
 
         Keyboard keyboard = Keyboard.current;
-        Key godModeKey = hackShortcuts.GetKey(HackAction.GodMode);
+        Key maxStaminaKey = hackShortcuts.GetKey(HackAction.MaxStamina);
         if (
             keyboard == null
-            || godModeKey == Key.None
-            || !keyboard[godModeKey].wasPressedThisFrame
+            || maxStaminaKey == Key.None
+            || !keyboard[maxStaminaKey].wasPressedThisFrame
         ) {
             return;
         }
 
-        IsGodMode = !IsGodMode;
-        if (IsGodMode) {
+        IsMaxStamina = !IsMaxStamina;
+        if (IsMaxStamina) {
             AddStamina(MaxStamina);
         }
         if (Debug.isDebugBuild) {
-            Debug.Log("StaminaBarController:\tgod mode " + IsGodMode, this);
+            Debug.Log(
+                "StaminaBarController:\tmax stamina " + IsMaxStamina,
+                this
+            );
         }
     }
 

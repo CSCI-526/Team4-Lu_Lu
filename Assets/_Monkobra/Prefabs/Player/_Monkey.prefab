@@ -255,6 +255,10 @@ MonoBehaviour:
   branchPrefab: {fileID: 8590656666692874066, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
   coconutPrefab: {fileID: 1759736754899777978, guid: 2e274b242ab549eb97b5aaa18a820401, type: 3}
   placementConfig: {fileID: 11400000, guid: 8a6cb80e5c899be4baaed7d0fa7bcce8, type: 2}
+  cobraPrefab: {fileID: -3548897315033333001, guid: b60be837c54dfb545b11b9dd5e789cbb, type: 3}
+  cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
+  webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
+  trunkRadiusU: 5.02
   spawnAboveU: 8
 --- !u!114 &4521907736182640953
 MonoBehaviour:

@@ -1,7 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-FIXME another item for both fight
+FIXME another item for boss fight
 FIXME empty branch as its own curve
 FIXME clean up around boss fight area
 
@@ -19,7 +19,7 @@ Todo level selection & scene system
 
 ##### Erik
 
-- hack keys F5 & F6, development builds only, both toggles: F5 god mode keeps the stamina bar at max, F6 speed buff runs climb & orbit at 3x (`HackAction.GodMode`, `HackAction.SpeedBuff`)
+- hack keys reorganized, development builds only: F1 great cobra no kill, F2 max energy (stamina bar stays at max, toggle), F3 speed x3 (climb & orbit, toggle), F4 jump to the boss fight (teleport to the trigger height), F5 pineapple, F6 coconut, F7 falling snake & F8 spider web spawns, F10 report download, F11 new session, F12 mock session (`HackAction.MaxStamina`, `SpeedBuff`, `BossJump`, `SpawnFallingCobra`, `SpawnSpiderWeb`)
 - brown coconut: the whole `SM_Fruits_Coconut_1` model in the world (`Coconut`, `CoconutProjectile`) renders w/ the `Coconut_Brown` material instead of the pack's green
 - coconut counter & flight sprite: use `coconut128x128` instead of `Coconut_Green`; unused `Coconut_Green` sprite & `SM_Fruits_Coconut_4` model rm
 - `Lv1Scene` split into nested prefabs: `World`, `Envs`, `Entities`, `Systems`, `UI` and a leaf prefab per unit, so teammates edit different files

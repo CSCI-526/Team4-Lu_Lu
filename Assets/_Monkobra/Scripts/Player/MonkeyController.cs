@@ -252,6 +252,7 @@ public class MonkeyController: MonoBehaviour {
 
     private void Update() {
         UpdateSpeedBuffKey();
+        UpdateBossJumpKey();
     }
 
     private void FixedUpdate() {
@@ -487,6 +488,48 @@ public class MonkeyController: MonoBehaviour {
         IsSpeedBuff = !IsSpeedBuff;
         if (Debug.isDebugBuild) {
             Debug.Log("MonkeyController:\tspeed buff " + IsSpeedBuff, this);
+        }
+    }
+
+    // dev/hack key teleporting the monkey to the boss fight trigger height;
+    // the fight begins on its own once the climbed height reads that high
+    private void UpdateBossJumpKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        Key bossJumpKey = hackShortcuts.GetKey(HackAction.BossJump);
+        if (
+            keyboard == null
+            || bossJumpKey == Key.None
+            || !keyboard[bossJumpKey].wasPressedThisFrame
+        ) {
+            return;
+        }
+
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        bool isLive = GameController.I != null && GameController.I.IsRunLive;
+        if (ramp == null || worldBalanceConfig == null || body == null
+            || !isLive) {
+            return;
+        }
+
+        // a hair over the trigger, so landing there surely starts the fight
+        Vector3 target = transform.position;
+        target.y = ramp.PlayerGameStartYPosition
+            + worldBalanceConfig.BossTriggerHeightU + 0.05f;
+        transform.position = target;
+        body.position = target;
+        climbSpeedU = 0f;
+        upHeldS = 0f;
+        downHeldS = 0f;
+        Physics.SyncTransforms();
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                $"MonkeyController:\tboss jump to y {target.y}",
+                this
+            );
         }
     }
 
