@@ -47,9 +47,15 @@ public class CobraBalanceConfig: ScriptableObject {
     /// </returns>
     public int FallingCobraMaxHits => fallingCobraMaxHits;
 
-    /// <returns>x: ramped difficulty 0~1; y: the great cobra's climb speed
-    /// outside a surge; u/s</returns>
+    /// <returns>x: ramped difficulty 0~1; y: multiplier 0~2 of the monkey's
+    /// top climb speed, 1 = that speed; the great cobra's base climb speed
+    /// outside a surge</returns>
     public AnimationCurve CobraBaseSpeedCurve => cobraBaseSpeedCurve;
+
+    /// <returns>x: gap the great cobra's coil top trails below the monkey,
+    /// U; y: multiplier on its base climb speed, mux the base speed
+    /// curve's</returns>
+    public AnimationCurve CobraDistanceSpeedCurve => cobraDistanceSpeedCurve;
 
     /// <returns>surge time each mistake (hit or web) adds to the great
     /// cobra; 0 turns surges off; s</returns>
@@ -133,11 +139,21 @@ public class CobraBalanceConfig: ScriptableObject {
     [Header("Great Cobra")]
     [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~1; y: climb speed outside a surge, keep "
-            + "below the monkey's up speed; u/s"
+        "x: ramped difficulty 0~1; y: multiplier 0~2 of the monkey's top "
+            + "climb speed, 1 = that speed; mux the distance curve; surge & "
+            + "exit boost add on top"
     )]
     private AnimationCurve cobraBaseSpeedCurve =
-        AnimationCurve.Linear(0f, 3.4f, 1f, 4.0f);
+        AnimationCurve.Linear(0f, 0.567f, 1f, 0.667f);
+
+    [SerializeField]
+    [Tooltip(
+        "x: gap the coil top trails below the monkey, U; y: multiplier on "
+            + "the base speed curve's, mux the monkey's top climb speed; "
+            + "surge & exit boost add on top"
+    )]
+    private AnimationCurve cobraDistanceSpeedCurve =
+        AnimationCurve.Linear(0f, 0.5f, 100f, 1.2f);
 
     [SerializeField]
     [Tooltip(

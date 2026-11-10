@@ -1,8 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme cobra more actively chase when distant
-Todo show halo during cobra too close
 Bug endless mode need to start w/ full heath & no starting zone
 todo upd gdd
 -->
@@ -12,11 +10,18 @@ todo upd gdd
 
 ### Added
 
+- green cobra proximity vignette: bottom half, then full ring as the Great Cobra closes in, stepped beat rate per stage; hidden in the starting zone & while the cobra is frozen, guarding or the monkey leaps
+- stamina & cobra vignettes share one slot & alternate, never overlap
+
 ### Changed
+
+- great cobra base speed = monkey top climb speed × `cobraBaseSpeedCurve` (now a 0~2 multiplier) × new `cobraDistanceSpeedCurve` (gap below the monkey): a far-behind cobra runs faster, a close one slower; surge & exit boost add on top; `CobraMotor` gains `monkeyClimbConfig`
 
 ### Deprecated
 
 ### Removed
+
+- great cobra close-range slow-down (`slowNearPlayer`, `slowDownDistance`, `minimumSpeedShare`) ⇐ the distance curve replaces it
 
 ### Fixed
 
