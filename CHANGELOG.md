@@ -1,8 +1,9 @@
 # Monkobra CHANGELOG
 
 <!--
-bug endless mode need to start w/ full heath & no starting zone
-todo upd gdd
+Fixme 1st pineapple/banana should appears on top of player
+Bug endless mode need to start w/ full heath & no starting zone
+Todo upd gdd
 -->
 
 
