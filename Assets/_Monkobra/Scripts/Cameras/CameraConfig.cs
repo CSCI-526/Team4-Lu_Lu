@@ -133,12 +133,9 @@ public class CameraConfig: ScriptableObject {
     public float GrabShiftSmoothTimeS => grabShiftSmoothTimeS;
 
     // shots  ------------------------------------------------------------------
-    /// <returns>follows a thrown coconut down</returns>
+    /// <returns>follows a thrown coconut down, and ends at the landing or
+    /// at its duration, whichever comes first</returns>
     public ShotSettings CoconutShot => coconutShot;
-
-    /// <returns>extra time the coconut shot stays after the landing; s
-    /// </returns>
-    public float CoconutLandHoldS => coconutLandHoldS;
 
     /// <returns>looks down at the cobra after a cobra event</returns>
     public ShotSettings CobraAlertShot => cobraAlertShot;
@@ -290,11 +287,7 @@ public class CameraConfig: ScriptableObject {
 
     [Header("Shot: Coconut Track")]
     [SerializeField]
-    private ShotSettings coconutShot = new ShotSettings(2f, 0.8f, 0.2f, 30);
-
-    [SerializeField]
-    [Tooltip("extra time the shot stays after the coconut landed; s")]
-    private float coconutLandHoldS = 0.8f;
+    private ShotSettings coconutShot = new ShotSettings(1.2f, 0f, 0.2f, 30);
 
     [Header("Shot: Cobra Alert")]
     [SerializeField]
@@ -409,7 +402,6 @@ public class CameraConfig: ScriptableObject {
         holdLookUpSmoothTimeS = Mathf.Max(0f, holdLookUpSmoothTimeS);
         holdZoomSmoothTimeS = Mathf.Max(0f, holdZoomSmoothTimeS);
         grabShiftSmoothTimeS = Mathf.Max(0f, grabShiftSmoothTimeS);
-        coconutLandHoldS = Mathf.Max(0f, coconutLandHoldS);
         cobraProximityU = Mathf.Max(0f, cobraProximityU);
         leapDistanceScale = Mathf.Max(1f, leapDistanceScale);
         leapFollowLagS = Mathf.Max(0f, leapFollowLagS);

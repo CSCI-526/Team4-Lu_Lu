@@ -78,16 +78,25 @@ public class CameraRigManager: MonoBehaviour {
     }
 
     /// <summary>
-    /// Lets a live shot end soon, never before its minimum hold
+    /// Lets a live shot end soon, never before its minimum hold unless asked
     /// </summary>
     /// <param name="kind">which shot</param>
     /// <param name="extraHoldS">time to linger first; s</param>
-    public void ReleaseShot(ShotKind kind, float extraHoldS = 0f) {
+    /// <param name="isIgnoringMinHold">whether to end at once even inside the
+    /// minimum hold</param>
+    public void ReleaseShot(
+        ShotKind kind,
+        float extraHoldS = 0f,
+        bool isIgnoringMinHold = false
+    ) {
         ShotState state = states[(int)kind];
         if (!state.isLive) {
             return;
         }
-        state.endTimeS = Mathf.Max(Time.time + extraHoldS, state.minHoldEndS);
+        float endS = Time.time + extraHoldS;
+        state.endTimeS = isIgnoringMinHold
+            ? endS
+            : Mathf.Max(endS, state.minHoldEndS);
     }
 
     // Inspector Fields  #######################################################
@@ -263,11 +272,9 @@ public class CameraRigManager: MonoBehaviour {
         RequestShot(ShotKind.Coconut);
     }
 
-    // the shot lingers a moment on the landing spot
+    // the shot ends at the landing, or at its duration if that comes first
     private void OnCoconutLanded() {
-        if (config != null) {
-            ReleaseShot(ShotKind.Coconut, config.CoconutLandHoldS);
-        }
+        ReleaseShot(ShotKind.Coconut, 0f, true);
     }
 
     // the leap shot lasts as long as the leap, capped by its duration
