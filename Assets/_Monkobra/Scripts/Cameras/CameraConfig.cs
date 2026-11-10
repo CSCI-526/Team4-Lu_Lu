@@ -261,7 +261,7 @@ public class CameraConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("noise amplitude gain while moving on rough bark")]
-    private float roughBarkNoiseGain = 0.6f;
+    private float roughBarkNoiseGain = 2f;
 
     [SerializeField]
     [Tooltip("noise frequency gain while moving on rough bark")]
