@@ -26,13 +26,21 @@ using UnityEngine.Rendering;
 /// monkey climbs on the trunk's camera-facing front, so a label never covers
 /// it. Each number sits on a dark rounded plate, the look of the progress
 /// bar's distance readout, so it reads on the sky, the ground and the bark
-/// alike; the plate is a sprite built here, no imported art. Neither carries
-/// a collider, so no physics query or spawner sees them.
+/// alike; the plate is a sprite built here, no imported art. Neither label
+/// nor plate carries a collider.
 /// </para>
 /// <para>
-/// The first time the monkey climbs past a marker, the marker grows and its
-/// plate brightens for a moment, as progress feedback; climbing past it again
-/// after a drop does not repeat it.
+/// Passing is a collision, not a height poll. Each marker pair has one
+/// pooled <see cref="HeightMarkerTrigger"/> (the <c>HeightMarker</c> prefab)
+/// standing at the marker's exact height on the trunk axis, and the plates
+/// are drawn at the height of its label anchor child, a fixed way above it.
+/// So a 50 m marker is drawn above 50 m, and counts as passed at exactly
+/// 50 m.
+/// </para>
+/// <para>
+/// The first time the monkey touches a marker's trigger, the marker grows and
+/// its plate brightens for a moment, as progress feedback; climbing past it
+/// again after a drop does not repeat it.
 /// </para>
 /// </summary>
 // after the CinemachineBrain's LateUpdate (order 100, set in its .meta), so
@@ -44,6 +52,13 @@ public class HeightMarkerSystem: MonoBehaviour {
     [SerializeField]
     [Tooltip("label font, LiberationSans SDF like the HUD")]
     private TMP_FontAsset font;
+
+    [SerializeField]
+    [Tooltip(
+        "HeightMarker prefab: the pass trigger at the marker's exact height, "
+            + "with the label anchor above it"
+    )]
+    private HeightMarkerTrigger markerPrefab;
 
     [Header("Spacing")]
     [SerializeField]
@@ -182,6 +197,16 @@ public class HeightMarkerSystem: MonoBehaviour {
             );
         }
 
+        if (markerPrefab == null) {
+            Debug.LogWarning(
+                "HeightMarkerSystem:\tmust assign Inspector Field: "
+                    + "markerPrefab, no markers",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
         if (useTestOverride) {
             Debug.LogWarning(
                 "HeightMarkerSystem:\ttest override on, a marker every "
@@ -229,7 +254,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         // once the fight has begun its marker is gone, the real king is there
         bool isBossMarkerDone = bossFight != null && bossFight.IsInArena;
         bool isFigureShown = false;
-        UpdatePassPulse(difficulty, interval);
+        SyncReachedMarker(difficulty, interval);
         float climbedU = difficulty.CurrentPlayerClimbedYDistance;
         int lowest = Mathf.Max(
             1,
@@ -241,6 +266,7 @@ public class HeightMarkerSystem: MonoBehaviour {
             return;
         }
         EnsureLabels((highest - lowest + 1) * SIDE_COUNT);
+        EnsureTriggers(labels.Count / SIDE_COUNT);
 
         if (
             !TryGetAnchor(view.position, true, out Vector3 rightAnchor)
@@ -261,6 +287,12 @@ public class HeightMarkerSystem: MonoBehaviour {
             int marker = lowest + Mod(i / SIDE_COUNT - lowest, pairCount);
             int heightU = marker * interval;
             bool isBoss = heightU == bossHeightU;
+            // one trigger per pair, put at the marker's exact height on
+            // the trunk axis; its label anchor is where the plates go
+            HeightMarkerTrigger trigger = triggers[i / SIDE_COUNT];
+            if (isRight) {
+                PlaceTrigger(trigger, difficulty, heightU, marker <= highest);
+            }
             if (marker > highest || (isBoss && isBossMarkerDone)) {
                 Hide(label);
                 continue;
@@ -282,7 +314,7 @@ public class HeightMarkerSystem: MonoBehaviour {
             label.transform.SetPositionAndRotation(
                 new Vector3(
                     anchor.x,
-                    difficulty.PlayerGameStartYPosition + heightU,
+                    trigger.LabelAnchor.position.y,
                     anchor.z
                 ),
                 view.rotation
@@ -337,6 +369,11 @@ public class HeightMarkerSystem: MonoBehaviour {
     }
 
     private void OnDestroy() {
+        foreach (HeightMarkerTrigger trigger in triggers) {
+            if (trigger != null) {
+                trigger.Passed -= OnMarkerPassed;
+            }
+        }
         if (plateSprite != null) {
             Destroy(plateSprite);
         }
@@ -385,6 +422,8 @@ public class HeightMarkerSystem: MonoBehaviour {
     // private members  ########################################################
     private readonly List<TextMeshPro> labels = new();
     private readonly List<SpriteRenderer> plates = new(); // one per label
+    // one pass trigger per label pair, see HeightMarkerTrigger
+    private readonly List<HeightMarkerTrigger> triggers = new();
     private Transform bossFigure; // the king look-alike on the boss marker
     // climbed height each label shows, int.MinValue while it shows none; u
     private readonly List<int> shownHeightsU = new();
@@ -469,31 +508,33 @@ public class HeightMarkerSystem: MonoBehaviour {
         return true;
     }
 
-    // starts a pulse on the marker the monkey has just climbed past for the
-    // first time; climbing back past it after a drop does not pulse again,
-    // like the height score. Past several at once, e.g. in a leap, only the
-    // top one pulses
-    private void UpdatePassPulse(
+    // a new interval renumbers the markers, so count anew w/o a pulse; this
+    // also sets the count on the first frame
+    private void SyncReachedMarker(
         RampedDifficultyManager difficulty,
         int interval
     ) {
-        int reached = Mathf.FloorToInt(
+        if (interval == pulseIntervalU) {
+            return;
+        }
+        pulseIntervalU = interval;
+        reachedMarker = Mathf.FloorToInt(
             difficulty.HighestPlayerClimbedYDistance / interval
         );
+    }
 
-        // a new interval renumbers the markers, so count anew w/o a pulse;
-        // this also sets the count on the first frame
-        if (interval != pulseIntervalU) {
-            pulseIntervalU = interval;
-            reachedMarker = reached;
+    // starts a pulse on the marker whose trigger the monkey has just
+    // touched for the first time; touching it again after a drop does not
+    // pulse again, like the height score. Several triggers touched at once,
+    // e.g. in a leap, pulse in order, so only the top one is left pulsing
+    private void OnMarkerPassed(HeightMarkerTrigger trigger) {
+        int interval = IntervalU;
+        int marker = trigger.HeightU / interval;
+        if (marker <= reachedMarker) {
             return;
         }
-
-        if (reached <= reachedMarker) {
-            return;
-        }
-        reachedMarker = reached;
-        pulseHeightU = reached * interval;
+        reachedMarker = marker;
+        pulseHeightU = trigger.HeightU;
         pulseEndTime = Time.time + pulseDurationS;
     }
 
@@ -517,6 +558,39 @@ public class HeightMarkerSystem: MonoBehaviour {
     private void EnsureLabels(int count) {
         while (labels.Count < count) {
             AddLabel();
+        }
+    }
+
+    // grows the trigger pool to at least count, one per marker pair
+    private void EnsureTriggers(int count) {
+        while (triggers.Count < count) {
+            HeightMarkerTrigger trigger = Instantiate(markerPrefab, transform);
+            trigger.gameObject.SetActive(false);
+            trigger.Passed += OnMarkerPassed;
+            triggers.Add(trigger);
+        }
+    }
+
+    // the trigger stands on the trunk axis at the marker's exact height, off
+    // while its marker is out of view
+    private void PlaceTrigger(
+        HeightMarkerTrigger trigger,
+        RampedDifficultyManager difficulty,
+        int heightU,
+        bool isShown
+    ) {
+        trigger.HeightU = heightU;
+        Vector3 axis = transform.position;
+        Vector3 spot = new Vector3(
+            axis.x,
+            difficulty.PlayerGameStartYPosition + heightU,
+            axis.z
+        );
+        if (trigger.transform.position != spot) {
+            trigger.transform.position = spot;
+        }
+        if (trigger.gameObject.activeSelf != isShown) {
+            trigger.gameObject.SetActive(isShown);
         }
     }
 
@@ -672,6 +746,11 @@ public class HeightMarkerSystem: MonoBehaviour {
     private void HideAll() {
         foreach (TextMeshPro label in labels) {
             Hide(label);
+        }
+        foreach (HeightMarkerTrigger trigger in triggers) {
+            if (trigger.gameObject.activeSelf) {
+                trigger.gameObject.SetActive(false);
+            }
         }
     }
 

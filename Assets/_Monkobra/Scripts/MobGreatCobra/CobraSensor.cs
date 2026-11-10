@@ -60,7 +60,7 @@ public class CobraSensor: MonoBehaviour {
     /// <returns>true for the monkey's physical parts: body, tail and hands;
     /// false for its sensing volumes (fruit and branch detection), which are
     /// triggers reaching far past the body</returns>
-    private static bool IsMonkeyPart(Collider other) {
+    public static bool IsMonkeyPart(Collider other) {
         // a hand is a trigger, but still a real part of the monkey
         if (other.GetComponentInParent<ArmController>() != null) {
             return true;
