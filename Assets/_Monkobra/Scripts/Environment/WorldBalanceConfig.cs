@@ -13,8 +13,8 @@ using UnityEngine;
 )]
 public class WorldBalanceConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>x: player y above start y; world u; y: ramped difficulty
-    /// 0~1</returns>
+    /// <returns>x: player y above the starting zone exit; world u; y: ramped
+    /// difficulty, 0~1 up to the boss fight, 1~2 after it</returns>
     public AnimationCurve RampedDifficultyCurve => rampedDifficultyCurve;
 
     /// <returns>branch creation attempts rolled per segment</returns>
@@ -79,9 +79,15 @@ public class WorldBalanceConfig: ScriptableObject {
     // Inspector Fields  #######################################################
     [Header("Ramped Difficulty")]
     [SerializeField]
-    [Tooltip("x: player y above start y; world u; y: ramped difficulty 0~1")]
-    private AnimationCurve rampedDifficultyCurve =
-        AnimationCurve.Linear(20f, 0f, 100f, 1f);
+    [Tooltip(
+        "x: player y above the starting zone exit; world u; y: ramped "
+            + "difficulty, 0 at the exit, 1 at the boss fight, 2 at 1000 m"
+    )]
+    private AnimationCurve rampedDifficultyCurve = new(
+        new Keyframe(0f, 0f, 1f / 495f, 1f / 495f),
+        new Keyframe(495f, 1f, 1f / 495f, 1f / 500f),
+        new Keyframe(995f, 2f, 1f / 500f, 1f / 500f)
+    );
 
     [Header("Branch")]
     [SerializeField]
