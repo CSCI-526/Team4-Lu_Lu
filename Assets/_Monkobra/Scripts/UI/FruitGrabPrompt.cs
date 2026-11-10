@@ -1,9 +1,11 @@
 using UnityEngine;
 
 /// <summary>
-/// Teaches the first successful grab of each fruit kind in a run, using the
-/// same keycap as the boss fight. Lives on the shared UI Canvas, so generated
-/// fruit needs no extra component or scene wiring.
+/// Teaches the first successful grab of each fruit kind in a run. A banana
+/// is taught by the shared <see cref="PopUpId.BananaFirst"/> popup, a
+/// pineapple and a coconut by the boss fight's keycap over the fruit. Lives
+/// on the shared UI Canvas, so generated fruit needs no extra component or
+/// scene wiring.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Canvas))]
@@ -85,6 +87,13 @@ public class FruitGrabPrompt: MonoBehaviour {
             return;
         }
 
+        if (kind == FruitKind.Banana) {
+            // a banana gets the popup, never the keycap over the fruit
+            prompt.SetPrompt(false, Vector3.zero, promptOffset);
+            ShowBananaPopUp();
+            return;
+        }
+        HideBananaPopUp();
         prompt.SetPrompt(true, fruit.bounds.center, promptOffset);
     }
 
@@ -117,6 +126,7 @@ public class FruitGrabPrompt: MonoBehaviour {
     private UpwardFruitSensor sensor;
     private MonkeyController monkey;
     private KeyPromptUI prompt;
+    private bool isBananaPopUpShown;
 
     private enum FruitKind { None, Banana, Pineapple, Coconut }
 
@@ -162,6 +172,26 @@ public class FruitGrabPrompt: MonoBehaviour {
     private void HidePrompt() {
         if (prompt != null) {
             prompt.SetPrompt(false, Vector3.zero, promptOffset);
+        }
+        HideBananaPopUp();
+    }
+
+    // held while a banana is in reach, the popup has no show time of its own
+    private void ShowBananaPopUp() {
+        if (isBananaPopUpShown || PopUpManager.I == null) {
+            return;
+        }
+        PopUpManager.I.Show(PopUpId.BananaFirst);
+        isBananaPopUpShown = true;
+    }
+
+    private void HideBananaPopUp() {
+        if (!isBananaPopUpShown) {
+            return;
+        }
+        isBananaPopUpShown = false;
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Hide(PopUpId.BananaFirst);
         }
     }
 }

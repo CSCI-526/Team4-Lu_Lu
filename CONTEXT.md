@@ -217,7 +217,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `UI/CoconutMessageWidget` | on `InGameHUD/CoconutMessage`: turns the coconut events into `PopUpManager.Show` calls for the first coconut, a freeze, a refused freeze, and the thaw | [Grab](docs/grab-doc.md#coconut) |
 | `UI/SpiderWebWidget` | escape bar, and the first-trap hint through `PopUpManager`, hidden on escape | [Mobs](docs/mob-doc.md#trap-and-escape) |
 | `UI/PauseScreenWidget` | pause panel, shown while `GameController.IsPaused` (Esc or P; R restarts), toggled on `PauseChanged` | [TDD](docs/monkobra-tdd.md#ui) |
-| `UI/KeyPromptUI`, `UI/FruitGrabPrompt` | runtime keycap ("space", "hold, then release") following a world point; `FruitGrabPrompt` on the Canvas teaches the first grab of each fruit kind per run, the boss HUD reuses the keycap | [Grab](docs/grab-doc.md) |
+| `UI/KeyPromptUI`, `UI/FruitGrabPrompt` | runtime keycap ("space", "hold, then release") following a world point; `FruitGrabPrompt` on the Canvas teaches the first grab of each fruit kind per run: a banana through the `BananaFirst` popup, a pineapple and a coconut through the keycap; the boss HUD reuses the keycap | [Grab](docs/grab-doc.md) |
 | `Scoring/SessionLeaderboard`, `UI/LeaderboardWidget`, `UI/LeaderboardRowWidget` | simulated rivals fixed per launch; the widget fills the leaderboard nested in `LoseScreen` with the player's rank when it opens | none |
 | `UI/LowStaminaWidget` | asks `PopUpManager` for the low-stamina hint on the first event behind the bar shake and cool-down | [TDD](docs/monkobra-tdd.md#ui) |
 
