@@ -50,6 +50,9 @@ Todo level selection & scene system
 - height marker pass trigger: `HeightMarker` prefab w/ a trigger at the exact height, the plate drawn 5 u above on its label anchor (`HeightMarkerTrigger`)
 - post-boss ramp: difficulty keeps rising past 1 after the boss fight, linear to 2 at 1000 m; every ramp-read curve (branch, banana, pineapple, web, rough bark, falling cobra, cobra base speed) has a key at 2
 - `coconutSpawnProbabilityCurve` in `PlayerBalanceConfig`: coconut chance per segment read off the ramped difficulty like every other hazard
+- boss zone: `bossZoneStartU`, `bossTriggerHeightU` & `bossZoneEndU` in `WorldBalanceConfig` set a stretch of the trunk where nothing but the boss fight is generated; ramped difficulty is 0~1 up to the zone start (`preBossRampCurve`), a flat 1 inside, and above 1 after the zone end (`postBossRampCurve`); `RampedDifficultyManager.IsInBossZoneY`; the fight's own spawner stop & non-banana sweep are gone
+- 4 branch kinds: empty, banana, coconut & pineapple branches are separate prefab variants of `BranchWithFruit` (`BranchEmpty`, `BranchBanana`, `BranchCoconut`, `BranchPineapple`), each w/ its own attempt count & chance curve in `WorldBalanceConfig`, rolled by `TreeSegmentController`; `BranchController.Setup` by `BranchKind`, `BranchKind` enum
+- `CoconutSpawner`, the `CoconutSystem` prefab & `coconutSpawnProbabilityCurve` retired for the coconut branch kind; F2 & F3 hack keys spawn the pineapple & coconut branch variants
 
 ##### Wenhai Dong
 
