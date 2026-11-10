@@ -13,4 +13,6 @@ public enum PopUpId {
     LowStaminaHint,
     SpiderWebHint,
     BananaFirst,
+    PineappleFirst,
+    CoconutGrab,
 }

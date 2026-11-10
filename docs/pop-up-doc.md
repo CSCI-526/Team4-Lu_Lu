@@ -1,6 +1,6 @@
 # Monkobra PopUps
 
-Every short message shown over the screen during a run: the coconut prompts, the cobra warnings, the low-stamina hint, the web hint, and the first-banana hint. They share one look (a semi-transparent plate behind a text) and one manager that decides which shows when. The wider UI map is in the [Technical Design Document](monkobra-tdd.md#ui), the script index in [CONTEXT.md](../CONTEXT.md).
+Every short message shown over the screen during a run: the coconut prompts, the cobra warnings, the low-stamina hint, the web hint, and the grab hints for banana, pineapple, and coconut. They share one look (a semi-transparent plate behind a text) and one manager that decides which shows when. The wider UI map is in the [Technical Design Document](monkobra-tdd.md#ui), the script index in [CONTEXT.md](../CONTEXT.md).
 
 ## Parts
 
@@ -14,7 +14,7 @@ Every short message shown over the screen during a run: the coconut prompts, the
 | `Prefabs/PopUp/_PopUps` | root prefab nesting every variant, carrying `PopUpManager`, a direct child of `_UI` drawn under `Screens` |
 | `Sprites/PopUp/PopUpBackground` | the rounded plate sprite, its 9-slice border set in the import settings |
 
-The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget`, `ProgressBarWidget` (the surge and chase warnings), `LowStaminaWidget`, and `SpiderWebWidget`, and `FruitGrabPrompt` (the `BananaFirst` hint, held while a banana is in reach until it is grabbed) each call `PopUpManager.I.Show` or `Hide` with a `PopUpId`.
+The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget`, `ProgressBarWidget` (the surge and chase warnings), `LowStaminaWidget`, and `SpiderWebWidget`, and `FruitGrabPrompt` (the `BananaFirst`, `PineappleFirst`, and `CoconutGrab` hints, each held while a fruit of its kind is in reach until one is grabbed in the run, and shown again at the next such fruit) each call `PopUpManager.I.Show` or `Hide` with a `PopUpId`.
 
 ## Where Config Lives
 
@@ -35,7 +35,7 @@ Everything a designer tunes sits on the variant prefab, not in a script or an as
 - Once Per Scene: a flagged popup is remembered for the scene load; the manager is rebuilt with the scene, so the next load shows it again
 - Loss: on `GameState.Lost` the showing popup stops at once and the queue is cleared
 - Pause: timing follows `Time.deltaTime`, so a pause freezes a popup and a resume continues it
-- Holds: a popup with no show time, such as the web hint or the banana hint, stays until its owner calls `Hide`
+- Holds: a popup with no show time, such as the web hint or a grab hint, stays until its owner calls `Hide`
 
 ## Add a Popup
 

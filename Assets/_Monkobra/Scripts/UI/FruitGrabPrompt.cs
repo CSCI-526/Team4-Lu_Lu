@@ -1,50 +1,31 @@
 using UnityEngine;
 
 /// <summary>
-/// Teaches the first successful grab of each fruit kind in a run. A banana
-/// is taught by the shared <see cref="PopUpId.BananaFirst"/> popup, a
-/// pineapple and a coconut by the boss fight's keycap over the fruit. Lives
-/// on the shared UI Canvas, so generated fruit needs no extra component or
-/// scene wiring.
+/// Teaches the grab of each fruit kind with a popup, until the player has
+/// grabbed one of that kind in the run. While the monkey can reach an
+/// unlearned fruit, its popup is held on screen
+/// (<see cref="PopUpId.BananaFirst"/>, <see cref="PopUpId.PineappleFirst"/>,
+/// <see cref="PopUpId.CoconutGrab"/>);
+/// it hides when the fruit leaves reach and returns at the next one of that
+/// kind, so a player who saw it but never grabbed is taught again. Lives on
+/// the shared UI Canvas, so generated fruit needs no extra component or scene
+/// wiring.
 /// </summary>
 [DisallowMultipleComponent]
-[RequireComponent(typeof(Canvas))]
 public class FruitGrabPrompt: MonoBehaviour {
-    // Inspector Fields  #######################################################
-    [SerializeField]
-    [Tooltip("prompt offset over the reachable fruit, in canvas units")]
-    private Vector2 promptOffset = new Vector2(0f, 80f);
-
-    [SerializeField]
-    private string keyText = "space";
-
-    [SerializeField]
-    private string instructionText = "hold, then release";
-
     // MonoBehaviour Lifecycle  ################################################
     private void Start() {
         game = GameController.I;
         sensor = UpwardFruitSensor.I;
         if (game == null || sensor == null) {
             Debug.LogError(
-                "FruitGrabPrompt:\tno GameController or UpwardFruitSensor",
+                "FruitGrabPrompt:	no GameController or UpwardFruitSensor",
                 this
             );
             enabled = false;
             return;
         }
         monkey = sensor.GetComponentInParent<MonkeyController>();
-
-        RectTransform canvasRect = (RectTransform)transform;
-        prompt = KeyPromptUI.Create(canvasRect, "FruitGrabPrompt");
-        prompt.SetText(keyText, instructionText);
-        // The pause, tutorial and lose screens must cover the prompt.
-        foreach (Transform child in transform) {
-            if (child.name.Contains("Screens")) {
-                prompt.transform.SetSiblingIndex(child.GetSiblingIndex());
-                break;
-            }
-        }
     }
 
     private void OnEnable() {
@@ -53,21 +34,12 @@ public class FruitGrabPrompt: MonoBehaviour {
 
     private void OnDisable() {
         ArmController.FruitGrabbed -= OnFruitGrabbed;
-        HidePrompt();
-    }
-
-    private void OnDestroy() {
-        if (prompt != null) {
-            Destroy(prompt.gameObject);
-        }
+        HidePopUp();
     }
 
     private void Update() {
-        if (prompt == null) {
-            return;
-        }
         if (!CanShowPrompt()) {
-            HidePrompt();
+            HidePopUp();
             return;
         }
 
@@ -83,18 +55,11 @@ public class FruitGrabPrompt: MonoBehaviour {
             || kind == FruitKind.None
             || IsLearned(kind)
         ) {
-            HidePrompt();
+            HidePopUp();
             return;
         }
 
-        if (kind == FruitKind.Banana) {
-            // a banana gets the popup, never the keycap over the fruit
-            prompt.SetPrompt(false, Vector3.zero, promptOffset);
-            ShowBananaPopUp();
-            return;
-        }
-        HideBananaPopUp();
-        prompt.SetPrompt(true, fruit.bounds.center, promptOffset);
+        ShowPopUp(kind);
     }
 
     // Event Handlers  #########################################################
@@ -115,7 +80,7 @@ public class FruitGrabPrompt: MonoBehaviour {
                 hasGrabbedCoconut = true;
                 break;
         }
-        HidePrompt();
+        HidePopUp();
     }
 
     // private members  ########################################################
@@ -125,8 +90,7 @@ public class FruitGrabPrompt: MonoBehaviour {
     private GameController game;
     private UpwardFruitSensor sensor;
     private MonkeyController monkey;
-    private KeyPromptUI prompt;
-    private bool isBananaPopUpShown;
+    private FruitKind shownKind = FruitKind.None; // kind whose popup is held
 
     private enum FruitKind { None, Banana, Pineapple, Coconut }
 
@@ -169,29 +133,32 @@ public class FruitGrabPrompt: MonoBehaviour {
             ? FruitKind.Coconut : FruitKind.Banana;
     }
 
-    private void HidePrompt() {
-        if (prompt != null) {
-            prompt.SetPrompt(false, Vector3.zero, promptOffset);
-        }
-        HideBananaPopUp();
+    private static PopUpId GetPopUpId(FruitKind kind) {
+        return kind switch {
+            FruitKind.Pineapple => PopUpId.PineappleFirst,
+            FruitKind.Coconut => PopUpId.CoconutGrab,
+            _ => PopUpId.BananaFirst
+        };
     }
 
-    // held while a banana is in reach, the popup has no show time of its own
-    private void ShowBananaPopUp() {
-        if (isBananaPopUpShown || PopUpManager.I == null) {
+    // held while an unlearned fruit is in reach, the popups have no show time
+    private void ShowPopUp(FruitKind kind) {
+        if (shownKind == kind || PopUpManager.I == null) {
             return;
         }
-        PopUpManager.I.Show(PopUpId.BananaFirst);
-        isBananaPopUpShown = true;
+        HidePopUp();
+        PopUpManager.I.Show(GetPopUpId(kind));
+        shownKind = kind;
     }
 
-    private void HideBananaPopUp() {
-        if (!isBananaPopUpShown) {
+    private void HidePopUp() {
+        if (shownKind == FruitKind.None) {
             return;
         }
-        isBananaPopUpShown = false;
+        FruitKind kind = shownKind;
+        shownKind = FruitKind.None;
         if (PopUpManager.I != null) {
-            PopUpManager.I.Hide(PopUpId.BananaFirst);
+            PopUpManager.I.Hide(GetPopUpId(kind));
         }
     }
 }
