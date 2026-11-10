@@ -515,6 +515,10 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
+        // the jump from the starting zone ends it, so the run is normal
+        // climbing & the boss trigger can fire (it needs Playing)
+        GameController.I.EndStartingZone();
+
         // a hair over the zone start, so landing there surely counts as inside
         Vector3 target = transform.position;
         target.y = ramp.PlayerGameStartYPosition

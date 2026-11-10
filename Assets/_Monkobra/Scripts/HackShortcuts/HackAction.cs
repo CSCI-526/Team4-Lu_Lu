@@ -13,7 +13,8 @@ public enum HackAction {
     /// movement runs at 3 times its normal speed</summary>
     SpeedBuff,
 
-    /// <summary>teleports the monkey to the boss zone start</summary>
+    /// <summary>teleports the monkey to the boss zone start, ending the
+    /// starting zone if it is still on</summary>
     BossJump,
 
     /// <summary>spawns a pineapple branch above the monkey</summary>

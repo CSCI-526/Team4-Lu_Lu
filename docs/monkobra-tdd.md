@@ -132,7 +132,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F1 | toggle `GameController.CobraNoClip`, the great cobra no longer kills | `GameController` |
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
-| F4 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, live run only | `MonkeyController` |
+| F4 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
 | F5 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
 | F6 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | F7 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
