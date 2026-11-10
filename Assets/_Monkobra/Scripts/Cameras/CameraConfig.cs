@@ -459,7 +459,7 @@ public class CameraConfig: ScriptableObject {
     [Min(0f)]
     [Tooltip("height gap to the great cobra below which stage 1 (bottom "
         + "half) shows; u")]
-    private float cobraStage1DistanceU = 12f;
+    private float cobraStage1DistanceU = 20f;
 
     [SerializeField]
     [Min(0f)]
