@@ -12,7 +12,7 @@ Every short message shown over the screen during a run: the coconut prompts, the
 | `Prefabs/PopUp/_PopUpBase` | base prefab: `CanvasGroup`, `MessagePopUp`, a 9-sliced `Background` plate, a `Text` label |
 | `Prefabs/PopUp/_PopUpFruitBase` | copy of the base for the fruit grab hints: a fruit `Icon`, the text, an inline SPACE BAR keycap, a static tail label, and a `Line` driven by `PopUpWorldLink` |
 | `PopUp/PopUpWorldLink` | on `_PopUpFruitBase`: draws the `Line` from the popup bottom center to a world target set by its owner, hidden when there is none or it is behind the camera |
-| `Prefabs/PopUp/<Subject>_<Variant>` | one variant of the base per popup, saved inactive; `Banana_First` and `Coconut_Grab` vary `_PopUpFruitBase` and set their own icon sprite |
+| `Prefabs/PopUp/<Subject>_<Variant>` | one variant of the base per popup, saved inactive; `Banana_First`, `Pineapple_First`, and `Coconut_Grab` vary `_PopUpFruitBase` and set their own icon sprite |
 | `Prefabs/PopUp/_PopUps` | root prefab nesting every variant, carrying `PopUpManager`, a direct child of `_UI` drawn under `Screens` |
 | `Sprites/PopUp/PopUpBackground` | the rounded plate sprite, its 9-slice border set in the import settings |
 
