@@ -24,6 +24,7 @@ public class CameraRigManager: MonoBehaviour {
     /// </summary>
     public enum ShotKind {
         Coconut,
+        CobraAlert,
     }
 
     // Public Methods  #########################################################
@@ -69,6 +70,12 @@ public class CameraRigManager: MonoBehaviour {
         return true;
     }
 
+    /// <param name="kind">which shot</param>
+    /// <returns>if the shot is live now</returns>
+    public bool IsShotLive(ShotKind kind) {
+        return states[(int)kind].isLive;
+    }
+
     /// <summary>
     /// Lets a live shot end soon, never before its minimum hold
     /// </summary>
@@ -99,6 +106,18 @@ public class CameraRigManager: MonoBehaviour {
     [SerializeField]
     private CameraShotTarget coconutTarget;
 
+    [Tooltip("shot that looks down at the cobra after a cobra event")]
+    [SerializeField]
+    private CinemachineCamera cobraAlertCamera;
+
+    [Tooltip("point the cobra alert tracks, set to the cobra's head")]
+    [SerializeField]
+    private CameraShotTarget cobraTarget;
+
+    [Tooltip("the camera anchor, the monkey's height for the proximity alert")]
+    [SerializeField]
+    private Transform anchor;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -128,6 +147,20 @@ public class CameraRigManager: MonoBehaviour {
                 this
             );
         }
+        if (cobraAlertCamera == null) {
+            Debug.LogWarning(
+                "CameraRigManager:\tmust assign Inspector Field: "
+                    + "cobraAlertCamera",
+                this
+            );
+        }
+        if (cobraTarget == null) {
+            Debug.LogWarning(
+                "CameraRigManager:\tmust assign Inspector Field: "
+                    + "cobraTarget",
+                this
+            );
+        }
 
         for (int i = 0; i < states.Length; i++) {
             states[i] = new ShotState();
@@ -136,6 +169,7 @@ public class CameraRigManager: MonoBehaviour {
     }
 
     private void Start() {
+        SubscribeCobra();
         coconuts = CoconutManager.I;
         if (coconuts == null) {
             Debug.LogWarning(
@@ -149,7 +183,18 @@ public class CameraRigManager: MonoBehaviour {
         coconuts.Landed += OnCoconutLanded;
     }
 
+    // the cobra, found by type like CoconutManager does; all its events
+    // count, none needs the cobra in the scene to be fatal
+    private void OnEnable() {
+        SubscribeCobra();
+    }
+
+    private void OnDisable() {
+        UnsubscribeCobra();
+    }
+
     private void OnDestroy() {
+        UnsubscribeCobra();
         if (coconuts != null) {
             coconuts.Thrown -= OnCoconutThrown;
             coconuts.Landed -= OnCoconutLanded;
@@ -157,7 +202,11 @@ public class CameraRigManager: MonoBehaviour {
     }
 
     private void Update() {
-        if (!liveKind.HasValue || config == null) {
+        if (config == null) {
+            return;
+        }
+        CheckCobraProximity();
+        if (!liveKind.HasValue) {
             return;
         }
 
@@ -185,6 +234,21 @@ public class CameraRigManager: MonoBehaviour {
         }
     }
 
+    // a cobra event worth a look, but not while it guards the boss arena
+    private void OnCobraChaseStarted() {
+        RequestCobraAlert();
+    }
+
+    private void OnCobraCatchUpStarted(int stacks) {
+        RequestCobraAlert();
+    }
+
+    private void OnMonkeyHit(Collider _, HitBranchSensor.HitKind kind) {
+        if (kind == HitBranchSensor.HitKind.FallingCobraController) {
+            RequestCobraAlert();
+        }
+    }
+
     // constants  ##############################################################
     private const int CLIMB_PRIORITY = 10;
     private const int SHOT_LIVE_PRIORITY = 20;
@@ -203,14 +267,82 @@ public class CameraRigManager: MonoBehaviour {
         new ShotState[System.Enum.GetValues(typeof(ShotKind)).Length];
     private ShotKind? liveKind;
     private CoconutManager coconuts;
+    private CobraMotor cobra;
+    private HitBranchSensor hitSensor;
 
     // private methods  ########################################################
+    private void SubscribeCobra() {
+        // each source on its own, since a singleton may wake after this
+        if (cobra == null) {
+            cobra = FindFirstObjectByType<CobraMotor>();
+            if (cobra != null) {
+                cobra.ChaseStarted += OnCobraChaseStarted;
+                cobra.CatchUpStarted += OnCobraCatchUpStarted;
+            }
+        }
+        if (hitSensor == null) {
+            hitSensor = HitBranchSensor.I;
+            if (hitSensor != null) {
+                hitSensor.Hit += OnMonkeyHit;
+            }
+        }
+    }
+
+    private void UnsubscribeCobra() {
+        if (cobra != null) {
+            cobra.ChaseStarted -= OnCobraChaseStarted;
+            cobra.CatchUpStarted -= OnCobraCatchUpStarted;
+            cobra = null;
+        }
+        if (hitSensor != null) {
+            hitSensor.Hit -= OnMonkeyHit;
+            hitSensor = null;
+        }
+    }
+
+    // looks down at the cobra, framed with the monkey
+    private void RequestCobraAlert() {
+        if (config == null || cobra == null || cobraTarget == null
+            || cobra.IsGuarding) {
+            return;
+        }
+        Transform head = cobra.HeadTransform;
+        if (head == null) {
+            return;
+        }
+
+        if (!IsShotLive(ShotKind.CobraAlert)) {
+            cobraTarget.SetSubject(head);
+        }
+        RequestShot(ShotKind.CobraAlert, config.CobraAlertShot.DurationS);
+    }
+
+    // optional: an alert whenever the cobra head comes within the configured
+    // distance below the monkey, off while the distance is 0
+    private void CheckCobraProximity() {
+        float rangeU = config.CobraProximityU;
+        if (rangeU <= 0f || cobra == null || anchor == null
+            || cobra.IsGuarding || cobra.IsFrozen) {
+            return;
+        }
+        Transform head = cobra.HeadTransform;
+        if (head == null) {
+            return;
+        }
+
+        float belowU = anchor.position.y - head.position.y;
+        if (belowU > 0f && belowU < rangeU) {
+            RequestCobraAlert();
+        }
+    }
+
     private CameraConfig.ShotSettings GetSettings(ShotKind kind) {
         if (config == null) {
             return null;
         }
         return kind switch {
             ShotKind.Coconut => config.CoconutShot,
+            ShotKind.CobraAlert => config.CobraAlertShot,
             _ => null,
         };
     }
@@ -218,6 +350,7 @@ public class CameraRigManager: MonoBehaviour {
     private CinemachineCamera GetCamera(ShotKind kind) {
         return kind switch {
             ShotKind.Coconut => coconutCamera,
+            ShotKind.CobraAlert => cobraAlertCamera,
             _ => null,
         };
     }

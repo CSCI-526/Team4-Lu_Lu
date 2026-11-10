@@ -42,6 +42,13 @@ public class CobraMotor: MonoBehaviour {
     /// chasing</returns>
     public bool IsGuarding => isGuarding;
 
+    /// <returns>the head, the first body segment, eg for a camera to look
+    /// at; null before the body is set up</returns>
+    public Transform HeadTransform =>
+        bodySegments != null && bodySegments.Length > 0
+            ? bodySegments[0]
+            : null;
+
     /// <summary>
     /// Stops the chase for the boss fight: the head is set at
     /// <paramref name="headWorldY"/> and held there for good, below the
