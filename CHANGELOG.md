@@ -3,7 +3,6 @@
 <!--
 Todo upd gdd & docs
 Todo update dev log
-Todo level selection & scene system
 -->
 
 
@@ -17,6 +16,9 @@ Todo level selection & scene system
 
 ##### Erik
 
+- scene system: `TitleScene` (startup scene of every build, any key or click), `LevelSelectScene` (Normal Play, Endless Mode, Back; mouse, W S or arrows, Space or Enter, Esc), `Lv1Scene`, `EndlessScene`; menus use their own `MenuEventSystem` & `MenuCamera`; `SceneNames.Load` is the one way to load a scene
+- Endless Mode: starts at the tree base in the post boss state (gold armor worn, no boss fight, no boss marker, no hazard-free zone); difficulty opens at the post boss level & keeps ramping (`GameController.runMode`, `RunMode`); unlocked once the Cobra King is beaten (`ProgressStore`, PlayerPrefs; Editor menu `Monkobra/Unlock Endless`, `Monkobra/Reset Progress`)
+- analytics: one session file per launch across scene loads, each run tagged `Full` or `Endless`, session summary split by mode when both occur; a scene load closes the open run as `Interrupted`
 - hack keys reorganized, development builds only: F1 great cobra no kill, F2 max energy (stamina bar stays at max, toggle), F3 speed x3 (climb & orbit, toggle), F4 jump to the boss fight (teleport to the trigger height), F5 pineapple, F6 coconut, F7 falling snake & F8 spider web spawns, F10 report download, F11 new session, F12 mock session (`HackAction.MaxStamina`, `SpeedBuff`, `BossJump`, `SpawnFallingCobra`, `SpawnSpiderWeb`)
 - brown coconut: the whole `SM_Fruits_Coconut_1` model in the world (`Coconut`, `CoconutProjectile`) renders w/ the `Coconut_Brown` material instead of the pack's green
 - coconut counter & flight sprite: use `coconut128x128` instead of `Coconut_Green`; unused `Coconut_Green` sprite & `SM_Fruits_Coconut_4` model rm
@@ -96,7 +98,7 @@ Todo level selection & scene system
 - scripts renamed to house role suffixes (`Controller`, `Sensor`, `Motor`, `Widget`, `Relay`, `Feedback`, ~), e.g. `ArmRoot` to `ArmController`, `HitBranchDetection` to `HitBranchSensor`, `RampedDifficultyService` to `RampedDifficultyManager`; no behavior change
 - code style pass over all scripts: same-line braces, MonoBehaviour section order with banners, Inspector guards, explicit types instead of `var`, plain logs gated by `isDebugBuild`
 - `World` and `Systems` wrapper prefabs dropped: the light, volume and event system are root prefabs, and `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` are components of the `GameController` prefab
-- `AnalyticsManager` is now a component of the `GameController` prefab and no longer survives a scene reload, so each load starts a new session file
+- `AnalyticsManager` moved from the `GameController` prefab onto its own `Analytics` prefab, one in every scene, and the first one survives scene loads
 - slippery bark scripts follow the Unity MonoBehaviour conventions: tooltips, assignment guard, section banners, 80 columns
 - Global Volume profile moved from `Scenes/Lv1Scene/` to `Settings/`
 - stamina restore & bar punch land when the grabbed fruit's flight arrives, not at the grab; score still counts at the grab

@@ -64,6 +64,7 @@ The boss fight owns a stretch of the trunk, set by 3 heights in `WorldBalanceCon
 - Flat Difficulty: the ramp reaches its top value, 1, at the zone start and holds it through the zone, then climbs above 1 after the zone end on its own curve
 - Why: the fight builds its arena at runtime and needs a clear, fair stage; keeping the stage clear by generation is simpler than sweeping hazards away when the fight begins
 - Marker Meters: the 3 heights are climbed heights, the same meters the trunk height markers show
+- Endless Mode: no boss zone and no flat stretch; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at the post boss level and keeps climbing; climbed heights, score and markers stay real
 
 ## Balance Lives In Three Assets
 

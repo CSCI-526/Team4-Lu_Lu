@@ -85,6 +85,9 @@ graph TD
 - Win: none, the tree is endless and a run only ends in a loss
 - Lose: the cobra touches the monkey; an empty stamina bar only slows the climb
 - Result: the loss ends the run and shows the final height, score, and bananas collected
+- Modes: Normal Play is the full run, starting zone and Cobra King included; Endless Mode is the same climb without the king, and both end only in a loss
+- Endless Mode: starts at the base of the tree in the state right after the king's defeat, ie the gold armor already worn as a spare life, and the hazards at post-boss density from the end of the starting zone, with no hazard-free stretch and no boss marker; it is for the player who has beaten the king and wants the climb alone
+- Unlock: Endless Mode stays greyed out until the Cobra King has been beaten once, remembered on the player's device
 
 ## Player Experience
 
