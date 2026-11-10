@@ -219,6 +219,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7710000000000000012}
   - {fileID: 5295839155618767694}
   - {fileID: 8958653195840749016}
   - {fileID: 3919547260980896912}
@@ -642,3 +643,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da1683ec39eb44d99d5d1407435a17a9, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::CoconutMessageWidget
+--- !u!1001 &7710000000000000011
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6435943854550387371}
+    m_Modifications: []
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4d8f048862624955859cf853d78509c2, type: 3}
+--- !u!224 &7710000000000000012 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7710000000000000002, guid: 4d8f048862624955859cf853d78509c2, type: 3}
+  m_PrefabInstance: {fileID: 7710000000000000011}
+  m_PrefabAsset: {fileID: 0}
