@@ -149,13 +149,11 @@ Also this week:
 
 Taken up in Week 12: the hazard pile-up, by spacing each hazard's first appearance by height. Not built yet: the flyover introduction
 
-<!-- TODO screen cap: press F6 for a coconut branch, grab it, double-tap Space; capture the frozen light blue cobra & freeze timer -->
-![Coconut freeze](devlog-assets/wk11-coconut-freeze.png)
-*Coconut: the frozen Great Cobra turns light blue while the freeze timer counts down*
+![Great Cobra frozen by a coconut](devlog-assets/wk11-cobra-frozen.png)
+*Coconut: the frozen Great Cobra turns light blue below the monkey, under a "Cobra frozen for 10s!" popup, while the freeze bar counts down*
 
-<!-- TODO screen cap: press F5 for a pineapple branch, grab it, capture the leap mid-pull -->
-![Pineapple leap](devlog-assets/wk11-pineapple-leap.png)
-*Pineapple leap: both hands up as the monkey is pulled up the trunk*
+![Pineapple leap up the trunk](devlog-assets/wk11-pineapple-leap.png)
+*Pineapple leap: both arms stretch straight up as the monkey is pulled past the 50 m markers*
 
 <!-- TODO screen cap: lose a run, capture the lose screen w/ the leaderboard -->
 ![Lose screen leaderboard](devlog-assets/wk11-leaderboard.png)
