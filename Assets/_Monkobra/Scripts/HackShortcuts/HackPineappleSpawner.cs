@@ -14,12 +14,12 @@ public class HackPineappleSpawner: MonoBehaviour {
     private HackShortcutConfig hackShortcuts;
 
     [SerializeField]
-    [Tooltip("branch prefab to spawn, same one the tree segments use")]
-    private BranchController branchPrefab;
+    [Tooltip("pineapple branch prefab, the one the tree segments use")]
+    private BranchController pineappleBranchPrefab;
 
     [SerializeField]
-    [Tooltip("coconut hung on the coconut branch's stem")]
-    private GameObject coconutPrefab;
+    [Tooltip("coconut branch prefab, the one the tree segments use")]
+    private BranchController coconutBranchPrefab;
 
     [SerializeField]
     [Tooltip("gives branch's distance from trunk axis")]
@@ -57,17 +57,17 @@ public class HackPineappleSpawner: MonoBehaviour {
                 this
             );
         }
-        if (branchPrefab == null) {
+        if (pineappleBranchPrefab == null) {
             Debug.LogWarning(
                 "HackPineappleSpawner:\tmust assign Inspector Field: "
-                    + "branchPrefab",
+                    + "pineappleBranchPrefab",
                 this
             );
         }
-        if (coconutPrefab == null) {
+        if (coconutBranchPrefab == null) {
             Debug.LogWarning(
                 "HackPineappleSpawner:\tmust assign Inspector Field: "
-                    + "coconutPrefab",
+                    + "coconutBranchPrefab",
                 this
             );
         }
@@ -195,7 +195,9 @@ public class HackPineappleSpawner: MonoBehaviour {
 
     // branch grows from trunk axis, parent of monkey's orbit, at monkey's angle
     private void SpawnBranch(bool isCoconut) {
-        if (branchPrefab == null || placementConfig == null) {
+        BranchController prefab =
+            isCoconut ? coconutBranchPrefab : pineappleBranchPrefab;
+        if (prefab == null || placementConfig == null) {
             return;
         }
 
@@ -211,17 +213,11 @@ public class HackPineappleSpawner: MonoBehaviour {
             + outward.normalized * placementConfig.BranchRadius
             + Vector3.up * (transform.position.y - axis.y + spawnAboveU);
         BranchController branch = Instantiate(
-            branchPrefab,
+            prefab,
             position,
             Quaternion.LookRotation(outward)
         );
-        if (isCoconut) {
-            // bare branch first, then the coconut on its stem tip
-            branch.Initialize(0f, 0f);
-            branch.TryHangFruit(coconutPrefab, null);
-        } else {
-            branch.Initialize(0f, 1f);
-        }
+        branch.Setup();
 
         if (Debug.isDebugBuild) {
             Debug.Log(

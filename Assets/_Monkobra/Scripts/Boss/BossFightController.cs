@@ -983,7 +983,7 @@ public class BossFightController: MonoBehaviour {
             + worldBalanceConfig.BossZoneStartU;
         if (entryY - guardDepthU < zoneStartY) {
             Debug.LogWarning(
-                "BossFightController:	the guard cobra hangs below the boss "
+                "BossFightController:\tthe guard cobra hangs below the boss "
                 + "zone start, ordinary hazards may reach the arena; move "
                 + "the trigger up or shorten guardDepthU",
                 this
@@ -1270,7 +1270,7 @@ public class BossFightController: MonoBehaviour {
         PlaceBranch(branch.transform, angle, y);
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
-            controller.Initialize(1f, 0f); // always a banana, never a pineapple
+            controller.Setup(); // the banana branch prefab bears a banana
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject banana = pickup != null ? pickup.gameObject : branch;

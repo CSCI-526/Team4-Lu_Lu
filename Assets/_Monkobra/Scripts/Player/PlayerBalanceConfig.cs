@@ -57,11 +57,6 @@ public class PlayerBalanceConfig: ScriptableObject {
     public float StartingZoneIdleRecoveryMultiplier =>
         startingZoneIdleRecoveryMultiplier;
 
-    /// <returns>x: ramped difficulty; y: chance 0~1 that a segment grows one
-    /// coconut on a bare branch; zero where coconuts do not appear yet</returns>
-    public AnimationCurve CoconutSpawnProbabilityCurve =>
-        coconutSpawnProbabilityCurve;
-
     /// <returns>coconut points as a multiple of
     /// <see cref="ScoreRewardPoints"/></returns>
     public float CoconutScoreMultiplier => coconutScoreMultiplier;
@@ -160,18 +155,6 @@ public class PlayerBalanceConfig: ScriptableObject {
     private int scoreRewardPoints = 100;
 
     [Header("Coconut")]
-    [SerializeField]
-    [Tooltip(
-        "x: ramped difficulty; y: chance 0~1 that a segment grows one "
-            + "coconut on a bare branch; 0 below the first appearance"
-    )]
-    private AnimationCurve coconutSpawnProbabilityCurve = new(
-        new Keyframe(0f, 0f),
-        new Keyframe(0.495f, 0f),
-        new Keyframe(0.55f, 0.1f),
-        new Keyframe(2f, 0.1f)
-    );
-
     [SerializeField]
     [Min(0f)]
     [Tooltip("coconut points = score reward points x this")]
