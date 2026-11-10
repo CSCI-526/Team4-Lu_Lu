@@ -68,6 +68,9 @@ public class GameController: MonoBehaviour {
         }
     }
 
+    /// <summary>which kind of run this scene plays</summary>
+    public RunMode Mode => runMode;
+
     // Public Methods  #########################################################
     public void EndStartingZone() {
         if (State == GameState.StartingZone) {
@@ -149,6 +152,11 @@ public class GameController: MonoBehaviour {
     }
 
     // Inspector Fields  #######################################################
+    [SerializeField]
+    [Tooltip("Full: the normal run with the boss fight; Endless: starts "
+        + "after the boss, no boss fight, hazards keep ramping")]
+    private RunMode runMode = RunMode.Full;
+
     [SerializeField]
     [Min(0f)]
     [Tooltip("unscaled seconds the lose screen ignores restart input")]
