@@ -1,6 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
+Todo upd gdd & docs
+Todo update dev log
 Todo level selection & scene system
 -->
 
