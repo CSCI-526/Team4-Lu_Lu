@@ -491,8 +491,8 @@ public class MonkeyController: MonoBehaviour {
         }
     }
 
-    // dev/hack key teleporting the monkey to the boss fight trigger height;
-    // the fight begins on its own once the climbed height reads that high
+    // dev/hack key teleporting the monkey to the boss zone start, so the
+    // approach to the fight can be tested from its first metre
     private void UpdateBossJumpKey() {
         if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
             return;
@@ -515,10 +515,10 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        // a hair over the trigger, so landing there surely starts the fight
+        // a hair over the zone start, so landing there surely counts as inside
         Vector3 target = transform.position;
         target.y = ramp.PlayerGameStartYPosition
-            + worldBalanceConfig.BossTriggerHeightU + 0.05f;
+            + worldBalanceConfig.BossZoneStartU + 0.05f;
         transform.position = target;
         body.position = target;
         climbSpeedU = 0f;
