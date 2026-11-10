@@ -72,7 +72,7 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 ```mermaid
 stateDiagram-v2
   [*] --> Tutorial: scene load
-  Tutorial --> StartingZone: any button
+  Tutorial --> StartingZone: Space
   StartingZone --> Playing: EndStartingZone
   Playing --> Lost: LoseGame
   Lost --> [*]: interact, reload scene
@@ -82,7 +82,7 @@ stateDiagram-v2
 
 | State | Time Scale | Screen |
 | --- | --- | --- |
-| Tutorial | 0 | tutorial panel, any button starts the run |
+| Tutorial | 0 | tutorial panel, only Space starts the run |
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel, `RestartAfterLose` (R or Space) reloads the scene after `restartInputDelay` |
@@ -209,7 +209,7 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 
 - Move: shared by the body and both arms through `MonkeyInputConfig`
 - Interact: the grab, read by both arms and the camera rig; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
-- Jump: the web escape press, read by `SpiderWebStruggle`
+- Jump: the web escape press, read by `SpiderWebStruggle`, and the Space press that starts the run from the tutorial, read by `GameController`
 - Collision: Space is bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped
 
 ## UI

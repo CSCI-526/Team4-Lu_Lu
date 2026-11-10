@@ -50,6 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   restartInputDelay: 0.5
+  startRunAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   pauseAction: {fileID: -1960936080266752685, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   restartAfterLoseAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   restartDuringPauseAction: {fileID: -7918391114834055715, guid: 052faaac586de48259a63d0c4782560b, type: 3}

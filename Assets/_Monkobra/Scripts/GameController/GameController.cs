@@ -1,7 +1,5 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Utilities;
 using UnityEngine.SceneManagement;
 
 public class GameController: MonoBehaviour {
@@ -156,6 +154,11 @@ public class GameController: MonoBehaviour {
     private float restartInputDelay = 0.5f;
 
     [SerializeField]
+    [Tooltip("starts the run from the tutorial screen, the Player/Jump "
+        + "action (Space); no other key starts it")]
+    private InputActionReference startRunAction;
+
+    [SerializeField]
     [Tooltip("toggles the pause while the run is live, the Player/Pause "
         + "action (Esc or P)")]
     private InputActionReference pauseAction;
@@ -182,6 +185,14 @@ public class GameController: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
+        if (startRunAction == null) {
+            Debug.LogError(
+                "GameController:\tmust assign Inspector Field: "
+                    + "Start Run Action",
+                this
+            );
+        }
+
         if (pauseAction == null) {
             Debug.LogError(
                 "GameController:\tmust assign Inspector Field: Pause Action",
@@ -218,10 +229,11 @@ public class GameController: MonoBehaviour {
         I = this;
         WarnIfCobraNoClip();
         SetState(GameState.Tutorial);
-        anyPressSub = InputSystem.onAnyButtonPress.CallOnce(OnAnyPressed);
     }
 
     private void OnEnable() {
+        // shared with the web escape press, so never disabled here
+        startRunAction?.action.Enable();
         pauseAction?.action.Enable();
         restartAfterLoseAction?.action.Enable();
         restartDuringPauseAction?.action.Enable();
@@ -234,6 +246,7 @@ public class GameController: MonoBehaviour {
     }
 
     private void Update() {
+        UpdateStartKey();
         UpdateNoClipKey();
         UpdatePauseKey();
 
@@ -252,8 +265,6 @@ public class GameController: MonoBehaviour {
     }
 
     private void OnDestroy() {
-        anyPressSub?.Dispose();
-
         if (I == this) {
             I = null;
             Time.timeScale = 1f;
@@ -261,15 +272,18 @@ public class GameController: MonoBehaviour {
         }
     }
 
-    // Event Handlers  #########################################################
-    private void OnAnyPressed(InputControl _) {
-        anyPressSub = null;
-        if (State == GameState.Tutorial) {
+    // private methods  ########################################################
+    // only the start key leaves the tutorial; any other key does nothing
+    private void UpdateStartKey() {
+        if (
+            State == GameState.Tutorial
+            && startRunAction != null
+            && startRunAction.action.WasPressedThisFrame()
+        ) {
             SetState(GameState.StartingZone);
         }
     }
 
-    // private methods  ########################################################
     // the pause key toggles the pause; outside a live run it does nothing.
     // The key that starts the run from the tutorial must not also pause it.
     // While paused, the pause restart key reloads the scene for a fresh run
@@ -358,7 +372,6 @@ public class GameController: MonoBehaviour {
     }
 
     // private members  ########################################################
-    private IDisposable anyPressSub;
     private float lostTime;
     private int stateChangedFrame = -1; // frame of the last SetState
 }
