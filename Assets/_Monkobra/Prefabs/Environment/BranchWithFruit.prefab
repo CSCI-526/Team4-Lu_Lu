@@ -389,9 +389,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eabd79969ef68e147ac491bfbc0f6beb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  kind: 1
   banana: {fileID: 1759736754899777978}
   bananaStem: {fileID: 7275201964349085657}
-  pineapplePrefab: {fileID: 1759736754899777978, guid: f4d75ef4edde4017b6dada89164f1099, type: 3}
+  fruitPrefab: {fileID: 0}
+  fruitOffsetU: {x: 0, y: 0, z: 0}
 --- !u!1 &9100000000000000001
 GameObject:
   m_ObjectHideFlags: 0

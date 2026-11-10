@@ -252,8 +252,8 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HackPineappleSpawner
   hackShortcuts: {fileID: 11400000, guid: 6f67fb399ca4433b8cfe8ef24d234f71, type: 2}
-  branchPrefab: {fileID: 8590656666692874066, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
-  coconutPrefab: {fileID: 1759736754899777978, guid: 2e274b242ab549eb97b5aaa18a820401, type: 3}
+  pineappleBranchPrefab: {fileID: 8584545867775044354, guid: fe4c3219fb4542aea7ad83f64c592e93, type: 3}
+  coconutBranchPrefab: {fileID: 8584545867775044381, guid: 5007418d3aac4e91bac3cbbaa722cf00, type: 3}
   placementConfig: {fileID: 11400000, guid: 8a6cb80e5c899be4baaed7d0fa7bcce8, type: 2}
   cobraPrefab: {fileID: -3548897315033333001, guid: b60be837c54dfb545b11b9dd5e789cbb, type: 3}
   cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
