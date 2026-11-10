@@ -153,8 +153,9 @@ Delivery: [AnalyticsSessionFile](https://github.com/kami-lel/monkobra/blob/dev/A
 ###### Mock Data
 
 Script: [MockAnalyticsGenerator.cs](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/MockAnalyticsGenerator.cs) (F12 in the Editor)
-Role: fills [SessionData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/SessionData.cs) and [RunData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/RunData.cs) with a fully simulated session of rising skill, skipping the collection, and the same visualization above then renders it
-Use: the mockups below come from it; the one real result comes from a single live playtest session
+Role: fills [SessionData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/SessionData.cs) and [RunData](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/RunData.cs) with a simulated session of real-game curves, skipping the collection, and the same visualization above then renders it
+Output: plain markdown with Mermaid charts, so a report opens directly anywhere markdown renders, ie GitHub, VS Code, or any viewer with Mermaid support
+Showcase: three generated sessions, [session 1](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_24_55-mock.md), [session 2](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_24_56-mock.md), and [session 3](https://github.com/kami-lel/monkobra/blob/dev/analytics-mock-reports/02026-11-10_11_25_20-mock.md); the mockups below come from this generator, the one real result from a single live playtest session
 
 Balance context for the hypotheses is in the Balance Design and Mobs docs
 
