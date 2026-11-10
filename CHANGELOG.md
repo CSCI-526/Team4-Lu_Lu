@@ -2,7 +2,6 @@
 
 <!--
 FIXME cobra more actively chase when distant
-TODO show halo during cobra too close
 Bug endless mode need to start w/ full heath & no starting zone
 todo upd gdd
 -->
@@ -11,6 +10,9 @@ todo upd gdd
 ## [Unreleased]
 
 ### Added
+
+- green cobra proximity vignette: bottom half, then full ring as the Great Cobra closes in, stepped beat rate per stage; hidden in the starting zone & while the cobra is frozen, guarding or the monkey leaps
+- stamina & cobra vignettes share one slot & alternate, never overlap
 
 ### Changed
 
