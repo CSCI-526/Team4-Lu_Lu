@@ -1,6 +1,6 @@
 # Monkobra Balance Design
 
-Why difficulty works the way it does: one height-driven ramp, a shared roll model for every hazard, and one asset to tune it all. The numbers are deliberately not here, they live in `Settings/GameBalanceConfig.asset` and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
+Why difficulty works the way it does: one height-driven ramp, a shared roll model for every hazard, and one home per number. The numbers are deliberately not here, they live in `Settings/Player/PlayerBalanceConfig.asset`, `Settings/Environment/WorldBalanceConfig.asset`, and `Settings/MobGreatCobra/CobraBalanceConfig.asset`, and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
 
 ## Design Goals
 
@@ -16,24 +16,26 @@ Difficulty is not a timer and not the score. It is a single value from 0 to 1, d
 ```mermaid
 graph LR
   Y[World y] --> Climb[Climbed height]
-  Climb -->|ramp curve| Ramp[Ramped difficulty 0~1]
-  Ramp -->|branch curve| Branch[Branch chance]
-  Ramp -->|banana curve| Banana[Banana chance]
+  Climb -->|ramp curve| Ramp[Ramped difficulty]
+  Ramp -->|empty branch curve| Empty[Empty branch chance]
+  Ramp -->|banana branch curve| Banana[Banana branch chance]
+  Ramp -->|coconut branch curve| Coconut[Coconut branch chance]
+  Ramp -->|pineapple branch curve| Pineapple[Pineapple branch chance]
   Ramp -->|web curve| Web[Web chance]
   Ramp -->|falling cobra curve| Fall[Falling cobra chance]
 ```
 
 - Why Height: height is what the player is trying to maximize, so tying difficulty to it makes the tension track progress; a timer would punish slow play instead of rewarding fast play
-- Why 0 To 1: a normalized value lets every hazard curve use the same x axis, so reshaping when difficulty arrives never touches the hazard curves
-- Two Baselines: every climb height (score, height display) is measured above the monkey's start y (`GetClimbedYDistance`), while the ramp itself starts at 0 at the y of the starter zone exit trigger (`RampBaseYPosition`), so the protected start is not counted as climbing difficulty. Both are owned by `RampedDifficultyService`, and nothing else reads raw world y for balance, so shifting the world only means moving those baselines
-- Clamped: the ramp curve may extrapolate, but the service clamps its result to 0~1, so past the curve's end difficulty stays at its ceiling and below its start at its floor
+- Why A Shared Scale: difficulty is 0 at the starting zone exit and 1 at the boss zone start, so every hazard curve shares one x axis and its first appearance is a point on that axis, found from its height; reshaping when difficulty arrives never touches the hazard curves. Inside the boss zone difficulty holds at 1; after the zone end the ramp keeps rising above 1, and a curve past 1 shapes the post-boss run
+- Two Baselines: every climb height (score, trunk height markers, the boss zone) is measured above the monkey's start y (`GetClimbedYDistance`), while the ramp itself starts at 0 at the y of the starting zone exit trigger (`RampBaseYPosition`), so the protected start is not counted as climbing difficulty. Both are owned by `RampedDifficultyManager`, and nothing else reads raw world y for balance, so shifting the world only means moving those baselines
+- Floored: the service floors the ramp at 0 and leaves the top open, so past the curve's end difficulty stays at its last value; a hazard curve holds its last value past its own last key the same way
 - Highest Not Current: score and the lose panel read the highest height reached, so falling and re-climbing is neither rewarded nor double counted
 
 ## Two Curves Per Hazard
 
 Pace and density are separated on purpose:
 
-- The ramp curve answers when: how much climbed height it takes to reach each level of difficulty
+- The 2 ramp curves answer when: how much climbed height it takes to reach each level of difficulty, `preBossRampCurve` up to the boss zone and `postBossRampCurve` after it
 - A hazard's own curve answers how much: the chance of that hazard at each level of difficulty
 
 Changing the ramp slides every hazard earlier or later together. Changing a hazard's curve reshapes only that hazard. This is why a hazard curve is not allowed to know about heights.
@@ -49,17 +51,29 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 - Attempts Are A Ceiling: the attempt count is the most a segment can hold, and the chance says how often it gets there; the expected count is attempts times chance
 - Why Attempts: a fixed count of small independent rolls gives natural variety segment to segment without any hazard clumping to a quota
 - Why The Middle: a segment is one difficulty step, not a gradient, so every hazard in it shares the same value and a segment reads as one coherent chunk of the climb
-- Bananas Differ: they are not rolled per segment; each generated branch rolls once, at its own height, whether it bears one. Branch density and banana supply are therefore both difficulty-linked but tuned apart
-- Order Matters: branches are placed first, then webs and falling cobras answer `BranchesGenerated`, so late hazards can keep clear of what already stands
+- Four Branch Kinds: a branch is not one roll that then picks a fruit; empty, banana, coconut and pineapple branches are 4 separate things, each its own prefab, attempt count and chance curve, rolled per segment like any hazard, rarest first so a common kind never crowds a rare one out of its spot. Only the banana kind grows in the starting zone, at a flat chance
+- Guaranteed Fruit: the coconut and the pineapple each also have a fixed climbed height in `WorldBalanceConfig`; the segment covering it always grows one branch of that kind at exactly that height, placed before every roll, so the first of each is never left to luck
+- Order Matters: branches are placed first, then webs, falling cobras, and rough bark answer `BranchesGenerated`, so late hazards can keep clear of what already stands
 - A Roll Can Place Nothing: webs and falling cobras are skipped when no clear spot is found, so the curve gives the chance of trying, not a guarantee
 
-## Balance Is One Asset
+## Boss Zone
 
-`GameBalanceConfig` is the single home of balance numbers, grouped by system: stamina, movement, branch hit, score, ramped difficulty, branch, spider web, falling cobra, great cobra.
+The boss fight owns a stretch of the trunk, set by 3 heights in `WorldBalanceConfig`: where the zone starts, where the fight triggers inside it, and where the zone ends.
 
-- Why One Asset: balance questions cross systems, since stamina drain, banana supply, and climb speed together decide how long a run lasts; one file keeps them in view together and rules out a second, forgotten copy of a number
-- Readers Hold The Reference: each consumer has a `balanceConfig` field pointing at the same asset, so there is no global to trip over, and a test scene can swap in another asset
-- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm and orbit in `MonkeyConfig`, branch geometry in `BranchFruitPlacementConfig`, web and falling cobra spawn geometry on their spawners
+- Bare Trunk: nothing but the fight is generated inside the zone, branches of every kind, webs, falling cobras and rough bark each skipping any spot that falls in it, judged by the spot's own height so a segment straddling an edge still fills its outside part
+- Flat Difficulty: the ramp reaches its top value, 1, at the zone start and holds it through the zone, then climbs above 1 after the zone end on its own curve
+- Why: the fight builds its arena at runtime and needs a clear, fair stage; keeping the stage clear by generation is simpler than sweeping hazards away when the fight begins
+- Marker Meters: the 3 heights are climbed heights, the same meters the trunk height markers show
+- Endless Mode: no boss zone and no flat stretch; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at the post boss level and keeps climbing; climbed heights, score and markers stay real
+
+## Balance Lives In Three Assets
+
+The balance numbers have 3 homes, split by what they tune: `PlayerBalanceConfig` for the player's run (stamina, starting zone, branch hit, score, coconut), `WorldBalanceConfig` for the generated world (ramped difficulty, the 4 branch kinds, rough bark, spider web, boss zone), and `CobraBalanceConfig` for both cobras (falling cobra, great cobra).
+
+- Why Split By Concern: one asset had grown to a dozen unrelated groups, so a designer tuning the cobras scrolled past stamina and score; each question now has one obvious home, while every number still lives in exactly one asset, so there is no second, forgotten copy of it
+- Cross-System Questions: stamina drain, banana supply, and climb speed together decide how long a run lasts, and they sit in different assets; read `PlayerBalanceConfig` and `WorldBalanceConfig` side by side when tuning a run's length
+- Readers Hold The Reference: each consumer has a field for every slice it reads (`playerBalanceConfig`, `worldBalanceConfig`, `cobraBalanceConfig`) and no slice it does not, so there is no global to trip over, and a test scene can swap in another asset
+- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm stroke and reach in `MonkeyArmConfig`, climb and orbit in `MonkeyClimbConfig`, branch geometry in `BranchFruitPlacementConfig`, the pineapple leap's distance, speed curve, and timings in `PineappleLeapConfig`, web and falling cobra spawn geometry on their spawners
 
 ## The Stamina Loop
 
@@ -73,15 +87,17 @@ Because bananas also cost focus to grab ([Grab System](grab-doc.md)), raising ba
 
 ## Tuning Guide
 
-- Pace: reshape the ramp curve; it is the only place height maps to difficulty
+- Pace: reshape the ramp curves, the only place height maps to difficulty; move the 3 boss zone heights to shift where the ramp tops out
 - Density Ceiling: change a hazard's attempt count
 - Density Shape: change a hazard's probability curve
+- Kind Mix: change a branch kind's attempt count for its ceiling or its curve for its shape; the 4 curves are independent, so raising one never lowers another
 - Fairness Of Refill: change banana supply and the restore amount together, never one alone
 - Reading A Change: only segments rolled after an edit reflect it, so play far enough for the pool to recycle, or restart the scene
 - Webs Early: the `SpiderWebSpawner` test override skips the curve entirely ([Testing](mob-doc.md#testing))
+- Coconut: `coconutBranchProbabilityCurve` (`WorldBalanceConfig`) rolls a coconut branch like every other kind, its zero stretch setting where coconuts begin; `cobraFreezeDurationS` sets how much a coconut is worth
 
 ## Known Gaps
 
 - Every hazard shares one ramp, so a hazard cannot begin at its own height without reshaping its curve to stay flat until then
-- A freshly created `GameBalanceConfig` defaults differ from the tuned asset, so a recreated asset plays differently until retuned
+- A freshly created balance config's defaults differ from the tuned asset, so a recreated asset plays differently until retuned
 - Difficulty ignores how close the chasing cobra is; only the cobra's own surge reacts to the player, speeding up after each hit or web and stacking with repeated mistakes, see [Mobs](mob-doc.md#motion)

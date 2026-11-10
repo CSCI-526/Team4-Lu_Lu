@@ -3,7 +3,7 @@ using UnityEngine.Serialization;
 
 /// <summary>
 /// Sits on the "FruitCollider" object of a banana. Listens to
-/// <see cref="UpwardFruitDetection"/> and outlines every child mesh renderer
+/// <see cref="UpwardFruitSensor"/> and outlines every child mesh renderer
 /// in 1 of 2 tiers, grabbable winning over reachable. Only the single
 /// targeted fruit is ever outlined:
 /// <list type="bullet">
@@ -14,6 +14,10 @@ using UnityEngine.Serialization;
 /// </summary>
 public class FruitOutlineListener: MonoBehaviour {
     // Inspector Fields  #######################################################
+    [SerializeField]
+    [Tooltip("object whose child meshes get outlined; empty = this object")]
+    private Transform meshRoot;
+
     [Header("Outline Materials")]
     [SerializeField]
     [Tooltip("outline while fruit sits in a detection zone")]
@@ -50,7 +54,8 @@ public class FruitOutlineListener: MonoBehaviour {
             );
         }
 
-        meshes = GetComponentsInChildren<MeshRenderer>(true);
+        Transform meshSearchRoot = meshRoot != null ? meshRoot : transform;
+        meshes = meshSearchRoot.GetComponentsInChildren<MeshRenderer>(true);
         plainMats = new Material[meshes.Length][];
         reachableMats = new Material[meshes.Length][];
         grabbableMats = new Material[meshes.Length][];
@@ -66,11 +71,11 @@ public class FruitOutlineListener: MonoBehaviour {
 
     // read in Start, so Awake order never matters
     private void Start() {
-        UpwardFruitDetection detection = UpwardFruitDetection.I;
+        UpwardFruitSensor detection = UpwardFruitSensor.I;
         if (detection == null) {
             Debug.LogError(
                 "FruitOutlineListener:\t"
-                    + "fail to get singleton: UpwardFruitDetection",
+                    + "fail to get singleton: UpwardFruitSensor",
                 this
             );
             return;
@@ -84,7 +89,7 @@ public class FruitOutlineListener: MonoBehaviour {
     }
 
     private void OnDestroy() {
-        UpwardFruitDetection detection = UpwardFruitDetection.I;
+        UpwardFruitSensor detection = UpwardFruitSensor.I;
         if (detection != null) {
             detection.ReachTargetChanged -= OnReachTargetChanged;
             detection.GrabbableFruitChanged -= OnGrabbableFruitChanged;

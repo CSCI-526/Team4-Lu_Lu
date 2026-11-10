@@ -1,18 +1,28 @@
 /// <summary>Phases of one run, owned by <see cref="GameController"/>.</summary>
 public enum GameState {
-    /// <summary>Paused on the tutorial screen, any key starts the run.</summary>
+    /// <summary>Paused on the tutorial screen, Space starts the run.</summary>
     Tutorial,
 
     /// <summary>
     /// Run is live and the monkey can lose, ends when
-    /// <see cref="GameController.EndStarterZone"/> is called, then
+    /// <see cref="GameController.EndStartingZone"/> is called, then
     /// becomes <see cref="Playing"/>.
     /// </summary>
-    StarterZone,
+    StartingZone,
 
-    /// <summary>Run in progress, never paused, ends only on a loss.</summary>
+    /// <summary>
+    /// Run in progress, ends only on a loss. A pause
+    /// (<see cref="GameController.IsPaused"/>) freezes it without leaving
+    /// this state.
+    /// </summary>
     Playing,
 
     /// <summary>Run lost, the lose screen waits for a restart.</summary>
     Lost,
+
+    /// <summary>
+    /// Run won by defeating the Cobra King; the boss fight's victory panel
+    /// waits for a restart.
+    /// </summary>
+    Won,
 }

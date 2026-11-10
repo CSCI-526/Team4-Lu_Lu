@@ -6,8 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Monkobra/Scenes/Lv1Scene.unity
+    path: Assets/_Monkobra/Scenes/TitleScene.unity
+    guid: 87ea5af9b7074a25b50e713a8be888da
+  - enabled: 1
+    path: Assets/_Monkobra/Scenes/LevelSelectScene.unity
+    guid: f0902db0ba3443758f25010f2d0b63ef
+  - enabled: 1
+    path: Assets/_Monkobra/Scenes/FullPlayScene.unity
     guid: 3ca9bdee83785cc40a2a7012369a7268
+  - enabled: 1
+    path: Assets/_Monkobra/Scenes/EndlessScene.unity
+    guid: 7bfd34a0846c4105ae3ebcfe02607fb4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

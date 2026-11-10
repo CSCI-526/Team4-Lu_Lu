@@ -97,7 +97,7 @@ public class AnalyticsManager: MonoBehaviour {
         );
         if (string.IsNullOrEmpty(path)) {
             Debug.LogWarning("Analytics:\tfail to save mock session", this);
-        } else {
+        } else if (Debug.isDebugBuild) {
             Debug.Log("Analytics:\tmock session saved " + path, this);
         }
     }
@@ -118,7 +118,9 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         if (SaveSession()) {
-            Debug.Log("Analytics:\treport saved " + SessionFilePath, this);
+            if (Debug.isDebugBuild) {
+                Debug.Log("Analytics:\treport saved " + SessionFilePath, this);
+            }
         } else {
             Debug.LogWarning("Analytics:\tfail to save report", this);
         }
@@ -135,6 +137,18 @@ public class AnalyticsManager: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogWarning(
+                "Analytics:\tmust assign Inspector Field: config, "
+                + "using defaults", this);
+        }
+        if (hackShortcuts == null) {
+            Debug.LogWarning(
+                "Analytics:\tmust assign Inspector Field: hackShortcuts",
+                this);
+        }
+
         if (I != null && I != this) {
             Debug.LogWarning("Analytics:\tduplicate instance destroyed", this);
             Destroy(gameObject);
@@ -142,26 +156,38 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         I = this;
+        // one session spans the whole launch, across every scene load
+        DontDestroyOnLoad(gameObject);
         if (config == null) {
-            Debug.LogWarning(
-                "Analytics:\tno config assigned, using defaults",
-                this
-            );
             config = ScriptableObject.CreateInstance<AnalyticsConfig>();
         }
-        DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneNames.Loading += OnSceneLoading;
         // static event, webs spawn at runtime so none can be looked up here
         SpiderWebTrap.Encountered += OnWebEncountered;
         StartNewSession();
-        ObserveScene();
+    }
+
+    // the first scene is observed once every Awake ran, as this object is no
+    // longer on the GameController, so the singletons are not set in Awake
+    private void Start() {
+        if (I != this) {
+            return;
+        }
+
+        ObserveScene(SceneManager.GetActiveScene());
+        // a run already live when observing began, eg a dev scene
+        if (observedGame != null && observedGame.IsRunLive
+            && currentRun == null) {
+            OpenRun(observedGame.IsInStartingZone);
+        }
     }
 
     private void Update() {
         if (
             currentRun != null
             && observedGame != null
-            && observedGame.State == GameState.Playing
+            && observedGame.IsRunLive
         ) {
             if (Time.time >= nextSampleTime) {
                 AddSample();
@@ -195,8 +221,9 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneNames.Loading -= OnSceneLoading;
         SpiderWebTrap.Encountered -= OnWebEncountered;
-        Observe(null, null, null);
+        Observe(null, null, null, null, null, null);
         I = null;
     }
 
@@ -240,49 +267,93 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     // Event Handlers  #########################################################
+    // a run cut by a load ends here, while its scene still holds the score
+    private void OnSceneLoading() {
+        CloseRun(RunStatus.Interrupted);
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
-        // each reload builds fresh instances of every observed subject
-        ObserveScene();
+        // a load that skipped SceneNames.Load still closes the open run
+        CloseRun(RunStatus.Interrupted);
+        // each load builds fresh instances of every observed subject; a menu
+        // scene has none, so nothing is observed there
+        ObserveScene(scene);
     }
 
     private void OnGameStateChanged(GameState state) {
-        if (state == GameState.Playing) {
-            // scene reloaded mid run, the old run never saw a game over
-            CloseRun(RunStatus.Interrupted);
-            currentRun = new RunData {
-                StartTime = Time.time,
-                StartClock = DateTime.Now
-            };
-            AddSample();
-            nextSampleTime = Time.time + config.SampleIntervalS;
-            session.Runs.Add(currentRun);
-            SaveSession();
+        if (state == GameState.StartingZone) {
+            // the run goes live here: the zone's fruit, webs & height count
+            OpenRun(true);
+        } else if (state == GameState.Playing) {
+            if (currentRun == null) {
+                // no starting zone, e.g. a dev scene that starts playing
+                OpenRun(false);
+            } else if (currentRun.StartedInZone && !currentRun.HasZoneExit) {
+                currentRun.ZoneExit = CreateStamp();
+                currentRun.HasZoneExit = true;
+                SaveSession();
+            }
         } else if (state == GameState.Lost) {
             CloseRun(RunStatus.Lost);
+        } else if (state == GameState.Won) {
+            CloseRun(RunStatus.Won);
         }
     }
 
+    // one line per source: the metric channel does the stamping & saving
     private void OnBananaCollected() {
-        if (currentRun == null) {
-            return;
-        }
+        RecordEvent(AnalyticsMetric.Banana);
+    }
 
-        currentRun.Bananas.Add(CreateStamp());
-        SaveSession();
+    private void OnCoconutCollected() {
+        RecordEvent(AnalyticsMetric.Coconut);
+    }
+
+    private void OnCoconutUsed() {
+        RecordEvent(AnalyticsMetric.CoconutUsed);
     }
 
     private void OnWebEncountered(SpiderWebTrap _) {
-        if (currentRun != null) {
-            currentRun.Webs.Add(CreateStamp());
-            SaveSession();
-        }
+        RecordEvent(AnalyticsMetric.Web);
     }
 
     private void OnBranchHit(Collider _) {
-        if (currentRun != null) {
-            currentRun.Branches.Add(CreateStamp());
-            SaveSession();
+        RecordEvent(AnalyticsMetric.Branch);
+    }
+
+    // a leap counts at its start, not its end
+    private void OnLeapChanged(bool isLeaping) {
+        if (isLeaping) {
+            RecordEvent(AnalyticsMetric.PineappleLeap);
         }
+    }
+
+    private void OnRoughBarkTouched() {
+        RecordEvent(AnalyticsMetric.RoughBark);
+    }
+
+    // freezes from a coconut & from the gold armor both arrive here
+    private void OnCobraFrozen(float _) {
+        RecordEvent(AnalyticsMetric.CobraFreeze);
+    }
+
+    // a pause counts, a resume does not
+    private void OnPauseChanged(bool isPaused) {
+        if (isPaused) {
+            RecordEvent(AnalyticsMetric.Pause);
+        }
+    }
+
+    private void OnBossFightStarted() {
+        RecordEvent(AnalyticsMetric.BossFight);
+    }
+
+    private void OnBossArmorAbsorbed() {
+        RecordEvent(AnalyticsMetric.BossArmorSaved);
+    }
+
+    private void OnBossRevived() {
+        RecordEvent(AnalyticsMetric.BossRevive);
     }
 
     // constants  ##############################################################
@@ -298,24 +369,51 @@ public class AnalyticsManager: MonoBehaviour {
     // cached references  ------------------------------------------------------
     private GameController observedGame;
     private ScoreManager observedScore;
-    private HitBranchDetection observedBranch;
+    private HitBranchSensor observedBranch;
+    private CoconutManager observedCoconuts;
+    private MonkeyController observedMonkey;
+    private BossFightController observedBoss;
 
     // private methods  ########################################################
-    private void ObserveScene() {
+    // observes the subjects of <scene> only: right after a load the old
+    // scene's objects still exist
+    private void ObserveScene(Scene scene) {
         Observe(
-            GameController.I,
-            ScoreManager.I,
-            FindFirstObjectByType<HitBranchDetection>()
+            InScene(GameController.I, scene),
+            InScene(ScoreManager.I, scene),
+            InScene(FindFirstObjectByType<HitBranchSensor>(), scene),
+            InScene(CoconutManager.I, scene),
+            InScene(FindFirstObjectByType<MonkeyController>(), scene),
+            InScene(BossFightController.I, scene)
         );
+    }
+
+    private static T InScene<T>(T subject, Scene scene) where T: Component {
+        return subject != null && subject.gameObject.scene == scene
+            ? subject
+            : null;
     }
 
     private void Observe(
         GameController game,
         ScoreManager score,
-        HitBranchDetection branch
+        HitBranchSensor branch,
+        CoconutManager coconuts,
+        MonkeyController monkey,
+        BossFightController boss
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;
+            observedGame.LeapChanged -= OnLeapChanged;
+            observedGame.PauseChanged -= OnPauseChanged;
+        }
+        if (observedMonkey != null) {
+            observedMonkey.RoughBarkTouched -= OnRoughBarkTouched;
+        }
+        if (observedBoss != null) {
+            observedBoss.FightStarted -= OnBossFightStarted;
+            observedBoss.ArmorAbsorbed -= OnBossArmorAbsorbed;
+            observedBoss.Revived -= OnBossRevived;
         }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
@@ -323,13 +421,31 @@ public class AnalyticsManager: MonoBehaviour {
         if (observedBranch != null) {
             observedBranch.BranchHit -= OnBranchHit;
         }
+        if (observedCoconuts != null) {
+            observedCoconuts.Collected -= OnCoconutCollected;
+            observedCoconuts.Used -= OnCoconutUsed;
+            observedCoconuts.Frozen -= OnCobraFrozen;
+        }
 
         observedGame = game;
         observedScore = score;
         observedBranch = branch;
+        observedCoconuts = coconuts;
+        observedMonkey = monkey;
+        observedBoss = boss;
 
         if (observedGame != null) {
             observedGame.StateChanged += OnGameStateChanged;
+            observedGame.LeapChanged += OnLeapChanged;
+            observedGame.PauseChanged += OnPauseChanged;
+        }
+        if (observedMonkey != null) {
+            observedMonkey.RoughBarkTouched += OnRoughBarkTouched;
+        }
+        if (observedBoss != null) {
+            observedBoss.FightStarted += OnBossFightStarted;
+            observedBoss.ArmorAbsorbed += OnBossArmorAbsorbed;
+            observedBoss.Revived += OnBossRevived;
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
@@ -337,11 +453,41 @@ public class AnalyticsManager: MonoBehaviour {
         if (observedBranch != null) {
             observedBranch.BranchHit += OnBranchHit;
         }
+        if (observedCoconuts != null) {
+            observedCoconuts.Collected += OnCoconutCollected;
+            observedCoconuts.Used += OnCoconutUsed;
+            observedCoconuts.Frozen += OnCobraFrozen;
+        }
+    }
+
+    // the one way an event enters a run: stamps it, ignored b/t runs, saves
+    private void RecordEvent(AnalyticsMetric metric) {
+        if (currentRun == null) {
+            return;
+        }
+
+        currentRun.GetEvents(metric).Add(CreateStamp());
+        SaveSession();
+    }
+
+    // opens a run, an old one never closed belongs to a reloaded scene
+    private void OpenRun(bool isInZone) {
+        CloseRun(RunStatus.Interrupted);
+        currentRun = new RunData {
+            StartTime = Time.time,
+            StartClock = DateTime.Now,
+            StartedInZone = isInZone,
+            Mode = observedGame != null ? observedGame.Mode : RunMode.Full
+        };
+        AddSample();
+        nextSampleTime = Time.time + config.SampleIntervalS;
+        session.Runs.Add(currentRun);
+        SaveSession();
     }
 
     // snapshot of the moment and the height climbed above the run start
     private static EventStamp CreateStamp() {
-        RampedDifficultyService ramp = RampedDifficultyService.I;
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
         return new EventStamp(
             DateTime.Now,
             ramp != null ? ramp.CurrentPlayerClimbedYDistance : 0f
@@ -398,16 +544,18 @@ public class AnalyticsManager: MonoBehaviour {
         }
         run.Status = status;
         run.DurationS = Time.time - run.StartTime;
-        run.HighestHeight = RampedDifficultyService.I != null
+        run.HighestHeight = RampedDifficultyManager.I != null
             ? Mathf.Max(
                 0f,
-                RampedDifficultyService.I.HighestPlayerClimbedYDistance
+                RampedDifficultyManager.I.HighestPlayerClimbedYDistance
             )
             : 0f;
         ScoreManager scoreMgr = ScoreManager.I;
         run.TotalScore = scoreMgr != null ? scoreMgr.TotalScore : 0;
         run.HeightScore = scoreMgr != null ? scoreMgr.DistanceScore : 0;
         run.RewardScore = scoreMgr != null ? scoreMgr.RewardScore : 0;
+        run.CoconutRewardScore =
+            scoreMgr != null ? scoreMgr.CoconutRewardScore : 0;
 
         // the end sample needs the run to stay current for a moment
         currentRun = run;

@@ -9,7 +9,7 @@ Monkobra is a 3D vertical upward-scrolling game. You are a monkey climbing a ver
 - Genre: 3D obstacle-running, turned vertical
 - Reference Games: *Temple Run 2*, *Subway Surfers*, *Minion Rush*
 - Timing Reference: the hold-and-release reach borrows from *Gold Miner*
-- Camera: monkey held at the center of view, tree and sky behind, swinging to a side view while the arm reaches
+- Camera: monkey held low in view, looking up the tree, the frame sliding toward the fruit while the arm reaches; a brief look down at the cobra when it acts, a follow of a thrown coconut, a higher, wider view during a pineapple leap
 - Session: short runs, built for quick retries
 
 ## Design Pillars
@@ -53,13 +53,16 @@ graph TD
   Reach -->|miss| Exposed[Time lost, cobra closes in]
   Restore --> Climb
   Exposed --> Climb
+  Climb -->|cobra close, coconut kept| Freeze[Double-tap: cobra frozen]
+  Freeze --> Climb
   Climb -->|cobra contact| Lose[Lose]
 ```
 
 ## Resources and Pressures
 
 - Stamina: the survival resource, drained by time and by movement, restored by grabbing or slowly by resting, and an empty bar slows the monkey instead of ending the run
-- The Cobra: a pressure that never relents, it climbs nonstop, surges after each mistake, and ends the run on any contact
+- The Cobra: a pressure that never relents, it climbs nonstop unless a coconut freezes it for a while, surges after each mistake, and ends the run on any contact
+- Coconuts: a rare resource found higher up, kept instead of eaten, and spent with a quick double-tap to freeze the cobra and buy distance
 - Height: both the goal and the measure of progress, the tree is endless, so the run is a race for the highest point
 - Attention: the hidden resource, since every grab spends focus that dodging would otherwise use
 
@@ -69,17 +72,22 @@ graph TD
 | --- | --- | --- |
 | Climb and Circle | free vertical movement and circling of the trunk, the main way to dodge | climbing costs the most stamina, circling less, descending none |
 | Banana Grab | hold-and-release timing as its own skill check | a hit restores stamina and scores points, a miss wastes time |
+| Pineapple Leap | a rare branch fruit that trades the same grab risk for a burst of escape | a hit restores stamina, then both hands shoot up and pull the monkey past a set height, untouchable by hazards on the way |
 | Branch Hit | punishes careless movement without ending the run | camera shake, brief loss of control, a drop down the trunk |
 | Cobra Chase | constant pursuit from below, its coil wraps the trunk so orbiting or dropping into it is as fatal as being caught from behind | any contact with the cobra's body ends the run |
 | Falling Cobra | a hazard from above that rewards watching the branches | warns, then falls, with the same penalty as a branch hit |
+| Coconut | a rare, higher-up fruit kept as a panic button, so a good grab can be cashed in when the cobra is close | scores double a banana and restores no stamina; a double-tap freezes the cobra for a while, but its coil stays fatal |
 | Spider Web | a forced stop that lets the cobra gain ground, and a clash with the grab since reaching is locked while stuck | holds the monkey until rapid presses fill an escape bar, then brief immunity from further webs |
-| Score | rewards height and risk | points per meter climbed and a bonus per banana grabbed |
+| Score | rewards height and risk | points per meter climbed and a bonus per banana or coconut grabbed |
 
 ## Win and Lose
 
 - Win: none, the tree is endless and a run only ends in a loss
 - Lose: the cobra touches the monkey; an empty stamina bar only slows the climb
 - Result: the loss ends the run and shows the final height, score, and bananas collected
+- Modes: Normal Play is the full run, starting zone and Cobra King included; Endless Mode is the same climb without the king, and both end only in a loss
+- Endless Mode: starts at the base of the tree in the state right after the king's defeat, ie the gold armor already worn as a spare life, and the hazards at post-boss density from the end of the starting zone, with no hazard-free stretch and no boss marker; it is for the player who has beaten the king and wants the climb alone
+- Unlock: Endless Mode stays greyed out until the Cobra King has been beaten once, remembered on the player's device
 
 ## Player Experience
 

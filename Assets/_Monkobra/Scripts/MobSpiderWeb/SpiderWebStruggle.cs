@@ -3,14 +3,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Sits on the monkey root beside <see cref="MonkeyPrefabRoot"/> and owns the
+/// Sits on the monkey root beside <see cref="MonkeyController"/> and owns the
 /// spider web trap. A <see cref="SpiderWebTrap"/> hands itself over on
 /// contact, the body is held in place, and each escape press adds progress
 /// that drains back while idle. A full bar frees the monkey, removes the web
 /// and grants a short protection from any web.
 /// <para>
 /// The escape key, Space, is also bound to interact, the grab key, so the
-/// interact action from <see cref="MonkeyConfig"/> is disabled on trap.
+/// interact action from <see cref="MonkeyInputConfig"/> is disabled on trap.
 /// Disabling cancels it if held, so the arms end any reach and the camera
 /// swings back behind. It stays off until protection ends, so leftover
 /// presses after breaking free do not fire a grab.
@@ -20,7 +20,7 @@ using UnityEngine.InputSystem;
 /// hint returns on every scene load.
 /// </para>
 /// </summary>
-[RequireComponent(typeof(MonkeyPrefabRoot))]
+[RequireComponent(typeof(MonkeyController))]
 public class SpiderWebStruggle: MonoBehaviour {
     // Public Members  #########################################################
     /// <summary>
@@ -37,6 +37,12 @@ public class SpiderWebStruggle: MonoBehaviour {
 
     /// <returns>if a web holds the monkey right now</returns>
     public bool IsTrapped => isTrapped;
+
+    /// <summary>
+    /// Scale on the progress each escape press adds, 1 = normal; above 1
+    /// breaks free in fewer presses, eg in the boss arena
+    /// </summary>
+    public float EscapeGainScale { get; set; } = 1f;
 
     /// <returns>escape progress, 0~1, 1 breaks free</returns>
     public float EscapeProgress => escapeProgress;
@@ -85,6 +91,19 @@ public class SpiderWebStruggle: MonoBehaviour {
         return true;
     }
 
+    /// <summary>
+    /// Lets the monkey out of its web at once, without the protection an
+    /// escape gives, eg when the boss fight takes over the monkey; does
+    /// nothing if it is not trapped.
+    /// </summary>
+    public void ForceRelease() {
+        if (!isTrapped) {
+            return;
+        }
+        BreakFree();
+        protectionEndTime = 0f;
+    }
+
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
@@ -92,7 +111,7 @@ public class SpiderWebStruggle: MonoBehaviour {
         "same asset the body and arms use, its interact action is paused "
             + "while trapped"
     )]
-    private MonkeyConfig monkeyConfig;
+    private MonkeyInputConfig inputConfig;
 
     [SerializeField]
     [Tooltip("button mashed to break free, Player/Jump (Space)")]
@@ -115,17 +134,17 @@ public class SpiderWebStruggle: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (monkeyConfig == null) {
+        if (inputConfig == null) {
             Debug.LogWarning(
                 "SpiderWebStruggle:\tmust assign Inspector Field: "
-                    + "monkeyConfig",
+                    + "inputConfig",
                 this
             );
-        } else if (monkeyConfig.InteractAction == null) {
+        } else if (inputConfig.InteractAction == null) {
             Debug.LogWarning(
-                "SpiderWebStruggle:\tmust assign MonkeyConfig field: "
+                "SpiderWebStruggle:\tmust assign MonkeyInputConfig field: "
                     + "interactAction",
-                monkeyConfig
+                inputConfig
             );
         }
         if (escapeAction == null) {
@@ -136,10 +155,10 @@ public class SpiderWebStruggle: MonoBehaviour {
             );
         }
 
-        monkeyRoot = GetComponent<MonkeyPrefabRoot>();
+        monkeyRoot = GetComponent<MonkeyController>();
         if (monkeyRoot == null) {
             Debug.LogError(
-                "SpiderWebStruggle:\tfail to get Component: MonkeyPrefabRoot",
+                "SpiderWebStruggle:\tfail to get Component: MonkeyController",
                 this
             );
         }
@@ -194,7 +213,10 @@ public class SpiderWebStruggle: MonoBehaviour {
             return;
         }
 
-        escapeProgress = Mathf.Min(1f, escapeProgress + pressGain);
+        escapeProgress = Mathf.Min(
+            1f,
+            escapeProgress + pressGain * EscapeGainScale
+        );
         if (trapWeb != null) {
             trapWeb.Pulse();
         }
@@ -213,7 +235,7 @@ public class SpiderWebStruggle: MonoBehaviour {
     private bool isInteractSuspended; // this script disabled interact
 
     private InputActionReference InteractAction =>
-        monkeyConfig != null ? monkeyConfig.InteractAction : null;
+        inputConfig != null ? inputConfig.InteractAction : null;
 
     // frozen time also covers a pause; game over is checked on its own too,
     // so the struggle stays stopped even if a game over keeps time running
@@ -223,7 +245,7 @@ public class SpiderWebStruggle: MonoBehaviour {
             && GameController.I.State != GameState.Playing);
 
     // cached references  ------------------------------------------------------
-    private MonkeyPrefabRoot monkeyRoot;
+    private MonkeyController monkeyRoot;
     private SpiderWebTrap trapWeb; // web holding the monkey, null when free
 
     // private methods  ########################################################
@@ -264,9 +286,9 @@ public class SpiderWebStruggle: MonoBehaviour {
         Escaped?.Invoke();
     }
 
-    // disabling a held action cancels it: ArmRoot ends its reach, grabbing
+    // disabling a held action cancels it: ArmController ends its reach, grabbing
     // only if the hand already overlaps the fruit as on any release, and
-    // CameraRigManager swings back to the behind view
+    // CameraClimbFraming drops its grab shift
     private void SuspendInteract() {
         if (isInteractSuspended || InteractAction == null) {
             return;

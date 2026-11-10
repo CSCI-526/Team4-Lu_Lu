@@ -3,6 +3,9 @@ using UnityEngine;
 [DisallowMultipleComponent]
 //同一个对象不能重复挂两个 ScorePickup，避免配置重复
 public class ScorePickup: MonoBehaviour {
+    // banana or coconut; picks the points & the counter in ScoreManager
+    public PickupKind Kind => kind;
+
     public bool TryCollect() {
         if (!isActiveAndEnabled || isCollected || Time.timeScale <= 0f
             || (GameController.I != null
@@ -16,14 +19,19 @@ public class ScorePickup: MonoBehaviour {
 
         isCollected = true;
         if (manager != null) {
-            manager.TryAddReward();
+            manager.TryAddReward(kind);
         } else {
-        
-            Debug.LogWarning("ScorePickup: no ScoreManager; collected without points.", this);
+            Debug.LogWarning(
+                "ScorePickup:\tno ScoreManager; collected without points",
+                this);
         }
         gameObject.SetActive(false);
         return true;
     }
+
+    [SerializeField]
+    [Tooltip("banana keeps the old behavior, coconut scores & counts apart")]
+    private PickupKind kind = PickupKind.Banana;
 
     private bool isCollected;
 

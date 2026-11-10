@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Slider))]
@@ -12,18 +13,24 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
+    /// <returns>if the dev max stamina mode keeps the bar at max, toggled by the
+    /// <see cref="HackAction.MaxStamina"/> key in a development build</returns>
+    public bool IsMaxStamina {
+        get; private set;
+    }
+
     /// <summary>
     /// if stamina is below <c>lowStaminaFraction</c> of the max, empty
     /// included; feeds the feedback efx only, never gameplay
     /// </summary>
     public bool IsLowStamina =>
-        balanceConfig != null
+        playerBalanceConfig != null
         && currentStamina < lowStaminaFraction * MaxStamina;
 
     /// <returns>stamina ceiling from the balance config, 0 w/o a config
     /// </returns>
     public float MaxStamina =>
-        balanceConfig != null ? balanceConfig.MaxStamina : 0f;
+        playerBalanceConfig != null ? playerBalanceConfig.MaxStamina : 0f;
 
     /// <summary>raised each time a fruit restores stamina</summary>
     public event Action FruitConsumed;
@@ -36,11 +43,12 @@ public class StaminaBarController: MonoBehaviour {
 
     // Public Methods  #########################################################
     /// <summary>
-    /// restores the per-fruit amount from <see cref="GameBalanceConfig"/>,
-    /// called when an arm grabs a fruit
+    /// restores the per-fruit amount from <see cref="PlayerBalanceConfig"/>,
+    /// called when a grabbed fruit's flight lands on its target, see
+    /// <see cref="FruitFlyEffect"/>
     /// </summary>
     public void AddStaminaByFruit() {
-        AddStamina(balanceConfig.FruitStaminaRestore);
+        AddStamina(playerBalanceConfig.FruitStaminaRestore);
         FruitConsumed?.Invoke();
     }
 
@@ -62,7 +70,7 @@ public class StaminaBarController: MonoBehaviour {
         }
 
         currentStamina = Mathf.Min(
-            balanceConfig.MaxStamina,
+            playerBalanceConfig.MaxStamina,
             currentStamina + amount
         );
 
@@ -72,18 +80,18 @@ public class StaminaBarController: MonoBehaviour {
     /// <summary>
     /// drains stamina for one step of movement: climbing costs the most,
     /// orbiting the trunk costs less, descending is free. Rates come from
-    /// <see cref="GameBalanceConfig"/>
+    /// <see cref="PlayerBalanceConfig"/>
     /// </summary>
     /// <param name="climbedU">upward distance covered this step; u</param>
     /// <param name="orbitedU">sideways arc length covered this step; u</param>
     public void DrainByMovement(float climbedU, float orbitedU) {
-        if (!HasStamina) {
+        if (IsMaxStamina || !HasStamina) {
             return;
         }
 
         float amount =
-            Mathf.Max(0f, climbedU) * balanceConfig.StaminaUpwardDrainPerU
-            + Mathf.Max(0f, orbitedU) * balanceConfig.StaminaSidewayDrainPerU;
+            Mathf.Max(0f, climbedU) * playerBalanceConfig.StaminaUpwardDrainPerU
+            + Mathf.Max(0f, orbitedU) * playerBalanceConfig.StaminaSidewayDrainPerU;
         if (amount <= 0f) {
             return;
         }
@@ -94,8 +102,8 @@ public class StaminaBarController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("game balance tuning; stamina budget and drain rate")]
-    private GameBalanceConfig balanceConfig;
+    [Tooltip("player balance tuning; stamina budget and drain rate")]
+    private PlayerBalanceConfig playerBalanceConfig;
 
     [SerializeField]
     [Range(0f, 1f)]
@@ -106,13 +114,18 @@ public class StaminaBarController: MonoBehaviour {
     )]
     private float lowStaminaFraction = 0.1f;
 
+    [SerializeField]
+    [Tooltip("dev/hack keys, its max stamina key works in a development build "
+        + "only")]
+    private HackShortcutConfig hackShortcuts;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (balanceConfig == null) {
+        if (playerBalanceConfig == null) {
             Debug.LogWarning(
                 "StaminaBarController:\tmust assign Inspector Field: "
-                    + "balanceConfig",
+                    + "playerBalanceConfig",
                 this
             );
             enabled = false;
@@ -130,9 +143,11 @@ public class StaminaBarController: MonoBehaviour {
         I = this;
         staminaSlider = GetComponent<Slider>();
 
-        currentStamina = balanceConfig.MaxStamina;
+        // the level opens on the starting zone, which starts below full
+        currentStamina = playerBalanceConfig.MaxStamina
+            * playerBalanceConfig.StartingZoneStartStaminaFraction;
         staminaSlider.minValue = 0f;
-        staminaSlider.maxValue = balanceConfig.MaxStamina;
+        staminaSlider.maxValue = playerBalanceConfig.MaxStamina;
         staminaSlider.value = currentStamina;
 
         if (Debug.isDebugBuild) {
@@ -140,9 +155,42 @@ public class StaminaBarController: MonoBehaviour {
         }
     }
 
+    private void Update() {
+        UpdateMaxStaminaKey();
+    }
+
     private void OnDestroy() {
         if (I == this) {
             I = null;
+        }
+    }
+
+    // private methods  ########################################################
+    // dev/hack key toggling max stamina; turning it on fills the bar at once
+    private void UpdateMaxStaminaKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        Key maxStaminaKey = hackShortcuts.GetKey(HackAction.MaxStamina);
+        if (
+            keyboard == null
+            || maxStaminaKey == Key.None
+            || !keyboard[maxStaminaKey].wasPressedThisFrame
+        ) {
+            return;
+        }
+
+        IsMaxStamina = !IsMaxStamina;
+        if (IsMaxStamina) {
+            AddStamina(MaxStamina);
+        }
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "StaminaBarController:\tmax stamina " + IsMaxStamina,
+                this
+            );
         }
     }
 

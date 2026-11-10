@@ -60,7 +60,7 @@ public static class MockAnalyticsGenerator {
         float windowS
     ) {
         int runCount = rng.Next(MIN_RUNS, MAX_RUNS + 1);
-        var plans = new List<RunPlan>();
+        List<RunPlan> plans = new List<RunPlan>();
         float total = 0f;
         for (int i = 0; i < runCount; i++) {
             // the monkey learns: skill climbs w/ the run number, w/ noise
@@ -68,6 +68,8 @@ public static class MockAnalyticsGenerator {
                 0.1f + i * (0.7f / runCount) + Range(rng, -0.1f, 0.1f)
             );
             RunPlan plan = SimulateRun(skill, rng);
+            // every 3rd run is endless, so both modes show in a mock file
+            plan.Mode = i % 3 == 2 ? RunMode.Endless : RunMode.Full;
             if (i == runCount - 1) {
                 CutShort(plan, Range(rng, 0.3f, 0.8f));
             }
@@ -76,7 +78,7 @@ public static class MockAnalyticsGenerator {
         }
 
         DateTime sessionStart = now.AddSeconds(-total);
-        var session = new SessionData {
+        SessionData session = new SessionData {
             StartClock = sessionStart,
             Title = sessionStart.ToString(
                 "yyyy-MM-dd HH:mm:ss",
@@ -103,7 +105,7 @@ public static class MockAnalyticsGenerator {
     // mirrors the default of AnalyticsConfig.SampleIntervalS
     private const float SAMPLE_INTERVAL_S = 2f;
 
-    // game tuning mirrored from GameBalanceConfig  ----------------------------
+    // game tuning mirrored from PlayerBalanceConfig  ----------------------------
     private const float MAX_STAMINA = 100f;
     private const float UPWARD_DRAIN_PER_U = 0.5f;
     // the periodic drop of 10 per 10 s
@@ -137,6 +139,7 @@ public static class MockAnalyticsGenerator {
         public float EndHeight;
         public float HighestHeight;
         public bool IsLost = true;
+        public RunMode Mode = RunMode.Full;
         public readonly List<Moment> Bananas = new List<Moment>();
         public readonly List<Moment> Webs = new List<Moment>();
         public readonly List<Moment> Branches = new List<Moment>();
@@ -147,7 +150,7 @@ public static class MockAnalyticsGenerator {
     // climbs until the monkey is caught: exhaustion, or a stumble on a web or
     // branch that lets the cobra close in
     private static RunPlan SimulateRun(float skill, System.Random rng) {
-        var plan = new RunPlan();
+        RunPlan plan = new RunPlan();
         float t = 0f;
         float height = 0f;
         float stamina = MAX_STAMINA;
@@ -235,8 +238,9 @@ public static class MockAnalyticsGenerator {
         DateTime start,
         float windowS
     ) {
-        var run = new RunData {
+        RunData run = new RunData {
             Status = plan.IsLost ? RunStatus.Lost : RunStatus.Interrupted,
+            Mode = plan.Mode,
             StartClock = start,
             DurationS = plan.DurationS,
             HighestHeight = plan.HighestHeight
@@ -247,13 +251,13 @@ public static class MockAnalyticsGenerator {
         );
 
         foreach (Moment m in plan.Bananas) {
-            run.Bananas.Add(ToStamp(m, start));
+            run.GetEvents(AnalyticsMetric.Banana).Add(ToStamp(m, start));
         }
         foreach (Moment m in plan.Webs) {
-            run.Webs.Add(ToStamp(m, start));
+            run.GetEvents(AnalyticsMetric.Web).Add(ToStamp(m, start));
         }
         foreach (Moment m in plan.Branches) {
-            run.Branches.Add(ToStamp(m, start));
+            run.GetEvents(AnalyticsMetric.Branch).Add(ToStamp(m, start));
         }
 
         AddSamples(run, plan);
@@ -270,7 +274,7 @@ public static class MockAnalyticsGenerator {
         run.HeightScore =
             (long)Mathf.Floor(plan.HighestHeight / UNITS_PER_METER)
             * POINTS_PER_METER;
-        run.RewardScore = (long)run.Bananas.Count * REWARD_POINTS;
+        run.RewardScore = (long)plan.Bananas.Count * REWARD_POINTS;
         run.TotalScore = run.HeightScore + run.RewardScore;
 
         return run;

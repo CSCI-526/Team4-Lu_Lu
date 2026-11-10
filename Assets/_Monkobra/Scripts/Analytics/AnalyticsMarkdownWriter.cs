@@ -23,8 +23,9 @@ public static class AnalyticsMarkdownWriter {
             ? (float)(end.Clock - run.StartClock).TotalSeconds
             : run.DurationS;
 
-        var sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.Append("## Run ").Append(number).Append("\n\n");
+        sb.Append("- Mode: ").Append(run.Mode).Append('\n');
         if (run.Status != RunStatus.Lost) {
             sb.Append("- Status: ").Append(run.Status).Append('\n');
         }
@@ -45,29 +46,59 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("- Time Start: ").Append(FormatClock(run.StartClock));
         sb.Append('\n');
         sb.Append("- Time Stop: ").Append(FormatClock(end.Clock));
-        sb.Append("\n\n");
+        sb.Append('\n');
+        if (run.HasZoneExit) {
+            sb.Append("- Starting Zone Exit: +");
+            sb.Append((run.ZoneExit.Clock - run.StartClock).ToString(
+                @"hh\:mm\:ss",
+                CultureInfo.InvariantCulture
+            ));
+            sb.Append(", y ").Append(FormatHeight(run.ZoneExit.Height));
+            sb.Append('\n');
+        }
+        sb.Append('\n');
         AppendHeightCurve(sb, run.Samples);
 
         sb.Append("#### Final Score: ").Append(run.TotalScore).Append("\n\n");
         sb.Append("- Score from Height: ").Append(run.HeightScore);
         sb.Append('\n');
+        // the reward score holds both fruits, the coconut part kept apart
+        long bananaScore = run.RewardScore - run.CoconutRewardScore;
         sb.Append("- Score from Banana: ");
-        sb.Append(FormatBananaScore(run.RewardScore, run.Bananas.Count));
+        sb.Append(FormatPickupScore(
+            bananaScore,
+            run.CountOf(AnalyticsMetric.Banana)
+        ));
+        sb.Append('\n');
+        sb.Append("- Score from Coconut: ");
+        sb.Append(FormatPickupScore(
+            run.CoconutRewardScore,
+            run.CountOf(AnalyticsMetric.Coconut)
+        ));
         sb.Append("\n\n");
-        AppendScoreSplit(sb, run.HeightScore, run.RewardScore);
+        AppendScoreSplit(
+            sb,
+            run.HeightScore,
+            bananaScore,
+            run.CoconutRewardScore
+        );
 
-        sb.Append("#### Banana Count: ").Append(run.Bananas.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.Bananas, run.StartClock, true);
-        AppendStaminaCurve(sb, run.Samples);
-
-        sb.Append("#### Web Encounter: ").Append(run.Webs.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.Webs, run.StartClock, false);
-
-        sb.Append("#### Branch Hit: ").Append(run.Branches.Count);
-        sb.Append("\n\n");
-        AppendClockList(sb, run.Branches, run.StartClock, true);
+        // every metric gets one section, a new metric needs no code here
+        foreach (AnalyticsMetric metric in AnalyticsMetrics.All) {
+            List<EventStamp> stamps = run.GetEvents(metric);
+            sb.Append("#### ").Append(AnalyticsMetrics.GetTitle(metric));
+            sb.Append(": ").Append(stamps.Count).Append("\n\n");
+            AppendClockList(
+                sb,
+                stamps,
+                run.StartClock,
+                AnalyticsMetrics.HasHeight(metric)
+            );
+            // stamina is refilled by bananas, so its curve sits under them
+            if (metric == AnalyticsMetric.Banana) {
+                AppendStaminaCurve(sb, run.Samples);
+            }
+        }
 
         return sb.ToString();
     }
@@ -77,7 +108,7 @@ public static class AnalyticsMarkdownWriter {
     /// <see cref="RunStatus.Lost"/> runs, then every run
     /// </summary>
     public static string BuildSession(SessionData session) {
-        var sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.Append("# MonKobra Analytics: Session: ").Append(session.Title);
         sb.Append("\n\n");
         sb.Append("MonKobra v").Append(session.AppVersion).Append("\n\n");
@@ -85,8 +116,22 @@ public static class AnalyticsMarkdownWriter {
         List<DeathCause> causes = session.GetLostDeathCauses();
         if (causes.Count > 0) {
             sb.Append("## Session Summary\n\n");
-            AppendDeathCauses(sb, causes);
-            AppendLostRunBars(sb, session);
+            if (session.HasLostRunsOfBothModes()) {
+                // one summary per mode, as their difficulty differs
+                foreach (RunMode mode in Enum.GetValues(typeof(RunMode))) {
+                    List<DeathCause> modeCauses =
+                        session.GetLostDeathCauses(mode);
+                    if (modeCauses.Count == 0) {
+                        continue;
+                    }
+                    sb.Append("### ").Append(mode).Append(" Runs\n\n");
+                    AppendDeathCauses(sb, modeCauses, " (" + mode + ")");
+                    AppendLostRunBars(sb, session, mode, " (" + mode + ")");
+                }
+            } else {
+                AppendDeathCauses(sb, causes, string.Empty);
+                AppendLostRunBars(sb, session, null, string.Empty);
+            }
         }
         for (int i = 0; i < session.Runs.Count; i++) {
             sb.Append(BuildRun(session.Runs[i], i + 1));
@@ -117,10 +162,12 @@ public static class AnalyticsMarkdownWriter {
     // pie of what ended each lost run of the session
     private static void AppendDeathCauses(
         StringBuilder sb,
-        List<DeathCause> causes
+        List<DeathCause> causes,
+        string titleSuffix
     ) {
-        sb.Append("#### Death Causes\n\n```mermaid\npie showData\n");
-        sb.Append("    title Death Causes\n");
+        sb.Append("#### Death Causes").Append(titleSuffix);
+        sb.Append("\n\n```mermaid\npie showData\n");
+        sb.Append("    title Death Causes").Append(titleSuffix).Append('\n');
         foreach (DeathCause cause in Enum.GetValues(typeof(DeathCause))) {
             int count = causes.FindAll(c => c == cause).Count;
             if (count > 0) {
@@ -134,18 +181,22 @@ public static class AnalyticsMarkdownWriter {
     }
 
     // one bar chart per measure over the lost runs, x is the run number
+    // mode null charts every lost run, else only that mode's
     private static void AppendLostRunBars(
         StringBuilder sb,
-        SessionData session
+        SessionData session,
+        RunMode? mode,
+        string titleSuffix
     ) {
-        var labels = new List<string>();
-        var scores = new List<string>();
-        var highests = new List<string>();
-        var heights = new List<string>();
-        var durations = new List<string>();
+        List<string> labels = new List<string>();
+        List<string> scores = new List<string>();
+        List<string> highests = new List<string>();
+        List<string> heights = new List<string>();
+        List<string> durations = new List<string>();
         for (int i = 0; i < session.Runs.Count; i++) {
             RunData run = session.Runs[i];
-            if (run.Status != RunStatus.Lost) {
+            if (run.Status != RunStatus.Lost
+                || (mode != null && run.Mode != mode)) {
                 continue;
             }
 
@@ -156,15 +207,20 @@ public static class AnalyticsMarkdownWriter {
             durations.Add(FormatNumber(run.DurationS));
         }
 
-        AppendRunBars(sb, "Final Score vs Run", "Score", labels, scores);
         AppendRunBars(
-            sb, "Highest Height vs Run", "Height (u)", labels, highests
+            sb, "Final Score vs Run" + titleSuffix, "Score", labels, scores
         );
         AppendRunBars(
-            sb, "Death Height vs Run", "Height (u)", labels, heights
+            sb, "Highest Height vs Run" + titleSuffix, "Height (u)", labels,
+            highests
         );
         AppendRunBars(
-            sb, "Duration vs Run", "Duration (s)", labels, durations
+            sb, "Death Height vs Run" + titleSuffix, "Height (u)", labels,
+            heights
+        );
+        AppendRunBars(
+            sb, "Duration vs Run" + titleSuffix, "Duration (s)", labels,
+            durations
         );
     }
 
@@ -200,8 +256,9 @@ public static class AnalyticsMarkdownWriter {
         return height.ToString("+0.0;-0.0;+0.0", CultureInfo.InvariantCulture);
     }
 
-    // "unit * count = total" when every banana paid the same, else total only
-    private static string FormatBananaScore(long total, int count) {
+    // "unit * count = total" when every pickup of the kind paid the same, else
+    // total only
+    private static string FormatPickupScore(long total, int count) {
         if (count > 0 && total % count == 0) {
             return (total / count) + " * " + count + " = " + total;
         }
@@ -256,8 +313,8 @@ public static class AnalyticsMarkdownWriter {
             1,
             Mathf.CeilToInt(bar != null ? bar.MaxStamina : 0f)
         );
-        var times = new List<string>();
-        var values = new List<string>();
+        List<string> times = new List<string>();
+        List<string> values = new List<string>();
         for (int i = 0; i < samples.Count; i++) {
             times.Add(FormatSeconds(samples[i].Elapsed));
             values.Add(samples[i].Stamina.ToString(
@@ -276,13 +333,15 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("]\n```\n\n");
     }
 
-    // pie of height score against banana score, skipped w/o any score
+    // pie of height score against banana & coconut score, skipped w/o any
+    // score
     private static void AppendScoreSplit(
         StringBuilder sb,
         long heightScore,
-        long rewardScore
+        long bananaScore,
+        long coconutScore
     ) {
-        if (heightScore <= 0 && rewardScore <= 0) {
+        if (heightScore <= 0 && bananaScore <= 0 && coconutScore <= 0) {
             return;
         }
 
@@ -291,8 +350,11 @@ public static class AnalyticsMarkdownWriter {
         if (heightScore > 0) {
             sb.Append("    \"Height\" : ").Append(heightScore).Append('\n');
         }
-        if (rewardScore > 0) {
-            sb.Append("    \"Banana\" : ").Append(rewardScore).Append('\n');
+        if (bananaScore > 0) {
+            sb.Append("    \"Banana\" : ").Append(bananaScore).Append('\n');
+        }
+        if (coconutScore > 0) {
+            sb.Append("    \"Coconut\" : ").Append(coconutScore).Append('\n');
         }
         sb.Append("```\n\n");
     }
@@ -307,8 +369,8 @@ public static class AnalyticsMarkdownWriter {
             return;
         }
 
-        var times = new List<string>();
-        var heights = new List<string>();
+        List<string> times = new List<string>();
+        List<string> heights = new List<string>();
         float minHeight = 0f;
         float maxHeight = 1f;
         for (int i = 0; i < samples.Count; i++) {

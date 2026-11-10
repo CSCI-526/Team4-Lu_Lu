@@ -5,7 +5,7 @@ Unity `6000.3.22f1`. Every build uses its own Build Profile in `Assets/Settings/
 ## GitHub Pages
 
 Profile: `GithubPages` (WebGL)
-Location: `builds/Monkobra v1.0.0-alpha.2+GitHub`
+Location: `builds/Monkobra v1.0.0-beta+GitHub`
 
 Profile settings (Pages cannot set response headers):
 
@@ -13,8 +13,8 @@ Profile settings (Pages cannot set response headers):
 - Decompression Fallback: off; tick it only if size forces compression back on
 - WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops
 - Development Build: on, since the hack keys need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
-- Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `Lv1Scene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
-- Scenes: the global list (`Lv1Scene` only)
+- Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `FullPlayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
+- Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `FullPlayScene`, `EndlessScene`
 
 Steps:
 
@@ -22,13 +22,13 @@ Steps:
 2. Test, since WebGL will not run from `file://`:
 
 ```bash
-python3 -m http.server 8000 --directory "builds/Monkobra v1.0.0-alpha.2+GitHub"
+python3 -m http.server 8000 --directory "builds/Monkobra v1.0.0-beta+GitHub"
 ```
 
 ## itch.io
 
 Profile: `ItchIO` (WebGL)
-Location: `builds/Monkobra v1.0.0-alpha.2+Itch`
+Location: `builds/Monkobra v1.0.0-beta+Itch`
 
 Profile settings: same as GitHub Pages, Development Build on included (`Disabled` works; gzip is the fallback, avoid Brotli).
 
@@ -47,11 +47,11 @@ Limits: 1,000 files, 240 characters per path, 500 MB total, 200 MB per file.
 
 ## Dev Keys
 
-The hack keys (F1 no-clip, F8 report download, F9 and F10 analytics, see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)) run only when `Debug.isDebugBuild` is true, so the WebGL profiles (`GithubPages`, `ItchIO`) keep Development Build on and a player can press them. A build with it off, e.g. Windows by default, has none of them. The browser needs focus on the game canvas when F8 is pressed.
+The hack keys (F1 no-clip, F2 max energy, F3 speed buff, F4 boss jump, F5~F8 spawns, F10 report download, F11 and F12 analytics, see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)) run only when `Debug.isDebugBuild` is true, so the WebGL profiles (`GithubPages`, `ItchIO`) keep Development Build on and a player can press them. A build with it off, e.g. Windows by default, has none of them. The browser needs focus on the game canvas when F10 is pressed; F11 and F12 may also be taken by the browser (full screen, dev tools).
 
 ## Windows
 
-Location: `builds/Monkobra v1.0.0-alpha.2+Win`
+Location: `builds/Monkobra v1.0.0-beta+Win`
 
 1. `File > Build Profiles`, select Windows, click Build, choose the location
 2. Run the `.exe`

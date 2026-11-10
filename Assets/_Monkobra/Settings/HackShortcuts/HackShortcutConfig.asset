@@ -15,13 +15,34 @@ MonoBehaviour:
   entries:
   - action: 0
     key: 94
-    description: cobra no-clip
+    description: great cobra no kill
   - action: 1
-    key: 101
-    description: download report
+    key: 95
+    description: max energy
   - action: 2
-    key: 102
-    description: new session
+    key: 96
+    description: speed x3
   - action: 3
+    key: 97
+    description: jump to boss fight
+  - action: 4
+    key: 98
+    description: spawn pineapple
+  - action: 5
+    key: 99
+    description: spawn coconut
+  - action: 6
+    key: 100
+    description: spawn falling snake
+  - action: 7
+    key: 101
+    description: spawn spider web
+  - action: 8
     key: 103
+    description: download report
+  - action: 9
+    key: 104
+    description: new session
+  - action: 10
+    key: 105
     description: mock session
