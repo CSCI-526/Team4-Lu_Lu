@@ -49,7 +49,7 @@ MonoBehaviour:
   segmentPrefab: {fileID: 3613063465898347742, guid: d7b7ba174e361a94b843e9a27ce78bba, type: 3}
   mockTree: {fileID: 0}
   segmentCount: 20
-  firstSegmentY: -10
+  firstSegmentY: -40
   lookAheadU: 60
 --- !u!114 &2576282149422506649
 MonoBehaviour:
