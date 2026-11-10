@@ -46,11 +46,11 @@ monkobra/
 │   │   ├── Scenes/    Lv1Scene, root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   Analytics/, Cameras/, Environment/, GameController/, HackShortcuts/, ItemCoconut/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, PopUp/, Scoring/, UI/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
-│   │   ├── Prefabs/   Cameras/, Environment/, GameController/, Mob/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, one variant per popup), UI/, World/ (light, volume, event system)
-│   │   ├── Materials/ Environment/, Mob/, Player/
+│   │   ├── Prefabs/   Cameras/, Environment/, GameController/, MobFallingCobra/, MobGreatCobra/, MobSpiderWeb/, Player/, PopUp/ (`_PopUps`, `_PopUpBase`, one variant per popup), UI/, World/ (light, volume, event system)
+│   │   ├── Materials/ Environment/, MobGreatCobra/, MobSpiderWeb/, Player/
 │   │   ├── Inputs/    InputSystem_Actions
 │   │   ├── Shaders/   Environment/FruitOutline (inverted-hull Shader Graph)
-│   │   └── Settings/  _Shared/ (URP assets, volume profiles), Player/ (player balance, monkey arm, climb & input, leap), Environment/ (world balance, branch placement), Mob/ (cobra balance), Cameras/, UI/, Analytics/, HackShortcuts/: one folder per module, assets directly inside
+│   │   └── Settings/  _Shared/ (URP assets, volume profiles), Player/ (player balance, monkey arm, climb & input, leap), Environment/ (world balance, branch placement), MobGreatCobra/ (cobra balance), Cameras/, UI/, Analytics/, HackShortcuts/: one folder per module, assets directly inside
 │   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed
 │   ├── TextMesh Pro/  imported TMP essentials, not authored
@@ -145,7 +145,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `GameController/StartingZoneExitRelay` | on a trigger collider GO: the monkey entering calls `EndStartingZone()` | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `GameController/PlayerBalanceConfig` | ScriptableObject (`Settings/Player/PlayerBalanceConfig.asset`): the player's run balance, ie stamina, starting zone, branch hit, score, coconut | [Balance Design](docs/balance-doc.md) |
 | `Environment/WorldBalanceConfig` | ScriptableObject (`Settings/Environment/WorldBalanceConfig.asset`): world balance, ie ramped difficulty curve, branch & fruit chances, rough bark, spider web, boss fight | [Balance Design](docs/balance-doc.md) |
-| `MobGreatCobra/CobraBalanceConfig` | ScriptableObject (`Settings/Mob/CobraBalanceConfig.asset`): falling cobra & great cobra balance | [Balance Design](docs/balance-doc.md) |
+| `MobGreatCobra/CobraBalanceConfig` | ScriptableObject (`Settings/MobGreatCobra/CobraBalanceConfig.asset`): falling cobra & great cobra balance | [Balance Design](docs/balance-doc.md) |
 | `Player/MonkeyController` | kinematic body: orbit, climb, stun, `IsHeld`, a height ceiling for the boss fight, `SyncOrbitAngle` to land a pulled body on the ring where it is | [TDD](docs/monkobra-tdd.md#monkey-movement) |
 | `Player/MonkeyInputConfig` | ScriptableObject (`Settings/Player/MonkeyInputConfig.asset`): the move & interact input actions every monkey consumer reads | [TDD](docs/monkobra-tdd.md#input) |
 | `Player/MonkeyArmConfig` | ScriptableObject (`Settings/Player/MonkeyArmConfig.asset`): arm stroke, reach, splay & width | [Grab](docs/grab-doc.md#tuning) |

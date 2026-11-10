@@ -121,7 +121,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 
 ## Game Balance
 
-Game balance numbers live in 3 assets, split by what they tune (how height becomes spawn chances is in [Balance Design](balance-doc.md)): `Settings/Player/PlayerBalanceConfig.asset` for the player's run, `Settings/Environment/WorldBalanceConfig.asset` for the generated world, and `Settings/Mob/CobraBalanceConfig.asset` for both cobras, instances of the `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig` ScriptableObjects. To tweak the game's feel, edit these 3 files and nothing else: no balance value is held in a fourth asset or hard-coded in a script.
+Game balance numbers live in 3 assets, split by what they tune (how height becomes spawn chances is in [Balance Design](balance-doc.md)): `Settings/Player/PlayerBalanceConfig.asset` for the player's run, `Settings/Environment/WorldBalanceConfig.asset` for the generated world, and `Settings/MobGreatCobra/CobraBalanceConfig.asset` for both cobras, instances of the `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig` ScriptableObjects. To tweak the game's feel, edit these 3 files and nothing else: no balance value is held in a fourth asset or hard-coded in a script.
 
 | Asset | Group | Fields | Read by |
 | --- | --- | --- | --- |

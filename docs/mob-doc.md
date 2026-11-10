@@ -108,7 +108,7 @@ A hazard from above, spawned in `Lv1Scene` as the monkey climbs the endless tree
 - Cleanup: cobras are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous cobras too
 - Concurrency: several can be live at once, one roll per segment; frequency follows climb height and the curve, not a clock
 
-Fall and chase speeds, the wake distance, and the ambush chance are in `Settings/Mob/CobraBalanceConfig.asset`; spawn radius, separation, and ambush height are on `FallingCobraSpawner` on `DTSPool`; trigger and fall distances are on the falling cobra prefab.
+Fall and chase speeds, the wake distance, and the ambush chance are in `Settings/MobGreatCobra/CobraBalanceConfig.asset`; spawn radius, separation, and ambush height are on `FallingCobraSpawner` on `DTSPool`; trigger and fall distances are on the falling cobra prefab.
 
 ### Behavior
 
