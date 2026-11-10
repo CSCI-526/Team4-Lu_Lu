@@ -77,6 +77,7 @@ public class RoughBarkSpawner: MonoBehaviour {
                 Vector3 center = segment.transform.position;
                 center.y = Random.Range(minY, maxY);
                 float angle = Random.Range(0f, 360f);
+                if (IsPatchInBossZone(difficulty, center.y, extent)) continue;
                 if (!IsClear(center, angle, extent, arc)) continue;
                 GameObject patch = new("RoughBarkPatch");
                 patch.transform.SetParent(segment.transform, false);
@@ -87,6 +88,15 @@ public class RoughBarkSpawner: MonoBehaviour {
                 break;
             }
         }
+    }
+
+    // iff the patch, center y +- extent, overlaps the boss zone, where only
+    // the boss fight grows anything
+    private static bool IsPatchInBossZone(
+        RampedDifficultyManager difficulty, float centerY, float extent) {
+        return difficulty.IsInBossZoneY(centerY - extent)
+            || difficulty.IsInBossZoneY(centerY)
+            || difficulty.IsInBossZoneY(centerY + extent);
     }
 
     private bool IsClear(Vector3 center, float angle, float extent, float arc) {

@@ -200,7 +200,11 @@ public class TreeSegmentController: MonoBehaviour {
                 branchRotation * Vector3.forward * placementConfig.BranchRadius
                 + Vector3.up * branchHeight;
 
-            isClear = IsClearOfMonkey(branchPosition);
+            // a spot in the boss zone is never clear: only the fight grows
+            // anything there
+            isClear =
+                IsClearOfMonkey(branchPosition)
+                && !IsInBossZone(branchPosition);
             if (
                 isClear
                 && IsFarEnoughFromExisting(branchPosition, placedPositions)
@@ -261,6 +265,14 @@ public class TreeSegmentController: MonoBehaviour {
         return RampedDifficultyManager.I != null
             ? RampedDifficultyManager.I.GetRampedValueFromYPosition(worldY)
             : 0f;
+    }
+
+    // iff the segment-local spot lies in the boss zone; false w/o a service
+    private bool IsInBossZone(Vector3 localPosition) {
+        return RampedDifficultyManager.I != null
+            && RampedDifficultyManager.I.IsInBossZoneY(
+                transform.TransformPoint(localPosition).y
+            );
     }
 
     // iff the branch keeps the starting zone clearance from the monkey; always

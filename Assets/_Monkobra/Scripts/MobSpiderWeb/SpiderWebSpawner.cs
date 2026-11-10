@@ -279,7 +279,8 @@ public class SpiderWebSpawner: MonoBehaviour {
 
             Vector3 position = segmentXfm.TransformPoint(localPosition);
             Quaternion rotation = segmentXfm.rotation * localRotation;
-            if (!IsSpotClear(position, rotation)) {
+            // only the boss fight grows anything in the boss zone
+            if (IsInBossZone(position) || !IsSpotClear(position, rotation)) {
                 continue;
             }
 
@@ -294,6 +295,12 @@ public class SpiderWebSpawner: MonoBehaviour {
         }
 
         return false;
+    }
+
+    // iff the world y lies in the boss zone; false w/o a service
+    private static bool IsInBossZone(Vector3 position) {
+        return RampedDifficultyManager.I != null
+            && RampedDifficultyManager.I.IsInBossZoneY(position.y);
     }
 
     private bool IsSpotClear(Vector3 position, Quaternion rotation) {
