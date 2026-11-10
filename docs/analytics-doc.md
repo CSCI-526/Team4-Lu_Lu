@@ -46,7 +46,7 @@ A session opens when the manager wakes, and a run follows the game state.
 Files land in `Application.persistentDataPath/Analytics/`.
 
 - Session File: `0<yyyy-MM-dd_HH_mm_ss>.md`, named by the session start time
-- Mock File: `0<stamp>-mock.md`, a fully faked session saved beside the real ones, the live session untouched
+- Mock File: `0<stamp>-mock.md`, a fully faked session saved beside the real ones, the live session untouched, see [Mock Session](#mock-session)
 - Download: in a WebGL player the report is handed to the browser as a download instead (`WebDownload`); elsewhere it saves the session file
 
 The file opens with an h1 title and the app version, then a `Session Summary` (only once a run was lost), then one `## Run N` entry per run.
@@ -145,7 +145,19 @@ The keys work in every build, their hints show only in a development build or th
 | `DownloadReport` | F10 | downloads the report in the browser, saves the file elsewhere |
 | `MockSession` | F12 | saves a mock session file |
 
-The lose screen also carries a Download Analytics button at the top right (`LoseScreenDownloadWidget`) that does what `DownloadReport` does. It is for development builds and the Editor only: outside one the button turns itself off. The mock session does not generate the event metrics added after the first five.
+The lose screen also carries a Download Analytics button at the top right (`LoseScreenDownloadWidget`) that does what `DownloadReport` does. It is for development builds and the Editor only: outside one the button turns itself off.
+
+## Mock Session
+
+`MockAnalyticsGenerator` plays a tester through a whole session instead of drawing random numbers, so the charts show the curves a real playtest would.
+
+- Per Run: a small simulation of the real game, ie the monkey climbs on the climb speed curve, stamina drains and refills, hazards and fruit are rolled per trunk segment from the difficulty ramp and each chance curve, and the great cobra chases on its base and distance speed curves with its surge and exit boost
+- Ending: a run ends where a real one would, when the cobra catches a monkey that lost too much time to branches, webs, and grabs; a run past the boss zone trigger plays out a timed boss fight, with armor saves, revives, and an occasional win
+- Skill: each run has a skill value from 0 to 1 that sets how often the monkey walks into hazards, grabs fruit, and uses coconuts; it climbs over the session along a learning curve, with the odd distracted run
+- Modes: Endless runs appear only once the tester has beaten the king, in this session or an earlier one
+- Metrics: every event metric of the report is generated, and scores follow the real scoring rule
+- Mirror: the generator holds a copy of the balance numbers it needs, flagged at the top of its constants, so a retune of `PlayerBalanceConfig`, `WorldBalanceConfig`, `CobraBalanceConfig`, `MonkeyClimbConfig`, or `PineappleLeapConfig` needs the copy updated by hand
+- Assumptions: the trunk segment height, the starting zone exit height, and the cobra's opening gap are not in any asset, so the generator guesses them
 
 ## Scripts
 

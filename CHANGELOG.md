@@ -15,6 +15,7 @@ todo upd gdd
 
 ### Changed
 
+- mock analytics session simulates real play: climb speed, per segment hazard & fruit rolls from the difficulty ramp, the chasing cobra's speed curves & surge, boss fight, Endless only after a king win; generates every event metric, a starting zone exit, and the real score rule, so death heights, durations & scores read like a playtest (`MockAnalyticsGenerator`)
 - great cobra base speed = monkey top climb speed × `cobraBaseSpeedCurve` (now a 0~2 multiplier) × new `cobraDistanceSpeedCurve` (gap below the monkey): a far-behind cobra runs faster, a close one slower; surge & exit boost add on top; `CobraMotor` gains `monkeyClimbConfig`
 
 ##### Wenhai Dong
