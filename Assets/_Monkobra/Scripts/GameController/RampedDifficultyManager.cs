@@ -1,7 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Maps player height to a ramped difficulty value, always in 0~1.
+/// Maps player height to a ramped difficulty value: 0~1 from the starting
+/// zone exit to the boss fight, above 1 after it.
 /// </summary>
 // run first so other LateUpdate readers see this frame's height
 [DefaultExecutionOrder(-100)]
@@ -51,13 +52,15 @@ public class RampedDifficultyManager: MonoBehaviour {
     /// <see cref="RampBaseYPosition"/>.
     /// </summary>
     /// <param name="y">any y position; world u</param>
-    /// <returns>ramped difficulty, clamped to 0~1</returns>
+    /// <returns>ramped difficulty, never below 0; above 1 past the boss
+    /// fight height</returns>
     public float GetRampedValueFromYPosition(float y) {
         if (worldBalanceConfig == null) {
             return 0f;
         }
         float rampedY = y - RampBaseYPosition;
-        return Mathf.Clamp01(
+        return Mathf.Max(
+            0f,
             worldBalanceConfig.RampedDifficultyCurve.Evaluate(rampedY)
         );
     }
