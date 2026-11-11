@@ -26,7 +26,7 @@ public class LevelSelectScreen: MonoBehaviour {
     private TMP_Text endlessLockedHint;
 
     [SerializeField]
-    [Tooltip("goes back to the title, the UI/Cancel action (Esc)")]
+    [Tooltip("goes back to the title, the UI/Cancel action (Esc, P)")]
     private InputActionReference cancelAction;
 
     // MonoBehaviour Lifecycle  ################################################

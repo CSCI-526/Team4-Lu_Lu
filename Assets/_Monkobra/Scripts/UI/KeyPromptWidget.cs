@@ -34,8 +34,9 @@ public class KeyPromptWidget: MonoBehaviour {
     /// <summary>Changes the key label and instruction without rebuilding.
     /// </summary>
     public void SetText(string key, string instruction) {
-        keyLabel.text = key;
-        howLabel.text = instruction;
+        keyText = key;
+        howText = instruction;
+        ApplyStyleText(ControlStyleManager.Current);
     }
 
     /// <summary>Shows at a world point, or hides; offset is in UI units.
@@ -60,6 +61,15 @@ public class KeyPromptWidget: MonoBehaviour {
     }
 
     // MonoBehaviour Lifecycle  ################################################
+    private void OnEnable() {
+        ControlStyleManager.StyleChanged += ApplyStyleText;
+        ApplyStyleText(ControlStyleManager.Current);
+    }
+
+    private void OnDisable() {
+        ControlStyleManager.StyleChanged -= ApplyStyleText;
+    }
+
     private void LateUpdate() {
         Place();
     }
@@ -73,6 +83,12 @@ public class KeyPromptWidget: MonoBehaviour {
     private TextMeshProUGUI howLabel;
     private Vector3 promptWorldPosition;
     private Vector2 promptOffset;
+
+    // the wording per control style; SetText changes the keyboard one
+    private string keyText = "space";
+    private string howText = "hold, then release";
+    private const string TOUCH_KEY_TEXT = "anywhere";
+    private const string TOUCH_HOW_TEXT = "touch and hold, then release";
 
     // private methods  ########################################################
     private void Build(RectTransform rect, RectTransform parent) {
@@ -99,15 +115,26 @@ public class KeyPromptWidget: MonoBehaviour {
         keyFace.offsetMax = new Vector2(-3f, -3f);
         AddImage(keyFace, new Color(0.15f, 0.15f, 0.15f, 0.9f));
 
-        keyLabel = CreateLabel("Key", keyFace, "space", 24f);
+        keyLabel = CreateLabel("Key", keyFace, keyText, 24f);
         Stretch(keyLabel.rectTransform);
         howLabel = CreateLabel(
-            "How", promptRect, "hold, then release", 22f
+            "How", promptRect, howText, 22f
         );
         RectTransform howRect = howLabel.rectTransform;
         howRect.anchorMin = howRect.anchorMax = new Vector2(0.5f, 0f);
         howRect.pivot = new Vector2(0.5f, 0f);
         howRect.sizeDelta = new Vector2(260f, 36f);
+        ApplyStyleText(ControlStyleManager.Current);
+    }
+
+    // the prompt names the keys of the control style in use
+    private void ApplyStyleText(ControlStyle style) {
+        if (keyLabel == null || howLabel == null) {
+            return;
+        }
+        bool isTouch = style == ControlStyle.Touch;
+        keyLabel.text = isTouch ? TOUCH_KEY_TEXT : keyText;
+        howLabel.text = isTouch ? TOUCH_HOW_TEXT : howText;
     }
 
     private void Place() {

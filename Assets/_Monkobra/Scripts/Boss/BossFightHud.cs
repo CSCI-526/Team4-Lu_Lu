@@ -103,7 +103,8 @@ public class BossFightHud: MonoBehaviour {
         );
         AddCenterLabel(panel, "Final Score: " + score, 36f, Color.white, -10f);
         AddCenterLabel(
-            panel, "Press Space to Play Again", 32f, Color.white, -110f
+            panel, "Press Space to Play Again", 32f, Color.white, -110f,
+            ""
         );
     }
 
@@ -687,10 +688,10 @@ public class BossFightHud: MonoBehaviour {
             new Vector2(200f, 60f));
         CreateButton("WatchAd", card, "Watch Ad  [Space]",
             new Color(0.2f, 0.7f, 0.3f), new Vector2(-135f, -105f),
-            () => WatchAdClicked?.Invoke());
+            () => WatchAdClicked?.Invoke(), "Watch Ad");
         CreateButton("GiveUp", card, "Give Up  [R]",
             new Color(0.4f, 0.4f, 0.45f), new Vector2(135f, -105f),
-            () => GiveUpClicked?.Invoke());
+            () => GiveUpClicked?.Invoke(), "Give Up");
         revivePanel = offer.gameObject;
         revivePanel.SetActive(false);
 
@@ -730,8 +731,9 @@ public class BossFightHud: MonoBehaviour {
                 "Team up and ship a game in one semester, like Monkobra!",
                 26f, new Color(1f, 0.92f, 0.7f)
             ), new Vector2(0f, -70f), new Vector2(1100f, 40f));
-        CreateButton("CoursePage", ad, "Course Page  [Enter]", gold * 0.85f,
-            new Vector2(0f, -150f), () => CoursePageClicked?.Invoke());
+        CreateButton("CoursePage", ad, "Course Page", gold * 0.85f,
+            new Vector2(0f, -150f), () => CoursePageClicked?.Invoke(),
+            "Course Page");
         RectTransform tag = CreateRect("AdTag", ad);
         tag.anchorMin = tag.anchorMax = tag.pivot = new Vector2(0f, 1f);
         tag.anchoredPosition = new Vector2(24f, -24f);
@@ -742,7 +744,7 @@ public class BossFightHud: MonoBehaviour {
         Stretch(tagLabel.rectTransform);
         adSkipButton = CreateButton("Skip", ad, "Skip  [Space]",
             new Color(0f, 0f, 0f, 0.55f), Vector2.zero,
-            () => SkipAdClicked?.Invoke());
+            () => SkipAdClicked?.Invoke(), "Skip");
         RectTransform skip = (RectTransform)adSkipButton.transform;
         skip.anchorMin = skip.anchorMax = skip.pivot = new Vector2(1f, 1f);
         skip.anchoredPosition = new Vector2(-24f, -24f);
@@ -791,7 +793,7 @@ public class BossFightHud: MonoBehaviour {
         GameObject button = CreateButton(
             "Continue", panel, "Continue  [Space]",
             new Color(0.2f, 0.7f, 0.3f), new Vector2(0f, -120f),
-            () => ContinueClicked?.Invoke()
+            () => ContinueClicked?.Invoke(), "Continue"
         );
         rewardButton = (RectTransform)button.transform;
         panel.gameObject.SetActive(false);
@@ -868,7 +870,8 @@ public class BossFightHud: MonoBehaviour {
         string text,
         Color color,
         Vector2 position,
-        System.Action onClick
+        System.Action onClick,
+        string touchText = null
     ) {
         RectTransform rect = CreateRect(buttonName, parent);
         rect.sizeDelta = new Vector2(240f, 60f);
@@ -889,7 +892,22 @@ public class BossFightHud: MonoBehaviour {
         TextMeshProUGUI label = CreateLabel("Label", rect, text, 24f,
             Color.white);
         Stretch(label.rectTransform);
+        AddStyleText(label, text, touchText);
         return rect.gameObject;
+    }
+
+    // the key hint of a label is dropped in touch mode, where the label is a
+    // tappable button or a prompt with no key to name
+    private static void AddStyleText(
+        TextMeshProUGUI label,
+        string keyboardText,
+        string touchText
+    ) {
+        if (touchText == null) {
+            return;
+        }
+        label.gameObject.AddComponent<ControlStyleLabel>()
+            .Configure(keyboardText, touchText);
     }
 
     private static RectTransform CreateRect(string rectName, Transform parent) {
@@ -905,9 +923,11 @@ public class BossFightHud: MonoBehaviour {
         string text,
         float size,
         Color color,
-        float y
+        float y,
+        string touchText = null
     ) {
         TextMeshProUGUI label = CreateLabel("Line", parent, text, size, color);
+        AddStyleText(label, text, touchText);
         label.rectTransform.anchorMin = label.rectTransform.anchorMax =
             new Vector2(0.5f, 0.5f);
         label.rectTransform.sizeDelta = new Vector2(1000f, size * 1.4f);

@@ -177,7 +177,7 @@ public class GameController: MonoBehaviour {
 
     [SerializeField]
     [Tooltip("starts the run from the tutorial screen, the Player/Jump "
-        + "action (Space); no other key starts it")]
+        + "action (Space, E, Enter); no other key starts it")]
     private InputActionReference startRunAction;
 
     [SerializeField]

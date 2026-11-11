@@ -492,6 +492,17 @@
                 },
                 {
                     "name": "",
+                    "id": "3623b8ff-ee40-4647-9e77-2b5ad2d9ed4d",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "a7cfc1a2-19ec-4821-b86c-0e10bedf9524",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -516,6 +527,17 @@
                     "name": "",
                     "id": "3e19f6f9-9654-4345-a737-87a4b94c0464",
                     "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "UseCoconut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1340f884-6680-46e2-a8bb-47513fb1a787",
+                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -597,6 +619,50 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "RestartDuringPause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "72b3008b-1376-427f-af40-927960581776",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5b1a65d9-70c5-4cce-90d7-87c2e6340216",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "UseCoconut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "db0ae12c-21cf-41d1-9ffe-9f230503dc42",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f0fc5a9e-911c-4512-b36f-60ee0c889f49",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -707,7 +773,7 @@
                     "priority": 0
                 },
                 {
-                    "name": "AnyKey",
+                    "name": "StartPress",
                     "type": "Button",
                     "id": "f09a319c-1225-4ed5-be73-001ec9b3641a",
                     "expectedControlType": "Button",
@@ -1150,11 +1216,11 @@
                 {
                     "name": "",
                     "id": "8f298b9d-fe44-4846-a4d5-ea7806bd79c1",
-                    "path": "<Keyboard>/anyKey",
+                    "path": "<Keyboard>/space",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnyKey",
+                    "action": "StartPress",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1165,7 +1231,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnyKey",
+                    "action": "StartPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9ddc90ef-669f-4825-aa53-9eb5fd6870db",
+                    "path": "<Touchscreen>/primaryTouch/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Touch",
+                    "action": "StartPress",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1176,7 +1253,51 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "AnyKey",
+                    "action": "StartPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6cf56ad9-3ab8-4657-a997-92188bfc7eab",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Submit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "19651fea-754e-4a98-8381-4498f32ff51b",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "StartPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f6fe51c8-aef2-47f9-868f-b3b4db140588",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "StartPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d38b2d31-d283-4012-b12f-28408db27651",
+                    "path": "<Keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Cancel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

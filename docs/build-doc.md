@@ -11,7 +11,7 @@ Profile settings (Pages cannot set response headers):
 
 - Compression Format: `Disabled`; a `Gzip` or `Brotli` build fails to load
 - Decompression Fallback: off; tick it only if size forces compression back on
-- WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops
+- WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right. For touch play it sets `touch-action: none`, switches off text selection and the tap highlight, and blocks the long-press context menu, so no drag scrolls or zooms the page and a held finger (the grab) stays with the game. It reaches a build only on the next export; never edit `Monkobra/` by hand. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops
 - Development Build: on, since the hack hints and dev-only UI need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
 - Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `FullPlayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
 - Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `FullPlayScene`, `EndlessScene`

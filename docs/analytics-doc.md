@@ -4,7 +4,7 @@ How the game records playtests: one markdown report per game launch, with a reco
 
 ## Overview
 
-`AnalyticsManager` is a singleton on its own `Analytics` prefab, placed in every scene; the first instance is kept across all scene loads. It listens to the game and writes the data to a markdown file, so a playtest can be read with any markdown viewer that renders Mermaid.
+`AnalyticsManager` is a singleton on its own `Analytics` prefab, placed in every scene and made by `PersistentBootstrap` when a scene has none; the first instance is kept across all scene loads, and a later copy destroys itself with an expected warning. It listens to the game and writes the data to a markdown file, so a playtest can be read with any markdown viewer that renders Mermaid.
 
 - Session: one game launch, one file; menus, scene loads and restarts keep the same session
 - Run: one attempt from the start of play to a game over; every run adds one entry to the session file

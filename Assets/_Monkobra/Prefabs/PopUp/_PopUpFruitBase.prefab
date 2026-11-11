@@ -537,6 +537,7 @@ GameObject:
   - component: {fileID: 7301000000000052}
   - component: {fileID: 7301000000000053}
   - component: {fileID: 7301000000000054}
+  - component: {fileID: 6130683559733698953}
   m_Layer: 5
   m_Name: Key
   m_TagString: Untagged
@@ -1006,3 +1007,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &6130683559733698953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7301000000000051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2c690b9c14c84ada2732325d1a94d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleLabel
+  keyboardText: 'SPACE BAR'
+  touchText: 'ANYWHERE'
+  tmpLabel: {fileID: 7301000000000054}
+  legacyLabel: {fileID: 0}

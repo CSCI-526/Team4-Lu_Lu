@@ -134,6 +134,8 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         if (I != null && I != this) {
+            // a scene may keep its own copy, the first instance wins; the
+            // warning is expected and harmless
             Debug.LogWarning("Analytics:\tduplicate instance destroyed", this);
             Destroy(gameObject);
             return;

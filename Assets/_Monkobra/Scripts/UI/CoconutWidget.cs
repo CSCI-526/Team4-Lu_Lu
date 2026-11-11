@@ -57,8 +57,12 @@ public class CoconutWidget: MonoBehaviour {
 
     [Header("Use Hint")]
     [SerializeField]
-    [Tooltip("how-to text under the count")]
+    [Tooltip("how-to text under the count while a keyboard is in use")]
     private string useHintText = "Double-tap Space";
+
+    [SerializeField]
+    [Tooltip("how-to text under the count while touch is in use")]
+    private string useHintTouchText = "Double-tap anywhere";
 
     [SerializeField]
     [Tooltip("how-to flash color while the cobra surges")]
@@ -104,16 +108,28 @@ public class CoconutWidget: MonoBehaviour {
         }
         if (useHintLabel != null) {
             useHintBaseColor = useHintLabel.color;
-            useHintLabel.text = useHintText;
         }
+        ApplyUseHintText(ControlStyleManager.Current);
     }
 
     private void OnEnable() {
         TryBind();
+        ControlStyleManager.StyleChanged += ApplyUseHintText;
+        ApplyUseHintText(ControlStyleManager.Current);
     }
 
     private void OnDisable() {
         Unbind();
+        ControlStyleManager.StyleChanged -= ApplyUseHintText;
+    }
+
+    // the how-to names the keys of the control style in use
+    private void ApplyUseHintText(ControlStyle style) {
+        if (useHintLabel != null) {
+            useHintLabel.text = style == ControlStyle.Touch
+                ? useHintTouchText
+                : useHintText;
+        }
     }
 
     private void Update() {

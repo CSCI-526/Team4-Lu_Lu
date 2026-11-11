@@ -7,6 +7,8 @@
     <title>{{{ PRODUCT_NAME }}}</title>
     <style>
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+      /* touch play: the game owns every gesture, so a drag never scrolls or zooms the page, a held finger (the grab) never opens a text selection or callout, and a tap never flashes */
+      html, body, #unity-canvas { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
       /* the game keeps 16:9 and takes the largest box the window allows; the rest is black */
       #unity-canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: block; background: #231F20; outline: none; }
       #unity-loading { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; max-width: 400px; color: #ddd; font: 14px sans-serif; text-align: center; }
@@ -109,6 +111,8 @@
       };
       document.body.appendChild(script);
       canvas.addEventListener("click", function () { canvas.focus(); });
+      // a long press (the grab) must not open the browser's context menu
+      canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
     </script>
   </body>
 </html>

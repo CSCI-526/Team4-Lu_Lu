@@ -49,6 +49,7 @@ public class MessagePopUp: MonoBehaviour {
     public void Show(object[] args, float resumeS = -1f) {
         gameObject.SetActive(true);
 
+        shownArgs = args;
         label.text = FormatText(args);
         remainingS = resumeS >= 0f
             ? resumeS
@@ -103,6 +104,12 @@ public class MessagePopUp: MonoBehaviour {
     [Tooltip("shown text, {0} is the value the caller passes")]
     private string message = "";
 
+    [SerializeField]
+    [TextArea]
+    [Tooltip("shown text while touch is in use, {0} as in message; blank "
+        + "keeps message")]
+    private string touchMessage = "";
+
     [Header("Timing")]
     [SerializeField]
     [Min(0f)]
@@ -152,6 +159,8 @@ public class MessagePopUp: MonoBehaviour {
     }
 
     private void OnEnable() {
+        ControlStyleManager.StyleChanged += OnStyleChanged;
+
         // a fresh start, Show sets the real values right after
         isShowing = false;
         isHiding = false;
@@ -159,6 +168,10 @@ public class MessagePopUp: MonoBehaviour {
         if (canvasGroup != null) {
             canvasGroup.alpha = 0f;
         }
+    }
+
+    private void OnDisable() {
+        ControlStyleManager.StyleChanged -= OnStyleChanged;
     }
 
     private void Update() {
@@ -197,23 +210,36 @@ public class MessagePopUp: MonoBehaviour {
     private float fadeStartAlpha;
     private bool isShowing;
     private bool isHiding;
+    private object[] shownArgs; // args of the current show, for a re-format
 
     // cached references  ------------------------------------------------------
     private CanvasGroup canvasGroup;
 
     // private methods  ########################################################
+    // a held popup (a fruit prompt) re-words itself when the style flips
+    private void OnStyleChanged(ControlStyle _) {
+        if (isShowing && label != null) {
+            label.text = FormatText(shownArgs);
+        }
+    }
+
+    // the touch wording when touch is in use and the popup has one
     private string FormatText(object[] args) {
+        string text = ControlStyleManager.IsTouch
+            && !string.IsNullOrEmpty(touchMessage)
+            ? touchMessage
+            : message;
         if (args == null || args.Length == 0) {
-            return message;
+            return text;
         }
 
         try {
-            return string.Format(message, args);
+            return string.Format(text, args);
         } catch (FormatException) {
             Debug.LogWarning(
-                "PopUp:\tbad format in message of " + id + ": " + message,
+                "PopUp:\tbad format in message of " + id + ": " + text,
                 this);
-            return message;
+            return text;
         }
     }
 

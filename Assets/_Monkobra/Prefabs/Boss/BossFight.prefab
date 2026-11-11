@@ -47,6 +47,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossKingBody
   bodyMaterial: {fileID: 2100000, guid: d2e646acba059234fa840f3630a714ea, type: 2}
+  trunkRadiusU: 5
+  coilBeadCount: 34
+  coilTurns: 1.25
+  coilPitchU: 2
+  beadRadiusU: 1.1
+  neckBeadCount: 9
+  headDropU: 3.5
+  headOutU: 3
+  headSize: {x: 2.8, y: 2.4, z: 2.6}
+  headTurnSpeedDeg: 45
+  buttDiveS: 0.15
+  buttReturnS: 0.5
+  debrisPerPart: 2
+  debrisSpeedU: 9
+  debrisLifeS: 1.6
+  bodyColor: {r: 0.72, g: 0.56, b: 0.95, a: 1}
+  crownColor: {r: 1, g: 0.8, b: 0.2, a: 1}
+  weakSpotDimColor: {r: 0.75, g: 0.2, b: 0.35, a: 1}
+  weakSpotLitColor: {r: 1, g: 0.25, b: 0.4, a: 1}
+  weakSpotPulseHz: 2
+  hitFlashS: 0.12
 --- !u!114 &4244279854226931380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59,6 +80,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc9a4d968c9e47f69d801679aa79e668, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightHud
+  flashS: 0.8
+  speechShowS: 2.2
+  speechOffset: {x: 0, y: 90}
+  promptOffset: {x: 0, y: 80}
+  healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
+  damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
+  warningOffset: {x: 0, y: 70}
 --- !u!114 &6839907984743945785
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -72,9 +101,128 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightController
   worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
+  confirmAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  giveUpAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  bossName: COBRA KING
+  nestHeightU: 11
+  guardDepthU: 12
+  retreatLimitU: 6
+  nestClearanceU: 2
+  trunkRadiusU: 5
+  cameraDistanceScale: 2
+  cameraFocusShare: 0.3
+  maxCameraFocusU: 3
+  ceilingGapU: 1.5
+  pushRangeU: 1.2
+  pushWindUpS: 0.25
+  pushCooldownS: 0.8
+  sweepFromLostShare: 0.2
+  restS: 2
+  restFinalS: 1.5
+  finalWarnScale: 0.75
+  biteWarnS: 1.2
+  biteRadiusU: 2.2
+  sweepWarnS: 1.3
+  sweepTimeS: 0.9
+  sweepBandHalfU: 1.2
+  tailBeadCount: 7
+  minionCount: 5
+  minionSpreadDeg: 28
+  minionStaggerS: 0.18
+  minionStreamGapS: 3.5
+  finaleOverlapS: 0.6
+  minionWaves: 2
+  minionWarnS: 0.9
+  minionFallSpeedU: 9
+  minionHitRadiusU: 1.1
   webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
+  webCount: 3
+  websPerThird: 2
+  webBelowEntryU: 4
+  webSeparationU: 4.5
+  webBranchGapU: 3
+  lowWebAttemptsPer10U: 3
+  lowWebChance: 0.44
+  webEscapeGainScale: 2
+  webFruitGapDeg: 25
   bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
   branchEmptyPrefab: {fileID: 7490866546275933270, guid: 92e3089d439b48538d1aca56cda3a5bf, type: 3}
   watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
-  goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
+  watermelonScale: {x: 6, y: 6, z: 6}
+  watermelonOffset: {x: 0, y: -0.629, z: 0.06}
+  bananaCount: 3
+  bananasPerThird: 1
+  fruitHeightRangeU: {x: 2, y: 5.5}
+  branchRadiusU: 6.6
+  arenaBranchAttemptsPer10U: 10
+  arenaBranchChance: 0.47
+  arenaBranchFruitChance: 0.16
+  arenaBranchSeparationU: 3
+  arenaBranchStartClearU: 6
+  bananaRespawnS: 9
+  bananaRespawnScaleByThird: {x: 0.75, y: 0.5}
+  throwTimeS: 0.7
+  throwArcU: 3
+  thrownBananaScale: 1.6
+  trailColor: {r: 0.3, g: 0.8, b: 0.3, a: 1}
+  markerFigureScale: 0.3
   roughBarkMaterial: {fileID: 2100000, guid: fd9eee44826e9f14fb87c53fe05d87b9, type: 2}
+  roughBarkAttemptsPer10U: 2
+  roughBarkChance: 0.35
+  roughBarkHeightRangeU: {x: 5, y: 8.5}
+  roughBarkArcRangeDeg: {x: 110, y: 170}
+  goldenHintTitle: Golden watermelon!
+  goldenHintLine: Grab it for a Golden Armor
+  goldenHintS: 3
+  goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
+  goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
+  goldenOutlineWidthScale: 2
+  armorIntroTitle: You get a Golden Armor!
+  armorIntroLine: Blocks 1 fatal hit
+  canRevive: 1
+  reviveOfferS: 8
+  adSkipAfterS: 3
+  reviveReturnSpeedU: 20
+  courseUrl: https://classes.usc.edu/term-20263/course/csci-526
+  choiceSideDeg: 28
+  choiceAboveU: 1.5
+  chooseLine: 'Grab one: EASY or NORMAL'
+  easyHealthScale: 0.6
+  easyWarnScale: 1.35
+  easyRestS: 3.25
+  easyRestFinalS: 2.35
+  easyMinionWaves: 1
+  winTitle: You win!
+  winLine: Golden Armor is yours to keep!
+  winDetailLine: It blocks 1 fatal hit
+  armorKnockBackU: 20
+  armorCobraFreezeS: 15
+  winCobraDropU: 45
+  goldenFirstDelayS: 8
+  goldenIntervalS: 15
+  goldenShowS: 8
+  goldenSideDeg: 30
+  goldenAboveMonkeyU: 3
+  armorOutU: 0.45
+  armorHelmetU: 0.95
+  armorRewardS: 1.6
+  armorRewardRadiusU: 3
+  finisherTimeScale: 0.2
+  finisherRealS: 1.4
+  crownFlyS: 1.2
+  crownScaleOnMonkey: 0.55
+  crownAboveMonkeyU: 1.3
+  victoryDelayS: 0.8
+  dotCount: 12
+  dotRadiusU: 0.12
+  goldenColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+  warningColor: {r: 1, g: 0.15, b: 0.15, a: 1}
+  warningDimColor: {r: 0.45, g: 0.05, b: 0.05, a: 1}
+  minionColor: {r: 0.45, g: 0.8, b: 0.45, a: 1}
+  tailColor: {r: 0.72, g: 0.56, b: 0.95, a: 1}
+  approachLine: Stay away from me!
+  retreatLine: Nowhere to run!
+  firstHitLine: How dare you!
+  minionCallLine: Minions, help me!
+  speechCooldownS: 4
+  keyLineHoldS: 2.2
