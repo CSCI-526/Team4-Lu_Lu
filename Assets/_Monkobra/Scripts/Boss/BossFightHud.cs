@@ -731,7 +731,7 @@ public class BossFightHud: MonoBehaviour {
                 "Team up and ship a game in one semester, like Monkobra!",
                 26f, new Color(1f, 0.92f, 0.7f)
             ), new Vector2(0f, -70f), new Vector2(1100f, 40f));
-        CreateButton("CoursePage", ad, "Course Page  [Enter]", gold * 0.85f,
+        CreateButton("CoursePage", ad, "Course Page", gold * 0.85f,
             new Vector2(0f, -150f), () => CoursePageClicked?.Invoke(),
             "Course Page");
         RectTransform tag = CreateRect("AdTag", ad);
