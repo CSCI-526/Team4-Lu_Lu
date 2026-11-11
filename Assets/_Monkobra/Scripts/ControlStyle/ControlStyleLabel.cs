@@ -28,6 +28,17 @@ public class ControlStyleLabel: MonoBehaviour {
     [Tooltip("legacy text to write; found on this object when empty")]
     private Text legacyLabel;
 
+    // Public Methods  #########################################################
+    /// <summary>
+    /// Sets both wordings from code, for a label built at runtime, and
+    /// applies the one in use.
+    /// </summary>
+    public void Configure(string keyboard, string touch) {
+        keyboardText = keyboard;
+        touchText = touch;
+        Apply(ControlStyleManager.Current);
+    }
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (tmpLabel == null) {
