@@ -1,6 +1,15 @@
 # Monkobra CHANGELOG
 
 <!--
+Fixme pan replace monkey model
+Todo pan BGM
+Todo pan branch & bark model/texture
+Todo wenhai 2nd boss fight
+Todo erik lighting
+Todo erik skybox
+Todo erik sfx
+Todo yuqing game logo, team logo, loading screen
+Todo belle: replace falling cobra & great cobra
 Fixme 1st pineapple/banana should appears on top of player
 Bug endless mode need to start w/ full heath & no starting zone
 Todo upd gdd
