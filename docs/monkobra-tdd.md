@@ -250,18 +250,21 @@ The grab shift is in the [Grab System](grab-doc.md#camera), the hit trigger in [
 
 ## Input
 
-One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. The left mouse button is bound only in the `UI` map, for uGUI buttons; the `Player` map binds none. Pause (Esc or P), `RestartAfterLose` (R), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
+One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. The left mouse button is bound only in the `UI` map, for uGUI buttons; the `Player` map binds none. Pause (Esc or P), `RestartAfterLose` (R), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The scheme, with each action's Preferred and Support keys, is in [Input](input-doc.md); the player key list is under Controls in the [README](../README.md#controls).
 
 - Move: shared by the body and both arms through `MonkeyInputConfig`
 - Interact: the grab, read by both arms and polled by the climb camera framing; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
-- Jump: the web escape press, read by `SpiderWebStruggle`, and the Space press that starts the run from the tutorial, read by `GameController`
-- Collision: Space is bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped
+- Jump: the web escape press, read by `SpiderWebStruggle`, the press that starts the run from the tutorial, read by `GameController`, and the boss panels' confirm press, read by `BossFightController`
+- Confirm keys: Space, E and Enter are bound alike on Interact, UseCoconut and Jump, and on `UI/Submit` and `UI/StartPress`; they stay separate actions because the coconut double-tap is a MultiTap interaction that a merged action would also put on the grab
+- Collision: Space, E and Enter are bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped, by design
+- Boss panels: `BossFightController` polls `confirmAction` (`Player/Jump`) and `giveUpAction` (`Player/RestartAfterLose`), never a raw key; the course page is a button only. A shared action is enabled at the moment of use, since `SpiderWebStruggle` disables `Player/Jump` when it is disabled
 - Touch: a virtual gamepad stands in for the keyboard. The `TouchControls` prefab's `OnScreenStick` writes `<Gamepad>/leftStick` (Move binds it) and its full-screen `OnScreenButton` writes `<Gamepad>/buttonSouth`, which Interact, UseCoconut and Jump all bind, so one zone grabs, double-taps a coconut, escapes a web and starts the run exactly like Space. A virtual keyboard is avoided because its writes read as real key presses and would flip the control style back
-- Start: `UI/StartPress` serves the title: Space, left mouse, a touch press, gamepad start
+- Start: `UI/StartPress` serves the title: Space, E, Enter, left mouse, a touch press, gamepad start
+- Back: `UI/Cancel` serves level select: Esc, P
 
 ### Control Style
 
-`ControlStyleManager` (prefab `ControlStyleManager`, in every scene, first one kept across loads) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
+`ControlStyleManager` (prefab `ControlStyleManager`, kept in every scene and also created by `PersistentBootstrap` from `Resources/` before the first scene when none exists; the first instance is kept across loads, and a later copy destroys itself with a warning that is expected) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
 
 - `ControlStyleLabel`: one text under a keyboard and a touch wording, blank hides it; `Configure` sets both from code
 - `ControlStyleSwitch`: shows a keyboard group or a touch group of objects, eg the tutorial's keycaps and its touch guide

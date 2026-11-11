@@ -16,18 +16,22 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 | --- | --- |
 | Up, Down or W, S | climb the tree |
 | Left, Right or A, D | circle around the tree |
-| E or Space (hold and release) | reach out and grab a banana |
-| E or Space (quick double-tap) | spend a coconut to freeze the cobra |
-| Space (press rapidly) | break free of a spider web |
+| Space, E or Enter (hold and release) | reach out and grab a banana |
+| Space, E or Enter (quick double-tap) | spend a coconut to freeze the cobra |
+| Space, E or Enter (press rapidly) | break free of a spider web |
 | Esc or P; pause button, top right (click or tap) | pause or resume the run |
 | R (while paused) | restart the run |
 | R (lose screen) | restart the run |
 | W, S or Up, Down; mouse hover (pause and lose screens) | move the highlight over Resume, Restart, Exit to Title |
-| Space, Enter or click (pause and lose screens) | confirm the highlighted option; on the lose screen with nothing highlighted, restart |
-| Space, click or tap (title) | open the level selection |
+| Space, E, Enter or click (pause and lose screens) | confirm the highlighted option; on the lose screen with nothing highlighted, restart |
+| Space, E, Enter, click or tap (title) | open the level selection |
 | W, S or Up, Down; mouse hover (menus) | move the highlight |
-| Space, Enter or click (menus) | confirm |
-| Esc (level selection) | back to the title |
+| Space, E, Enter or click (menus) | confirm |
+| Esc or P (level selection) | back to the title |
+| Space, E or Enter (boss revive offer, ad, reward panel) | watch the ad, skip the ad, continue |
+| R (boss revive offer) | give up |
+
+Every confirm key works everywhere a confirm is asked; Space is the one the hints teach. The course page button of the boss ad is clicked or tapped, never keyed. The full scheme is in [Input](docs/input-doc.md).
 
 Gamepad: left stick or D-pad moves, the north button grabs (a double-tap spends a coconut), the south button breaks free of a web.
 

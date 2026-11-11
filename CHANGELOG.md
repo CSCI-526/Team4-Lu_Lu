@@ -18,12 +18,16 @@ todo vertical version
 - touch screen play: the first touch switches the game to touch mode, a real key press switches it back (`ControlStyleManager`, kept across scenes); in touch mode a joystick bottom left moves the monkey and the rest of the screen is the Space key (hold to reach, double-tap for a coconut, tap rapidly to escape a web, tap to start)
 - pause button, top right, by click or tap
 - every key hint (tutorial, pause, lose & level select screens, coconut how-to, popups, keycaps, boss buttons) follows the control style live
+- E & Enter join Space on every confirm: grab, coconut, web escape, tutorial start, menus, title & boss panels; P backs out of level select like Esc
+- `PersistentBootstrap` creates `Analytics` & `ControlStyleManager` from `Resources/` before the first scene, so any scene plays with both; scene copies stay, the duplicate warning is expected
+- [Input](docs/input-doc.md): the control scheme, Preferred vs Support keys per control style
 
 ### Changed
 
 ##### Erik
 
-- title starts on Space, a click or a tap, no longer on any key
+- title starts on Space, E, Enter, a click or a tap, no longer on any key
+- boss revive, ad skip & reward panels read input actions, not raw keys; the course page is button only, Enter no longer opens it
 
 ### Deprecated
 

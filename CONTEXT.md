@@ -71,8 +71,8 @@ Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `FullPl
 | `Envs` (plain scene object) | `DynamicTreeSegmentPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `RoughBarkSystem` (`RoughBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Boss/BossFight` | `BossFightController`, `BossKingBody`, `BossFightHud`; builds the Cobra King arena at runtime, its position does not matter |
-| `Analytics/Analytics` | one GameObject carrying `AnalyticsManager`, in every scene; the first one is kept across scene loads |
-| `ControlStyle/ControlStyleManager` | one GameObject carrying `ControlStyleManager`, in every scene; the first one is kept across scene loads |
+| `Resources/Analytics` | one GameObject carrying `AnalyticsManager`, in every scene and made by `PersistentBootstrap` when none exists; the first one is kept across scene loads, a later copy warns and destroys itself |
+| `Resources/ControlStyleManager` | one GameObject carrying `ControlStyleManager`, do.; both prefabs sit in `Assets/_Monkobra/Resources/` so `Resources.Load` finds them |
 | `GameController/GameController` | one GameObject carrying `GameController`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
 | `UI/UI` | the `Canvas`, `TouchControls` (first child, so it draws below everything), `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`ScoreHUD`), the pause hint, `PauseButton`, `CoconutHUD`, `CoconutMessage` (widget host only), `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt` (widget host only), `HackShortcutHelp`, `SpiderWebPrompt` (escape bar), `_PopUps` (`PopUp/_PopUps`, before `Screens` so the panels draw over it), `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
@@ -202,6 +202,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `LevelSelectScreen/LevelSelectScreen` | Normal Play, Endless Mode (greyed out until unlocked), Back; Esc is Back | [TDD](docs/monkobra-tdd.md#scenes) |
 | `UI/MenuButtonHover`, `UI/MenuSelectionKeeper` | menu helpers: hover selects a button so mouse and keys share one highlight; the keeper reselects the last button after a click on empty space | [TDD](docs/monkobra-tdd.md#scenes) |
 | `ControlStyle/ControlStyle`, `ControlStyle/ControlStyleManager` | enum `Keyboard` or `Touch`, and the singleton on the `ControlStyleManager` prefab, kept across scene loads: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches; static `Current`, `IsTouch` and `StyleChanged` need no instance | [TDD](docs/monkobra-tdd.md#input) |
+| `Bootstrap/PersistentBootstrap` | static, runs `BeforeSceneLoad`: creates `Analytics` and `ControlStyleManager` from `Resources/` when their `I` is null, so any scene, a personal dev scene included, plays with both | [TDD](docs/monkobra-tdd.md#control-style) |
 | `ControlStyle/ControlStyleLabel`, `ControlStyle/ControlStyleSwitch` | follow `StyleChanged`: one text under a keyboard and a touch wording, and the owner that shows a keyboard group or a touch group of objects | [TDD](docs/monkobra-tdd.md#input) |
 | `Analytics/AnalyticsMetric`, `AnalyticsMetrics` | enum of every event kind a run records, plus the static title & height-column table the report reads; add a metric here | [Analytics](docs/analytics-doc.md#adding-a-metric) |
 | `LoseScreen/LoseScreenDownloadWidget` | dev-only button on `LoseScreen` that calls `AnalyticsManager.DownloadReport()`; turns its object off unless `HackShortcutConfig.AreHintsShown`; takes the sibling `Button`, no Inspector Field | [Analytics](docs/analytics-doc.md#dev-keys) |
