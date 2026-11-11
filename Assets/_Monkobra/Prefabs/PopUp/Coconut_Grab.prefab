@@ -49,6 +49,10 @@ PrefabInstance:
       value: 'Coconut! Hold'
       objectReference: {fileID: 0}
     - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e400f1, type: 3}
+      propertyPath: touchMessage
+      value: "Coconut! Touch and hold"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e400f1, type: 3}
       propertyPath: priority
       value: 1
       objectReference: {fileID: 0}

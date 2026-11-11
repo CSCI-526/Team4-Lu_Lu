@@ -45,6 +45,10 @@ PrefabInstance:
       value: "Trapped in a web! Press SPACE rapidly to escape!"
       objectReference: {fileID: 0}
     - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
+      propertyPath: touchMessage
+      value: "Trapped in a web! Tap rapidly to escape!"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
       propertyPath: showS
       value: 0
       objectReference: {fileID: 0}
