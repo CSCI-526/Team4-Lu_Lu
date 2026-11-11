@@ -71,7 +71,7 @@ graph TD
 
 ```mermaid
 graph TD
-  Title[Title: any key] --> Select[Level selection]
+  Title[Title: Space, click or tap] --> Select[Level selection]
   Select -->|Normal Play| Run[Run, boss fight included]
   Select -->|Endless Mode, once the king is beaten| Endless[Run, no boss fight]
   Select -->|Back| Title

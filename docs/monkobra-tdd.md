@@ -35,14 +35,14 @@ A system gets its own document when it spans several scripts and carries rules a
 
 | Scene | Purpose |
 | --- | --- |
-| `TitleScene` | the startup scene of every build: any key or click opens the level selection |
+| `TitleScene` | the startup scene of every build: Space, a click or a tap opens the level selection |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
 | `FullPlayScene` | the normal run; its root is 10 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`, `ControlStyleManager`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 | `EndlessScene` | a copy of `FullPlayScene` with `GameController.runMode` set to `Endless` |
 
 ```mermaid
 graph LR
-  Title[TitleScene] -->|any key| Select[LevelSelectScene]
+  Title[TitleScene] -->|Space, click, tap| Select[LevelSelectScene]
   Select -->|Normal Play| Full[FullPlayScene]
   Select -->|Endless Mode, unlocked| Endless[EndlessScene]
   Select -->|Back, Esc| Title
@@ -50,7 +50,7 @@ graph LR
   Endless -->|R restarts| Endless
 ```
 
-Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`MenuEventSystem`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `AnyKey` serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
+Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`MenuEventSystem`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `StartPress` (Space, left click, a touch, gamepad start) serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
 
 Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, from the `runMode` field) tells a gameplay scene how to behave. In `Endless` the boss fight is skipped (`BossFightController` starts in its done state, gold armor worn), `RampedDifficultyManager` reads the post boss curve from the starting zone exit on and has no boss zone, and `HeightMarkerSystem` draws no boss marker.
 
@@ -91,7 +91,7 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 ```mermaid
 stateDiagram-v2
   [*] --> Tutorial: scene load
-  Tutorial --> StartingZone: Space
+  Tutorial --> StartingZone: Space or tap
   StartingZone --> Playing: EndStartingZone
   Playing --> Lost: LoseGame
   Lost --> [*]: interact, reload scene
@@ -101,7 +101,7 @@ stateDiagram-v2
 
 | State | Time Scale | Screen |
 | --- | --- | --- |
-| Tutorial | 0 | tutorial panel, only Space starts the run |
+| Tutorial | 0 | tutorial panel, only Space (a tap anywhere in touch mode) starts the run |
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
 | Lost | 0 | lose panel with Restart and Exit to Title (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
@@ -111,7 +111,7 @@ stateDiagram-v2
 
 `WinGame()` currently has no caller: a Cobra King win now continues the run with an armor reward ([Mobs](mob-doc.md#win-reward)). When called it runs once, from StartingZone or Playing: like `LoseGame` it settles the score, then enters Won, which freezes time, and the lose screen's restart key reloads the scene. The boss fight's own win stops time on a reward panel instead, without entering Won. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
 
-Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit to Title goes through `SceneNames.Load`. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
+Pause is a flag, not a state: `GameController.SetPaused` (Esc, P or the pause button) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit to Title goes through `SceneNames.Load`. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
 
 A pineapple leap is a flag too: `GameController.SetLeaping` sets `IsLeaping` and raises `LeapChanged` while `State` keeps its value, for the same reason, and because the checks of `State == Playing` below must keep passing. It starts only in a live run and ends the starting zone. Hazards check the flag themselves ([Mobs](mob-doc.md#during-a-pineapple-leap)); the sequence is in the [Grab System](grab-doc.md#pineapple-leap).
 
@@ -256,6 +256,17 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 - Interact: the grab, read by both arms and polled by the climb camera framing; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
 - Jump: the web escape press, read by `SpiderWebStruggle`, and the Space press that starts the run from the tutorial, read by `GameController`
 - Collision: Space is bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped
+- Touch: a virtual gamepad stands in for the keyboard. The `TouchControls` prefab's `OnScreenStick` writes `<Gamepad>/leftStick` (Move binds it) and its full-screen `OnScreenButton` writes `<Gamepad>/buttonSouth`, which Interact, UseCoconut and Jump all bind, so one zone grabs, double-taps a coconut, escapes a web and starts the run exactly like Space. A virtual keyboard is avoided because its writes read as real key presses and would flip the control style back
+- Start: `UI/StartPress` serves the title: Space, left mouse, a touch press, gamepad start
+
+### Control Style
+
+`ControlStyleManager` (prefab `ControlStyleManager`, in every scene, first one kept across loads) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
+
+- `ControlStyleLabel`: one text under a keyboard and a touch wording, blank hides it; `Configure` sets both from code
+- `ControlStyleSwitch`: shows a keyboard group or a touch group of objects, eg the tutorial's keycaps and its touch guide
+- Scripts with their own wording subscribe themselves: `CoconutWidget` (`useHintText`, `useHintTouchText`), `MessagePopUp` (`touchMessage`, re-worded while a held popup shows), `KeyPromptWidget`; `BossFightHud` gives its runtime labels a `ControlStyleLabel`
+- `TouchControlsPanel` shows the touch controls only in Touch mode while the run is playable (tutorial, starting zone, playing; not paused, lost or won). `TouchControls` is the first child of the `_UI` canvas, so every HUD element, popup and screen draws above it and takes its taps first
 
 ## UI
 
@@ -272,6 +283,8 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 | Web Prompt | `UI/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
 | Low Stamina Prompt | `UI/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
 | PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
+| Pause Button | `UI/PauseButton` | round button top right of `InGameHUD`, calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab |
+| Touch Controls | `UI/TouchControlsPanel` | the joystick and full-screen action zone of the `TouchControls` prefab, shown only in Touch mode ([Input](#input)) |
 | Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", "Press Esc or P to Resume", and "Press R to Restart" while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
 The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage` (the host of `CoconutMessageWidget`), and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it, with the `_PopUps` root just before `Screens`. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
