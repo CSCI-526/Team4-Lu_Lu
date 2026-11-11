@@ -707,7 +707,7 @@
                     "priority": 0
                 },
                 {
-                    "name": "AnyKey",
+                    "name": "StartPress",
                     "type": "Button",
                     "id": "f09a319c-1225-4ed5-be73-001ec9b3641a",
                     "expectedControlType": "Button",
@@ -1150,11 +1150,11 @@
                 {
                     "name": "",
                     "id": "8f298b9d-fe44-4846-a4d5-ea7806bd79c1",
-                    "path": "<Keyboard>/anyKey",
+                    "path": "<Keyboard>/space",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnyKey",
+                    "action": "StartPress",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1165,7 +1165,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "AnyKey",
+                    "action": "StartPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9ddc90ef-669f-4825-aa53-9eb5fd6870db",
+                    "path": "<Touchscreen>/primaryTouch/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Touch",
+                    "action": "StartPress",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1176,7 +1187,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "AnyKey",
+                    "action": "StartPress",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
