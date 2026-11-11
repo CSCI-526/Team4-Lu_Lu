@@ -37,7 +37,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | --- | --- |
 | `TitleScene` | the startup scene of every build: any key or click opens the level selection |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
-| `FullPlayScene` | the normal run; its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `FullPlayScene` | the normal run; its root is 10 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`, `ControlStyleManager`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 | `EndlessScene` | a copy of `FullPlayScene` with `GameController.runMode` set to `Endless` |
 
 ```mermaid

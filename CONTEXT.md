@@ -60,9 +60,9 @@ monkobra/
 
 ## Scene Hierarchy
 
-Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `FullPlayScene` (the normal run), `EndlessScene`. The two menu scenes are shells of `MenuCamera`, `MenuEventSystem`, their screen prefab (`TitleScreen` or `LevelSelectScreen`) and `Analytics`; the menus read the `InputSystem_Actions` UI map through their own event system, so the gameplay `EventSystem` stays unchanged. `EndlessScene` is a copy of `FullPlayScene` whose only difference is the `GameController.runMode` override (`Endless`), so a gameplay edit inside a shared prefab reaches both scenes, while the plain `Envs` object and the scene-level overrides exist once per scene and are kept in step by hand.
+Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `FullPlayScene` (the normal run), `EndlessScene`. The two menu scenes are shells of `MenuCamera`, `MenuEventSystem`, their screen prefab (`TitleScreen` or `LevelSelectScreen`), `Analytics` and `ControlStyleManager`; the menus read the `InputSystem_Actions` UI map through their own event system, so the gameplay `EventSystem` stays unchanged. `EndlessScene` is a copy of `FullPlayScene` whose only difference is the `GameController.runMode` override (`Endless`), so a gameplay edit inside a shared prefab reaches both scenes, while the plain `Envs` object and the scene-level overrides exist once per scene and are kept in step by hand.
 
-`FullPlayScene`'s root is 9 prefab instances, so teammates edit different files, plus two plain scene objects: `Envs` and a Cinemachine `Target Group`. `Envs`, `Entities` and `UI` nest one prefab per unit. `Envs` has no prefab of its own, so adding or removing one of its children edits `FullPlayScene.unity` itself.
+`FullPlayScene`'s root is 10 prefab instances, so teammates edit different files, plus two plain scene objects: `Envs` and a Cinemachine `Target Group`. `Envs`, `Entities` and `UI` nest one prefab per unit. `Envs` has no prefab of its own, so adding or removing one of its children edits `FullPlayScene.unity` itself.
 
 | Root | Nests |
 | --- | --- |
@@ -72,6 +72,7 @@ Four scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `FullPl
 | `Player/Entities` | `Monkey`, `GreatCobra` |
 | `Boss/BossFight` | `BossFightController`, `BossKingBody`, `BossFightHud`; builds the Cobra King arena at runtime, its position does not matter |
 | `Analytics/Analytics` | one GameObject carrying `AnalyticsManager`, in every scene; the first one is kept across scene loads |
+| `ControlStyle/ControlStyleManager` | one GameObject carrying `ControlStyleManager`, in every scene; the first one is kept across scene loads |
 | `GameController/GameController` | one GameObject carrying `GameController`, `ScreensManager`, `ScoreManager`, `RampedDifficultyManager` as components |
 | `UI/UI` | the `Canvas`, `InGameHUD` (`ProgressBar`, `StaminaBar`, `ScoreHeight` (`ScoreHUD`), the pause hint, `CoconutHUD`, `CoconutMessage` (widget host only), `FruitFlyLayer`), `FreezeTimerHUD`, `LowStaminaPrompt` (widget host only), `HackShortcutHelp`, `SpiderWebPrompt` (escape bar), `_PopUps` (`PopUp/_PopUps`, before `Screens` so the panels draw over it), `Screens` (`LoseScreen`, `TutorialScreen`, `PauseScreen`) |
 
@@ -200,6 +201,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `TitleScreen/TitleScreen` | any key or click opens the level selection, after an input delay; prompt pulses on unscaled time | [TDD](docs/monkobra-tdd.md#scenes) |
 | `LevelSelectScreen/LevelSelectScreen` | Normal Play, Endless Mode (greyed out until unlocked), Back; Esc is Back | [TDD](docs/monkobra-tdd.md#scenes) |
 | `UI/MenuButtonHover`, `UI/MenuSelectionKeeper` | menu helpers: hover selects a button so mouse and keys share one highlight; the keeper reselects the last button after a click on empty space | [TDD](docs/monkobra-tdd.md#scenes) |
+| `ControlStyle/ControlStyle`, `ControlStyle/ControlStyleManager` | enum `Keyboard` or `Touch`, and the singleton on the `ControlStyleManager` prefab, kept across scene loads: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches; static `Current`, `IsTouch` and `StyleChanged` need no instance | [TDD](docs/monkobra-tdd.md#input) |
+| `ControlStyle/ControlStyleLabel`, `ControlStyle/ControlStyleSwitch` | follow `StyleChanged`: one text under a keyboard and a touch wording, and the owner that shows a keyboard group or a touch group of objects | [TDD](docs/monkobra-tdd.md#input) |
 | `Analytics/AnalyticsMetric`, `AnalyticsMetrics` | enum of every event kind a run records, plus the static title & height-column table the report reads; add a metric here | [Analytics](docs/analytics-doc.md#adding-a-metric) |
 | `LoseScreen/LoseScreenDownloadWidget` | dev-only button on `LoseScreen` that calls `AnalyticsManager.DownloadReport()`; turns its object off unless `HackShortcutConfig.AreHintsShown`; takes the sibling `Button`, no Inspector Field | [Analytics](docs/analytics-doc.md#dev-keys) |
 | `Analytics/RunData` | plain data of one run: events by `AnalyticsMetric` (`GetEvents`, `CountOf`), starting zone exit stamp, timed samples of height & stamina, status (`InProgress`, `Lost`, `Interrupted`), end, death cause, scores; also `EventStamp`, `RunSample`, `RunStatus` | none |
