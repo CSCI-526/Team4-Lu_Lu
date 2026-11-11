@@ -70,11 +70,13 @@ public class ControlStyleManager: MonoBehaviour {
     }
 
     // Private Methods  ########################################################
-    // a device with a touch screen and no keyboard starts as touch
+    // a phone or tablet (a mobile browser too, which still reports a
+    // keyboard device) and a touch screen without a keyboard start as touch,
+    // so the very first tap already meets the touch controls
     private static ControlStyle PickStartStyle() {
-        return Keyboard.current == null && Touchscreen.current != null
-            ? ControlStyle.Touch
-            : ControlStyle.Keyboard;
+        bool isTouchDevice = Application.isMobilePlatform
+            || (Keyboard.current == null && Touchscreen.current != null);
+        return isTouchDevice ? ControlStyle.Touch : ControlStyle.Keyboard;
     }
 
     private static void SetStyle(ControlStyle style) {
