@@ -24,7 +24,7 @@ public class RunScreenMenu: MonoBehaviour {
 
     [SerializeField]
     [Tooltip("confirms the highlighted option, the UI/Submit action (Space, "
-        + "Enter)")]
+        + "E, Enter)")]
     private InputActionReference submitAction;
 
     [SerializeField]

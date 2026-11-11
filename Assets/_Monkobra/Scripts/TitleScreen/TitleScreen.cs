@@ -2,7 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// the title screen: Space, a click or a tap opens the level selection; the
+/// the title screen: Space, E, Enter, a click or a tap opens the level
+/// selection; the
 /// prompt pulses on unscaled time
 /// </summary>
 public class TitleScreen: MonoBehaviour {
@@ -12,8 +13,8 @@ public class TitleScreen: MonoBehaviour {
     private InputActionAsset inputActions;
 
     [SerializeField]
-    [Tooltip("path of the start-press action inside the asset: Space, left "
-        + "click or a touch")]
+    [Tooltip("path of the start-press action inside the asset: Space, E, "
+        + "Enter, left click or a touch")]
     private string startActionPath = "UI/StartPress";
 
     [SerializeField]
