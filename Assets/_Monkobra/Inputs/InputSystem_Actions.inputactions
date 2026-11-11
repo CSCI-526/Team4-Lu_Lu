@@ -492,6 +492,17 @@
                 },
                 {
                     "name": "",
+                    "id": "3623b8ff-ee40-4647-9e77-2b5ad2d9ed4d",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "a7cfc1a2-19ec-4821-b86c-0e10bedf9524",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -516,6 +527,17 @@
                     "name": "",
                     "id": "3e19f6f9-9654-4345-a737-87a4b94c0464",
                     "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "UseCoconut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1340f884-6680-46e2-a8bb-47513fb1a787",
+                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
