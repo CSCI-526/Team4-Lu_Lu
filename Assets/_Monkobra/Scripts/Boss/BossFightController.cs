@@ -2798,9 +2798,19 @@ public class BossFightController: MonoBehaviour {
         }
     }
 
-    // if the action is wired and went down this frame
+    // if the action is wired and went down this frame; the action is shared
+    // (Player/Jump is also switched off by SpiderWebStruggle), so it is
+    // switched back on here at the moment of use
     private static bool WasPressed(InputActionReference reference) {
-        return reference != null && reference.action.WasPressedThisFrame();
+        if (reference == null) {
+            return false;
+        }
+
+        InputAction action = reference.action;
+        if (!action.enabled) {
+            action.Enable();
+        }
+        return action.WasPressedThisFrame();
     }
 
     private void ContinueAfterReward() {
