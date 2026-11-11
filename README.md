@@ -47,7 +47,7 @@ The real values live in the Coconut group of `Settings/Player/PlayerBalanceConfi
 
 ## Contributing
 
-Agent rules are in [AGENTS.md](AGENTS.md), the system map in [CONTEXT.md](CONTEXT.md), how the game is built in the [Technical Design Document](docs/monkobra-tdd.md), the teammate git flow in [Work with Git](docs/work-with-git.md), and version history in [CHANGELOG.md](CHANGELOG.md).
+Agent rules are in [AGENTS.md](AGENTS.md), the system map in [CONTEXT.md](CONTEXT.md), the control scheme in [Input](docs/input-doc.md), how the game is built in the [Technical Design Document](docs/monkobra-tdd.md), the teammate git flow in [Work with Git](docs/work-with-git.md), and version history in [CHANGELOG.md](CHANGELOG.md).
 
 ## Acknowledgments
 
