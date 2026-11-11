@@ -114,7 +114,7 @@ public class SpiderWebStruggle: MonoBehaviour {
     private MonkeyInputConfig inputConfig;
 
     [SerializeField]
-    [Tooltip("button mashed to break free, Player/Jump (Space)")]
+    [Tooltip("button mashed to break free, Player/Jump (Space, E, Enter)")]
     private InputActionReference escapeAction;
 
     [Header("Escape")]
