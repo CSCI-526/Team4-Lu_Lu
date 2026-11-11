@@ -1692,6 +1692,7 @@ GameObject:
   - component: {fileID: 8619789090801343208}
   - component: {fileID: 1058167357721380010}
   - component: {fileID: 8634689252232091432}
+  - component: {fileID: 6130563507969329965}
   m_Layer: 5
   m_Name: Press
   m_TagString: Untagged
@@ -5394,3 +5395,19 @@ MonoBehaviour:
   - {fileID: 3286099520576525271}
   touchObjects:
   - {fileID: 6130482091273690002}
+--- !u!114 &6130563507969329965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833381310847602964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2c690b9c14c84ada2732325d1a94d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleLabel
+  keyboardText: 'Press Space Bar to Start'
+  touchText: 'Tap anywhere to Start'
+  tmpLabel: {fileID: 8634689252232091432}
+  legacyLabel: {fileID: 0}
