@@ -11,7 +11,17 @@ Todo upd gdd
 
 ### Added
 
+##### Erik
+
+- touch screen play: the first touch switches the game to touch mode, a real key press switches it back (`ControlStyleManager`, kept across scenes); in touch mode a joystick bottom left moves the monkey and the rest of the screen is the Space key (hold to reach, double-tap for a coconut, tap rapidly to escape a web, tap to start)
+- pause button, top right, by click or tap
+- every key hint (tutorial, pause, lose & level select screens, coconut how-to, popups, keycaps, boss buttons) follows the control style live
+
 ### Changed
+
+##### Erik
+
+- title starts on Space, a click or a tap, no longer on any key
 
 ### Deprecated
 
