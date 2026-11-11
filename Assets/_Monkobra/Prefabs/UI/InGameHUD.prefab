@@ -65,6 +65,7 @@ GameObject:
   - component: {fileID: 4477732712774965560}
   - component: {fileID: 2652357027990692370}
   - component: {fileID: 1733575319408275313}
+  - component: {fileID: 6130482091273680001}
   m_Layer: 0
   m_Name: Pause Instruction
   m_TagString: Untagged
@@ -88,7 +89,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -150.4, y: -25}
+  m_AnchoredPosition: {x: -210.4, y: -25}
   m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2652357027990692370
@@ -113,7 +114,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -960,3 +961,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6130482091273680001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4983302662091871951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2c690b9c14c84ada2732325d1a94d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleLabel
+  keyboardText: Esc or P to Pause
+  touchText: 
+  tmpLabel: {fileID: 1733575319408275313}
+  legacyLabel: {fileID: 0}
