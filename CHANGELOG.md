@@ -16,6 +16,8 @@ todo vertical version
 ##### Erik
 
 - touch screen play: the first touch switches the game to touch mode, a real key press switches it back (`ControlStyleManager`, kept across scenes); in touch mode a joystick bottom left moves the monkey and the rest of the screen is the Space key (hold to reach, double-tap for a coconut, tap rapidly to escape a web, tap to start)
+- phones & tablets, mobile browsers incl., start in touch mode, so the first tap counts; the WebGL page leaves touch gestures to the game
+- virtual joystick sprites by rmeldev (CC0), credited in `CREDITS.md`
 - pause button, top right, by click or tap
 - every key hint (tutorial, pause, lose & level select screens, coconut how-to, popups, keycaps, boss buttons) follows the control style live
 - E & Enter join Space on every confirm: grab, coconut, web escape, tutorial start, menus, title & boss panels; P backs out of level select like Esc
@@ -34,6 +36,10 @@ todo vertical version
 ### Removed
 
 ### Fixed
+
+##### Erik
+
+- HUD graphics & the tutorial overlay swallowed taps meant for the touch zone
 
 ### Security
 
