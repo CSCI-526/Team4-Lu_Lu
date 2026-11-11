@@ -279,6 +279,7 @@ GameObject:
   - component: {fileID: 8830959627702130083}
   - component: {fileID: 6573319033127197442}
   - component: {fileID: 4559080328085181143}
+  - component: {fileID: 6130753653663478970}
   m_Layer: 5
   m_Name: Hint
   m_TagString: Untagged
@@ -416,6 +417,7 @@ GameObject:
   - component: {fileID: 955778609284465697}
   - component: {fileID: 6968689480061402483}
   - component: {fileID: 281669776500255341}
+  - component: {fileID: 6130574572965627843}
   m_Layer: 5
   m_Name: RestartHint
   m_TagString: Untagged
@@ -752,6 +754,7 @@ GameObject:
   - component: {fileID: 4716081404506707445}
   - component: {fileID: 7749587893906426280}
   - component: {fileID: 1499512176555613052}
+  - component: {fileID: 6130727926327003779}
   m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
@@ -1023,6 +1026,7 @@ GameObject:
   - component: {fileID: 4637988350701141654}
   - component: {fileID: 2923448468247963121}
   - component: {fileID: 7283752105425645677}
+  - component: {fileID: 6130730043244702512}
   m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
@@ -1452,3 +1456,67 @@ MonoBehaviour:
   exitButton: {fileID: 3753626689570200990}
   submitAction: {fileID: 392368643174621059, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   isSubmitRestarts: 0
+--- !u!114 &6130753653663478970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3536124947307594484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2c690b9c14c84ada2732325d1a94d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleLabel
+  keyboardText: 'Esc or P to resume, R to restart'
+  touchText: 
+  tmpLabel: {fileID: 4559080328085181143}
+  legacyLabel: {fileID: 0}
+--- !u!114 &6130574572965627843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2279952491890692497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2c690b9c14c84ada2732325d1a94d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleLabel
+  keyboardText: 'W / S to select, Space to confirm'
+  touchText: 
+  tmpLabel: {fileID: 281669776500255341}
+  legacyLabel: {fileID: 0}
+--- !u!114 &6130727926327003779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2067597364994229593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2c690b9c14c84ada2732325d1a94d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleLabel
+  keyboardText: 'Resume (Esc)'
+  touchText: 'Resume'
+  tmpLabel: {fileID: 1499512176555613052}
+  legacyLabel: {fileID: 0}
+--- !u!114 &6130730043244702512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8837509051998343837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2c690b9c14c84ada2732325d1a94d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleLabel
+  keyboardText: 'Restart (R)'
+  touchText: 'Restart'
+  tmpLabel: {fileID: 7283752105425645677}
+  legacyLabel: {fileID: 0}
