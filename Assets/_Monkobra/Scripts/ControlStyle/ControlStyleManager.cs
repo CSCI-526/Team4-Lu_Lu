@@ -35,10 +35,10 @@ public class ControlStyleManager: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (I != null && I != this) {
-            // PersistentBootstrap makes the only one, so a copy is a stray
+            // a scene may keep its own copy, the first instance wins; the
+            // warning is expected and harmless
             Debug.LogWarning(
-                "ControlStyleManager:\tstray copy in a scene destroyed, "
-                    + "remove it",
+                "ControlStyleManager:\tduplicate instance destroyed",
                 this
             );
             Destroy(gameObject);

@@ -134,11 +134,9 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         if (I != null && I != this) {
-            // PersistentBootstrap makes the only one, so a copy is a stray
-            Debug.LogWarning(
-                "Analytics:\tstray copy in a scene destroyed, remove it",
-                this
-            );
+            // a scene may keep its own copy, the first instance wins; the
+            // warning is expected and harmless
+            Debug.LogWarning("Analytics:\tduplicate instance destroyed", this);
             Destroy(gameObject);
             return;
         }
