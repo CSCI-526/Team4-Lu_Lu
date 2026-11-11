@@ -35,10 +35,7 @@ public class ControlStyleManager: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (I != null && I != this) {
-            Debug.LogWarning(
-                "ControlStyleManager:\tduplicate instance destroyed",
-                this
-            );
+            // every scene holds one, so each scene load makes a duplicate
             Destroy(gameObject);
             return;
         }

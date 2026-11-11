@@ -134,7 +134,7 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         if (I != null && I != this) {
-            Debug.LogWarning("Analytics:\tduplicate instance destroyed", this);
+            // every scene holds one, so each scene load makes a duplicate
             Destroy(gameObject);
             return;
         }
