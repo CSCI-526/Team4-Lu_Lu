@@ -48,6 +48,8 @@ graph LR
   Select -->|Back, Esc| Title
   Full -->|R restarts| Full
   Endless -->|R restarts| Endless
+  Full -->|Exit to Menu| Select
+  Endless -->|Exit to Menu| Select
 ```
 
 Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`MenuEventSystem`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `AnyKey` serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
@@ -104,14 +106,14 @@ stateDiagram-v2
 | Tutorial | 0 | tutorial panel, only Space starts the run |
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
-| Lost | 0 | lose panel with Restart and Exit to Title (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
+| Lost | 0 | lose panel with Restart and Exit to Menu (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
 | Won | 0 | a won run, time frozen, the same restart key reloads the scene |
 
 `LoseGame()` runs once, from StartingZone or Playing: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
 `WinGame()` currently has no caller: a Cobra King win now continues the run with an armor reward ([Mobs](mob-doc.md#win-reward)). When called it runs once, from StartingZone or Playing: like `LoseGame` it settles the score, then enters Won, which freezes time, and the lose screen's restart key reloads the scene. The boss fight's own win stops time on a reward panel instead, without entering Won. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
 
-Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit to Title goes through `SceneNames.Load`. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
+Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit to Menu goes through `SceneNames.Load` to the level selection. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
 
 A pineapple leap is a flag too: `GameController.SetLeaping` sets `IsLeaping` and raises `LeapChanged` while `State` keeps its value, for the same reason, and because the checks of `State == Playing` below must keep passing. It starts only in a live run and ends the starting zone. Hazards check the flag themselves ([Mobs](mob-doc.md#during-a-pineapple-leap)); the sequence is in the [Grab System](grab-doc.md#pineapple-leap).
 

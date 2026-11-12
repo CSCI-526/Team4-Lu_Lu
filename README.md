@@ -22,7 +22,7 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 | Esc or P | pause or resume the run |
 | R (while paused) | restart the run |
 | R (lose screen) | restart the run |
-| W, S or Up, Down; mouse hover (pause and lose screens) | move the highlight over Resume, Restart, Exit to Title |
+| W, S or Up, Down; mouse hover (pause and lose screens) | move the highlight over Resume, Restart, Exit to Menu |
 | Space, Enter or click (pause and lose screens) | confirm the highlighted option; on the lose screen with nothing highlighted, restart |
 | Any key or click (title) | open the level selection |
 | W, S or Up, Down; mouse hover (menus) | move the highlight |
