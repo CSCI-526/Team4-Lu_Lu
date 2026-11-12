@@ -24,6 +24,34 @@ todo vertical version
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.3...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.0.0-beta.3] - 2026-11-11
+
+### Added
+
 ##### Erik
 
 - touch screen play: the first touch switches the game to touch mode, a real key press switches it back (`ControlStyleManager`, kept across scenes); in touch mode a joystick bottom left moves the monkey and the rest of the screen is the Space key (hold to reach, double-tap for a coconut, tap rapidly to escape a web, tap to start)
@@ -65,7 +93,7 @@ todo vertical version
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...dev
+[1.0.0-beta.3]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...v1.0.0-beta.3
 
 
 
