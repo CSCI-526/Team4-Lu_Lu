@@ -30,7 +30,7 @@ todo vertical version
 - touch screen play: the first touch switches the game to touch mode, a real key press switches it back (`ControlStyleManager`, kept across scenes); in touch mode a joystick bottom left moves the monkey and the rest of the screen is the Space key (hold to reach, double-tap for a coconut, tap rapidly to escape a web, tap to start)
 - phones & tablets, mobile browsers incl., start in touch mode, so the first tap counts; the WebGL page leaves touch gestures to the game
 - virtual joystick sprites by rmeldev (CC0), credited in `CREDITS.md`
-- pause button, top right, by click or tap, a square icon button
+- pause button, top right, by click or tap, a square icon button; in Keyboard style the Esc key icon & "to Pause" sit beside it
 - animated hint icons, one per control style (`HintIconSlot`), in the tutorial, popups, coconut hint & boss prompt; the touch tutorial shows a blue action area over the touch zone
 - menu buttons from the FreeGUI sheet by pzUH (CC0), credited in `CREDITS.md`: blue, green on hover or key selection, red on press, grey when locked
 - pause screen: square Resume & Restart buttons, with the Esc & R key icons in Keyboard style

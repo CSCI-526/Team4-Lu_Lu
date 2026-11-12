@@ -290,7 +290,7 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 | Web Prompt | `UI/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
 | Low Stamina Prompt | `UI/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
 | PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
-| Pause Button | `UI/PauseButton` | square sprite button top right of `InGameHUD` (Sprite Swap, `HUDPause_*`), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab |
+| Pause Button | `UI/PauseButton` | square sprite button top right of `InGameHUD` (Sprite Swap, `HUDPause_*`), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
 | Touch Controls | `UI/TouchControlsPanel` | the joystick and full-screen action zone of the `TouchControls` prefab, shown only in Touch mode ([Input](#input)) |
 | Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", the square Resume and Restart buttons (Esc and R key icons beside them in Keyboard style), and Exit to Title while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
