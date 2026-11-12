@@ -16,7 +16,7 @@ Todo belle: replace falling cobra & great cobra
 Fixme 1st pineapple/banana should appears on top of player
 Bug endless mode need to start w/ full heath & no starting zone
 Todo upd gdd
-Fixme mpv tutorial w/ assets & animation
+Fixme polishing UI
 todo vertical version
 -->
 
@@ -36,6 +36,7 @@ todo vertical version
 - pause screen: square Resume & Restart buttons, with the Esc & R key icons in Keyboard style
 - Exit to Title is the square `HUDExit_*` icon button on the pause & lose screens, and the lose screen's Restart is the square `HUDRestart_*` button with the R key icon in Keyboard style
 - pause & lose screens: the "W / S to select, Space to confirm" text is the level select's `LevelSelectHint_Keyboard` / `_Touch` icon hints, switched by control style
+- pause & lose screens: each option is a 3-column row, key icon, square button, text label (Resume, Restart, Exit); the key column hides in Touch style
 - every key hint (tutorial, pause, lose & level select screens, coconut how-to, popups, keycaps, boss buttons) follows the control style live
 - E & Enter join Space on every confirm: grab, coconut, web escape, tutorial start, menus, title & boss panels; P backs out of level select like Esc
 - `PersistentBootstrap` creates `Analytics` & `ControlStyleManager` from `Resources/` before the first scene, so any scene plays with both; scene copies stay, the duplicate warning is expected
