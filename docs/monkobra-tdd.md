@@ -35,7 +35,7 @@ A system gets its own document when it spans several scripts and carries rules a
 
 | Scene | Purpose |
 | --- | --- |
-| `TitleScene` | the startup scene of every build: any key or click opens the level selection |
+| `TitleScene` | the startup scene of every build: any key or click opens the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
 | `FullPlayScene` | the normal run; its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 | `EndlessScene` | a copy of `FullPlayScene` with `GameController.runMode` set to `Endless` |
@@ -309,7 +309,7 @@ The tutorial in `FullPlayScene` uses editable uGUI Images under `TutorialScreen/
 
 ## Build and Deploy
 
-The only build is the WebGL export made from the Editor into `Monkobra/` and committed. Compression is disabled, because GitHub Pages cannot set response headers, and the `FitWindow` template keeps the game 16:9 at any window size. The steps and the required Player Settings are in [Build](build-doc.md).
+The only build is the WebGL export made from the Editor into `Monkobra/` and committed. Compression is disabled, because GitHub Pages cannot set response headers, and the `FitWindow` template keeps the game 16:9 at any window size and draws the loading page, whose last frame is the `TitleScreen` picture ([Loading Page](build-doc.md#loading-page)). The steps and the required Player Settings are in [Build](build-doc.md).
 
 ## Known Gaps
 

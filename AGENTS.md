@@ -49,6 +49,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - never hand-edit a file inside `Monkobra/`; re-export from Unity and re-commit instead
 - Compression Format stays `Disabled`: GitHub Pages cannot set the `Content-Encoding` header a compressed export needs
 - Development Build is on for the WebGL profiles (`GithubPages`, `ItchIO`): the hack hints and dev-only UI show only in a development build, while the hack keys run in every build
+- the loading page in `FitWindow/index.html` ends on the `TitleScreen` picture: its `LAYOUT` block and the table in `TitleScreenLayoutBuilder` are one 1280×720 layout over the `Sprites/TitleScreen/` art; change both together, then rebuild the prefab with `Monkobra > Build Title Screen`, never by hand, see [Build](docs/build-doc.md#loading-page)
 
 ## Code Style
 

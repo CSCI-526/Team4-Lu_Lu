@@ -1,9 +1,13 @@
+using System.Collections;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
 /// the title screen: any key or click opens the level selection; the prompt
-/// pulses on unscaled time
+/// pulses on unscaled time. Its picture is the last frame of the WebGL
+/// loading page (FitWindow template), which it tells to fade out once drawn,
+/// so the browser hands over to the game without a visible cut.
 /// </summary>
 public class TitleScreen: MonoBehaviour {
     // Inspector Fields  #######################################################
@@ -74,6 +78,15 @@ public class TitleScreen: MonoBehaviour {
         anyKeyAction?.Disable();
     }
 
+    private IEnumerator Start() {
+        // two frame steps, so at least one finished frame is on screen
+        yield return null;
+        yield return null;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        MonkobraTitleShown();
+#endif
+    }
+
     private void Update() {
         if (promptGroup != null) {
             float wave = 0.5f
@@ -94,4 +107,11 @@ public class TitleScreen: MonoBehaviour {
     // Private Members  ########################################################
     private InputAction anyKeyAction;
     private float enabledTime;
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+    // Plugins/WebGL/TitleScreenLoader.jslib; a no-op on a page without the
+    // loader, and harmless when the title is shown again
+    [DllImport("__Internal")]
+    private static extern void MonkobraTitleShown();
+#endif
 }

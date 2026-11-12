@@ -45,11 +45,11 @@ monkobra/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
 │   │   ├── Scenes/    TitleScene, LevelSelectScene, FullPlayScene, EndlessScene; the gameplay scenes are root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   one folder per module (see Script Index), `SceneFlow/Editor/`
-│   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file)
+│   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file), WebGL/TitleScreenLoader.jslib (tells the loading page the title is drawn)
 │   │   ├── Prefabs/   per module; `PopUp/` holds `_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup; `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
 │   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
 │   │   └── Settings/  `_Shared/` (URP assets, volume profiles) plus one folder per module, assets directly inside
-│   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page
+│   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page and its loading page (cobra eats dots on real download progress), whose last frame is the `TitleScreen` picture
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed
 │   ├── TextMesh Pro/  imported TMP essentials, not authored
 │   └── Readme.asset   Unity template leftover
@@ -198,7 +198,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `SceneFlow/SceneNames`, `SceneFlow/RunMode` | the scene name constants and `Load(name)`, the one way to load a scene (resets time scale & audio pause, raises `Loading` first); `RunMode` is `Full` or `Endless` | [TDD](docs/monkobra-tdd.md#scenes) |
 | `SceneFlow/ProgressStore`, `SceneFlow/Editor/ProgressMenu` | PlayerPrefs flag that unlocks Endless once the Cobra King is beaten (`MarkBossBeaten` from `BossFightController.Defeat`); Editor menu `Monkobra/Unlock Endless`, `Monkobra/Reset Progress` | [TDD](docs/monkobra-tdd.md#scenes) |
 | `TitleScreen/Editor/TitleScreenLayoutBuilder` | Editor menu `Monkobra/Build Title Screen`: builds the `TitleScreen` prefab picture (vines, logo, branch, grown cobra, monkey, "Click to start", footer logos) from the 1280×720 table shared with the loading page's `LAYOUT` | [Build](docs/build-doc.md#loading-page) |
-| `TitleScreen/TitleScreen` | any key or click opens the level selection, after an input delay; prompt pulses on unscaled time | [TDD](docs/monkobra-tdd.md#scenes) |
+| `TitleScreen/TitleScreen` | any key or click opens the level selection, after an input delay; "Click to start" prompt pulses on unscaled time; after its first frame tells the WebGL loading page (`TitleScreenLoader.jslib`) to fade out, as the prefab picture is the page's last frame | [Build](docs/build-doc.md#loading-page) |
 | `LevelSelectScreen/LevelSelectScreen` | Normal Play, Endless Mode (greyed out until unlocked), Back; Esc is Back | [TDD](docs/monkobra-tdd.md#scenes) |
 | `UI/MenuButtonHover`, `UI/MenuSelectionKeeper` | menu helpers: hover selects a button so mouse and keys share one highlight; the keeper reselects the last button after a click on empty space | [TDD](docs/monkobra-tdd.md#scenes) |
 | `Analytics/AnalyticsMetric`, `AnalyticsMetrics` | enum of every event kind a run records, plus the static title & height-column table the report reads; add a metric here | [Analytics](docs/analytics-doc.md#adding-a-metric) |
@@ -213,6 +213,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Analytics/AnalyticsHackKeys` | plain class: polls the analytics dev keys & fires restart, download, mock actions of `AnalyticsManager` | [Analytics](docs/analytics-doc.md#dev-keys) |
 | `Analytics/WebDownload` | static: hands a text file to the browser through `Plugins/WebGL/Download.jslib`; false outside a WebGL player | [TDD](docs/monkobra-tdd.md#analytics) |
 | `Build/Editor/BuildVersionSync` | Editor script: copies the `ProjectSettings.asset` `bundleVersion` into every Build Profile on Editor load, and from `Monkobra/Sync Build Profile Version` | [Build](docs/build-doc.md) |
+| `Build/Editor/WebGLLoaderArt` | Editor script: after a WebGL build, copies `Sprites/TitleScreen/*.png` and the title font into the build's `TemplateData/TitleScreen/` for the loading page | [Build](docs/build-doc.md#loading-page) |
 | `HackShortcuts/HackShortcutConfig`, `HackShortcuts/HackAction` | ScriptableObject (`Settings/HackShortcuts/HackShortcutConfig.asset`): every dev/hack key with its action & help line; `IsActive` is true in every build, `AreHintsShown` in development builds only; read by `AnalyticsManager`, `GameController` & `HackPineappleSpawner` | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `HackShortcuts/HackPineappleSpawner` | on the monkey: its F5 to F8 hack keys spawn a pineapple branch, a coconut branch, a falling cobra or a spider web straight above the monkey, belonging to no segment | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
 | `HackShortcuts/HackShortcutPanel` | on a TMP text: writes one `key: description` line per hack key in `Awake`, hides itself unless `AreHintsShown` (keys still work) | [TDD](docs/monkobra-tdd.md#hack-shortcuts) |
