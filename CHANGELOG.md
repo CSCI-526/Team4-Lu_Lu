@@ -17,6 +17,10 @@ Todo upd gdd
 - title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines, USC Games & Peel Five logos, "Click to start"
 
 ### Changed
+##### Yuqing Lu
+
+- Made with Unity splash screen off
+
 
 ### Deprecated
 

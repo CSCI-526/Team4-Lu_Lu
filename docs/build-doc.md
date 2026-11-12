@@ -12,6 +12,7 @@ Profile settings (Pages cannot set response headers):
 - Compression Format: `Disabled`; a `Gzip` or `Brotli` build fails to load
 - Decompression Fallback: off; tick it only if size forces compression back on
 - WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right once the game is up. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops. It also draws the [Loading Page](#loading-page)
+- Splash Screen: "Show Splash Screen" off (Player Settings > Splash Image), so the loading page hands straight over to the title
 - Development Build: on, since the hack hints and dev-only UI need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
 - Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `FullPlayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
 - Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `FullPlayScene`, `EndlessScene`
