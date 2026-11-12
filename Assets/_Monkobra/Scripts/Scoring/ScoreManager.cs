@@ -13,8 +13,10 @@ public class ScoreManager: MonoBehaviour {
     public int CoconutCollectedCount { get; private set; }
     // pineapple grabs, counted when each leap starts
     public int PineappleCollectedCount { get; private set; }
-    // part of RewardScore that came from coconuts
-    public long CoconutRewardScore { get; private set; }
+    // part of RewardScore that came from one kind of reward
+    public long RewardScoreOf(RewardKind kind) {
+        return rewardScoreByKind[(int)kind];
+    }
     public double HighestClimbedMeters => highestClimbedUnits / unitsPerMeter;
     public bool IsRunEnded => isRunEnded;
     public event Action<long> ScoreChanged;
@@ -40,7 +42,7 @@ public class ScoreManager: MonoBehaviour {
             // a coconut is worth a multiple of the banana points
             long coconutPoints = Math.Min((long)playerBalanceConfig.CoconutRewardPoints, long.MaxValue - TotalScore);
             RewardScore += coconutPoints;
-            CoconutRewardScore += coconutPoints;
+            rewardScoreByKind[(int)RewardKind.Coconut] += coconutPoints;
             CoconutCollectedCount++;
             NotifyIfChanged(oldScore);
             RewardAdded?.Invoke(RewardKind.Coconut, coconutPoints);
@@ -50,6 +52,7 @@ public class ScoreManager: MonoBehaviour {
 
         long bananaPoints = Math.Min((long)playerBalanceConfig.ScoreRewardPoints, long.MaxValue - TotalScore);
         RewardScore += bananaPoints;
+        rewardScoreByKind[(int)RewardKind.Banana] += bananaPoints;
         // every other reward is a banana pickup
         BananaCollectedCount++;
         NotifyIfChanged(oldScore);
@@ -67,6 +70,7 @@ public class ScoreManager: MonoBehaviour {
         long oldScore = TotalScore;
         long added = Math.Min((long)points, long.MaxValue - TotalScore);
         RewardScore += added;
+        rewardScoreByKind[(int)kind] += added;
         NotifyIfChanged(oldScore);
         RewardAdded?.Invoke(kind, added);
         return true;
@@ -123,7 +127,7 @@ public class ScoreManager: MonoBehaviour {
         BananaCollectedCount = 0;
         CoconutCollectedCount = 0;
         PineappleCollectedCount = 0;
-        CoconutRewardScore = 0;
+        Array.Clear(rewardScoreByKind, 0, rewardScoreByKind.Length);
         leapController = FindFirstObjectByType<PineappleLeapController>();
         if (leapController != null) {
             leapController.Begun += OnPineappleLeapBegun;
@@ -177,6 +181,8 @@ public class ScoreManager: MonoBehaviour {
     }
 
     // private members  ########################################################
+    private readonly long[] rewardScoreByKind =
+        new long[Enum.GetValues(typeof(RewardKind)).Length];
     private bool hasStarted;
     private bool isRunEnded;
     private double highestClimbedUnits;

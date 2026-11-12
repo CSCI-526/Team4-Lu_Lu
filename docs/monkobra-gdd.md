@@ -118,7 +118,7 @@ graph LR
 Script: [AnalyticsManager.cs](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/AnalyticsManager.cs), the one file that shows the whole collection process. It only gathers data: it never draws a chart and never builds a file path
 Input: the game's own events (GameController.StateChanged, ScoreManager.BananaCollected, HitBranchSensor.BranchHit, SpiderWebTrap.Encountered, and others), so no third-party service is needed
 Lifetime: a scene singleton kept across scene reloads, so one launch is one session and every attempt in it is one run
-What It Records Per Run: start and end stamps, the final score split into height score and banana score, banana pickups, branch hits, and web encounters (each with time, and height where it matters), and the run status (Lost or Interrupted)
+What It Records Per Run: start and end stamps, the final score split into height score and the score of each reward kind, banana pickups, new height markers reached, web escapes, branch hits, and web encounters (each with time, and height where it matters), and the run status (Lost or Interrupted)
 Timed Samples: height and stamina are sampled together on a fixed interval, plus once at run start and once at run end, so both curves share one time axis
 Death Cause: the game does not report one, so DeathCauseResolver infers it when the run closes: a branch hit or web encounter shortly before the loss names the cause, otherwise the great cobra did it
 Tuning: sample interval, autosave interval, and the death cause window live in AnalyticsConfig.asset, never in code
@@ -144,7 +144,7 @@ Each Run Section answers "how did this one attempt go":
 - Run Header: mode, status, highest and death height, death cause; the verdict of the run in one glance
 - Height vs Time (line): sampled height over the run; reflects pace, so plateaus mark webs or empty stamina and dips mark branch hits (Metric #5)
 - Stamina vs Time (line): sampled stamina over the run, placed under the banana table; reflects the core twist, since a healthy run is a drain and refill sawtooth (Metric #6)
-- Score Split (pie): height score against banana and coconut score; reflects what the player was rewarded for, climbing or grabbing, which checks the Earned Rewards pillar
+- Score Split (pie): height score against the score of each reward kind (banana, coconut, pineapple, cobra freeze, height marker, web escape); reflects what the player was rewarded for, climbing or grabbing, which checks the Earned Rewards pillar
 - Event Tables (rows of time since start, and height where it matters): every banana, coconut, branch hit, web, leap, and boss event; reflect risk against reward, the grabs made against the hits taken (Metric #7), and give the exact moment behind any shape seen in a line
 
 Reading Order: the summary finds the pattern across attempts, then the run sections explain it, so a doubt raised by a bar is answered by the line or table of the run behind it

@@ -84,9 +84,9 @@ Drawn from the `Lost` runs only; when lost runs of both run modes occur, one blo
 
 - Final Score: total score of the run
 - Score from Height: points earned by climbing
-- Score from Banana: points earned by bananas, shown as `unit * count = total` when every banana paid the same
-- Score from Coconut: points earned by coconuts, kept apart from the banana points in `RunData.CoconutRewardScore`, shown the same way
-- Score Split: pie of height score against banana and coconut score
+- Score from Banana, Score from Coconut: points earned by each fruit, kept apart in `RunData.RewardScoreByKind` (one slot per `RewardKind`), shown as `unit * count = total` when every grab paid the same; both lines always show
+- Score from Pineapple, Cobra Freeze, Height Marker, Web Escape: the other good deeds, each line shown only once it scored; the pineapple, marker and escape lines carry the count form, the freeze line the plain total because its metric also counts the boss armor
+- Score Split: pie of height score against the score of every reward kind that scored
 
 ### Events
 
@@ -96,10 +96,12 @@ Each event list is a table of its time since the run start; banana, coconut, and
 - Coconut Count: coconuts collected, from `CoconutManager.Collected`
 - Coconut Used: coconuts thrown, from `CoconutManager.Used`, stamped at the throw, not at the landing; a double-tap refused while the cobra is already frozen is not counted
 - Web Encounter: times the monkey touched a spider web
+- Web Escape: times the monkey broke free of a web, stamped when it scores (`ScoreManager.RewardAdded`)
 - Branch Hit: times the monkey's branch sensor met a branch; the falling cobra counts here too
 - Pineapple Leap: pineapple leaps, stamped at the start of the leap
 - Rough Bark Contact: times the monkey met a rough bark patch it was not already touching
 - Cobra Freeze: times the great cobra froze, from a coconut or the gold armor
+- Height Marker: new height markers the monkey reached, stamped when it scores (`ScoreManager.RewardAdded`); a drop and a second touch of a lower marker is not counted
 - Pause: times the run was paused, a resume is not counted
 - Boss Fight Start: times the monkey entered the boss arena
 - Armor Save: times the gold armor took a great cobra catch

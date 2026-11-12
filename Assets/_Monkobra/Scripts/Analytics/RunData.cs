@@ -78,8 +78,9 @@ public class RunData {
     public long TotalScore;
     public long HeightScore;
     public long RewardScore;
-    // part of RewardScore from coconuts, the rest is from bananas
-    public long CoconutRewardScore;
+    // RewardScore split by RewardKind, indexed by the enum value
+    public readonly long[] RewardScoreByKind =
+        new long[Enum.GetValues(typeof(RewardKind)).Length];
     // seconds from start to end
     public float DurationS;
 
