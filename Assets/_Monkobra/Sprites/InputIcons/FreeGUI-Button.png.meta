@@ -1980,16 +1980,16 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_85
+      name: HUDExit_Normal
       rect:
         serializedVersion: 2
         x: 2145
-        y: 1437
+        y: 1440
         width: 187
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -2002,7 +2002,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_86
+      name: HUDExit_Hover
       rect:
         serializedVersion: 2
         x: 2350
@@ -2011,7 +2011,7 @@ TextureImporter:
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -2024,7 +2024,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_87
+      name: HUDExit_Click
       rect:
         serializedVersion: 2
         x: 2555
@@ -2033,7 +2033,7 @@ TextureImporter:
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -2046,7 +2046,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_88
+      name: HUDExit_Locked
       rect:
         serializedVersion: 2
         x: 2758
@@ -2055,7 +2055,7 @@ TextureImporter:
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -4376,10 +4376,6 @@ TextureImporter:
       FreeGUI-Button_82: 174574355
       FreeGUI-Button_83: 609876737
       FreeGUI-Button_84: 1985785954
-      FreeGUI-Button_85: 1880062099
-      FreeGUI-Button_86: 1590168953
-      FreeGUI-Button_87: -1236979522
-      FreeGUI-Button_88: 1852933669
       FreeGUI-Button_89: 878470004
       FreeGUI-Button_90: -810356225
       FreeGUI-Button_91: -1827234119
@@ -4391,6 +4387,10 @@ TextureImporter:
       FreeGUI-Button_97: 981168047
       FreeGUI-Button_98: -1522547355
       FreeGUI-Button_99: 2121541775
+      HUDExit_Click: -1236979522
+      HUDExit_Hover: 1590168953
+      HUDExit_Locked: 1852933669
+      HUDExit_Normal: 1880062099
       HUDPause_Click: 1696645113
       HUDPause_Hover: 1174311037
       HUDPause_Locked: -1112501377

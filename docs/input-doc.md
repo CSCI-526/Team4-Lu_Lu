@@ -75,7 +75,7 @@ Four intents, the same in every screen. Each has one Preferred key and fixed Sup
 - In-Run Pause Button: Keyboard shows the Esc key icon and "to Pause" left of it; Touch shows the button alone
 - Pause Screen: Keyboard shows the Esc and R key icons beside the Resume and Restart buttons; Touch shows the buttons alone
 - Button Colours: blue is normal, green while hovered or keyboard-selected, red while pressed, grey when locked (the endless button before it unlocks)
-- Button Shapes: text buttons use the wide set `Button_*`; the in-run pause button and the pause screen's Resume and Restart are square icon buttons (`HUDPause_*`, `HUDResume_*`, `HUDRestart_*`); all cut from `Sprites/InputIcons/FreeGUI-Button.png`
+- Button Shapes: text buttons use the wide set `Button_*`; the in-run pause button and the pause screen's Resume, Restart and Exit and the lose screen's Restart and Exit are square icon buttons (`HUDPause_*`, `HUDResume_*`, `HUDRestart_*`, `HUDExit_*`); all cut from `Sprites/InputIcons/FreeGUI-Button.png`
 
 ## Control Style Switching
 
