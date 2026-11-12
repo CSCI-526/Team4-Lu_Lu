@@ -62,6 +62,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive` (true in every build); never hard-code a dev key; hints and dev-only UI (e.g. `HackShortcutPanel`, `LoseScreenDownloadWidget`) hide themselves unless `HackShortcutConfig.AreHintsShown` (development build or Editor)
 - Analytics events: a new run event is an `AnalyticsMetric` entry, a row in `AnalyticsMetrics`, and one `RecordEvent` call from a subscription in `AnalyticsManager`; never a new list in `RunData` or a hand-written section in the writer, see [Analytics](docs/analytics-doc.md#adding-a-metric)
 - Camera: gameplay cameras track `CameraAnchor`, never the monkey body, so strafing never spins the view; every camera value lives in `CameraConfig` and an event shot (coconut, cobra alert, leap) is a `ShotKind` asked of `CameraRigManager`, never a camera enabled by hand; a camera script only polls a shared input action, never enables or disables it, see [Technical Design Document](docs/monkobra-tdd.md#camera)
+- Hints: a hint shows an animated icon (`HintIconSlot`) and teaches the Preferred input of the control style in use only, never a Support key or key text; an icon Animator uses Unscaled Time, so it plays while time is frozen; menu buttons are Sprite Swap with the blue, green, red, grey sets, see [Input](docs/input-doc.md#hints-and-buttons)
 
 ## Testing Instructions
 
