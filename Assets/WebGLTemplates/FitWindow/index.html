@@ -76,7 +76,14 @@
         canvas.style.width = Math.floor(w) + "px";
         canvas.style.height = Math.floor(h) + "px";
       }
-      window.addEventListener("resize", fitCanvas);
+      // iOS reports stale window sizes right after a rotation, so fit again once it settles
+      function fitCanvasSettled() {
+        fitCanvas();
+        setTimeout(fitCanvas, 150);
+        setTimeout(fitCanvas, 500);
+      }
+      window.addEventListener("resize", fitCanvasSettled);
+      window.addEventListener("orientationchange", fitCanvasSettled);
       fitCanvas();
 
       function renderPixelRatio() {
