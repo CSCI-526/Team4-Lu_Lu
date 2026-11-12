@@ -22,6 +22,8 @@ public class ScoreManager: MonoBehaviour {
     public event Action BananaCollected;
     // raised once per coconut pickup that scored
     public event Action CoconutCollected;
+    // raised once per scored pickup with the points that pickup just added
+    public event Action<PickupKind, long> RewardAdded;
 
     //必须满足：组件启用、已经开局、尚未结束、没有暂停，才允许计分
     public bool CanScore => isActiveAndEnabled && hasStarted && !isRunEnded && Time.timeScale > 0f && (GameController.I == null || GameController.I.IsRunLive);
@@ -41,14 +43,17 @@ public class ScoreManager: MonoBehaviour {
             CoconutRewardScore += coconutPoints;
             CoconutCollectedCount++;
             NotifyIfChanged(oldScore);
+            RewardAdded?.Invoke(PickupKind.Coconut, coconutPoints);
             CoconutCollected?.Invoke();
             return true;
         }
 
-        RewardScore += Math.Min((long)playerBalanceConfig.ScoreRewardPoints, long.MaxValue - TotalScore);
+        long bananaPoints = Math.Min((long)playerBalanceConfig.ScoreRewardPoints, long.MaxValue - TotalScore);
+        RewardScore += bananaPoints;
         // every other reward is a banana pickup
         BananaCollectedCount++;
         NotifyIfChanged(oldScore);
+        RewardAdded?.Invoke(PickupKind.Banana, bananaPoints);
         BananaCollected?.Invoke();
         return true;
     }
