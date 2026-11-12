@@ -1,3 +1,4 @@
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ public class LoseScreen: MonoBehaviour {
     private TMP_Text finalHeightText;
 
     [SerializeField]
-    [Tooltip("label for the final score")]
+    [Tooltip("final score number only, in the badaboom font; its label is a separate text")]
     private TMP_Text finalScoreText;
 
     [SerializeField]
@@ -37,10 +38,6 @@ public class LoseScreen: MonoBehaviour {
     [SerializeField]
     [Tooltip("text before the final height number")]
     private string heightPrefix = "Final Height: ";
-
-    [SerializeField]
-    [Tooltip("text before the final score number")]
-    private string scorePrefix = "Final Score: ";
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -124,7 +121,8 @@ public class LoseScreen: MonoBehaviour {
         }
 
         long score = ScoreManager.I.TotalScore;
-        finalScoreText.text = scorePrefix + score.ToString("N0");
+        finalScoreText.text =
+            score.ToString("N0", CultureInfo.InvariantCulture);
 
         if (Debug.isDebugBuild) {
             Debug.Log($"LoseScreen:\tfinal score {score}");
