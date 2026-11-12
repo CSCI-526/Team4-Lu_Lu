@@ -110,6 +110,14 @@ public class GameController: MonoBehaviour {
     }
 
     /// <summary>
+    /// pauses the run on a call from the web page, eg the rotate overlay
+    /// of the WebGL template shown in portrait; named by `SendMessage`
+    /// </summary>
+    public void PauseFromBrowser() {
+        SetPaused(true);
+    }
+
+    /// <summary>
     /// Ends a live run as a win, eg the Cobra King defeated: the score
     /// settles, time freezes and the restart key plays again.
     /// </summary>
