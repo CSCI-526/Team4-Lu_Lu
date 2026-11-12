@@ -295,7 +295,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -317,7 +317,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -339,7 +339,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -361,7 +361,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -383,7 +383,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 60, y: 50, z: 56, w: 35}
       customData: 
       outline: []
       physicsShape: []
@@ -405,7 +405,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 60, y: 50, z: 56, w: 35}
       customData: 
       outline: []
       physicsShape: []
@@ -427,7 +427,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 60, y: 50, z: 56, w: 35}
       customData: 
       outline: []
       physicsShape: []
@@ -449,7 +449,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 60, y: 50, z: 56, w: 35}
       customData: 
       outline: []
       physicsShape: []
@@ -1109,7 +1109,7 @@ TextureImporter:
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -1131,7 +1131,7 @@ TextureImporter:
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -1153,7 +1153,7 @@ TextureImporter:
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -1175,7 +1175,7 @@ TextureImporter:
         height: 195
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -3221,7 +3221,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -3243,7 +3243,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -3265,7 +3265,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
@@ -3287,7 +3287,7 @@ TextureImporter:
         height: 194
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 30, y: 40, z: 30, w: 30}
       customData: 
       outline: []
       physicsShape: []
