@@ -24,4 +24,4 @@ Third-party assets used in Monkobra.
 
 | Asset | Source | Author | License |
 | --- | --- | --- | --- |
-| `Assets/_Monkobra/Fonts/` (`FontdinerdotcomHuggable.ttf` and its TextMeshPro Font Asset `FontdinerdotcomHuggable SDF.asset`) | [Huggable](https://www.1001freefonts.com/huggable.font) | [Font Diner](https://www.fontdiner.com) | Free for Personal Use |
+| `Assets/_Monkobra/Fonts/badaboom/` (`BADABB__.TTF`, BadaBoom BB, comic cartoon, and its TextMeshPro Font Asset `BADABB__ SDF.asset`, used for the score numbers) | [Badaboom](https://www.1001freefonts.com/badaboom.font) | [Blambot Fonts](https://www.blambot.com) | Free for Personal Use ([commercial license](http://www.ultimatefontdownload.com/)) |
