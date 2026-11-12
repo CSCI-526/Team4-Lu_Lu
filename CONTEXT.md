@@ -142,7 +142,8 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | --- | --- | --- |
 | `GameController/GameController`, `GameState` | singleton, owns the `GameState` machine: Tutorial, StartingZone, Playing, Lost, Won, and the scene's `Mode` (`RunMode`, set by the `runMode` field); `LoseGame()` takes no cause, analytics infers it | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
 | `GameController/StartingZoneExitRelay` | on a trigger collider GO: the monkey entering calls `EndStartingZone()` | [TDD](docs/monkobra-tdd.md#run-lifecycle) |
-| `Player/PlayerBalanceConfig` | ScriptableObject (`Settings/Player/PlayerBalanceConfig.asset`): the player's run balance, ie stamina, starting zone, branch hit, score, coconut | [Balance Design](docs/balance-doc.md) |
+| `Player/PlayerBalanceConfig` | ScriptableObject (`Settings/Player/PlayerBalanceConfig.asset`): the player's run balance, ie stamina, starting zone, branch hit, coconut | [Balance Design](docs/balance-doc.md) |
+| `Scoring/ScoreConfig` | ScriptableObject (`Settings/Scoring/ScoreConfig.asset`): every score value, ie points per meter and points per reward kind; read by `ScoreManager` | [Balance Design](docs/balance-doc.md) |
 | `Environment/WorldBalanceConfig` | ScriptableObject (`Settings/Environment/WorldBalanceConfig.asset`): world balance, ie the pre & post boss ramp curves, the 4 branch kinds (attempts & chance curve each), rough bark, spider web, boss zone & fight | [Balance Design](docs/balance-doc.md) |
 | `MobGreatCobra/CobraBalanceConfig` | ScriptableObject (`Settings/MobGreatCobra/CobraBalanceConfig.asset`): falling cobra & great cobra balance | [Balance Design](docs/balance-doc.md) |
 | `Player/MonkeyController` | kinematic body: orbit, climb, stun, `IsHeld`, a height ceiling for the boss fight, `SyncOrbitAngle` to land a pulled body on the ring where it is | [TDD](docs/monkobra-tdd.md#monkey-movement) |

@@ -144,6 +144,7 @@ public static class MockAnalyticsGenerator {
     private const float HIT_STUN_S = 0.75f;
     private const float UNITS_PER_METER = 0.1f;
     private const int POINTS_PER_METER = 1;
+    // the point values below mirror Settings/Scoring/ScoreConfig.asset
     private const int REWARD_POINTS = 100;
     private const int COCONUT_POINTS = 200;
     private const int PINEAPPLE_POINTS = 50;

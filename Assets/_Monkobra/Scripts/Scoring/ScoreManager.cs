@@ -39,8 +39,7 @@ public class ScoreManager: MonoBehaviour {
 
         long oldScore = TotalScore;
         if (kind == PickupKind.Coconut) {
-            // a coconut is worth a multiple of the banana points
-            long coconutPoints = Math.Min((long)playerBalanceConfig.CoconutRewardPoints, long.MaxValue - TotalScore);
+            long coconutPoints = Math.Min((long)scoreConfig.PointsFor(RewardKind.Coconut), long.MaxValue - TotalScore);
             RewardScore += coconutPoints;
             rewardScoreByKind[(int)RewardKind.Coconut] += coconutPoints;
             CoconutCollectedCount++;
@@ -50,7 +49,7 @@ public class ScoreManager: MonoBehaviour {
             return true;
         }
 
-        long bananaPoints = Math.Min((long)playerBalanceConfig.ScoreRewardPoints, long.MaxValue - TotalScore);
+        long bananaPoints = Math.Min((long)scoreConfig.PointsFor(RewardKind.Banana), long.MaxValue - TotalScore);
         RewardScore += bananaPoints;
         rewardScoreByKind[(int)RewardKind.Banana] += bananaPoints;
         // every other reward is a banana pickup
@@ -61,8 +60,9 @@ public class ScoreManager: MonoBehaviour {
         return true;
     }
 
-    // awards points for a good deed that is not a fruit pickup, once per call
-    public bool AddReward(RewardKind kind, int points) {
+    // awards the config's points for a good deed that is not a fruit pickup
+    public bool AddReward(RewardKind kind) {
+        int points = scoreConfig.PointsFor(kind);
         if (!CanScore || points <= 0) {
             return false;
         }
@@ -86,8 +86,8 @@ public class ScoreManager: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("player balance tuning; scoring rates & reward points")]
-    private PlayerBalanceConfig playerBalanceConfig;
+    [Tooltip("score values: points per meter & points per reward")]
+    private ScoreConfig scoreConfig;
 
     [SerializeField]
     [Tooltip("monkey; height source")]
@@ -96,9 +96,9 @@ public class ScoreManager: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (playerBalanceConfig == null) {
+        if (scoreConfig == null) {
             Debug.LogError(
-                "ScoreManager:\tmust assign Inspector Field: playerBalanceConfig",
+                "ScoreManager:\tmust assign Inspector Field: scoreConfig",
                 this);
         }
         if (player == null) {
@@ -110,7 +110,7 @@ public class ScoreManager: MonoBehaviour {
             Destroy(this);
             return;
         }
-        if (playerBalanceConfig == null || player == null) {
+        if (scoreConfig == null || player == null) {
             enabled = false;
             return;
         }
@@ -119,8 +119,8 @@ public class ScoreManager: MonoBehaviour {
 
     //读取计分设置，记录出生高度，把分数和最高爬升距离清零
     private void Start() {
-        pointsPerMeter = playerBalanceConfig.PointsPerMeter;
-        unitsPerMeter = playerBalanceConfig.UnitsPerMeter;
+        pointsPerMeter = scoreConfig.PointsPerMeter;
+        unitsPerMeter = scoreConfig.UnitsPerMeter;
         highestClimbedUnits = 0d;
         DistanceScore = 0;
         RewardScore = 0;
@@ -198,27 +198,22 @@ public class ScoreManager: MonoBehaviour {
     private void OnPineappleLeapBegun() {
         if (hasStarted && !isRunEnded) {
             PineappleCollectedCount++;
-            AddReward(
-                RewardKind.Pineapple, playerBalanceConfig.PineappleRewardPoints);
+            AddReward(RewardKind.Pineapple);
         }
     }
 
     // a coconut froze the great cobra
     private void OnCobraFrozen(float _) {
-        AddReward(
-            RewardKind.CobraFreeze, playerBalanceConfig.CobraFreezeRewardPoints);
+        AddReward(RewardKind.CobraFreeze);
     }
 
     // the marker system already raises this once per new, higher marker
     private void OnMarkerReached(int _) {
-        AddReward(
-            RewardKind.HeightMarker,
-            playerBalanceConfig.HeightMarkerRewardPoints);
+        AddReward(RewardKind.HeightMarker);
     }
 
     private void OnWebEscaped() {
-        AddReward(
-            RewardKind.WebEscape, playerBalanceConfig.WebEscapeRewardPoints);
+        AddReward(RewardKind.WebEscape);
     }
 
     private void SampleHeight() {

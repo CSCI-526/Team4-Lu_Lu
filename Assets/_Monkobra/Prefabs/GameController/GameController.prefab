@@ -81,7 +81,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01ef831c91714f599e4f2fe3aa180801, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
-  playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  scoreConfig: {fileID: 11400000, guid: b4a81d3f6e2c4750981ae7c0d5f3926b, type: 2}
   player: {fileID: 0}
 --- !u!114 &1544209386470739513
 MonoBehaviour:
