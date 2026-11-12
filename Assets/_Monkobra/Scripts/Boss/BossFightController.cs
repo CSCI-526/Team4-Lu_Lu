@@ -61,6 +61,10 @@ public class BossFightController: MonoBehaviour {
     /// </summary>
     public event System.Action FightStarted;
 
+    /// <summary>raised when the king is beaten, its reward taken and the
+    /// climb goes on</summary>
+    public event System.Action FightEnded;
+
     /// <summary>raised when the gold armor takes a great cobra catch</summary>
     public event System.Action ArmorAbsorbed;
 
@@ -2820,6 +2824,7 @@ public class BossFightController: MonoBehaviour {
         hud.HideRewardPanel();
         Time.timeScale = 1f;
         phase = Phase.Done;
+        FightEnded?.Invoke();
 
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
         // a head start: the cobra chases again from far down the trunk,
