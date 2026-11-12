@@ -107,10 +107,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreBonusItem
   plusText: {fileID: 4420000000000000014}
   valueText: {fileID: 4420000000000000024}
-  fadeInSeconds: 0.12
-  holdSeconds: 0.5
-  fadeOutSeconds: 0.35
-  riseDistance: 60
+  bangSeconds: 0.25
+  bangStartScale: 0.3
+  bangPeakScale: 1.5
+  holdSeconds: 0.45
+  exitSeconds: 0.4
+  exitRiseDistance: 70
+  exitEndScale: 0.85
   colors:
   - kind: 0
     color: {r: 1, g: 0.9, b: 0.2, a: 1}

@@ -7,6 +7,7 @@ using UnityEngine;
 // both texts take the colour of the reward kind; fonts come from the prefab
 // the widget owning the pool calls Begin, then Tick every frame until
 // IsFinished, then takes the item back
+// life: a bang (pops over-size, settles), a hold, then it floats up and fades
 [RequireComponent(typeof(CanvasGroup))]
 public class ScoreBonusItem: MonoBehaviour {
     // Public Members  #########################################################
@@ -14,7 +15,7 @@ public class ScoreBonusItem: MonoBehaviour {
     public bool IsFinished => age >= TotalSeconds;
 
     // how far the popup has risen from its start, pushes included; UI units
-    public float Rise => RiseAt();
+    public float Rise => ExitRise() + push;
 
     // Public Methods  #########################################################
     // starts a popup at start, writes the points after the plus sign and
@@ -60,21 +61,42 @@ public class ScoreBonusItem: MonoBehaviour {
     [Tooltip("the number text")]
     private TMP_Text valueText;
 
+    [Header("Bang")]
     [SerializeField]
-    [Tooltip("seconds to fade in")]
-    private float fadeInSeconds = 0.12f;
+    [Min(0.01f)]
+    [Tooltip("seconds the popup takes to pop and settle")]
+    private float bangSeconds = 0.25f;
 
     [SerializeField]
-    [Tooltip("seconds fully visible")]
-    private float holdSeconds = 0.5f;
+    [Min(0f)]
+    [Tooltip("scale the popup starts the bang at; 1 = full size")]
+    private float bangStartScale = 0.3f;
 
     [SerializeField]
-    [Tooltip("seconds to fade out")]
-    private float fadeOutSeconds = 0.35f;
+    [Min(1f)]
+    [Tooltip("scale the bang overshoots to before settling at 1")]
+    private float bangPeakScale = 1.5f;
+
+    [Header("Hold")]
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("seconds the popup stays still at full size")]
+    private float holdSeconds = 0.45f;
+
+    [Header("Exit")]
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("seconds the popup floats up and fades out")]
+    private float exitSeconds = 0.4f;
 
     [SerializeField]
-    [Tooltip("UI units the popup rises over its whole life")]
-    private float riseDistance = 60f;
+    [Tooltip("UI units the popup rises while it exits")]
+    private float exitRiseDistance = 70f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("scale the popup shrinks to by the end of the exit")]
+    private float exitEndScale = 0.85f;
 
     [SerializeField]
     [Tooltip("colour per reward kind; a kind with no entry shows white")]
@@ -104,8 +126,12 @@ public class ScoreBonusItem: MonoBehaviour {
     // extra rise from being pushed up by newer popups
     private float push;
 
-    private float TotalSeconds =>
-        fadeInSeconds + holdSeconds + fadeOutSeconds;
+    // the bang takes this share of its time to reach the peak
+    private const float BANG_PEAK_SHARE = 0.6f;
+    // alpha is full this share of the way through the bang
+    private const float BANG_ALPHA_SHARE = 0.25f;
+
+    private float TotalSeconds => bangSeconds + holdSeconds + exitSeconds;
 
     // private methods  ########################################################
     private void EnsureRefs() {
@@ -117,25 +143,46 @@ public class ScoreBonusItem: MonoBehaviour {
         }
     }
 
-    private float RiseAt() {
-        float u = Mathf.Clamp01(age / Mathf.Max(TotalSeconds, 0.0001f));
-        // ease out: fast start, settles near the top
-        float eased = 1f - (1f - u) * (1f - u);
-        return eased * riseDistance + push;
+    // 0 before the exit, then 0 to 1 over exitSeconds
+    private float ExitProgress() {
+        float exitAge = age - bangSeconds - holdSeconds;
+        return Mathf.Clamp01(exitAge / exitSeconds);
+    }
+
+    private float ExitRise() {
+        return Mathf.SmoothStep(0f, 1f, ExitProgress()) * exitRiseDistance;
+    }
+
+    // pops from the start scale to the peak, then settles at 1
+    private float BangScale() {
+        float u = Mathf.Clamp01(age / bangSeconds);
+        if (u < BANG_PEAK_SHARE) {
+            float t = u / BANG_PEAK_SHARE;
+            float eased = 1f - (1f - t) * (1f - t);
+            return Mathf.Lerp(bangStartScale, bangPeakScale, eased);
+        }
+        float settle = (u - BANG_PEAK_SHARE) / (1f - BANG_PEAK_SHARE);
+        return Mathf.Lerp(
+            bangPeakScale, 1f, Mathf.SmoothStep(0f, 1f, settle));
     }
 
     private void Apply() {
-        rect.anchoredPosition = startPosition + Vector2.up * RiseAt();
+        rect.anchoredPosition = startPosition + Vector2.up * Rise;
 
+        float scale;
         float alpha;
-        if (age < fadeInSeconds) {
-            alpha = age / Mathf.Max(fadeInSeconds, 0.0001f);
-        } else if (age < fadeInSeconds + holdSeconds) {
+        if (age < bangSeconds) {
+            scale = BangScale();
+            alpha = Mathf.Clamp01(age / (bangSeconds * BANG_ALPHA_SHARE));
+        } else if (age < bangSeconds + holdSeconds) {
+            scale = 1f;
             alpha = 1f;
         } else {
-            float fadeOutAge = age - fadeInSeconds - holdSeconds;
-            alpha = 1f - fadeOutAge / Mathf.Max(fadeOutSeconds, 0.0001f);
+            float exit = ExitProgress();
+            scale = Mathf.Lerp(1f, exitEndScale, exit);
+            alpha = 1f - exit;
         }
+        rect.localScale = new Vector3(scale, scale, 1f);
         group.alpha = Mathf.Clamp01(alpha);
     }
 
