@@ -60,6 +60,11 @@ public class HintIconSlot: MonoBehaviour {
     [Tooltip("icons shrink to this height, never grow; canvas units")]
     private float fitHeight = 64f;
 
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("enlarges the fitted icon, 1 keeps it as fitted")]
+    private float iconScale = 1f;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         if (keyboardPrefab == null && touchPrefab == null) {
@@ -101,10 +106,11 @@ public class HintIconSlot: MonoBehaviour {
 
         GameObject icon = Instantiate(prefab, holderRect, false);
         var iconRect = icon.transform as RectTransform;
+        float fit = 1f;
         if (iconRect != null && iconRect.sizeDelta.y > fitHeight) {
-            holderRect.localScale =
-                Vector3.one * (fitHeight / iconRect.sizeDelta.y);
+            fit = fitHeight / iconRect.sizeDelta.y;
         }
+        holderRect.localScale = Vector3.one * fit * iconScale;
         return holder;
     }
 
