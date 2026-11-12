@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// The on-screen pause button, for touch or a mouse: a press pauses the run
-/// like Esc or P. Shown only while the run is live and not paused, so it
+/// like the pause key. Shown only while the run is live and not paused, so it
 /// never covers the tutorial, the pause screen or the lose screen; resuming
 /// is the pause screen's own button.
 /// <para>

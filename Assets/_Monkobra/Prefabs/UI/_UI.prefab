@@ -491,10 +491,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1733575319408275313, guid: cc9c83435fe42ea438d53453bcdd4c58, type: 3}
-      propertyPath: m_fontSize
-      value: 37.5
-      objectReference: {fileID: 0}
     - target: {fileID: 5287525479042559187, guid: cc9c83435fe42ea438d53453bcdd4c58, type: 3}
       propertyPath: m_Name
       value: InGameHUD
