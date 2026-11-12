@@ -1,10 +1,10 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
-/// Runtime keycap and instruction shared by the fruit tutorial and boss HUD.
-/// Follows a world point on a screen-space Canvas, without a prefab or sprite.
+/// Runtime animated input icon and instruction of the boss HUD. Follows a
+/// world point on a screen-space Canvas; the icon is a <see cref="HintIconSlot"/>
+/// that shows the keyboard or the touch prefab of the style in use.
 /// </summary>
 // Follow this frame's camera pose after CinemachineBrain (order 100).
 [DefaultExecutionOrder(200)]
@@ -13,10 +13,12 @@ public class KeyPromptWidget: MonoBehaviour {
     public static Vector2 DefaultOffset => new Vector2(0f, 80f);
 
     // Public Methods  #########################################################
-    /// <summary>Builds the same keycap used by the boss, initially hidden.
-    /// </summary>
+    /// <summary>Builds the prompt, initially hidden. The icon prefabs are the
+    /// animated hold-and-release icons of each control style.</summary>
     public static KeyPromptWidget Create(
         RectTransform parent,
+        GameObject keyboardIcon,
+        GameObject touchIcon,
         string objectName = "Prompt"
     ) {
         if (parent == null) {
@@ -26,15 +28,14 @@ public class KeyPromptWidget: MonoBehaviour {
         RectTransform rect = CreateRect(objectName, parent);
         KeyPromptWidget prompt =
             rect.gameObject.AddComponent<KeyPromptWidget>();
-        prompt.Build(rect, parent);
+        prompt.Build(rect, parent, keyboardIcon, touchIcon);
         rect.gameObject.SetActive(false);
         return prompt;
     }
 
-    /// <summary>Changes the key label and instruction without rebuilding.
+    /// <summary>Changes the keyboard instruction without rebuilding.
     /// </summary>
-    public void SetText(string key, string instruction) {
-        keyText = key;
+    public void SetInstruction(string instruction) {
         howText = instruction;
         ApplyStyleText(ControlStyleManager.Current);
     }
@@ -79,19 +80,24 @@ public class KeyPromptWidget: MonoBehaviour {
     private RectTransform parentRect;
     private Canvas canvas;
     private CanvasGroup visibility;
-    private TextMeshProUGUI keyLabel;
     private TextMeshProUGUI howLabel;
     private Vector3 promptWorldPosition;
     private Vector2 promptOffset;
 
-    // the wording per control style; SetText changes the keyboard one
-    private string keyText = "space";
+    // the wording per control style; SetInstruction changes the keyboard one
     private string howText = "hold, then release";
-    private const string TOUCH_KEY_TEXT = "anywhere";
     private const string TOUCH_HOW_TEXT = "touch and hold, then release";
 
+    // the icon is the key, so the text names the gesture only
+    private const float ICON_SIZE = 64f;
+
     // private methods  ########################################################
-    private void Build(RectTransform rect, RectTransform parent) {
+    private void Build(
+        RectTransform rect,
+        RectTransform parent,
+        GameObject keyboardIcon,
+        GameObject touchIcon
+    ) {
         promptRect = rect;
         parentRect = parent;
         canvas = parent.GetComponentInParent<Canvas>();
@@ -101,22 +107,16 @@ public class KeyPromptWidget: MonoBehaviour {
         visibility = gameObject.AddComponent<CanvasGroup>();
         visibility.blocksRaycasts = false;
         visibility.interactable = false;
-        promptRect.sizeDelta = new Vector2(220f, 90f);
+        promptRect.sizeDelta = new Vector2(260f, ICON_SIZE + 46f);
 
-        RectTransform keycap = CreateRect("Keycap", promptRect);
-        keycap.anchorMin = keycap.anchorMax = new Vector2(0.5f, 1f);
-        keycap.pivot = new Vector2(0.5f, 1f);
-        keycap.sizeDelta = new Vector2(150f, 44f);
-        AddImage(keycap, Color.white);
-
-        RectTransform keyFace = CreateRect("Face", keycap);
-        Stretch(keyFace);
-        keyFace.offsetMin = new Vector2(3f, 3f);
-        keyFace.offsetMax = new Vector2(-3f, -3f);
-        AddImage(keyFace, new Color(0.15f, 0.15f, 0.15f, 0.9f));
-
-        keyLabel = CreateLabel("Key", keyFace, keyText, 24f);
-        Stretch(keyLabel.rectTransform);
+        RectTransform icon = HintIconSlot.Create(
+            promptRect, keyboardIcon, touchIcon, ICON_SIZE
+        );
+        icon.anchorMin = icon.anchorMax = new Vector2(0.5f, 1f);
+        icon.pivot = new Vector2(0.5f, 1f);
+        icon.sizeDelta = new Vector2(ICON_SIZE, ICON_SIZE);
+        // the holders center on the slot, which sits ICON_SIZE/2 below the top
+        icon.anchoredPosition = Vector2.zero;
         howLabel = CreateLabel(
             "How", promptRect, howText, 22f
         );
@@ -127,13 +127,12 @@ public class KeyPromptWidget: MonoBehaviour {
         ApplyStyleText(ControlStyleManager.Current);
     }
 
-    // the prompt names the keys of the control style in use
+    // the instruction names the gesture of the control style in use
     private void ApplyStyleText(ControlStyle style) {
-        if (keyLabel == null || howLabel == null) {
+        if (howLabel == null) {
             return;
         }
         bool isTouch = style == ControlStyle.Touch;
-        keyLabel.text = isTouch ? TOUCH_KEY_TEXT : keyText;
         howLabel.text = isTouch ? TOUCH_HOW_TEXT : howText;
     }
 
@@ -172,19 +171,6 @@ public class KeyPromptWidget: MonoBehaviour {
         var rect = (RectTransform)go.transform;
         rect.SetParent(parent, false);
         return rect;
-    }
-
-    private static void Stretch(RectTransform rect) {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-    }
-
-    private static void AddImage(RectTransform rect, Color color) {
-        Image image = rect.gameObject.AddComponent<Image>();
-        image.color = color;
-        image.raycastTarget = false;
     }
 
     private static TextMeshProUGUI CreateLabel(

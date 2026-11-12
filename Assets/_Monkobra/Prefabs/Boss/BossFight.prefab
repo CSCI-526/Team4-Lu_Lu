@@ -84,6 +84,8 @@ MonoBehaviour:
   speechShowS: 2.2
   speechOffset: {x: 0, y: 90}
   promptOffset: {x: 0, y: 80}
+  promptKeyboardIcon: {fileID: 730230748627612476, guid: 4a44b1947742f464b9cc13c98a80ee48, type: 3}
+  promptTouchIcon: {fileID: 864652495869705088, guid: 32d1c75efbad1cf45b83d1deefbc56f3, type: 3}
   healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
   damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}

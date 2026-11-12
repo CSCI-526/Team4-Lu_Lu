@@ -42,7 +42,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
       propertyPath: message
-      value: "Trapped in a web! Press SPACE rapidly to escape!"
+      value: "Trapped in a web! Press rapidly to escape!"
       objectReference: {fileID: 0}
     - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
       propertyPath: touchMessage
@@ -88,6 +88,14 @@ PrefabInstance:
       propertyPath: m_fontColor32.rgba
       value: 4294967295
       objectReference: {fileID: 0}
+    - target: {fileID: 7301000000000094, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
+      propertyPath: keyboardPrefab
+      value: 
+      objectReference: {fileID: 730230748627612476, guid: 89d03c1086b6e8c42a809e715cb7987e, type: 3}
+    - target: {fileID: 7301000000000094, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
+      propertyPath: touchPrefab
+      value: 
+      objectReference: {fileID: 864652495869705088, guid: 124c681a5b0645e4abc209d9ff3808f6, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
