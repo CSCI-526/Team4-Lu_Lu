@@ -25,3 +25,4 @@ Third-party assets used in Monkobra.
 | Asset | Source | Author | License |
 | --- | --- | --- | --- |
 | `Assets/_Monkobra/Fonts/badaboom/` (`BADABB__.TTF`, BadaBoom BB, comic cartoon, and its TextMeshPro Font Asset `BADABB__ SDF.asset`, used for the score numbers) | [Badaboom](https://www.1001freefonts.com/badaboom.font) | [Blambot Fonts](https://www.blambot.com) | Free for Personal Use ([commercial license](http://www.ultimatefontdownload.com/)) |
+| `Assets/_Monkobra/Fonts/life-is-goofy/` (`Life is goofy.ttf`, Life Is Goofy, comic cartoon and handwriting, and its TextMeshPro Font Asset `Life is goofy SDF.asset`) | [Life Is Goofy](https://www.1001freefonts.com/life-is-goofy.font) | Louis Fineberg | Free for Personal Use |
