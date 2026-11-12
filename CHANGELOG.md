@@ -34,6 +34,7 @@ todo vertical version
 - animated hint icons, one per control style (`HintIconSlot`), in the tutorial, popups, coconut hint & boss prompt; the touch tutorial shows a blue action area over the touch zone
 - menu buttons from the FreeGUI sheet by pzUH (CC0), credited in `CREDITS.md`: blue, green on hover or key selection, red on press, grey when locked
 - pause screen: square Resume & Restart buttons, with the Esc & R key icons in Keyboard style
+- pause & lose screens: the "W / S to select, Space to confirm" text is the level select's `LevelSelectHint_Keyboard` / `_Touch` icon hints, switched by control style
 - every key hint (tutorial, pause, lose & level select screens, coconut how-to, popups, keycaps, boss buttons) follows the control style live
 - E & Enter join Space on every confirm: grab, coconut, web escape, tutorial start, menus, title & boss panels; P backs out of level select like Esc
 - `PersistentBootstrap` creates `Analytics` & `ControlStyleManager` from `Resources/` before the first scene, so any scene plays with both; scene copies stay, the duplicate warning is expected
