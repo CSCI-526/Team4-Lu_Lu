@@ -15,7 +15,6 @@ Todo yuqing game logo, team logo, loading screen
 Todo belle: replace falling cobra & great cobra
 Fixme 1st pineapple/banana should appears on top of player
 Bug endless mode need to start w/ full heath & no starting zone
-Todo upd gdd
 Fixme polishing UI
 todo vertical version
 -->
