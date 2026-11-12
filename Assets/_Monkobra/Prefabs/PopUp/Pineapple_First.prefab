@@ -92,6 +92,14 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 570857a8010fc8141a2174b2b4837eec, type: 3}
+    - target: {fileID: 7301000000000094, guid: 5a1c0de0a0b14c7e9f3d2b6a71e400f1, type: 3}
+      propertyPath: keyboardPrefab
+      value: 
+      objectReference: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
+    - target: {fileID: 7301000000000094, guid: 5a1c0de0a0b14c7e9f3d2b6a71e400f1, type: 3}
+      propertyPath: touchPrefab
+      value: 
+      objectReference: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

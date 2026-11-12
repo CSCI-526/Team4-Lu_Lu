@@ -144,8 +144,15 @@ public static class MockAnalyticsGenerator {
     private const float HIT_STUN_S = 0.75f;
     private const float UNITS_PER_METER = 0.1f;
     private const int POINTS_PER_METER = 1;
+    // the point values below mirror Settings/Scoring/ScoreConfig.asset
     private const int REWARD_POINTS = 100;
     private const int COCONUT_POINTS = 200;
+    private const int PINEAPPLE_POINTS = 50;
+    private const int COBRA_FREEZE_POINTS = 150;
+    private const int HEIGHT_MARKER_POINTS = 25;
+    private const int WEB_ESCAPE_POINTS = 75;
+    // HeightMarkerSystem.intervalU
+    private const int HEIGHT_MARKER_INTERVAL_U = 50;
     private const float COBRA_FREEZE_S = 10f;
     // MonkeyClimbConfig
     private const float EXHAUSTED_SPEED_MULTIPLIER = 0.2f;
@@ -602,6 +609,9 @@ public static class MockAnalyticsGenerator {
             // a novice mashes the escape key slower
             float escapeS = Range(rng, 1.5f, 3.5f)
                 + (1f - skill) * Range(rng, 0f, 2f);
+            // breaking free is the end of the struggle
+            plan.Get(AnalyticsMetric.WebEscape)
+                .Add(new Moment(t + escapeS, height, stamina));
             busy = Busy.Web;
             busyUntil = t + escapeS;
             webImmuneUntil = t + escapeS + 1.5f;
@@ -821,6 +831,7 @@ public static class MockAnalyticsGenerator {
         System.Random rng
     ) {
         AddPauses(plan, rng);
+        AddHeightMarkers(plan);
         RunData run = new RunData {
             Status = plan.IsLost ? RunStatus.Lost : RunStatus.Interrupted,
             Mode = plan.Mode,
@@ -865,12 +876,41 @@ public static class MockAnalyticsGenerator {
         run.HeightScore =
             (long)Mathf.Floor(plan.HighestHeight / UNITS_PER_METER)
             * POINTS_PER_METER;
-        run.CoconutRewardScore = (long)coconuts * COCONUT_POINTS;
-        run.RewardScore =
-            (long)bananas * REWARD_POINTS + run.CoconutRewardScore;
+        // every scored kind, as ScoreManager would tally it; a freeze scores
+        // only for a coconut, not for the boss armor
+        run.RewardScoreByKind[(int)RewardKind.Banana] =
+            (long)bananas * REWARD_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.Coconut] =
+            (long)coconuts * COCONUT_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.Pineapple] =
+            (long)run.CountOf(AnalyticsMetric.PineappleLeap) * PINEAPPLE_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.CobraFreeze] =
+            (long)run.CountOf(AnalyticsMetric.CoconutUsed)
+            * COBRA_FREEZE_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.HeightMarker] =
+            (long)run.CountOf(AnalyticsMetric.HeightMarker)
+            * HEIGHT_MARKER_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.WebEscape] =
+            (long)run.CountOf(AnalyticsMetric.WebEscape) * WEB_ESCAPE_POINTS;
+        foreach (long kindScore in run.RewardScoreByKind) {
+            run.RewardScore += kindScore;
+        }
         run.TotalScore = run.HeightScore + run.RewardScore;
 
         return run;
+    }
+
+    // one marker event the first time the track climbs past each marker
+    // height, like HeightMarkerSystem.MarkerReached
+    private static void AddHeightMarkers(RunPlan plan) {
+        int nextMarker = 1;
+        foreach (Moment m in plan.Track) {
+            while (m.Height >= nextMarker * HEIGHT_MARKER_INTERVAL_U) {
+                plan.Get(AnalyticsMetric.HeightMarker)
+                    .Add(new Moment(m.T, m.Height, m.Stamina));
+                nextMarker++;
+            }
+        }
     }
 
     // the odd pause of the game, about one in 4 min of play

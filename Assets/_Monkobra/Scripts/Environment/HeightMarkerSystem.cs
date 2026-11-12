@@ -47,6 +47,14 @@ using UnityEngine.Rendering;
 // the labels follow this frame's camera pose
 [DefaultExecutionOrder(200)]
 public class HeightMarkerSystem: MonoBehaviour {
+    // Public Members  #########################################################
+    /// <summary>
+    /// Raised once per marker the monkey reaches above every marker reached
+    /// before, with its climbed height; u. Falling and touching a lower one
+    /// again never raises it.
+    /// </summary>
+    public event System.Action<int> MarkerReached;
+
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
@@ -541,6 +549,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         reachedMarker = marker;
         pulseHeightU = trigger.HeightU;
         pulseEndTime = Time.time + pulseDurationS;
+        MarkerReached?.Invoke(trigger.HeightU);
     }
 
     /// <returns>0~1, how far into its pulse the marker at

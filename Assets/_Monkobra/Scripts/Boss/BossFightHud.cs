@@ -407,6 +407,14 @@ public class BossFightHud: MonoBehaviour {
     private Vector2 promptOffset = new Vector2(0f, 80f);
 
     [SerializeField]
+    [Tooltip("prompt icon prefab while a keyboard is in use (Space press)")]
+    private GameObject promptKeyboardIcon;
+
+    [SerializeField]
+    [Tooltip("prompt icon prefab while touch is in use (finger tap)")]
+    private GameObject promptTouchIcon;
+
+    [SerializeField]
     private Color healthColor = new Color(0.85f, 0.15f, 0.15f);
 
     [SerializeField]
@@ -515,8 +523,10 @@ public class BossFightHud: MonoBehaviour {
         Stretch(speechLabel.rectTransform);
         speechRect.gameObject.SetActive(false);
 
-        // Same keycap component as the fruit tutorial.
-        keyPrompt = KeyPromptWidget.Create(rootRect);
+        // animated hold-and-release icon, one per control style
+        keyPrompt = KeyPromptWidget.Create(
+            rootRect, promptKeyboardIcon, promptTouchIcon
+        );
 
         // banner, screen center
         bannerLabel = CreateLabel(

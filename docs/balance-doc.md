@@ -1,6 +1,6 @@
 # Monkobra Balance Design
 
-Why difficulty works the way it does: one height-driven ramp, a shared roll model for every hazard, and one home per number. The numbers are deliberately not here, they live in `Settings/Player/PlayerBalanceConfig.asset`, `Settings/Environment/WorldBalanceConfig.asset`, and `Settings/MobGreatCobra/CobraBalanceConfig.asset`, and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
+Why difficulty works the way it does: one height-driven ramp, a shared roll model for every hazard, and one home per number. The numbers are deliberately not here, they live in `Settings/Player/PlayerBalanceConfig.asset`, `Settings/Environment/WorldBalanceConfig.asset`, `Settings/MobGreatCobra/CobraBalanceConfig.asset`, and `Settings/Scoring/ScoreConfig.asset` (every score value), and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
 
 ## Design Goals
 
@@ -68,7 +68,7 @@ The boss fight owns a stretch of the trunk, set by 3 heights in `WorldBalanceCon
 
 ## Balance Lives In Three Assets
 
-The balance numbers have 3 homes, split by what they tune: `PlayerBalanceConfig` for the player's run (stamina, starting zone, branch hit, score, coconut), `WorldBalanceConfig` for the generated world (ramped difficulty, the 4 branch kinds, rough bark, spider web, boss zone), and `CobraBalanceConfig` for both cobras (falling cobra, great cobra).
+The balance numbers have 4 homes, split by what they tune: `ScoreConfig` for every score value (points per meter, points per reward kind), `PlayerBalanceConfig` for the player's run (stamina, starting zone, branch hit, coconut), `WorldBalanceConfig` for the generated world (ramped difficulty, the 4 branch kinds, rough bark, spider web, boss zone), and `CobraBalanceConfig` for both cobras (falling cobra, great cobra).
 
 - Why Split By Concern: one asset had grown to a dozen unrelated groups, so a designer tuning the cobras scrolled past stamina and score; each question now has one obvious home, while every number still lives in exactly one asset, so there is no second, forgotten copy of it
 - Cross-System Questions: stamina drain, banana supply, and climb speed together decide how long a run lasts, and they sit in different assets; read `PlayerBalanceConfig` and `WorldBalanceConfig` side by side when tuning a run's length

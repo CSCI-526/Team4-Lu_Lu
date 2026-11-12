@@ -68,6 +68,15 @@ Four intents, the same in every screen. Each has one Preferred key and fixed Sup
 - No virtual keyboard: its writes would read as key presses and flip the control style back
 - Zone and joystick show only in Touch while the run is playable; UI draws above, so buttons take taps first
 
+## Hints and Buttons
+
+- Icons: a hint shows an animated icon, never a key name; one icon per control style, a Space press for Keyboard and a finger tap for Touch, with hold, double-tap and rapid-tap variants where the action needs one
+- Preferred Only: a hint teaches the Preferred input of the style in use; a Support key (P, arrows, E, Enter) is never drawn or written
+- In-Run Pause Button: Keyboard shows the Esc key icon and "to Pause" left of it; Touch shows the button alone
+- Pause & Lose Screens: each option is a row of key icon, square button, text label; Keyboard shows the Esc and R key icons in the left column beside Resume and Restart, Touch hides that column and shows the button and label
+- Button Colours: blue is normal, green while hovered or keyboard-selected, red while pressed, grey when locked (the endless button before it unlocks)
+- Button Shapes: text buttons use the wide set `Button_*`; the in-run pause button and the pause screen's Resume, Restart and Exit and the lose screen's Restart and Exit are square icon buttons (`HUDPause_*`, `HUDResume_*`, `HUDRestart_*`, `HUDExit_*`); all cut from `Sprites/InputIcons/FreeGUI-Button.png`
+
 ## Control Style Switching
 
 `ControlStyleManager`, kept across scenes.
