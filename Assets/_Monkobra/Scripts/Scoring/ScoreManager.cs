@@ -23,7 +23,7 @@ public class ScoreManager: MonoBehaviour {
     // raised once per coconut pickup that scored
     public event Action CoconutCollected;
     // raised once per scored pickup with the points that pickup just added
-    public event Action<PickupKind, long> RewardAdded;
+    public event Action<RewardKind, long> RewardAdded;
 
     //必须满足：组件启用、已经开局、尚未结束、没有暂停，才允许计分
     public bool CanScore => isActiveAndEnabled && hasStarted && !isRunEnded && Time.timeScale > 0f && (GameController.I == null || GameController.I.IsRunLive);
@@ -43,7 +43,7 @@ public class ScoreManager: MonoBehaviour {
             CoconutRewardScore += coconutPoints;
             CoconutCollectedCount++;
             NotifyIfChanged(oldScore);
-            RewardAdded?.Invoke(PickupKind.Coconut, coconutPoints);
+            RewardAdded?.Invoke(RewardKind.Coconut, coconutPoints);
             CoconutCollected?.Invoke();
             return true;
         }
@@ -53,8 +53,22 @@ public class ScoreManager: MonoBehaviour {
         // every other reward is a banana pickup
         BananaCollectedCount++;
         NotifyIfChanged(oldScore);
-        RewardAdded?.Invoke(PickupKind.Banana, bananaPoints);
+        RewardAdded?.Invoke(RewardKind.Banana, bananaPoints);
         BananaCollected?.Invoke();
+        return true;
+    }
+
+    // awards points for a good deed that is not a fruit pickup, once per call
+    public bool AddReward(RewardKind kind, int points) {
+        if (!CanScore || points <= 0) {
+            return false;
+        }
+
+        long oldScore = TotalScore;
+        long added = Math.Min((long)points, long.MaxValue - TotalScore);
+        RewardScore += added;
+        NotifyIfChanged(oldScore);
+        RewardAdded?.Invoke(kind, added);
         return true;
     }
 
@@ -154,6 +168,8 @@ public class ScoreManager: MonoBehaviour {
     private void OnPineappleLeapBegun() {
         if (hasStarted && !isRunEnded) {
             PineappleCollectedCount++;
+            AddReward(
+                RewardKind.Pineapple, playerBalanceConfig.PineappleRewardPoints);
         }
     }
 

@@ -93,7 +93,7 @@ public class ScoreBonusWidget: MonoBehaviour {
     private ScoreManager scoreManager;
 
     // private methods  ########################################################
-    private void OnRewardAdded(PickupKind kind, long points) {
+    private void OnRewardAdded(RewardKind kind, long points) {
         if (points <= 0) {
             return;
         }

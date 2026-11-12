@@ -223,7 +223,7 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `PopUp/MessagePopUp` | on each popup variant prefab: text with a `{0}` slot, look, show and fade times, priority, flags; `Show` and `Hide` | [PopUps](docs/pop-up-doc.md#where-config-lives) |
 | `PopUp/PopUpWorldLink` | on `Prefabs/PopUp/_PopUpFruitBase`: line from the popup bottom center to a world target its owner sets (`FruitGrabPrompt` hands over the reach target); hidden without a target | [PopUps](docs/pop-up-doc.md#parts) |
 | `PopUp/PopUpId` | enum of the 8 popup variants, the key callers pass to `Show` | [PopUps](docs/pop-up-doc.md#add-a-popup) |
-| `Scoring/ScoreManager` | singleton, distance and reward score, each pickup scored and counted by its `PickupKind` | [TDD](docs/monkobra-tdd.md#score) |
+| `Scoring/ScoreManager` | singleton, distance and reward score, each pickup scored and counted by its `PickupKind`, other good deeds awarded by `AddReward(RewardKind, points)` | [TDD](docs/monkobra-tdd.md#score) |
 | `Scoring/ScorePickup`, `Scoring/PickupKind`, `Scoring/RewardKind` | on a fruit: hands points over once, as a banana or a coconut; `RewardKind` names every reason points are awarded (banana, coconut, pineapple, cobra freeze, height marker, web escape) for the score popup | [Grab](docs/grab-doc.md#on-a-successful-grab) |
 | `UI/StaminaBarController` | singleton slider, drains, restores, empty slows monkey | [TDD](docs/monkobra-tdd.md#stamina) |
 | `UI/StaminaBarAnimator` | punch on fruit pickup, shake on move attempt while stamina is low | [TDD](docs/monkobra-tdd.md#stamina) |

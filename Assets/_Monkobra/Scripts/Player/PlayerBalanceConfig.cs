@@ -42,6 +42,18 @@ public class PlayerBalanceConfig: ScriptableObject {
     /// <returns>points awarded per score reward pickup</returns>
     public int ScoreRewardPoints => scoreRewardPoints;
 
+    /// <returns>points awarded per pineapple grab</returns>
+    public int PineappleRewardPoints => pineappleRewardPoints;
+
+    /// <returns>points awarded when a coconut freezes the great cobra</returns>
+    public int CobraFreezeRewardPoints => cobraFreezeRewardPoints;
+
+    /// <returns>points awarded per new height marker passed</returns>
+    public int HeightMarkerRewardPoints => heightMarkerRewardPoints;
+
+    /// <returns>points awarded per spider web escaped</returns>
+    public int WebEscapeRewardPoints => webEscapeRewardPoints;
+
     /// <returns>fraction 0~1 of <see cref="MaxStamina"/> the monkey starts
     /// the level with, spent in the starting zone</returns>
     public float StartingZoneStartStaminaFraction =>
@@ -159,6 +171,27 @@ public class PlayerBalanceConfig: ScriptableObject {
     [Tooltip("points awarded per score reward pickup")]
     private int scoreRewardPoints = 100;
 
+    [Header("Other Rewards")]
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points awarded per pineapple grab")]
+    private int pineappleRewardPoints = 50;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points awarded when a coconut freezes the great cobra")]
+    private int cobraFreezeRewardPoints = 150;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points awarded per new height marker passed")]
+    private int heightMarkerRewardPoints = 25;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points awarded per spider web escaped")]
+    private int webEscapeRewardPoints = 75;
+
     [Header("Coconut")]
     [SerializeField]
     [Min(0f)]
@@ -207,6 +240,10 @@ public class PlayerBalanceConfig: ScriptableObject {
         pointsPerMeter = Mathf.Max(0, pointsPerMeter);
         unitsPerMeter = Mathf.Max(0.001f, unitsPerMeter);
         scoreRewardPoints = Mathf.Max(0, scoreRewardPoints);
+        pineappleRewardPoints = Mathf.Max(0, pineappleRewardPoints);
+        cobraFreezeRewardPoints = Mathf.Max(0, cobraFreezeRewardPoints);
+        heightMarkerRewardPoints = Mathf.Max(0, heightMarkerRewardPoints);
+        webEscapeRewardPoints = Mathf.Max(0, webEscapeRewardPoints);
         coconutScoreMultiplier = Mathf.Max(0f, coconutScoreMultiplier);
         cobraFreezeDurationS = Mathf.Max(0f, cobraFreezeDurationS);
         coconutThrowSpeedU = Mathf.Max(0.1f, coconutThrowSpeedU);

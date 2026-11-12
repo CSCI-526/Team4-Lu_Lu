@@ -25,6 +25,10 @@ MonoBehaviour:
   pointsPerMeter: 1
   unitsPerMeter: 0.1
   scoreRewardPoints: 100
+  pineappleRewardPoints: 50
+  cobraFreezeRewardPoints: 150
+  heightMarkerRewardPoints: 25
+  webEscapeRewardPoints: 75
   coconutScoreMultiplier: 2
   cobraFreezeDurationS: 10
   coconutThrowSpeedU: 30
