@@ -78,7 +78,7 @@ graph TD
 | Falling Cobra | a hazard from above that rewards watching the branches | warns, then falls, with the same penalty as a branch hit |
 | Coconut | a rare, higher-up fruit kept as a panic button, so a good grab can be cashed in when the cobra is close | scores double a banana and restores no stamina; a double-tap freezes the cobra for a while, but its coil stays fatal |
 | Spider Web | a forced stop that lets the cobra gain ground, and a clash with the grab since reaching is locked while stuck | holds the monkey until rapid presses fill an escape bar, then brief immunity from further webs |
-| Score | rewards height and risk | points per meter climbed and a bonus per banana or coconut grabbed |
+| Score | rewards height and risk | points per meter climbed and a bonus for each good deed: a banana, coconut or pineapple grab, freezing the cobra, passing a new height marker, escaping a spider web |
 
 ## Win and Lose
 

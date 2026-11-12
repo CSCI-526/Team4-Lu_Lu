@@ -128,6 +128,18 @@ public class ScoreManager: MonoBehaviour {
         if (leapController != null) {
             leapController.Begun += OnPineappleLeapBegun;
         }
+        coconutManager = FindFirstObjectByType<CoconutManager>();
+        if (coconutManager != null) {
+            coconutManager.Frozen += OnCobraFrozen;
+        }
+        markerSystem = FindFirstObjectByType<HeightMarkerSystem>();
+        if (markerSystem != null) {
+            markerSystem.MarkerReached += OnMarkerReached;
+        }
+        webStruggle = FindFirstObjectByType<SpiderWebStruggle>();
+        if (webStruggle != null) {
+            webStruggle.Escaped += OnWebEscaped;
+        }
         isRunEnded = GameController.I != null
             && GameController.I.State == GameState.Lost;
         hasStarted = true;
@@ -150,6 +162,15 @@ public class ScoreManager: MonoBehaviour {
         if (leapController != null) {
             leapController.Begun -= OnPineappleLeapBegun;
         }
+        if (coconutManager != null) {
+            coconutManager.Frozen -= OnCobraFrozen;
+        }
+        if (markerSystem != null) {
+            markerSystem.MarkerReached -= OnMarkerReached;
+        }
+        if (webStruggle != null) {
+            webStruggle.Escaped -= OnWebEscaped;
+        }
         if (I == this) {
             I = null;
         }
@@ -162,6 +183,9 @@ public class ScoreManager: MonoBehaviour {
     private double unitsPerMeter = 1d;
     private int pointsPerMeter;
     private PineappleLeapController leapController;
+    private CoconutManager coconutManager;
+    private HeightMarkerSystem markerSystem;
+    private SpiderWebStruggle webStruggle;
 
     // private methods  ########################################################
     // each pineapple grab starts 1 leap
@@ -171,6 +195,24 @@ public class ScoreManager: MonoBehaviour {
             AddReward(
                 RewardKind.Pineapple, playerBalanceConfig.PineappleRewardPoints);
         }
+    }
+
+    // a coconut froze the great cobra
+    private void OnCobraFrozen(float _) {
+        AddReward(
+            RewardKind.CobraFreeze, playerBalanceConfig.CobraFreezeRewardPoints);
+    }
+
+    // the marker system already raises this once per new, higher marker
+    private void OnMarkerReached(int _) {
+        AddReward(
+            RewardKind.HeightMarker,
+            playerBalanceConfig.HeightMarkerRewardPoints);
+    }
+
+    private void OnWebEscaped() {
+        AddReward(
+            RewardKind.WebEscape, playerBalanceConfig.WebEscapeRewardPoints);
     }
 
     private void SampleHeight() {
