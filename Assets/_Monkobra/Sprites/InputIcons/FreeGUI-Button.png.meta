@@ -69,10 +69,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -286,7 +286,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_8
+      name: HUDRestart_Normal
       rect:
         serializedVersion: 2
         x: 3090
@@ -308,7 +308,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_9
+      name: HUDRestart_Hover
       rect:
         serializedVersion: 2
         x: 3295
@@ -330,7 +330,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_10
+      name: HUDRestart_Click
       rect:
         serializedVersion: 2
         x: 3500
@@ -352,7 +352,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_11
+      name: HUDRestart_Locked
       rect:
         serializedVersion: 2
         x: 3703
@@ -374,7 +374,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_12
+      name: Button_Normal
       rect:
         serializedVersion: 2
         x: 171
@@ -396,11 +396,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_13
+      name: Button_Hover
       rect:
         serializedVersion: 2
         x: 626
-        y: 2412
+        y: 2416
         width: 431
         height: 194
       alignment: 0
@@ -418,7 +418,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_14
+      name: Button_Click
       rect:
         serializedVersion: 2
         x: 1083
@@ -440,7 +440,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_15
+      name: Button_Locked
       rect:
         serializedVersion: 2
         x: 1540
@@ -1100,7 +1100,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_45
+      name: HUDResume_Normal
       rect:
         serializedVersion: 2
         x: 194
@@ -1122,11 +1122,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_46
+      name: HUDResume_Hover
       rect:
         serializedVersion: 2
         x: 399
-        y: 1872
+        y: 1873
         width: 186
         height: 195
       alignment: 0
@@ -1144,7 +1144,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_47
+      name: HUDResume_Click
       rect:
         serializedVersion: 2
         x: 604
@@ -1166,7 +1166,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_48
+      name: HUDResume_Locked
       rect:
         serializedVersion: 2
         x: 807
@@ -1716,7 +1716,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_73
+      name: 1
       rect:
         serializedVersion: 2
         x: 3090
@@ -1738,11 +1738,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_74
+      name: 2
       rect:
         serializedVersion: 2
         x: 3295
-        y: 1654
+        y: 1656
         width: 185
         height: 195
       alignment: 0
@@ -1760,7 +1760,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_75
+      name: 3
       rect:
         serializedVersion: 2
         x: 3500
@@ -1782,7 +1782,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_76
+      name: 4
       rect:
         serializedVersion: 2
         x: 3703
@@ -3212,7 +3212,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_141
+      name: HUDPause_Normal
       rect:
         serializedVersion: 2
         x: 194
@@ -3234,7 +3234,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_142
+      name: HUDPause_Hover
       rect:
         serializedVersion: 2
         x: 399
@@ -3256,7 +3256,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_143
+      name: HUDPause_Click
       rect:
         serializedVersion: 2
         x: 604
@@ -3278,7 +3278,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FreeGUI-Button_144
+      name: HUDPause_Locked
       rect:
         serializedVersion: 2
         x: 807
@@ -4179,6 +4179,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: FreeGUI-Button_12
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 2257
+        width: 348
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c66c70d056956b34b882a2c25dd511c1
+      internalID: -1038440669
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -4195,9 +4217,16 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
+      1: -467593027
+      2: -1800817033
+      3: -1467035389
+      4: 663676673
+      Button_Click: 1388627115
+      Button_Hover: 446444846
+      Button_Locked: 142357237
+      Button_Normal: -1700043899
       FreeGUI-Button_0: 1612270448
       FreeGUI-Button_1: 1569454286
-      FreeGUI-Button_10: -1130108700
       FreeGUI-Button_100: 289538004
       FreeGUI-Button_101: 452024080
       FreeGUI-Button_102: 730865109
@@ -4208,7 +4237,6 @@ TextureImporter:
       FreeGUI-Button_107: 1225759907
       FreeGUI-Button_108: -1123437069
       FreeGUI-Button_109: 1576276542
-      FreeGUI-Button_11: -485400381
       FreeGUI-Button_110: 536096628
       FreeGUI-Button_111: 706535011
       FreeGUI-Button_112: 904297017
@@ -4219,7 +4247,7 @@ TextureImporter:
       FreeGUI-Button_117: 298071823
       FreeGUI-Button_118: 998255929
       FreeGUI-Button_119: -78042677
-      FreeGUI-Button_12: -1700043899
+      FreeGUI-Button_12: -1038440669
       FreeGUI-Button_120: 47832591
       FreeGUI-Button_121: -1933453761
       FreeGUI-Button_122: 1106181603
@@ -4230,7 +4258,6 @@ TextureImporter:
       FreeGUI-Button_127: 1827085169
       FreeGUI-Button_128: -358802727
       FreeGUI-Button_129: -1690880448
-      FreeGUI-Button_13: 446444846
       FreeGUI-Button_130: -2119039305
       FreeGUI-Button_131: -1631947287
       FreeGUI-Button_132: 215369395
@@ -4241,18 +4268,12 @@ TextureImporter:
       FreeGUI-Button_137: 103105157
       FreeGUI-Button_138: 918468661
       FreeGUI-Button_139: 1894228549
-      FreeGUI-Button_14: 1388627115
       FreeGUI-Button_140: -1184603177
-      FreeGUI-Button_141: 1405380294
-      FreeGUI-Button_142: 1174311037
-      FreeGUI-Button_143: 1696645113
-      FreeGUI-Button_144: -1112501377
       FreeGUI-Button_145: -225233103
       FreeGUI-Button_146: 391694866
       FreeGUI-Button_147: 1778148083
       FreeGUI-Button_148: -1207362513
       FreeGUI-Button_149: -268284098
-      FreeGUI-Button_15: 142357237
       FreeGUI-Button_150: -1933338299
       FreeGUI-Button_151: -1582413697
       FreeGUI-Button_152: -1132297714
@@ -4320,10 +4341,6 @@ TextureImporter:
       FreeGUI-Button_42: 562216235
       FreeGUI-Button_43: -233570820
       FreeGUI-Button_44: -535242383
-      FreeGUI-Button_45: -1929299605
-      FreeGUI-Button_46: 1352794206
-      FreeGUI-Button_47: -216006924
-      FreeGUI-Button_48: 401074278
       FreeGUI-Button_49: -1023588185
       FreeGUI-Button_5: -1484850890
       FreeGUI-Button_50: -1910357434
@@ -4351,14 +4368,9 @@ TextureImporter:
       FreeGUI-Button_70: -1836475465
       FreeGUI-Button_71: 2052503537
       FreeGUI-Button_72: -1147782164
-      FreeGUI-Button_73: -467593027
-      FreeGUI-Button_74: -1800817033
-      FreeGUI-Button_75: -1467035389
-      FreeGUI-Button_76: 663676673
       FreeGUI-Button_77: -947175714
       FreeGUI-Button_78: -1016127572
       FreeGUI-Button_79: -1844968306
-      FreeGUI-Button_8: -826674485
       FreeGUI-Button_80: -1711596964
       FreeGUI-Button_81: -1560070580
       FreeGUI-Button_82: 174574355
@@ -4369,7 +4381,6 @@ TextureImporter:
       FreeGUI-Button_87: -1236979522
       FreeGUI-Button_88: 1852933669
       FreeGUI-Button_89: 878470004
-      FreeGUI-Button_9: 1340628953
       FreeGUI-Button_90: -810356225
       FreeGUI-Button_91: -1827234119
       FreeGUI-Button_92: 270590066
@@ -4380,6 +4391,18 @@ TextureImporter:
       FreeGUI-Button_97: 981168047
       FreeGUI-Button_98: -1522547355
       FreeGUI-Button_99: 2121541775
+      HUDPause_Click: 1696645113
+      HUDPause_Hover: 1174311037
+      HUDPause_Locked: -1112501377
+      HUDPause_Normal: 1405380294
+      HUDRestart_Click: -1130108700
+      HUDRestart_Hover: 1340628953
+      HUDRestart_Locked: -485400381
+      HUDRestart_Normal: -826674485
+      HUDResume_Click: -216006924
+      HUDResume_Hover: 1352794206
+      HUDResume_Locked: 401074278
+      HUDResume_Normal: -1929299605
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
