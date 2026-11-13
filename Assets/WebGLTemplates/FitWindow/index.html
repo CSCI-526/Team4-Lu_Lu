@@ -8,16 +8,24 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.webmanifest">
     <title>{{{ PRODUCT_NAME }}}</title>
+    <link rel="preload" href="TemplateData/TitleScreen/UscGamesLogo.png" as="image">
+    <link rel="preload" href="TemplateData/TitleScreen/PeelFiveLogo.png" as="image">
+    <link rel="preload" href="TemplateData/TitleScreen/MonkobraTutorial-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
     <style>
+      @font-face { font-family: "MonkobraTitle"; src: url("TemplateData/TitleScreen/MonkobraTutorial-SemiBold.ttf") format("truetype"); font-display: block; }
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
       /* touch play: the game owns every gesture, so a drag never scrolls or zooms the page, a held finger (the grab) never opens a text selection or callout, and a tap never flashes */
       html, body, #unity-canvas { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
       /* the game keeps 16:9 and takes the largest box the window allows; the rest is black */
-      #unity-canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: block; background: #231F20; outline: none; }
-      #unity-loading { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; max-width: 400px; color: #ddd; font: 14px sans-serif; text-align: center; }
-      #unity-progress-empty { margin-top: 8px; height: 10px; background: #444; border-radius: 5px; overflow: hidden; }
-      #unity-progress-full { height: 100%; width: 0%; background: #ddd; }
-      #unity-fullscreen-button { position: absolute; right: 12px; bottom: 12px; padding: 6px 10px; font: 13px sans-serif; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #888; border-radius: 4px; cursor: pointer; z-index: 2; }
+      #unity-canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: block; background: #0A1F12; outline: none; }
+      /* the loading page sits exactly over the canvas: first the team logos, then the TitleScreen picture */
+      #loader { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); overflow: hidden; background: #0A1F12; pointer-events: none; z-index: 1; transition: opacity 0.25s linear; }
+      #loader.done { opacity: 0; }
+      #loader-logos, #loader-stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; visibility: hidden; opacity: 0; }
+      #loader img { position: absolute; display: block; user-select: none; -webkit-user-drag: none; }
+      .logos-plate, .logos-divider { position: absolute; box-sizing: border-box; }
+      #loader-label { position: absolute; color: #FFF2D2; font: 30px "MonkobraTitle", sans-serif; text-align: center; white-space: nowrap; }
+      #unity-fullscreen-button { position: absolute; right: 12px; bottom: 12px; padding: 6px 10px; font: 13px sans-serif; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #888; border-radius: 4px; cursor: pointer; z-index: 2; display: none; }
       #unity-ios-hint { position: absolute; right: 12px; bottom: 12px; max-width: 60%; padding: 6px 10px; font: 13px sans-serif; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #888; border-radius: 4px; z-index: 2; display: none; }
       /* iOS cannot lock the orientation, so a phone held in portrait is covered by this message and the game is paused; the overlay swallows every touch */
       #unity-rotate-overlay { display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 10; background: #000; color: #fff; font: 18px sans-serif; text-align: center; flex-direction: column; align-items: center; justify-content: center; touch-action: none; }
@@ -29,7 +37,7 @@
   </head>
   <body>
     <canvas id="unity-canvas" tabindex="-1"></canvas>
-    <div id="unity-loading">Loading...<div id="unity-progress-empty"><div id="unity-progress-full"></div></div></div>
+    <div id="loader"><div id="loader-stage"></div><div id="loader-logos"></div></div>
     <button id="unity-fullscreen-button" title="Fullscreen">Fullscreen</button>
     <div id="unity-ios-hint">For fullscreen: Share, then Add to Home Screen (open in Safari)</div>
     <div id="unity-warning"></div>
@@ -42,19 +50,80 @@
       var ASPECT = 16 / 9;
       var MAX_RENDER_HEIGHT = 0; // 0 = no cap
 
+      // Team logo screen tuning  ##############################################
+      // USC Games and Peel Five side by side before the loading page, while
+      // the game already downloads; they fade out to the background colour
+      // (never black), a short pause, then the loading page fades in. A
+      // click or a key cuts the hold short but keeps the fades
+      var LOGOS_FADE_IN_S = 0.3;
+      var LOGOS_HOLD_S = 1.0;
+      var LOGOS_FADE_OUT_S = 0.25;       // leaving a little faster than arriving
+      var LOGOS_SKIP_FADE_OUT_S = 0.2;   // the fade out after a skip
+      var LOGOS_GAP_S = 0.15;            // bare background between the two
+      var LOADER_FADE_IN_S = 0.3;        // the loading page fades in
+      var LOGOS_ONCE_PER_SESSION = true; // a reload in the same tab skips them
+      var LOGOS_USC_PLATE = false;       // a dark plate behind USC Games, to compare
+
+      // Team logo screen layout, 1280x720 px, y down; each logo's width
+      // follows its picture
+      var LOGOS = {
+        centerY: 360, gap: 56,                       // each logo's edge to the divider
+        divider: { w: 2, h: 120, color: "#3B4C41" }, // the background plus 20% white
+        uscH: 64, peelFiveH: 54,
+        plate: { padX: 22, padY: 18, radius: 22, border: 5, shadowX: 5, shadowY: 6 },
+        peelFivePlate: { fill: "#F5F5F5", border: "#352016", shadow: "#89501F" },
+        uscPlate: { fill: "#1E3125", border: "#3B4C41", shadow: "#050F09" } // as tall as Peel Five's
+      };
+
+      // Loading page tuning  ##################################################
+      // shortest chase in seconds, so a cached (near instant) load still shows
+      // one full, short run; the snake never gets ahead of the real progress
+      var LOADER_MIN_DURATION_S = 1.3;
+      var LOADER_SMOOTHING = 8;          // how fast the snake catches up, per s
+      var LOADER_MIN_CATCH_UP = 0.8;     // ...but at least this much runway per s
+      var LOADER_HOP_PERIOD_S = 0.42;    // one monkey hop
+      var LOADER_HOP_HEIGHT = 24;        // px of the 1280x720 stage
+      var LOADER_BLINK_HEIGHT = 6;       // eyes shut below this hop height
+      var LOADER_POP_S = 0.12;           // a new body segment pops in
+      var LOADER_FALLBACK_HIDE_S = 8;    // hide anyway if Unity never reports
+      var LOADER_ART = "TemplateData/TitleScreen/";
+
+      // Loading page layout  ##################################################
+      // 1280x720 px, y down; the same numbers place TitleScreen.prefab, whose
+      // picture is this page's last frame, so keep both equal when changing it
+      var LAYOUT = {
+        dotCount: 20, dotX0: 330, spacing: 30, dotD: 12, segD: 36,
+        tail: [[322, 20], [339, 26], [362, 32]], // first segments: x, size
+        surfaceY: 449, headAhead: 14, headLift: 12, headW: 62, headH: 60,
+        monkeyGap: 84, monkeySink: 4, monkeyW: 64, monkeyH: 60,
+        statics: [
+          { src: "Vine_A", x: 40, y: -40, w: 94, h: 298 },
+          { src: "Vine_Curl", x: 138, y: -30, w: 52, h: 234 },
+          { src: "Vine_B", x: 1150, y: -40, w: 78, h: 286 },
+          { src: "MonkobraLogo", x: 290, y: 143, w: 700, h: 124 },
+          { src: "Branch", x: 200, y: 384, w: 880, h: 120 }
+        ],
+        label: { x: 440, y: 520, w: 400, h: 50 }
+      };
+
       var canvas = document.querySelector("#unity-canvas");
-      var loading = document.querySelector("#unity-loading");
-      var progressFull = document.querySelector("#unity-progress-full");
+      var loader = document.querySelector("#loader");
+      var stage = document.querySelector("#loader-stage");
+      var logos = document.querySelector("#loader-logos");
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var warningBanner = document.querySelector("#unity-warning");
 
-      // iPhone browsers (all WebKit) lack the Fullscreen API for a canvas, so SetFullscreen does nothing there: hide the dead button
-      if (!(document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
-        fullscreenButton.style.display = "none";
-        // on iOS, point to the home-screen route unless already launched from it
-        var isIos = /iPhone|iPad|iPod/.test(navigator.userAgent);
-        var isStandalone = window.navigator.standalone === true;
-        if (isIos && !isStandalone) {
+      // iPhone browsers (all WebKit) lack the Fullscreen API for a canvas, so SetFullscreen does nothing there: the dead button stays hidden
+      var isFullscreenSupported = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+      // on iOS, point to the home-screen route unless already launched from it
+      var isIosHintDue = !isFullscreenSupported
+        && /iPhone|iPad|iPod/.test(navigator.userAgent)
+        && window.navigator.standalone !== true;
+      // the button or the hint shows once the loading page is gone
+      function showFullscreenControl() {
+        if (isFullscreenSupported) {
+          fullscreenButton.style.display = "block";
+        } else if (isIosHintDue) {
           document.querySelector("#unity-ios-hint").style.display = "block";
         }
       }
@@ -75,6 +144,9 @@
         if (w / h > ASPECT) { w = h * ASPECT; } else { h = w / ASPECT; }
         canvas.style.width = Math.floor(w) + "px";
         canvas.style.height = Math.floor(h) + "px";
+        loader.style.width = Math.floor(w) + "px";
+        loader.style.height = Math.floor(h) + "px";
+        stage.style.transform = logos.style.transform = "scale(" + Math.floor(w) / 1280 + ")";
       }
       // iOS reports stale window sizes right after a rotation, so fit again once it settles
       function fitCanvasSettled() {
@@ -86,13 +158,316 @@
       window.addEventListener("orientationchange", fitCanvasSettled);
       fitCanvas();
 
-      function renderPixelRatio() {
-        var dpr = window.devicePixelRatio || 1;
-        if (MAX_RENDER_HEIGHT > 0) {
-          dpr = Math.min(dpr, MAX_RENDER_HEIGHT / (window.screen.height || 1080));
-        }
-        return Math.max(dpr, 0.5);
+      // Loading page  #########################################################
+      // First the team logos fade in, hold, and fade out; after a short pause
+      // on the bare background the loading picture fades in. There the cobra
+      // eats a row of dots along the branch, each dot becoming one body
+      // segment, while the monkey hops ahead; the head follows the real
+      // download progress, never faster than LOADER_MIN_DURATION_S allows,
+      // counted from the end of its fade in.
+      // The page fades out once the TitleScreen has drawn its first frame
+      // (Plugins/WebGL/TitleScreenLoader.jslib), so the swap is not visible.
+      var LOGOS_SEEN_KEY = "monkobra.logosSeen";
+      var loaderState = {
+        phase: "logos", // logos, logosOut, gap, stageIn, then chase
+        logosMs: 0, phaseMs: 0, logosAlpha: 0, logosFadeOutS: 0,
+        isLogosReady: false, isSkipRequested: false,
+        realProgress: 0, shown: 0, startMs: 0, lastMs: 0, hopPhase: 0,
+        isArtReady: false, isLanded: false, isUnityShown: false, isFading: false
+      };
+      var loaderParts = { dots: [], segments: [], head: null, monkeyOpen: null, monkeyClosed: null };
+
+      function place(el, x, y, w, h) {
+        el.style.left = x + "px";
+        el.style.top = y + "px";
+        el.style.width = w + "px";
+        el.style.height = h + "px";
       }
+
+      function picture(parent, src, x, y, w, h) {
+        var img = document.createElement("img");
+        img.src = LOADER_ART + src + ".png";
+        img.alt = "";
+        place(img, x, y, w, h);
+        parent.appendChild(img);
+        return img;
+      }
+
+      // true once the picture can be drawn, false if it failed to load
+      function decoded(img) {
+        if (!img.decode) { return Promise.resolve(true); }
+        return img.decode().then(function () { return true; }, function () { return false; });
+      }
+
+      // the logos play once per tab, unless the browser keeps no session
+      function isLogosDue() {
+        if (!LOGOS_ONCE_PER_SESSION) { return true; }
+        try {
+          if (window.sessionStorage.getItem(LOGOS_SEEN_KEY)) { return false; }
+          window.sessionStorage.setItem(LOGOS_SEEN_KEY, "1");
+        } catch (e) {}
+        return true;
+      }
+
+      function logoPlate(colors, x, w, h) {
+        var p = LOGOS.plate;
+        var plate = document.createElement("div");
+        plate.className = "logos-plate";
+        place(plate, x, LOGOS.centerY - h / 2, w, h);
+        plate.style.background = colors.fill;
+        plate.style.border = p.border + "px solid " + colors.border;
+        plate.style.borderRadius = p.radius + "px";
+        plate.style.boxShadow = p.shadowX + "px " + p.shadowY + "px 0 " + colors.shadow;
+        logos.insertBefore(plate, logos.firstChild); // behind the logos
+      }
+
+      // USC Games left, Peel Five right on its light plate, the divider on
+      // the centre line, each logo the same gap away from it
+      function buildLogos() {
+        var P = LOGOS;
+        var plateH = P.peelFiveH + 2 * P.plate.padY;
+        var usc = picture(logos, "UscGamesLogo", 0, 0, 0, 0);
+        var peelFive = picture(logos, "PeelFiveLogo", 0, 0, 0, 0);
+        var divider = document.createElement("div");
+        divider.className = "logos-divider";
+        place(divider, 640 - P.divider.w / 2, P.centerY - P.divider.h / 2, P.divider.w, P.divider.h);
+        divider.style.background = P.divider.color;
+        logos.appendChild(divider);
+
+        Promise.all([decoded(usc), decoded(peelFive)]).then(function (isLoaded) {
+          if (!isLoaded[0] || !isLoaded[1]) { // never show half a logo screen
+            loaderState.phase = "stageIn";
+            logos.remove();
+            return;
+          }
+          var peelFiveW = P.peelFiveH * peelFive.naturalWidth / peelFive.naturalHeight;
+          var plateW = peelFiveW + 2 * P.plate.padX;
+          var left = 640 + P.gap;
+          logoPlate(P.peelFivePlate, left, plateW, plateH);
+          place(peelFive, left + P.plate.padX, P.centerY - P.peelFiveH / 2, peelFiveW, P.peelFiveH);
+
+          var uscW = P.uscH * usc.naturalWidth / usc.naturalHeight;
+          var right = 640 - P.gap;
+          if (LOGOS_USC_PLATE) {
+            var uscPlateW = uscW + 2 * P.plate.padX;
+            logoPlate(P.uscPlate, right - uscPlateW, uscPlateW, plateH);
+            right -= P.plate.padX;
+          }
+          place(usc, right - uscW, P.centerY - P.uscH / 2, uscW, P.uscH);
+          loaderState.isLogosReady = true;
+        });
+      }
+
+      function segmentAt(k) {
+        var t = LAYOUT.tail[k];
+        return t ? { x: t[0], d: t[1] } : { x: LAYOUT.dotX0 + (k - 1) * LAYOUT.spacing, d: LAYOUT.segD };
+      }
+
+      function buildLoader() {
+        var L = LAYOUT;
+        if (isLogosDue()) {
+          buildLogos();
+        } else {
+          loaderState.phase = "stageIn";
+          logos.remove();
+        }
+
+        for (var i = 0; i < L.statics.length; i++) {
+          var s = L.statics[i];
+          picture(stage, s.src, s.x, s.y, s.w, s.h);
+        }
+        for (var d = 0; d < L.dotCount; d++) {
+          var dx = L.dotX0 + d * L.spacing;
+          loaderParts.dots.push(picture(stage, "RunwayDot", dx - L.dotD / 2, L.surfaceY - 5 - L.dotD / 2, L.dotD, L.dotD));
+        }
+        for (var k = 0; k <= L.dotCount; k++) {
+          var seg = segmentAt(k);
+          var img = picture(stage, "CobraSegment", seg.x - seg.d / 2, L.surfaceY + 3 - seg.d, seg.d, seg.d);
+          img.style.visibility = k === 0 ? "visible" : "hidden";
+          loaderParts.segments.push({ img: img, bornMs: -1 });
+        }
+        loaderParts.head = picture(stage, "CobraHead", 0, 0, L.headW, L.headH);
+        loaderParts.monkeyOpen = picture(stage, "MonkeyHead_Open", 0, 0, L.monkeyW, L.monkeyH);
+        loaderParts.monkeyClosed = picture(stage, "MonkeyHead_Closed", 0, 0, L.monkeyW, L.monkeyH);
+        var label = document.createElement("div");
+        label.id = "loader-label";
+        label.textContent = "Loading";
+        place(label, L.label.x, L.label.y, L.label.w, L.label.h);
+        label.style.lineHeight = L.label.h + "px";
+        stage.appendChild(label);
+
+        // show the picture only once every image and the font are in, so
+        // nothing pops in late; a missing file never blocks the game
+        var waits = Array.prototype.map.call(stage.querySelectorAll("img"), decoded);
+        if (document.fonts) { waits.push(document.fonts.load('30px "MonkobraTitle"').catch(function () {})); }
+        Promise.all(waits).then(function () { loaderState.isArtReady = true; });
+        requestAnimationFrame(loaderFrame);
+      }
+
+      function popScale(ageS) {
+        if (LOADER_POP_S <= 0 || ageS >= LOADER_POP_S) { return 1; }
+        var t = ageS / LOADER_POP_S - 1; // ease out back, 0.5 -> 1
+        return 0.5 + 0.5 * (1 + 2.2 * t * t * t + 1.2 * t * t);
+      }
+
+      // fades: ease out to appear (fast, then settling), ease in to leave
+      function easeOut(x) { return 1 - Math.pow(1 - x, 3); }
+      function easeIn(x) { return x * x * x; }
+      function fadeProgress(sinceMs, nowMs, durationS) {
+        return durationS > 0 ? Math.min(1, (nowMs - sinceMs) / 1000 / durationS) : 1;
+      }
+
+      // logos fade in and hold, or end early on a skip
+      function updateLogos(nowMs) {
+        var s = loaderState;
+        if (!s.isLogosReady) { return; }
+        if (!s.logosMs) {
+          s.logosMs = nowMs;
+          logos.style.visibility = "visible";
+        }
+        s.logosAlpha = easeOut(fadeProgress(s.logosMs, nowMs, LOGOS_FADE_IN_S));
+        logos.style.opacity = s.logosAlpha;
+        if (s.isSkipRequested || (nowMs - s.logosMs) / 1000 >= LOGOS_FADE_IN_S + LOGOS_HOLD_S) {
+          s.phase = "logosOut";
+          s.phaseMs = nowMs;
+          s.logosFadeOutS = s.isSkipRequested ? LOGOS_SKIP_FADE_OUT_S : LOGOS_FADE_OUT_S;
+        }
+      }
+
+      // logos fade out to the bare background, which holds for LOGOS_GAP_S
+      function updateLogosOut(nowMs) {
+        var s = loaderState;
+        var c = fadeProgress(s.phaseMs, nowMs, s.logosFadeOutS);
+        logos.style.opacity = s.logosAlpha * (1 - easeIn(c));
+        if (c < 1) { return; }
+        logos.remove();
+        s.phase = "gap";
+        s.phaseMs = nowMs;
+      }
+
+      // the loading page fades in once its art is ready; the chase starts
+      // when it is fully in
+      function updateStageIn(nowMs) {
+        var s = loaderState;
+        if (s.phase === "gap") {
+          if ((nowMs - s.phaseMs) / 1000 < LOGOS_GAP_S || !s.isArtReady) { return; }
+          s.phase = "stageIn";
+          s.phaseMs = 0;
+        }
+        if (!s.isArtReady) { return; }
+        if (!s.phaseMs) {
+          s.phaseMs = nowMs;
+          stage.style.visibility = "visible";
+        }
+        var c = fadeProgress(s.phaseMs, nowMs, LOADER_FADE_IN_S);
+        stage.style.opacity = easeOut(c);
+        if (c < 1) { return; }
+        s.phase = "chase";
+        s.startMs = nowMs;
+      }
+
+      // one frame of the chase; true once the page has started to fade out
+      function drawChase(nowMs, dt) {
+        var s = loaderState;
+        var L = LAYOUT;
+        var runS = s.startMs ? (nowMs - s.startMs) / 1000 : 0;
+        var target = Math.min(s.realProgress, runS / LOADER_MIN_DURATION_S, 1);
+        if (target > s.shown) {
+          var step = Math.max((target - s.shown) * Math.min(1, dt * LOADER_SMOOTHING), dt * LOADER_MIN_CATCH_UP);
+          s.shown = Math.min(target, s.shown + step);
+        }
+        var isDone = s.shown >= 1;
+        var frontX = L.dotX0 - L.spacing + s.shown * L.dotCount * L.spacing;
+
+        for (var i = 0; i < L.dotCount; i++) {
+          var isEaten = frontX >= L.dotX0 + i * L.spacing - 0.01;
+          loaderParts.dots[i].style.visibility = isEaten ? "hidden" : "visible";
+          var seg = loaderParts.segments[i + 1];
+          if (isEaten && seg.bornMs < 0) {
+            seg.bornMs = nowMs;
+            seg.img.style.visibility = "visible";
+          }
+          if (seg.bornMs >= 0) {
+            seg.img.style.transform = "scale(" + popScale((nowMs - seg.bornMs) / 1000) + ")";
+          }
+        }
+
+        var segY = L.surfaceY + 3 - L.segD / 2;
+        var head = loaderParts.head;
+        head.style.left = frontX + L.headAhead - L.headW / 2 + "px";
+        head.style.top = segY - L.headLift - L.headH / 2 + "px";
+
+        // the monkey keeps hopping until the snake is done, then lands
+        var hop = 0;
+        if (!s.isLanded) {
+          var before = Math.floor(s.hopPhase);
+          s.hopPhase += dt / LOADER_HOP_PERIOD_S;
+          if (isDone && Math.floor(s.hopPhase) > before) {
+            s.isLanded = true;
+          } else {
+            hop = LOADER_HOP_HEIGHT * Math.abs(Math.sin(Math.PI * s.hopPhase));
+          }
+        }
+        var monkeyX = Math.min(frontX, L.dotX0 + (L.dotCount - 1) * L.spacing) + L.monkeyGap;
+        var isBlink = s.startMs > 0 && !s.isLanded && hop < LOADER_BLINK_HEIGHT;
+        var monkeyLeft = monkeyX - L.monkeyW / 2 + "px";
+        var monkeyTop = L.surfaceY + L.monkeySink - L.monkeyH - hop + "px";
+        loaderParts.monkeyOpen.style.left = loaderParts.monkeyClosed.style.left = monkeyLeft;
+        loaderParts.monkeyOpen.style.top = loaderParts.monkeyClosed.style.top = monkeyTop;
+        loaderParts.monkeyOpen.style.visibility = isBlink ? "hidden" : "visible";
+        loaderParts.monkeyClosed.style.visibility = isBlink ? "visible" : "hidden";
+
+        if (!(isDone && s.isLanded && s.isUnityShown && !s.isFading)) { return false; }
+        s.isFading = true;
+        loader.classList.add("done");
+        loader.addEventListener("transitionend", removeLoader);
+        setTimeout(removeLoader, 500); // a hidden tab may skip the event
+        return true;
+      }
+
+      function loaderFrame(nowMs) {
+        var s = loaderState;
+        var dt = s.lastMs ? Math.min(0.1, (nowMs - s.lastMs) / 1000) : 0;
+        s.lastMs = nowMs;
+        if (s.phase === "logos") { updateLogos(nowMs); }
+        if (s.phase === "logosOut") { updateLogosOut(nowMs); }
+        if (s.phase === "gap" || s.phase === "stageIn") { updateStageIn(nowMs); }
+        // the chase holds its first frame while the page fades in
+        var isStageUp = s.phase === "chase" || (s.phase === "stageIn" && s.phaseMs > 0);
+        if (isStageUp && drawChase(nowMs, s.startMs ? dt : 0)) { return; }
+        requestAnimationFrame(loaderFrame);
+      }
+
+      function removeLoader() {
+        if (!loader.parentNode) { return; }
+        loader.remove();
+        GUARDED_INPUT.forEach(function (type) { window.removeEventListener(type, guardInput, true); });
+        showFullscreenControl();
+        canvas.focus();
+      }
+
+      // While the page covers the game it owns every click, tap and key: they
+      // skip the team logos and never reach Unity underneath, so no press can
+      // start the title unseen. Keys keep their browser default (reload, ...);
+      // contextmenu passes, so the canvas can still block the long-press menu.
+      var GUARDED_INPUT = [
+        "keydown", "keyup", "keypress", "mousedown", "mouseup", "click", "dblclick",
+        "pointerdown", "pointerup", "touchstart", "touchend", "wheel"
+      ];
+      function guardInput(event) {
+        if (!loader.parentNode) { return; }
+        event.stopImmediatePropagation();
+        if (event.type === "keydown" || event.type === "pointerdown" || event.type === "touchstart") {
+          loaderState.isSkipRequested = true;
+        }
+      }
+      GUARDED_INPUT.forEach(function (type) {
+        window.addEventListener(type, guardInput, { capture: true, passive: true });
+      });
+
+      // called by TitleScreen through TitleScreenLoader.jslib
+      window.monkobraTitleShown = function () { loaderState.isUnityShown = true; };
+      buildLoader();
 
       function unityShowBanner(msg, type) {
         warningBanner.style.display = "block";
@@ -107,6 +482,14 @@
             if (!warningBanner.children.length) warningBanner.style.display = "none";
           }, 5000);
         }
+      }
+
+      function renderPixelRatio() {
+        var dpr = window.devicePixelRatio || 1;
+        if (MAX_RENDER_HEIGHT > 0) {
+          dpr = Math.min(dpr, MAX_RENDER_HEIGHT / (window.screen.height || 1080));
+        }
+        return Math.max(dpr, 0.5);
       }
 
       var buildUrl = "Build";
@@ -139,10 +522,11 @@
       script.src = loaderUrl;
       script.onload = function () {
         createUnityInstance(canvas, config, function (progress) {
-          progressFull.style.width = 100 * progress + "%";
+          loaderState.realProgress = progress;
         }).then(function (instance) {
           unityInstance = instance;
-          loading.style.display = "none";
+          loaderState.realProgress = 1;
+          setTimeout(window.monkobraTitleShown, LOADER_FALLBACK_HIDE_S * 1000);
           canvas.focus();
           fullscreenButton.onclick = function () { unityInstance.SetFullscreen(1); };
           pauseIfPortrait();

@@ -11,7 +11,6 @@ Todo wenhai 2nd boss fight
 Todo erik lighting
 Todo erik skybox
 Todo erik sfx
-Todo yuqing game logo, team logo, loading screen
 Todo belle: replace falling cobra & great cobra
 Fixme 1st pineapple/banana should appears on top of player
 Bug endless mode need to start w/ full heath & no starting zone
@@ -24,7 +23,18 @@ todo vertical version
 
 ### Added
 
+##### Yuqing Lu
+
+- WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
+- title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
+- team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
+
 ### Changed
+
+##### Yuqing Lu
+
+- pause & lose screens: Exit goes back to the level selection, not the title
+- Made with Unity splash screen off
 
 ### Deprecated
 

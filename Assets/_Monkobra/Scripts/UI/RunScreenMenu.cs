@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// the options of the pause and lose screens: Resume (pause only), Restart,
-/// and Exit back to the title. Put it on the screen panel, next to a
+/// and Exit back to the level selection. Put it on the screen panel, next to a
 /// <see cref="MenuSelectionKeeper"/>, which gives the keys their highlight.
 /// </summary>
 public class RunScreenMenu: MonoBehaviour {
@@ -19,7 +19,7 @@ public class RunScreenMenu: MonoBehaviour {
     private Button restartButton;
 
     [SerializeField]
-    [Tooltip("leaves the run for the title screen")]
+    [Tooltip("leaves the run for the level selection")]
     private Button exitButton;
 
     [SerializeField]
@@ -110,6 +110,6 @@ public class RunScreenMenu: MonoBehaviour {
     }
 
     private void OnExitClicked() {
-        SceneNames.Load(SceneNames.TITLE);
+        SceneNames.Load(SceneNames.LEVEL_SELECT);
     }
 }
