@@ -50,7 +50,7 @@ Limits: 1,000 files, 240 characters per path, 500 MB total, 200 MB per file.
 
 Both WebGL builds open on a loading page drawn by `FitWindow/index.html` (HTML and JS, before Unity starts), over the game canvas:
 
-- Picture: the TitleScreen picture (vines, Monkobra logo, branch, USC Games and Peel Five logos) on `#0A1F12`; the cobra eats a row of dots along the branch, each dot becoming one body segment, while the monkey hops ahead and lands at the end
+- Picture: the TitleScreen picture (vines, Monkobra logo, branch) on `#0A1F12`; the cobra eats a row of dots along the branch, each dot becoming one body segment, while the monkey hops ahead and lands at the end
 - Progress: the cobra's head follows the real download progress of `createUnityInstance`, smoothed, and never faster than `LOADER_MIN_DURATION_S` (1.3 s) allows, so a cached, near-instant load still shows one short chase; the tuning constants sit at the top of the script
 - Hand-over: its last frame is the `TitleScreen` prefab picture, with "Loading" where the title shows "Click to start"; `TitleScreen` calls `Plugins/WebGL/TitleScreenLoader.jslib` after its first frame and the page then fades out, or after 8 s if no call comes
 - Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the title font into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files

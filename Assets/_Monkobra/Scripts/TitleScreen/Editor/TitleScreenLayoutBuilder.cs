@@ -51,17 +51,12 @@ public static class TitleScreenLayoutBuilder {
             Picture(panel, LOGO);
             BuildRunway(Group(panel, "Runway"));
             BuildPrompt(prompt, font);
-            RectTransform footer = Group(panel, "Footer");
-            foreach (Item item in FOOTER) {
-                Picture(footer, item);
-            }
 
-            // back to front: vines, logo, runway, prompt, footer
+            // back to front: vines, logo, runway, prompt
             vines.SetSiblingIndex(0);
             panel.Find(LOGO.Name).SetSiblingIndex(1);
             panel.Find("Runway").SetSiblingIndex(2);
             prompt.SetSiblingIndex(3);
-            footer.SetSiblingIndex(4);
 
             PrefabUtility.SaveAsPrefabAsset(root, PREFAB);
             Debug.Log("TitleScreenLayoutBuilder:\tbuilt " + PREFAB);
@@ -172,8 +167,7 @@ public static class TitleScreenLayoutBuilder {
     private static bool AreSpritesFound() {
         string[] names = {
             "Vine_A", "Vine_Curl", "Vine_B", "MonkobraLogo", "Branch",
-            "CobraSegment", "CobraHead", "MonkeyHead_Open", "UscGamesLogo",
-            "PeelFivePlate", "PeelFiveLogo",
+            "CobraSegment", "CobraHead", "MonkeyHead_Open",
         };
         foreach (string name in names) {
             if (LoadSprite(name) == null) {
@@ -224,7 +218,8 @@ public static class TitleScreenLayoutBuilder {
     private const float WIDTH = 1280f;
     private const float HEIGHT = 720f;
 
-    // everything this builder makes, plus the old TMP title it replaces
+    // everything this builder makes, plus what it once made or replaced: the
+    // old TMP title, and the footer logos, now on the WebGL team logo screen
     private static readonly string[] REPLACED_CHILDREN = {
         "Title", "Vines", "MonkobraLogo", "Runway", "Footer",
     };
@@ -236,8 +231,6 @@ public static class TitleScreenLayoutBuilder {
     private static readonly Vector2 CENTRE = new Vector2(0.5f, 0.5f);
     private static readonly Vector2 TOP_LEFT = new Vector2(0f, 1f);
     private static readonly Vector2 TOP_RIGHT = new Vector2(1f, 1f);
-    private static readonly Vector2 BOTTOM_LEFT = new Vector2(0f, 0f);
-    private static readonly Vector2 BOTTOM_RIGHT = new Vector2(1f, 0f);
 
     // keep equal to LAYOUT in WebGLTemplates/FitWindow/index.html  ------------
     private const int DOT_COUNT = 20;
@@ -270,13 +263,4 @@ public static class TitleScreenLayoutBuilder {
         new Item("Branch", "Branch", 200, 384, 880, 120, CENTRE);
     private static readonly Item LABEL =
         new Item("Prompt", "", 440, 520, 400, 50, CENTRE);
-    private static readonly Item[] FOOTER = {
-        new Item("UscGamesLogo", "UscGamesLogo", 36, 648, 238, 40, BOTTOM_LEFT),
-        new Item(
-            "PeelFivePlate", "PeelFivePlate", 1046, 640, 202, 60, BOTTOM_RIGHT
-        ),
-        new Item(
-            "PeelFiveLogo", "PeelFiveLogo", 1060, 651, 170, 34, BOTTOM_RIGHT
-        ),
-    };
 }

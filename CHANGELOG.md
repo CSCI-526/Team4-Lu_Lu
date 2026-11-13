@@ -14,7 +14,7 @@ Todo upd gdd
 ##### Yuqing Lu
 
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
-- title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines, USC Games & Peel Five logos, "Click to start"
+- title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines, "Click to start"
 
 ### Changed
 
