@@ -1,3 +1,4 @@
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 
@@ -9,8 +10,8 @@ public class ScoreWidget: MonoBehaviour {
     private ScoreManager scoreManager;
 
     [SerializeField]
-    [Tooltip("Text before the number, e.g. Score: or Final score:")]
-    private string prefix = "Score: ";
+    [Tooltip("text before the number; empty for the bare HUD score, and the badaboom font holds digits, comma, plus only")]
+    private string prefix = "";
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -42,6 +43,6 @@ public class ScoreWidget: MonoBehaviour {
 
     // private methods  ########################################################
     private void Refresh(long score) {
-        label.text = prefix + score.ToString("N0");
+        label.text = prefix + score.ToString("N0", CultureInfo.InvariantCulture);
     }
 }

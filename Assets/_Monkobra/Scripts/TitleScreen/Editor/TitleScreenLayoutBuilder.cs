@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,17 +9,16 @@ using UnityEngine.UI;
 /// browser hands over to the title without a visible jump. Run
 /// <c>Monkobra/Build Title Screen</c> again after changing the layout here and
 /// there; it replaces the picture and keeps the root, the background and the
-/// prompt's CanvasGroup, which <see cref="TitleScreen"/> references.
+/// whole start prompt (its CanvasGroup, which <see cref="TitleScreen"/>
+/// references, and the input icons the scene overrides), only moving it.
 /// </summary>
 public static class TitleScreenLayoutBuilder {
     // private methods  ########################################################
     [MenuItem("Monkobra/Build Title Screen")]
     private static void Build() {
-        Font font = AssetDatabase.LoadAssetAtPath<Font>(FONT);
-        if (font == null || !AreSpritesFound()) {
+        if (!AreSpritesFound()) {
             Debug.LogError(
                 "TitleScreenLayoutBuilder:\tmissing art in " + SPRITE_FOLDER
-                    + " or font " + FONT
             );
             return;
         }
@@ -50,7 +48,7 @@ public static class TitleScreenLayoutBuilder {
             }
             Picture(panel, LOGO);
             BuildRunway(Group(panel, "Runway"));
-            BuildPrompt(prompt, font);
+            MovePrompt((RectTransform)prompt);
 
             // back to front: vines, logo, runway, prompt
             vines.SetSiblingIndex(0);
@@ -95,27 +93,15 @@ public static class TitleScreenLayoutBuilder {
         ));
     }
 
-    // the TMP prompt becomes a Text in the loading page's font, so "Click to
-    // start" takes the place of "Loading" in the same glyphs
-    private static void BuildPrompt(Transform prompt, Font font) {
-        TextMeshProUGUI tmp = prompt.GetComponent<TextMeshProUGUI>();
-        if (tmp != null) {
-            Object.DestroyImmediate(tmp);
-        }
-        Text text = prompt.GetComponent<Text>();
-        if (text == null) {
-            text = prompt.gameObject.AddComponent<Text>();
-        }
-        text.text = "Click to start";
-        text.font = font;
-        text.fontSize = LABEL_SIZE;
-        text.color = LABEL_COLOR;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
-        text.supportRichText = false;
-        text.raycastTarget = false;
-        Place((RectTransform)prompt, LABEL);
+    // the start prompt (input icons and words, laid out by its own group)
+    // stays as it is and keeps its size; it only moves to where the loading
+    // page writes "Loading", so the words change in place at the hand-over
+    private static void MovePrompt(RectTransform prompt) {
+        Vector2 size = prompt.sizeDelta;
+        Place(prompt, Item.Centred(
+            prompt.name, "", LABEL.X + LABEL.W / 2, LABEL.Y + LABEL.H / 2,
+            size.x, size.y, CENTRE
+        ));
     }
 
     private static RectTransform Group(Transform parent, string name) {
@@ -212,8 +198,6 @@ public static class TitleScreenLayoutBuilder {
     private const string PREFAB =
         "Assets/_Monkobra/Prefabs/TitleScreen/TitleScreen.prefab";
     private const string SPRITE_FOLDER = "Assets/_Monkobra/Sprites/TitleScreen";
-    private const string FONT =
-        "Assets/_Monkobra/Fonts/UI/MonkobraTutorial-SemiBold.ttf";
     private const int UI_LAYER = 5;
     private const float WIDTH = 1280f;
     private const float HEIGHT = 720f;
@@ -225,8 +209,6 @@ public static class TitleScreenLayoutBuilder {
     };
 
     private static readonly Color BACKGROUND = new Color32(10, 31, 18, 255);
-    private static readonly Color LABEL_COLOR = new Color32(255, 242, 210, 255);
-    private const int LABEL_SIZE = 30;
 
     private static readonly Vector2 CENTRE = new Vector2(0.5f, 0.5f);
     private static readonly Vector2 TOP_LEFT = new Vector2(0f, 1f);

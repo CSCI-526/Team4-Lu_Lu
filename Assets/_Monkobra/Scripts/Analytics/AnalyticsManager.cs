@@ -134,6 +134,8 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         if (I != null && I != this) {
+            // a scene may keep its own copy, the first instance wins; the
+            // warning is expected and harmless
             Debug.LogWarning("Analytics:\tduplicate instance destroyed", this);
             Destroy(gameObject);
             return;
@@ -272,6 +274,15 @@ public class AnalyticsManager: MonoBehaviour {
         RecordEvent(AnalyticsMetric.Coconut);
     }
 
+    // only the rewards that have a metric of their own are stamped here
+    private void OnRewardAdded(RewardKind kind, long _) {
+        if (kind == RewardKind.HeightMarker) {
+            RecordEvent(AnalyticsMetric.HeightMarker);
+        } else if (kind == RewardKind.WebEscape) {
+            RecordEvent(AnalyticsMetric.WebEscape);
+        }
+    }
+
     private void OnCoconutUsed() {
         RecordEvent(AnalyticsMetric.CoconutUsed);
     }
@@ -379,6 +390,7 @@ public class AnalyticsManager: MonoBehaviour {
         }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
+            observedScore.RewardAdded -= OnRewardAdded;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit -= OnBranchHit;
@@ -411,6 +423,7 @@ public class AnalyticsManager: MonoBehaviour {
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
+            observedScore.RewardAdded += OnRewardAdded;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit += OnBranchHit;
@@ -514,8 +527,11 @@ public class AnalyticsManager: MonoBehaviour {
         run.TotalScore = scoreMgr != null ? scoreMgr.TotalScore : 0;
         run.HeightScore = scoreMgr != null ? scoreMgr.DistanceScore : 0;
         run.RewardScore = scoreMgr != null ? scoreMgr.RewardScore : 0;
-        run.CoconutRewardScore =
-            scoreMgr != null ? scoreMgr.CoconutRewardScore : 0;
+        foreach (RewardKind kind
+            in System.Enum.GetValues(typeof(RewardKind))) {
+            run.RewardScoreByKind[(int)kind] =
+                scoreMgr != null ? scoreMgr.RewardScoreOf(kind) : 0;
+        }
 
         // the end sample needs the run to stay current for a moment
         currentRun = run;

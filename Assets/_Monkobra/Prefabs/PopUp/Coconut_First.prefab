@@ -54,7 +54,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
       propertyPath: message
-      value: Coconut! Double-tap Space to freeze the cobra
+      value: Coconut! Double-tap to freeze the cobra
+      objectReference: {fileID: 0}
+    - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
+      propertyPath: touchMessage
+      value: "Coconut! Double-tap anywhere to freeze the cobra"
       objectReference: {fileID: 0}
     - target: {fileID: 7301000000000004, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
       propertyPath: priority
@@ -124,6 +128,14 @@ PrefabInstance:
       propertyPath: m_fontColor32.rgba
       value: 4294957452
       objectReference: {fileID: 0}
+    - target: {fileID: 7301000000000094, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
+      propertyPath: keyboardPrefab
+      value: 
+      objectReference: {fileID: 730230748627612476, guid: 4d56a71b3898e9a44a87f177a3a4353b, type: 3}
+    - target: {fileID: 7301000000000094, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40030, type: 3}
+      propertyPath: touchPrefab
+      value: 
+      objectReference: {fileID: 864652495869705088, guid: 53fe0e4afa4d64f49a47edea7cd5270d, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

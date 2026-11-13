@@ -1,9 +1,21 @@
 # Monkobra CHANGELOG
 
 <!--
+Todo asset rf
+Todo prefab rf
+
+Fixme pan replace monkey model
+Todo pan BGM
+Todo pan branch & bark model/texture
+Todo wenhai 2nd boss fight
+Todo erik lighting
+Todo erik skybox
+Todo erik sfx
+Todo belle: replace falling cobra & great cobra
 Fixme 1st pineapple/banana should appears on top of player
 Bug endless mode need to start w/ full heath & no starting zone
-Todo upd gdd
+Fixme polishing UI
+todo vertical version
 -->
 
 
@@ -14,14 +26,14 @@ Todo upd gdd
 ##### Yuqing Lu
 
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
-- title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines, "Click to start"
+- title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
 - team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
 
 ### Changed
 
 ##### Yuqing Lu
 
-- pause & lose screens: Exit to Title → Exit to Menu, back to the level selection
+- pause & lose screens: Exit goes back to the level selection, not the title
 - Made with Unity splash screen off
 
 ### Deprecated
@@ -32,7 +44,66 @@ Todo upd gdd
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.3...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.0.0-beta.3] - 2026-11-11
+
+### Added
+
+##### Erik
+
+- touch screen play: the first touch switches the game to touch mode, a real key press switches it back (`ControlStyleManager`, kept across scenes); in touch mode a joystick bottom left moves the monkey and the rest of the screen is the Space key (hold to reach, double-tap for a coconut, tap rapidly to escape a web, tap to start)
+- phones & tablets, mobile browsers incl., start in touch mode, so the first tap counts; the WebGL page leaves touch gestures to the game
+- virtual joystick sprites by rmeldev (CC0), credited in `CREDITS.md`
+- pause button, top right, by click or tap, a square icon button; in Keyboard style the Esc key icon & "to Pause" sit beside it
+- animated hint icons, one per control style (`HintIconSlot`), in the tutorial, popups, coconut hint & boss prompt; the touch tutorial shows a blue action area over the touch zone
+- menu buttons from the FreeGUI sheet by pzUH (CC0), credited in `CREDITS.md`: blue, green on hover or key selection, red on press, grey when locked
+- pause screen: square Resume & Restart buttons, with the Esc & R key icons in Keyboard style
+- Exit to Title is the square `HUDExit_*` icon button on the pause & lose screens, and the lose screen's Restart is the square `HUDRestart_*` button with the R key icon in Keyboard style
+- pause & lose screens: the "W / S to select, Space to confirm" text is the level select's `LevelSelectHint_Keyboard` / `_Touch` icon hints, switched by control style
+- pause & lose screens: each option is a 3-column row, key icon, square button, text label (Resume, Restart, Exit); the key column hides in Touch style
+- every key hint (tutorial, pause, lose & level select screens, coconut how-to, popups, keycaps, boss buttons) follows the control style live
+- E & Enter join Space on every confirm: grab, coconut, web escape, tutorial start, menus, title & boss panels; P backs out of level select like Esc
+- `PersistentBootstrap` creates `Analytics` & `ControlStyleManager` from `Resources/` before the first scene, so any scene plays with both; scene copies stay, the duplicate warning is expected
+- [Input](docs/input-doc.md): the control scheme, Preferred vs Support keys per control style
+
+### Changed
+
+##### Erik
+
+- title starts on Space, E, Enter, a click or a tap, no longer on any key
+- boss revive, ad skip & reward panels read input actions, not raw keys; the course page is button only, Enter no longer opens it
+- hints teach the Preferred input only: icons replace key names, and P, arrows, E & Enter are never drawn
+
+### Deprecated
+
+### Removed
+
+##### Erik
+
+- "Esc or P to Pause" label, the pause screen's key text & the keycap icon table (`Scripts/InputIcons/*`)
+
+### Fixed
+
+##### Erik
+
+- HUD graphics & the tutorial overlay swallowed taps meant for the touch zone
+
+### Security
+
+[1.0.0-beta.3]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...v1.0.0-beta.3
 
 
 

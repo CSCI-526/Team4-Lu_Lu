@@ -61,6 +61,10 @@ public class BossFightController: MonoBehaviour {
     /// </summary>
     public event System.Action FightStarted;
 
+    /// <summary>raised when the king is beaten, its reward taken and the
+    /// climb goes on</summary>
+    public event System.Action FightEnded;
+
     /// <summary>raised when the gold armor takes a great cobra catch</summary>
     public event System.Action ArmorAbsorbed;
 
@@ -248,6 +252,16 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Tooltip("balance numbers: trigger height, king health, banana damage")]
     private WorldBalanceConfig worldBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("confirms the revive offer, the ad skip & the reward panel, the "
+        + "Player/Jump action (Space, E, Enter)")]
+    private InputActionReference confirmAction;
+
+    [SerializeField]
+    [Tooltip("gives up the revive offer, the Player/RestartAfterLose action "
+        + "(R)")]
+    private InputActionReference giveUpAction;
 
     [Header("Arena")]
     [SerializeField]
@@ -910,6 +924,14 @@ public class BossFightController: MonoBehaviour {
         }
         I = this;
 
+        if (confirmAction == null || giveUpAction == null) {
+            Debug.LogWarning(
+                "BossFightController:\tmust assign Inspector Fields: "
+                    + "confirmAction, giveUpAction",
+                this
+            );
+        }
+
         body = GetComponent<BossKingBody>();
         body.MonkeyTouched += OnKingTouched;
         hud = GetComponent<BossFightHud>();
@@ -934,6 +956,13 @@ public class BossFightController: MonoBehaviour {
             I = null;
         }
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
+    }
+
+    // the actions are shared with other scripts, so they are only switched
+    // on here, never off
+    private void OnEnable() {
+        confirmAction?.action.Enable();
+        giveUpAction?.action.Enable();
     }
 
     private void OnDisable() {
@@ -2256,16 +2285,9 @@ public class BossFightController: MonoBehaviour {
         // a short while
         if (phase == Phase.WatchingAd) {
             adElapsedS += stepS;
-            Keyboard adKeyboard = Keyboard.current;
-            if (adKeyboard != null && adKeyboard.enterKey.wasPressedThisFrame) {
-                OpenCoursePage();
-            }
             bool canSkip = adElapsedS >= adSkipAfterS;
             hud.SetAdSkippable(canSkip);
-            if (
-                canSkip && adKeyboard != null
-                && adKeyboard.spaceKey.wasPressedThisFrame
-            ) {
+            if (canSkip && WasPressed(confirmAction)) {
                 SkipAd();
             }
             return;
@@ -2274,13 +2296,9 @@ public class BossFightController: MonoBehaviour {
         reviveLeftS -= stepS;
 
         hud.SetReviveCountdown(Mathf.CeilToInt(Mathf.Max(0f, reviveLeftS)));
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) {
+        if (WasPressed(confirmAction)) {
             WatchAd();
-        } else if (
-            (keyboard != null && keyboard.rKey.wasPressedThisFrame)
-            || reviveLeftS <= 0f
-        ) {
+        } else if (WasPressed(giveUpAction) || reviveLeftS <= 0f) {
             GiveUp();
         }
     }
@@ -2764,8 +2782,8 @@ public class BossFightController: MonoBehaviour {
         hud.SetPrompt(false, Vector3.zero);
     }
 
-    // once the swirl is done, time stops on the reward panel; Space or its
-    // button goes on
+    // once the swirl is done, time stops on the reward panel; the confirm
+    // action or its button goes on
     private void UpdateRewardPause(GameController game) {
         if (!isRewardPanelShown) {
             if (armorRewardTimeS >= 0f) {
@@ -2779,10 +2797,24 @@ public class BossFightController: MonoBehaviour {
         if (game.IsPaused) {
             return;
         }
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) {
+        if (WasPressed(confirmAction)) {
             ContinueAfterReward();
         }
+    }
+
+    // if the action is wired and went down this frame; the action is shared
+    // (Player/Jump is also switched off by SpiderWebStruggle), so it is
+    // switched back on here at the moment of use
+    private static bool WasPressed(InputActionReference reference) {
+        if (reference == null) {
+            return false;
+        }
+
+        InputAction action = reference.action;
+        if (!action.enabled) {
+            action.Enable();
+        }
+        return action.WasPressedThisFrame();
     }
 
     private void ContinueAfterReward() {
@@ -2792,6 +2824,7 @@ public class BossFightController: MonoBehaviour {
         hud.HideRewardPanel();
         Time.timeScale = 1f;
         phase = Phase.Done;
+        FightEnded?.Invoke();
 
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
         // a head start: the cobra chases again from far down the trunk,

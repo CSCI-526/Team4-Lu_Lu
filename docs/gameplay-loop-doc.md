@@ -71,18 +71,18 @@ graph TD
 
 ```mermaid
 graph TD
-  Title[Title: any key] --> Select[Level selection]
+  Title[Title: Space, click or tap] --> Select[Level selection]
   Select -->|Normal Play| Run[Run, boss fight included]
   Select -->|Endless Mode, once the king is beaten| Endless[Run, no boss fight]
   Select -->|Back| Title
   Run --> Lose[Lose]
   Endless --> Lose
   Lose -->|R, or Restart| Run
-  Lose -->|Exit to Menu| Select
-  Run -.->|pause: Exit to Menu| Select
+  Lose -->|Exit| Select
+  Run -.->|pause: Exit| Select
   Lose -.->|from Endless| Endless
 ```
 
 - Start: the game opens on the title, then the level selection, where Normal Play or Endless Mode begins a run
 - Restart: R restarts inside the same scene, so an Endless run restarts as Endless
-- Exit: the pause and lose screens each offer Exit to Menu, next to Restart (and Resume while paused), which returns to the level selection
+- Exit: the pause and lose screens each offer Exit, next to Restart (and Resume while paused), which returns to the level selection

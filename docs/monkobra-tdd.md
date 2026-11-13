@@ -35,24 +35,24 @@ A system gets its own document when it spans several scripts and carries rules a
 
 | Scene | Purpose |
 | --- | --- |
-| `TitleScene` | the startup scene of every build: any key or click opens the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
+| `TitleScene` | the startup scene of every build: Space, a click or a tap opens the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
-| `FullPlayScene` | the normal run; its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `FullPlayScene` | the normal run; its root is 10 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `BossFight`, `GameController`, `UI`, `Analytics`, `ControlStyleManager`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 | `EndlessScene` | a copy of `FullPlayScene` with `GameController.runMode` set to `Endless` |
 
 ```mermaid
 graph LR
-  Title[TitleScene] -->|any key| Select[LevelSelectScene]
+  Title[TitleScene] -->|Space, click, tap| Select[LevelSelectScene]
   Select -->|Normal Play| Full[FullPlayScene]
   Select -->|Endless Mode, unlocked| Endless[EndlessScene]
   Select -->|Back, Esc| Title
   Full -->|R restarts| Full
   Endless -->|R restarts| Endless
-  Full -->|Exit to Menu| Select
-  Endless -->|Exit to Menu| Select
+  Full -->|Exit| Select
+  Endless -->|Exit| Select
 ```
 
-Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`MenuEventSystem`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `AnyKey` serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
+Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`MenuEventSystem`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `StartPress` (Space, left click, a touch, gamepad start) serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
 
 Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, from the `runMode` field) tells a gameplay scene how to behave. In `Endless` the boss fight is skipped (`BossFightController` starts in its done state, gold armor worn), `RampedDifficultyManager` reads the post boss curve from the starting zone exit on and has no boss zone, and `HeightMarkerSystem` draws no boss marker.
 
@@ -93,7 +93,7 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 ```mermaid
 stateDiagram-v2
   [*] --> Tutorial: scene load
-  Tutorial --> StartingZone: Space
+  Tutorial --> StartingZone: Space or tap
   StartingZone --> Playing: EndStartingZone
   Playing --> Lost: LoseGame
   Lost --> [*]: interact, reload scene
@@ -103,17 +103,17 @@ stateDiagram-v2
 
 | State | Time Scale | Screen |
 | --- | --- | --- |
-| Tutorial | 0 | tutorial panel, only Space starts the run |
+| Tutorial | 0 | tutorial panel, only Space (a tap anywhere in touch mode) starts the run |
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
-| Lost | 0 | lose panel with Restart and Exit to Menu (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
+| Lost | 0 | lose panel with Restart and Exit (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
 | Won | 0 | a won run, time frozen, the same restart key reloads the scene |
 
 `LoseGame()` runs once, from StartingZone or Playing: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
 
 `WinGame()` currently has no caller: a Cobra King win now continues the run with an armor reward ([Mobs](mob-doc.md#win-reward)). When called it runs once, from StartingZone or Playing: like `LoseGame` it settles the score, then enters Won, which freezes time, and the lose screen's restart key reloads the scene. The boss fight's own win stops time on a reward panel instead, without entering Won. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
 
-Pause is a flag, not a state: `GameController.SetPaused` (Esc or P) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit to Menu goes through `SceneNames.Load` to the level selection. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
+Pause is a flag, not a state: `GameController.SetPaused` (Esc, P or the pause button) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit goes through `SceneNames.Load` to the level selection. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
 
 A pineapple leap is a flag too: `GameController.SetLeaping` sets `IsLeaping` and raises `LeapChanged` while `State` keeps its value, for the same reason, and because the checks of `State == Playing` below must keep passing. It starts only in a live run and ends the starting zone. Hazards check the flag themselves ([Mobs](mob-doc.md#during-a-pineapple-leap)); the sequence is in the [Grab System](grab-doc.md#pineapple-leap).
 
@@ -147,7 +147,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 
 ## Game Balance
 
-Game balance numbers live in 3 assets, split by what they tune (how height becomes spawn chances is in [Balance Design](balance-doc.md)): `Settings/Player/PlayerBalanceConfig.asset` for the player's run, `Settings/Environment/WorldBalanceConfig.asset` for the generated world, and `Settings/MobGreatCobra/CobraBalanceConfig.asset` for both cobras, instances of the `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig` ScriptableObjects. To tweak the game's feel, edit these 3 files and nothing else: no balance value is held in a fourth asset or hard-coded in a script.
+Game balance numbers live in 3 assets plus the score config, split by what they tune (how height becomes spawn chances is in [Balance Design](balance-doc.md)): `Settings/Player/PlayerBalanceConfig.asset` for the player's run, `Settings/Environment/WorldBalanceConfig.asset` for the generated world, and `Settings/MobGreatCobra/CobraBalanceConfig.asset` for both cobras, instances of the `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig` ScriptableObjects. Every score value lives in `Settings/Scoring/ScoreConfig.asset`, an instance of the `ScoreConfig` ScriptableObject, the one asset outside these 3 that holds balance numbers. To tweak the game's feel, edit these 4 files and nothing else: no balance value is hard-coded in a script.
 
 | Asset | Group | Fields | Read by |
 | --- | --- | --- | --- |
@@ -155,8 +155,7 @@ Game balance numbers live in 3 assets, split by what they tune (how height becom
 | 〃 | Starting Zone | `startingZoneStartStaminaFraction`, `startingZoneExhaustedSpeedMultiplier`, `startingZoneIdleRecoveryMultiplier` | `StaminaBarController`, `MonkeyController` |
 | 〃 | Branch Hit | `hitStunDurationS`, `hitDropDistanceU`, `hitDropSpeedU` | `MonkeyController`, `CobraMotor` |
 | 〃 | Fruit Popup | `fruitPopUpDetectRadiusU` | `FruitGrabPrompt` |
-| 〃 | Score | `pointsPerMeter`, `unitsPerMeter`, `scoreRewardPoints` | `ScoreManager` |
-| 〃 | Coconut | `coconutScoreMultiplier` (`CoconutRewardPoints`), `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `ScoreManager`, `CoconutManager` |
+| 〃 | Coconut | `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutManager` |
 | `WorldBalanceConfig` | Ramped Difficulty | `preBossRampCurve`, `postBossRampCurve` | `RampedDifficultyManager` |
 | 〃 | Branch | `startingZoneBranchClearRadiusU`, `startingZoneBananaBranchChance`, and per kind (empty, banana, coconut, pineapple) `<kind>BranchAttemptCount` & `<kind>BranchProbabilityCurve`, plus `coconutGuaranteedHeightU` & `pineappleGuaranteedHeightU` | `TreeSegmentController` |
 | 〃 | Rough Bark | `roughBarkSpeedMultiplier`, `roughBarkBlendS`, `roughBarkAttemptCount`, `roughBarkSpawnProbabilityCurve` | `RoughBarkSpawner`, `MonkeyController` |
@@ -164,8 +163,10 @@ Game balance numbers live in 3 assets, split by what they tune (how height becom
 | 〃 | Boss Fight | `bossZoneStartU`, `bossTriggerHeightU`, `bossZoneEndU`, `bossMaxHealth`, `bossBananaDamage` | `BossFightController`, `RampedDifficultyManager` |
 | `CobraBalanceConfig` | Falling Cobra | `fallingCobraAttemptCount`, `fallingCobraSpawnProbabilityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU`, `fallingCobraReachWakeDistanceU`, `fallingCobraBananaAmbushChance`, `fallingCobraRehitGraceS`, `fallingCobraMaxHits` | `FallingCobraSpawner`, `FallingCobraController` |
 | 〃 | Great Cobra | `cobraBaseSpeedCurve`, `cobraDistanceSpeedCurve`, `cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraSurgeStackShareCurve`, `cobraMaxSurgeSpeedU`, `cobraExitBoostSpeedU`, `cobraExitBoostDurationS`, `cobraSpeedChangeRateU` | `CobraMotor` |
+| `ScoreConfig` | Height | `pointsPerMeter`, `unitsPerMeter` | `ScoreManager` |
+| 〃 | Rewards | `bananaPoints`, `coconutPoints`, `pineapplePoints`, `cobraFreezePoints`, `heightMarkerPoints`, `webEscapePoints` | `ScoreManager` |
 
-- Wiring: each reader holds an inspector field for every slice it needs, never more: `playerBalanceConfig` on `StaminaBarController`, `ScoreManager`, `MonkeyController`, `CoconutManager`, and `CobraMotor` (hit stun only); `worldBalanceConfig` on `MonkeyController` (rough bark), `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `RoughBarkSpawner`, and `BossFightController` (boss fight); `cobraBalanceConfig` on `FallingCobraSpawner` and `CobraMotor`, each pointing at the one asset of its slice
+- Wiring: each reader holds an inspector field for every slice it needs, never more: `scoreConfig` on `ScoreManager`, `playerBalanceConfig` on `StaminaBarController`, `MonkeyController`, `CoconutManager`, and `CobraMotor` (hit stun only); `worldBalanceConfig` on `MonkeyController` (rough bark), `TreeSegmentController`, `RampedDifficultyManager`, `SpiderWebSpawner`, `RoughBarkSpawner`, and `BossFightController` (boss fight); `cobraBalanceConfig` on `FallingCobraSpawner` and `CobraMotor`, each pointing at the one asset of its slice
 - Not Balance: the arm stroke and reach are in `MonkeyArmConfig`; climb build-up, exhaustion, idle recovery, orbit speed, and deceleration are in `MonkeyClimbConfig`; input actions are in `MonkeyInputConfig`; the leap's distance, speed curve, hand rise, and landing grace are in `PineappleLeapConfig`; branch radius, spacing, and retries stay in `BranchFruitPlacementConfig`; web radius, spacing, clearance, retries, and the test override stay on `SpiderWebSpawner`; cobra spawn radius, spacing, retries, and ambush height stay on `FallingCobraSpawner`, and its trigger and fall distances on the falling cobra prefab; the web escape grace and the throw start offset on `CoconutManager`; the height markers' interval, placement, look, and test override stay on `HeightMarkerSystem`
 - Retired: `GameConfig`, `ScoreConfig`, and `ScoreReward` were folded into the balance configs and removed
 - Suffixes: `U` is world units, `S` is seconds, `Deg` is degrees, `PerU` is per world unit travelled
@@ -212,12 +213,13 @@ All values live in `Settings/Player/PlayerBalanceConfig.asset`.
 `ScoreManager` (singleton `I`, on the `GameController` object) keeps two scores and notifies the UI when the total changes.
 
 - Distance Score: whole meters of the highest point climbed, read from `RampedDifficultyManager.CurrentPlayerClimbedYDistance`, refreshed every frame (player y minus the y at game start), times points per meter. Only a new high counts, so falling and re-climbing earns nothing
-- Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups. A coconut's `ScorePickup` (kind `Coconut`) adds `CoconutRewardPoints` instead, kept in `CoconutRewardScore`, counted in `CoconutCollectedCount`, and raises `CoconutCollected`
+- Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups. A coconut's `ScorePickup` (kind `Coconut`) adds the config's coconut points instead, kept in `ScoreManager.RewardScoreOf(RewardKind.Coconut)`, counted in `CoconutCollectedCount`, and raises `CoconutCollected`
+- Other Rewards: `ScoreManager.AddReward(RewardKind)` adds to Reward Score for every good deed that is not a fruit pickup, a pineapple grab, a cobra freeze (`CoconutManager.Frozen`), a new height marker reached (`HeightMarkerSystem.MarkerReached`, once per marker above the highest already reached) and a spider web escaped (`SpiderWebStruggle.Escaped`); each grant raises `RewardAdded(RewardKind, points)`, which the score popup reads. The point values are in `ScoreConfig`
 - Gate: `CanScore` is true only after start, before `EndRun`, while unpaused, and while the game is not over
 - Display: `ScoreWidget` shows the total on the HUD and on the lose panel
 - Units: `unitsPerMeter` only converts climbed world units to the meters the distance score pays for. Every height the player reads is plain world units: the trunk height markers and the progress bar's cobra gap label them `m`, and the lose panel's final height shows the bare number
 
-All values live in `Settings/Player/PlayerBalanceConfig.asset`; `ScorePickup` carries no reward asset of its own.
+All values live in `Settings/Scoring/ScoreConfig.asset`; `ScorePickup` carries no reward asset of its own.
 
 The test scenes have no `ScoreManager`.
 
@@ -252,12 +254,28 @@ The grab shift is in the [Grab System](grab-doc.md#camera), the hit trigger in [
 
 ## Input
 
-One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. The left mouse button is bound only in the `UI` map, for uGUI buttons; the `Player` map binds none. Pause (Esc or P), `RestartAfterLose` (R), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The keys and buttons are listed under Controls in the [README](../README.md#controls).
+One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. The left mouse button is bound only in the `UI` map, for uGUI buttons; the `Player` map binds none. Pause (Esc or P), `RestartAfterLose` (R), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The scheme, with each action's Preferred and Support keys, is in [Input](input-doc.md); the player key list is under Controls in the [README](../README.md#controls).
 
 - Move: shared by the body and both arms through `MonkeyInputConfig`
 - Interact: the grab, read by both arms and polled by the climb camera framing; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
-- Jump: the web escape press, read by `SpiderWebStruggle`, and the Space press that starts the run from the tutorial, read by `GameController`
-- Collision: Space is bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped
+- Jump: the web escape press, read by `SpiderWebStruggle`, the press that starts the run from the tutorial, read by `GameController`, and the boss panels' confirm press, read by `BossFightController`
+- Confirm keys: Space, E and Enter are bound alike on Interact, UseCoconut and Jump, and on `UI/Submit` and `UI/StartPress`; they stay separate actions because the coconut double-tap is a MultiTap interaction that a merged action would also put on the grab
+- Collision: Space, E and Enter are bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped, by design
+- Boss panels: `BossFightController` polls `confirmAction` (`Player/Jump`) and `giveUpAction` (`Player/RestartAfterLose`), never a raw key; the course page is a button only. A shared action is enabled at the moment of use, since `SpiderWebStruggle` disables `Player/Jump` when it is disabled
+- Touch: a virtual gamepad stands in for the keyboard. The `TouchControls` prefab's `OnScreenStick` writes `<Gamepad>/leftStick` (Move binds it) and its full-screen `OnScreenButton` writes `<Gamepad>/buttonSouth`, which Interact, UseCoconut and Jump all bind, so one zone grabs, double-taps a coconut, escapes a web and starts the run exactly like Space. A virtual keyboard is avoided because its writes read as real key presses and would flip the control style back
+- Start: `UI/StartPress` serves the title: Space, E, Enter, left mouse, a touch press, gamepad start
+- Back: `UI/Cancel` serves level select: Esc, P
+
+### Control Style
+
+`ControlStyleManager` (prefab `ControlStyleManager`, kept in every scene and also created by `PersistentBootstrap` from `Resources/` before the first scene when none exists; the first instance is kept across loads, and a later copy destroys itself with a warning that is expected) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
+
+- `ControlStyleLabel`: one text under a keyboard and a touch wording, blank hides it; `Configure` sets both from code
+- `ControlStyleSwitch`: shows a keyboard group or a touch group of objects, eg the tutorial's keyboard icons and its touch guide, or a key icon that only a keyboard needs
+- `HintIconSlot`: shows the animated icon of a hint, one prefab per style (`Prefabs/InputIcons/`: `SpacePress`, `TouchTap`, each with a `_Double` and `_Rapid` variant), scaled to a fit height under a holder, since the icon's Animator owns its root scale. An icon Animator uses Unscaled Time so it plays while a popup or the pause screen freezes time. `HintIconSlot.Create` builds one from code, as `KeyPromptWidget` does; popups, `CoconutHUD` and the boss prompt hold one
+- `TutorialTouchCutout`: the touch tutorial's blue action area, 4 strips around a hole over the live `OnScreenStick`, found at runtime and laid out every frame; hides the tutorial's white overlay while shown
+- Scripts with their own wording subscribe themselves: `CoconutWidget` (`useHintText`, `useHintTouchText`), `MessagePopUp` (`touchMessage`, re-worded while a held popup shows), `KeyPromptWidget`; `BossFightHud` gives its runtime labels a `ControlStyleLabel`
+- `TouchControlsPanel` shows the touch controls only in Touch mode while the run is playable (tutorial, starting zone, playing; not paused, lost or won). `TouchControls` is the first child of the `_UI` canvas, so every HUD element, popup and screen draws above it and takes its taps first
 
 ## UI
 
@@ -274,7 +292,9 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 | Web Prompt | `UI/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
 | Low Stamina Prompt | `UI/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
 | PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
-| Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", "Press Esc or P to Resume", and "Press R to Restart" while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
+| Pause Button | `UI/PauseButton` | square sprite button top right of `InGameHUD` (Sprite Swap, `HUDPause_*`), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
+| Touch Controls | `UI/TouchControlsPanel` | the joystick and full-screen action zone of the `TouchControls` prefab, shown only in Touch mode ([Input](#input)) |
+| Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit buttons as 3-column rows (key icon, button, text label; the key icons show in Keyboard style only) while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
 The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage` (the host of `CoconutMessageWidget`), and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it, with the `_PopUps` root just before `Screens`. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
 
@@ -294,7 +314,9 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 
 Every center message is a `PopUp` variant; the rules, the parts, and how to add one are in [PopUps](pop-up-doc.md).
 
-The tutorial in `FullPlayScene` uses editable uGUI Images under `TutorialScreen/KeyboardControls` for the WASD cluster and a wide Space key. Thin white Image rectangles form each outline without a sprite dependency; the WASD keys also have inset keycap frames and diagonal bevel lines. Each key has an explicit, stretched Background child with a dark gray Image (alpha 0.82), ordered before its outlines and label to preserve contrast over the white overlay. Letters are white, and `space` sits inside the long rectangular key at the bottom left. Its uGUI Text captions show `Move`, `Grab Banana`, and `Hold to reach, release to grab`; the existing start prompt remains below them. The original translucent white overlay (alpha 0.392) washes out the game behind the tutorial to indicate that the run has not started. `ScreensManager` shows and hides the whole panel as before.
+Menu buttons swap sprites by state (Transition: Sprite Swap): Highlighted and Selected show the green Hover sprite, Pressed the red Click sprite, Disabled the grey Locked sprite. `MenuButtonHover` makes a hover select, so mouse and keys share the one green highlight. Text buttons use the sliced wide set `Button_Normal`, `_Hover`, `_Click`, `_Locked`; the pause button, the pause screen's Resume, Restart and Exit and the lose screen's Restart and Exit use the square `HUDPause_*`, `HUDResume_*`, `HUDRestart_*` and `HUDExit_*` sets, with the key icons (Esc, R) in a `ControlStyleSwitch` for Keyboard only. All are sub-sprites of `Sprites/InputIcons/FreeGUI-Button.png`, each state with the 9-slice border of its Normal.
+
+The tutorial in `FullPlayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. The translucent white overlay washes out the game behind the tutorial to show that the run has not started, and `ScreensManager` shows and hides the whole panel.
 
 `Fonts/UI/MonkobraTutorial-SemiBold.ttf` is a renamed, static weight-600 subset of [Noto Sans TC](https://github.com/google/fonts/tree/main/ofl/notosanstc), distributed with its SIL Open Font License in `Fonts/UI/OFL.txt`. It embeds printable ASCII and a small set of Chinese glyphs, so the tutorial renders in WebGL without system fonts. Wording that uses other characters requires extending the font subset or supplying a font with those glyphs. The subset has no em dash `—`; the TMP `LiberationSans SDF` atlas has one, so the low-stamina hint uses that font.
 
@@ -304,7 +326,7 @@ The tutorial in `FullPlayScene` uses editable uGUI Images under `TutorialScreen/
 - Start Over Awake: a consumer that may start before its singleton reads it in `Start`, so Awake order never matters
 - Events Over Calls: detection scripts forward trigger events (`Entered`, `Exited`, `BranchHit`) rather than calling their consumers, and a segment announces its branches with `BranchesGenerated` rather than calling its decorators
 - Tags: `Branch`, `FruitCollider`, and `Player` drive trigger matching. Webs match by a Rigidbody component instead
-- Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
+- Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig`, score values in `ScoreConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives
 - Style: `Player/`, `GameController/`, `Analytics/`, `MobGreatCobra/`, `MobFallingCobra/`, `UI/StaminaBarController`, `UI/ScreensManager`, and most of `Environment/` follow the house Unity style. `Scoring/`, `UI/ProgressBarWidget`, and `MobSpiderWeb/SpiderWebBuilder` are still in the template style, some with Chinese comments
