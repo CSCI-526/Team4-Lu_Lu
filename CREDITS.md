@@ -9,7 +9,7 @@ Third-party assets used in Monkobra.
 | `Assets/_Monkobra/Sprites/ItemBanana/item-banana-idle-middle-01.png` | [Fruit Graphics from CaveExpress](https://opengameart.org/content/fruit-graphics-from-caveexpress) | mattn | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) |
 | `Assets/_Monkobra/Sprites/ItemCoconut/coconut128x128.png` | [Fruits](https://opengameart.org/content/fruits-1) | anuware | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | `Assets/_Monkobra/Sprites/ItemPineapple/pineapple_64x96.png` | [Pineapple](https://opengameart.org/content/pineapple) | Kaweesaesther (original photo), Jordan Irwin / AntumDeluge (edit) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
-| `Assets/_Monkobra/Sprites/TitleScreen/UscGamesLogo.png` | USC Games logo | University of Southern California | USC trademark, shown on the title as the CSCI-526 course's school mark |
+| `Assets/_Monkobra/Sprites/TitleScreen/UscGamesLogo.png` | USC Games logo | University of Southern California | USC trademark, shown on the WebGL team logo screen as the CSCI-526 course's school mark |
 | `Assets/_Monkobra/Textures/Environment/tree_bark.png` | [Tree Bark Texture](https://opengameart.org/content/tree-bark-texture) | Lamoot (submitted by qubodup); based on a texture from the Apricot project, copyright Blender Foundation \| apricot.blender.org | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 
 ## Models

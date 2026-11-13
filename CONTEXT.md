@@ -49,7 +49,7 @@ monkobra/
 │   │   ├── Prefabs/   per module; `PopUp/` holds `_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup; `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
 │   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
 │   │   └── Settings/  `_Shared/` (URP assets, volume profiles) plus one folder per module, assets directly inside
-│   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page and its loading page (cobra eats dots on real download progress), whose last frame is the `TitleScreen` picture
+│   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page and its loading page (USC Games and Peel Five logos, then the cobra eats dots on real download progress), whose last frame is the `TitleScreen` picture
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed
 │   ├── TextMesh Pro/  imported TMP essentials, not authored
 │   └── Readme.asset   Unity template leftover

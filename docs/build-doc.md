@@ -50,13 +50,15 @@ Limits: 1,000 files, 240 characters per path, 500 MB total, 200 MB per file.
 
 Both WebGL builds open on a loading page drawn by `FitWindow/index.html` (HTML and JS, before Unity starts), over the game canvas:
 
+- Team logos: first USC Games (left, on the background) and Peel Five (right, on its light plate) side by side, a thin divider on the centre line; they fade in, hold, and fade out to the background colour (never black), and after a short pause the loading picture fades in, all while the game downloads; a click or a key cuts the hold short but keeps the fades, and a reload in the same tab skips them too (`LOGOS_ONCE_PER_SESSION`); `LOGOS_USC_PLATE` puts a dark plate behind USC Games, off by default; the timings sit at the top of the script
 - Picture: the TitleScreen picture (vines, Monkobra logo, branch) on `#0A1F12`; the cobra eats a row of dots along the branch, each dot becoming one body segment, while the monkey hops ahead and lands at the end
-- Progress: the cobra's head follows the real download progress of `createUnityInstance`, smoothed, and never faster than `LOADER_MIN_DURATION_S` (1.3 s) allows, so a cached, near-instant load still shows one short chase; the tuning constants sit at the top of the script
+- Progress: the cobra's head follows the real download progress of `createUnityInstance`, smoothed, and never faster than `LOADER_MIN_DURATION_S` (1.3 s) allows, counted from when the loading picture is fully in, so a cached, near-instant load still shows one short chase; the tuning constants sit at the top of the script
 - Hand-over: its last frame is the `TitleScreen` prefab picture, with "Loading" where the title shows "Click to start"; `TitleScreen` calls `Plugins/WebGL/TitleScreenLoader.jslib` after its first frame and the page then fades out, or after 8 s if no call comes
+- Input: while the page is up it takes every click, tap and key, so none reaches Unity underneath and starts the title unseen; keys keep their browser default
 - Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the title font into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files
 - Layout: one 1280×720 table, written twice: the `LAYOUT` block of `index.html` and the table in `TitleScreenLayoutBuilder` (Editor script), which builds the `TitleScreen` prefab picture from `Monkobra > Build Title Screen`; change both together and rebuild, or the hand-over shows a jump
 
-The Windows build has no page and opens on the title.
+The Windows build has no page: it opens on the title and shows no team logos.
 
 ## Dev Keys
 

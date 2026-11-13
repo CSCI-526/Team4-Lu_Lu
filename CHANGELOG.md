@@ -15,6 +15,7 @@ Todo upd gdd
 
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
 - title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines, "Click to start"
+- team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
 
 ### Changed
 

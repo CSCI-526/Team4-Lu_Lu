@@ -5,17 +5,20 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
     <title>{{{ PRODUCT_NAME }}}</title>
+    <link rel="preload" href="TemplateData/TitleScreen/UscGamesLogo.png" as="image">
+    <link rel="preload" href="TemplateData/TitleScreen/PeelFiveLogo.png" as="image">
     <link rel="preload" href="TemplateData/TitleScreen/MonkobraTutorial-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
     <style>
       @font-face { font-family: "MonkobraTitle"; src: url("TemplateData/TitleScreen/MonkobraTutorial-SemiBold.ttf") format("truetype"); font-display: block; }
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
       /* the game keeps 16:9 and takes the largest box the window allows; the rest is black */
       #unity-canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: block; background: #0A1F12; outline: none; }
-      /* the loading page sits exactly over the canvas and draws the TitleScreen picture */
+      /* the loading page sits exactly over the canvas: first the team logos, then the TitleScreen picture */
       #loader { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); overflow: hidden; background: #0A1F12; pointer-events: none; z-index: 1; transition: opacity 0.25s linear; }
       #loader.done { opacity: 0; }
-      #loader-stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; visibility: hidden; }
-      #loader-stage img { position: absolute; display: block; user-select: none; -webkit-user-drag: none; }
+      #loader-logos, #loader-stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; visibility: hidden; opacity: 0; }
+      #loader img { position: absolute; display: block; user-select: none; -webkit-user-drag: none; }
+      .logos-plate, .logos-divider { position: absolute; box-sizing: border-box; }
       #loader-label { position: absolute; color: #FFF2D2; font: 30px "MonkobraTitle", sans-serif; text-align: center; white-space: nowrap; }
       #unity-fullscreen-button { position: absolute; right: 12px; bottom: 12px; padding: 6px 10px; font: 13px sans-serif; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #888; border-radius: 4px; cursor: pointer; z-index: 2; display: none; }
       #unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none; z-index: 3; }
@@ -23,7 +26,7 @@
   </head>
   <body>
     <canvas id="unity-canvas" tabindex="-1"></canvas>
-    <div id="loader"><div id="loader-stage"></div></div>
+    <div id="loader"><div id="loader-stage"></div><div id="loader-logos"></div></div>
     <button id="unity-fullscreen-button" title="Fullscreen">Fullscreen</button>
     <div id="unity-warning"></div>
     <script>
@@ -33,6 +36,31 @@
       // MAX_RENDER_HEIGHT to a number (eg 1080) to cap it if frame rate drops.
       var ASPECT = 16 / 9;
       var MAX_RENDER_HEIGHT = 0; // 0 = no cap
+
+      // Team logo screen tuning  ##############################################
+      // USC Games and Peel Five side by side before the loading page, while
+      // the game already downloads; they fade out to the background colour
+      // (never black), a short pause, then the loading page fades in. A
+      // click or a key cuts the hold short but keeps the fades
+      var LOGOS_FADE_IN_S = 0.3;
+      var LOGOS_HOLD_S = 1.0;
+      var LOGOS_FADE_OUT_S = 0.25;       // leaving a little faster than arriving
+      var LOGOS_SKIP_FADE_OUT_S = 0.2;   // the fade out after a skip
+      var LOGOS_GAP_S = 0.15;            // bare background between the two
+      var LOADER_FADE_IN_S = 0.3;        // the loading page fades in
+      var LOGOS_ONCE_PER_SESSION = true; // a reload in the same tab skips them
+      var LOGOS_USC_PLATE = false;       // a dark plate behind USC Games, to compare
+
+      // Team logo screen layout, 1280x720 px, y down; each logo's width
+      // follows its picture
+      var LOGOS = {
+        centerY: 360, gap: 56,                       // each logo's edge to the divider
+        divider: { w: 2, h: 120, color: "#3B4C41" }, // the background plus 20% white
+        uscH: 64, peelFiveH: 54,
+        plate: { padX: 22, padY: 18, radius: 22, border: 5, shadowX: 5, shadowY: 6 },
+        peelFivePlate: { fill: "#F5F5F5", border: "#352016", shadow: "#89501F" },
+        uscPlate: { fill: "#1E3125", border: "#3B4C41", shadow: "#050F09" } // as tall as Peel Five's
+      };
 
       // Loading page tuning  ##################################################
       // shortest chase in seconds, so a cached (near instant) load still shows
@@ -68,6 +96,7 @@
       var canvas = document.querySelector("#unity-canvas");
       var loader = document.querySelector("#loader");
       var stage = document.querySelector("#loader-stage");
+      var logos = document.querySelector("#loader-logos");
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var warningBanner = document.querySelector("#unity-warning");
 
@@ -79,33 +108,108 @@
         canvas.style.height = Math.floor(h) + "px";
         loader.style.width = Math.floor(w) + "px";
         loader.style.height = Math.floor(h) + "px";
-        stage.style.transform = "scale(" + Math.floor(w) / 1280 + ")";
+        stage.style.transform = logos.style.transform = "scale(" + Math.floor(w) / 1280 + ")";
       }
       window.addEventListener("resize", fitCanvas);
       fitCanvas();
 
       // Loading page  #########################################################
-      // the cobra eats a row of dots along the branch, each dot becoming one
-      // body segment, while the monkey hops ahead; the head follows the real
-      // download progress, never faster than LOADER_MIN_DURATION_S allows.
+      // First the team logos fade in, hold, and fade out; after a short pause
+      // on the bare background the loading picture fades in. There the cobra eats a row of dots along the branch, each dot
+      // becoming one body segment, while the monkey hops ahead; the head
+      // follows the real download progress, never faster than
+      // LOADER_MIN_DURATION_S allows, counted from the end of its fade in.
       // The page fades out once the TitleScreen has drawn its first frame
       // (Plugins/WebGL/TitleScreenLoader.jslib), so the swap is not visible.
+      var LOGOS_SEEN_KEY = "monkobra.logosSeen";
       var loaderState = {
+        phase: "logos", // logos, logosOut, gap, stageIn, then chase
+        logosMs: 0, phaseMs: 0, logosAlpha: 0, logosFadeOutS: 0,
+        isLogosReady: false, isSkipRequested: false,
         realProgress: 0, shown: 0, startMs: 0, lastMs: 0, hopPhase: 0,
         isArtReady: false, isLanded: false, isUnityShown: false, isFading: false
       };
       var loaderParts = { dots: [], segments: [], head: null, monkeyOpen: null, monkeyClosed: null };
 
-      function loaderImage(src, x, y, w, h) {
+      function place(el, x, y, w, h) {
+        el.style.left = x + "px";
+        el.style.top = y + "px";
+        el.style.width = w + "px";
+        el.style.height = h + "px";
+      }
+
+      function picture(parent, src, x, y, w, h) {
         var img = document.createElement("img");
         img.src = LOADER_ART + src + ".png";
         img.alt = "";
-        img.style.left = x + "px";
-        img.style.top = y + "px";
-        img.style.width = w + "px";
-        img.style.height = h + "px";
-        stage.appendChild(img);
+        place(img, x, y, w, h);
+        parent.appendChild(img);
         return img;
+      }
+
+      // true once the picture can be drawn, false if it failed to load
+      function decoded(img) {
+        if (!img.decode) { return Promise.resolve(true); }
+        return img.decode().then(function () { return true; }, function () { return false; });
+      }
+
+      // the logos play once per tab, unless the browser keeps no session
+      function isLogosDue() {
+        if (!LOGOS_ONCE_PER_SESSION) { return true; }
+        try {
+          if (window.sessionStorage.getItem(LOGOS_SEEN_KEY)) { return false; }
+          window.sessionStorage.setItem(LOGOS_SEEN_KEY, "1");
+        } catch (e) {}
+        return true;
+      }
+
+      function logoPlate(colors, x, w, h) {
+        var p = LOGOS.plate;
+        var plate = document.createElement("div");
+        plate.className = "logos-plate";
+        place(plate, x, LOGOS.centerY - h / 2, w, h);
+        plate.style.background = colors.fill;
+        plate.style.border = p.border + "px solid " + colors.border;
+        plate.style.borderRadius = p.radius + "px";
+        plate.style.boxShadow = p.shadowX + "px " + p.shadowY + "px 0 " + colors.shadow;
+        logos.insertBefore(plate, logos.firstChild); // behind the logos
+      }
+
+      // USC Games left, Peel Five right on its light plate, the divider on
+      // the centre line, each logo the same gap away from it
+      function buildLogos() {
+        var P = LOGOS;
+        var plateH = P.peelFiveH + 2 * P.plate.padY;
+        var usc = picture(logos, "UscGamesLogo", 0, 0, 0, 0);
+        var peelFive = picture(logos, "PeelFiveLogo", 0, 0, 0, 0);
+        var divider = document.createElement("div");
+        divider.className = "logos-divider";
+        place(divider, 640 - P.divider.w / 2, P.centerY - P.divider.h / 2, P.divider.w, P.divider.h);
+        divider.style.background = P.divider.color;
+        logos.appendChild(divider);
+
+        Promise.all([decoded(usc), decoded(peelFive)]).then(function (isLoaded) {
+          if (!isLoaded[0] || !isLoaded[1]) { // never show half a logo screen
+            loaderState.phase = "stageIn";
+            logos.remove();
+            return;
+          }
+          var peelFiveW = P.peelFiveH * peelFive.naturalWidth / peelFive.naturalHeight;
+          var plateW = peelFiveW + 2 * P.plate.padX;
+          var left = 640 + P.gap;
+          logoPlate(P.peelFivePlate, left, plateW, plateH);
+          place(peelFive, left + P.plate.padX, P.centerY - P.peelFiveH / 2, peelFiveW, P.peelFiveH);
+
+          var uscW = P.uscH * usc.naturalWidth / usc.naturalHeight;
+          var right = 640 - P.gap;
+          if (LOGOS_USC_PLATE) {
+            var uscPlateW = uscW + 2 * P.plate.padX;
+            logoPlate(P.uscPlate, right - uscPlateW, uscPlateW, plateH);
+            right -= P.plate.padX;
+          }
+          place(usc, right - uscW, P.centerY - P.uscH / 2, uscW, P.uscH);
+          loaderState.isLogosReady = true;
+        });
       }
 
       function segmentAt(k) {
@@ -115,48 +219,42 @@
 
       function buildLoader() {
         var L = LAYOUT;
-        for (var i = 0; i < 5; i++) {
+        if (isLogosDue()) {
+          buildLogos();
+        } else {
+          loaderState.phase = "stageIn";
+          logos.remove();
+        }
+
+        for (var i = 0; i < L.statics.length; i++) {
           var s = L.statics[i];
-          loaderImage(s.src, s.x, s.y, s.w, s.h);
+          picture(stage, s.src, s.x, s.y, s.w, s.h);
         }
         for (var d = 0; d < L.dotCount; d++) {
           var dx = L.dotX0 + d * L.spacing;
-          loaderParts.dots.push(loaderImage("RunwayDot", dx - L.dotD / 2, L.surfaceY - 5 - L.dotD / 2, L.dotD, L.dotD));
+          loaderParts.dots.push(picture(stage, "RunwayDot", dx - L.dotD / 2, L.surfaceY - 5 - L.dotD / 2, L.dotD, L.dotD));
         }
         for (var k = 0; k <= L.dotCount; k++) {
           var seg = segmentAt(k);
-          var img = loaderImage("CobraSegment", seg.x - seg.d / 2, L.surfaceY + 3 - seg.d, seg.d, seg.d);
+          var img = picture(stage, "CobraSegment", seg.x - seg.d / 2, L.surfaceY + 3 - seg.d, seg.d, seg.d);
           img.style.visibility = k === 0 ? "visible" : "hidden";
           loaderParts.segments.push({ img: img, bornMs: -1 });
         }
-        loaderParts.head = loaderImage("CobraHead", 0, 0, L.headW, L.headH);
-        loaderParts.monkeyOpen = loaderImage("MonkeyHead_Open", 0, 0, L.monkeyW, L.monkeyH);
-        loaderParts.monkeyClosed = loaderImage("MonkeyHead_Closed", 0, 0, L.monkeyW, L.monkeyH);
+        loaderParts.head = picture(stage, "CobraHead", 0, 0, L.headW, L.headH);
+        loaderParts.monkeyOpen = picture(stage, "MonkeyHead_Open", 0, 0, L.monkeyW, L.monkeyH);
+        loaderParts.monkeyClosed = picture(stage, "MonkeyHead_Closed", 0, 0, L.monkeyW, L.monkeyH);
         var label = document.createElement("div");
         label.id = "loader-label";
         label.textContent = "Loading";
-        label.style.left = L.label.x + "px";
-        label.style.top = L.label.y + "px";
-        label.style.width = L.label.w + "px";
-        label.style.height = L.label.h + "px";
+        place(label, L.label.x, L.label.y, L.label.w, L.label.h);
         label.style.lineHeight = L.label.h + "px";
         stage.appendChild(label);
-        for (var f = 5; f < L.statics.length; f++) {
-          var st = L.statics[f];
-          loaderImage(st.src, st.x, st.y, st.w, st.h);
-        }
 
-        // show the page only once every picture and the font are in, so
+        // show the picture only once every image and the font are in, so
         // nothing pops in late; a missing file never blocks the game
-        var waits = Array.prototype.map.call(stage.querySelectorAll("img"), function (img) {
-          return img.decode ? img.decode().catch(function () {}) : Promise.resolve();
-        });
+        var waits = Array.prototype.map.call(stage.querySelectorAll("img"), decoded);
         if (document.fonts) { waits.push(document.fonts.load('30px "MonkobraTitle"').catch(function () {})); }
-        Promise.all(waits).then(function () {
-          stage.style.visibility = "visible";
-          loaderState.isArtReady = true;
-          loaderState.startMs = loaderState.lastMs = performance.now();
-        });
+        Promise.all(waits).then(function () { loaderState.isArtReady = true; });
         requestAnimationFrame(loaderFrame);
       }
 
@@ -166,14 +264,68 @@
         return 0.5 + 0.5 * (1 + 2.2 * t * t * t + 1.2 * t * t);
       }
 
-      function loaderFrame(nowMs) {
+      // fades: ease out to appear (fast, then settling), ease in to leave
+      function easeOut(x) { return 1 - Math.pow(1 - x, 3); }
+      function easeIn(x) { return x * x * x; }
+      function fadeProgress(sinceMs, nowMs, durationS) {
+        return durationS > 0 ? Math.min(1, (nowMs - sinceMs) / 1000 / durationS) : 1;
+      }
+
+      // logos fade in and hold, or end early on a skip
+      function updateLogos(nowMs) {
+        var s = loaderState;
+        if (!s.isLogosReady) { return; }
+        if (!s.logosMs) {
+          s.logosMs = nowMs;
+          logos.style.visibility = "visible";
+        }
+        s.logosAlpha = easeOut(fadeProgress(s.logosMs, nowMs, LOGOS_FADE_IN_S));
+        logos.style.opacity = s.logosAlpha;
+        if (s.isSkipRequested || (nowMs - s.logosMs) / 1000 >= LOGOS_FADE_IN_S + LOGOS_HOLD_S) {
+          s.phase = "logosOut";
+          s.phaseMs = nowMs;
+          s.logosFadeOutS = s.isSkipRequested ? LOGOS_SKIP_FADE_OUT_S : LOGOS_FADE_OUT_S;
+        }
+      }
+
+      // logos fade out to the bare background, which holds for LOGOS_GAP_S
+      function updateLogosOut(nowMs) {
+        var s = loaderState;
+        var c = fadeProgress(s.phaseMs, nowMs, s.logosFadeOutS);
+        logos.style.opacity = s.logosAlpha * (1 - easeIn(c));
+        if (c < 1) { return; }
+        logos.remove();
+        s.phase = "gap";
+        s.phaseMs = nowMs;
+      }
+
+      // the loading page fades in once its art is ready; the chase starts
+      // when it is fully in
+      function updateStageIn(nowMs) {
+        var s = loaderState;
+        if (s.phase === "gap") {
+          if ((nowMs - s.phaseMs) / 1000 < LOGOS_GAP_S || !s.isArtReady) { return; }
+          s.phase = "stageIn";
+          s.phaseMs = 0;
+        }
+        if (!s.isArtReady) { return; }
+        if (!s.phaseMs) {
+          s.phaseMs = nowMs;
+          stage.style.visibility = "visible";
+        }
+        var c = fadeProgress(s.phaseMs, nowMs, LOADER_FADE_IN_S);
+        stage.style.opacity = easeOut(c);
+        if (c < 1) { return; }
+        s.phase = "chase";
+        s.startMs = nowMs;
+      }
+
+      // one frame of the chase; true once the page has started to fade out
+      function drawChase(nowMs, dt) {
         var s = loaderState;
         var L = LAYOUT;
-        if (!s.isArtReady) { requestAnimationFrame(loaderFrame); return; }
-        var dt = Math.min(0.1, (nowMs - s.lastMs) / 1000);
-        s.lastMs = nowMs;
-
-        var target = Math.min(s.realProgress, (nowMs - s.startMs) / 1000 / LOADER_MIN_DURATION_S, 1);
+        var runS = s.startMs ? (nowMs - s.startMs) / 1000 : 0;
+        var target = Math.min(s.realProgress, runS / LOADER_MIN_DURATION_S, 1);
         if (target > s.shown) {
           var step = Math.max((target - s.shown) * Math.min(1, dt * LOADER_SMOOTHING), dt * LOADER_MIN_CATCH_UP);
           s.shown = Math.min(target, s.shown + step);
@@ -211,7 +363,7 @@
           }
         }
         var monkeyX = Math.min(frontX, L.dotX0 + (L.dotCount - 1) * L.spacing) + L.monkeyGap;
-        var isBlink = !s.isLanded && hop < LOADER_BLINK_HEIGHT;
+        var isBlink = s.startMs > 0 && !s.isLanded && hop < LOADER_BLINK_HEIGHT;
         var monkeyLeft = monkeyX - L.monkeyW / 2 + "px";
         var monkeyTop = L.surfaceY + L.monkeySink - L.monkeyH - hop + "px";
         loaderParts.monkeyOpen.style.left = loaderParts.monkeyClosed.style.left = monkeyLeft;
@@ -219,20 +371,52 @@
         loaderParts.monkeyOpen.style.visibility = isBlink ? "hidden" : "visible";
         loaderParts.monkeyClosed.style.visibility = isBlink ? "visible" : "hidden";
 
-        if (isDone && s.isLanded && s.isUnityShown && !s.isFading) {
-          s.isFading = true;
-          loader.classList.add("done");
-          var removeLoader = function () {
-            if (!loader.parentNode) { return; }
-            loader.remove();
-            fullscreenButton.style.display = "block";
-          };
-          loader.addEventListener("transitionend", removeLoader);
-          setTimeout(removeLoader, 500); // a hidden tab may skip the event
-          return;
-        }
+        if (!(isDone && s.isLanded && s.isUnityShown && !s.isFading)) { return false; }
+        s.isFading = true;
+        loader.classList.add("done");
+        loader.addEventListener("transitionend", removeLoader);
+        setTimeout(removeLoader, 500); // a hidden tab may skip the event
+        return true;
+      }
+
+      function loaderFrame(nowMs) {
+        var s = loaderState;
+        var dt = s.lastMs ? Math.min(0.1, (nowMs - s.lastMs) / 1000) : 0;
+        s.lastMs = nowMs;
+        if (s.phase === "logos") { updateLogos(nowMs); }
+        if (s.phase === "logosOut") { updateLogosOut(nowMs); }
+        if (s.phase === "gap" || s.phase === "stageIn") { updateStageIn(nowMs); }
+        // the chase holds its first frame while the page fades in
+        var isStageUp = s.phase === "chase" || (s.phase === "stageIn" && s.phaseMs > 0);
+        if (isStageUp && drawChase(nowMs, s.startMs ? dt : 0)) { return; }
         requestAnimationFrame(loaderFrame);
       }
+
+      function removeLoader() {
+        if (!loader.parentNode) { return; }
+        loader.remove();
+        GUARDED_INPUT.forEach(function (type) { window.removeEventListener(type, guardInput, true); });
+        fullscreenButton.style.display = "block";
+        canvas.focus();
+      }
+
+      // While the page covers the game it owns every click, tap and key: they
+      // skip the team logos and never reach Unity underneath, so no press can
+      // start the title unseen. Keys keep their browser default (reload, ...).
+      var GUARDED_INPUT = [
+        "keydown", "keyup", "keypress", "mousedown", "mouseup", "click", "dblclick",
+        "pointerdown", "pointerup", "touchstart", "touchend", "contextmenu", "wheel"
+      ];
+      function guardInput(event) {
+        if (!loader.parentNode) { return; }
+        event.stopImmediatePropagation();
+        if (event.type === "keydown" || event.type === "pointerdown" || event.type === "touchstart") {
+          loaderState.isSkipRequested = true;
+        }
+      }
+      GUARDED_INPUT.forEach(function (type) {
+        window.addEventListener(type, guardInput, { capture: true, passive: true });
+      });
 
       // called by TitleScreen through TitleScreenLoader.jslib
       window.monkobraTitleShown = function () { loaderState.isUnityShown = true; };
