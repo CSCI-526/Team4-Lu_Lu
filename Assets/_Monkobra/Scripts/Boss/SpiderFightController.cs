@@ -514,6 +514,7 @@ public class SpiderFightController: MonoBehaviour {
             return;
         }
         if (phase == Phase.Waiting) {
+            UpdatePreview(game);
             if (CanBegin(game)) {
                 BeginFight();
             }
@@ -566,6 +567,38 @@ public class SpiderFightController: MonoBehaviour {
                 >= worldBalanceConfig.SpiderTriggerHeightU;
     }
 
+    // from just below the spider jump height on, the Spider King already
+    // waits idle above its trigger height, so the player sees the fight ahead
+    private void UpdatePreview(GameController game) {
+        if (body.IsBuilt) {
+            body.Place(previewAngle, previewY, 0f);
+            return;
+        }
+        if (!game.IsRunLive || game.Mode == RunMode.Endless) {
+            return;
+        }
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp == null || ramp.CurrentPlayerClimbedYDistance
+                < worldBalanceConfig.SpiderJumpHeightU - 5f) {
+            return;
+        }
+        MonkeyController found = FindFirstObjectByType<MonkeyController>();
+        if (found == null || found.transform.parent == null) {
+            return;
+        }
+        trunkCenter = found.transform.parent.position;
+        previewAngle = AngleOf(found.transform.position) + 70f;
+        previewY = ramp.PlayerGameStartYPosition
+            + worldBalanceConfig.SpiderTriggerHeightU + 6f;
+        body.Build(trunkCenter, previewAngle, previewY);
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "SpiderFightController:\tSpider King waits at y " + previewY,
+                this
+            );
+        }
+    }
+
     private void BeginFight() {
         monkeyController = FindFirstObjectByType<MonkeyController>();
         if (monkeyController == null
@@ -612,9 +645,13 @@ public class SpiderFightController: MonoBehaviour {
         }
         monkeyController.SetHeightCeiling(entryY + arenaHeightU);
 
-        // the spider starts a little above, a quarter round the trunk
-        startAngle = AngleOf(monkey.position) + 70f;
-        startY = entryY + 6f;
+        // the spider starts where it waited, else a little above & a
+        // quarter round the trunk
+        bool hasWaited = body.IsBuilt;
+        startAngle = hasWaited ? previewAngle : AngleOf(monkey.position) + 70f;
+        startY = hasWaited
+            ? Mathf.Clamp(previewY, entryY + 2f, entryY + arenaHeightU - 1f)
+            : entryY + 6f;
         spiderAngle = startAngle;
         spiderY = startY;
         body.Build(trunkCenter, spiderAngle, spiderY);
@@ -1904,6 +1941,8 @@ public class SpiderFightController: MonoBehaviour {
     private int health;
     private int maxHealth;
 
+    private float previewAngle;
+    private float previewY;
     private float startAngle;
     private float startY;
     private float spiderAngle;

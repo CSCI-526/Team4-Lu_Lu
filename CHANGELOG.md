@@ -124,7 +124,8 @@ todo vertical version
 
 ##### Wenhai Dong
 
-- second boss, the Spider King, at 1050 u (zone 1025~1100, bare like the cobra's): rip glowing silk knots by grabbing (x2 damage in its territory ring), it re-spins knots near itself; web shot leaves sticky webs, silk hook drag (tap Space / grab to escape), cocoon on a trapped monkey, leg swipe in its territory; grabbed bananas are tossed to the far side as a lure; the Cobra King armor carries over if unused; win gives Silk Gloves (webs break 2x faster); F9 hack key jumps to 1000 u
+- second boss, the Spider King, at 1050 u (zone 1025~1100, bare like the cobra's): rip glowing silk knots by grabbing (x2 damage in its territory ring), it re-spins knots near itself; web shot leaves sticky webs, silk hook drag (tap Space / grab to escape), cocoon on a trapped monkey, leg swipe in its territory; grabbed bananas are tossed to the far side as a lure; the Cobra King armor carries over if unused; win gives Silk Gloves (webs break 2x faster); F9 hack key jumps to 1000 u, where the Spider King is already seen waiting above
+- fix: fruit destroyed in reach (eg a segment recycled after a hack jump) no longer breaks `UpwardFruitSensor` & every grab after it
 - boss fight difficulty restored to pre-bare-zone tuning: arena grows own branches, rough bark & webs like the climb; `bossMaxHealth` back to 12
 - boss fight: tail sweep joins at 1/5 king health lost, not 1/3; arena watermelons regrow slower (6 → 9 s) & are removed after the win; golden watermelon banner; webs never overlap
 - boss fight: minion call never lost, repeated after a revive

@@ -233,6 +233,7 @@ The `Boss/SpiderFight` prefab (`SpiderFightController`, `SpiderKingBody`, `BossF
 - Bare Zone: `spiderZoneStartU`~`spiderZoneEndU` (1025~1100) counts as a boss zone in `RampedDifficultyManager.IsInBossZoneY`, so no branch, web, falling cobra or rough bark is generated there; branches left near the arena are removed when the fight begins
 - Arena: `arenaHeightU` above the entry, the climb capped there (`SetHeightCeiling`); the great cobra guards `guardDepthU` below (`StartGuard`), the camera pulls back `cameraDistanceScale`
 - Spider: crawls on the bark (`SpiderKingBody`: dark body, red back mark, small gold crown, 8 legs, 6 eyes), stalking the monkey till `stalkDistanceU` away. A red dotted ring of `territoryRadiusU` round it on the bark is its territory, brighter while the monkey is inside
+- Waiting: from 5 u below `spiderJumpHeightU` on, the spider already sits idle 6 u above the trigger height, so the player sees the fight ahead; the fight starts it from there
 - Health: `spiderMaxHealth` (10)
 
 ### Silk Knots (how to win)
