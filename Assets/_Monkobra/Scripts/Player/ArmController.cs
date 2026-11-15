@@ -28,6 +28,11 @@ public class ArmController: MonoBehaviour {
     /// <returns>if the arm is reaching for fruit, else climbing</returns>
     public bool IsReaching => isReaching;
 
+    /// <returns>the arm's stretched cube, shoulder to hand (length along its
+    /// local z, toward the shoulder), eg to dress it; null if unassigned
+    /// </returns>
+    public Transform ArmVisual => armVisual;
+
     /// <returns>if the hand touches anything right now</returns>
     public bool IsHandTouching {
         get {

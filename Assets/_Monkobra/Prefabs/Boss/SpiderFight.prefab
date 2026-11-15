@@ -170,8 +170,8 @@ MonoBehaviour:
   finalS: 2
   readyS: 3
   saveGraceS: 0.25
-  finisherTimeScale: 0.25
-  finisherRealS: 1.2
+  finisherTimeScale: 0.2
+  finisherRealS: 1.4
   reviveOfferS: 5
   adSkipAfterS: 3
   reviveReturnSpeedU: 20

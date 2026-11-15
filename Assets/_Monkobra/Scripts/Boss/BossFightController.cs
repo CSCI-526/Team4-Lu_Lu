@@ -2492,7 +2492,6 @@ public class BossFightController: MonoBehaviour {
         SpawnChoices();
         SpawnWebs(webCount);
         SpawnLowWebs();
-        hud.Flash(goldenColor);
         hud.ShowBannerFor(armorIntroTitle, ChoiceLine, goldenColor, 0f);
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -2687,7 +2686,6 @@ public class BossFightController: MonoBehaviour {
         if (!hasArmorLanded && t >= ARMOR_LAND_SHARE) {
             hasArmorLanded = true;
             BurstAt(monkey.position + Vector3.up * 0.4f, goldenColor);
-            hud.Flash(goldenColor);
         }
         if (t >= 1f) {
             armorRewardTimeS = -1f;

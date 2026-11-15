@@ -615,12 +615,12 @@ public class SpiderFightController: MonoBehaviour {
     [Tooltip("time scale of the slow last blow")]
     [SerializeField]
     [Range(0.05f, 1f)]
-    private float finisherTimeScale = 0.25f;
+    private float finisherTimeScale = 0.2f;
 
     [Tooltip("real seconds the slow last blow lasts")]
     [SerializeField]
     [Min(0.1f)]
-    private float finisherRealS = 1.2f;
+    private float finisherRealS = 1.4f;
 
     [Tooltip("seconds the revive offer waits")]
     [SerializeField]
@@ -766,6 +766,10 @@ public class SpiderFightController: MonoBehaviour {
                 BeginFight();
             }
             return;
+        }
+        // the won gloves keep shining on the climb after
+        if (phase == Phase.Done) {
+            UpdateGloveShine();
         }
         if (!game.IsRunLive || monkey == null
             || phase == Phase.Done || phase == Phase.Over) {
@@ -916,7 +920,9 @@ public class SpiderFightController: MonoBehaviour {
 
         hud.Show(bossName);
         hud.SetHealth(1f);
-        hud.Flash(warnColor);
+        // flashes as the Cobra King's: at the start, the last blow & a
+        // spent armor; never on a revive or a reward
+        hud.Flash();
         // only web bullets till the first parry is done, then the fight; the
         // first slash later teaches its own parry
         teach = hasTaughtWeb ? TeachStep.Done : TeachStep.Parry;
@@ -1595,7 +1601,10 @@ public class SpiderFightController: MonoBehaviour {
             BurstStreaks(body.HeadPosition, warnColor, 18, 4f, 10f);
             return;
         }
-        hud.Say(health <= maxHealth / 3 ? "No! Stop it!" : "Ouch!");
+        // no word on a plain hit; only low on health it begs
+        if (health <= maxHealth / 3) {
+            hud.Say("No! Stop it!");
+        }
     }
 
     // while it calls out it starts no new attack, only follows the monkey;
@@ -3782,7 +3791,6 @@ public class SpiderFightController: MonoBehaviour {
         }
         monkey.rotation = entryRotation;
         ReturnToStart();
-        hud.Flash(silkColor);
         hud.Say("Back for more?");
     }
 
@@ -3846,12 +3854,179 @@ public class SpiderFightController: MonoBehaviour {
             struggle.EscapeGainScale = glovesEscapeGainScale;
         }
         hud.HideBossBar();
-        hud.Flash(silkColor);
-        hud.ShowRewardPanel(winTitle, winLine, winDetailLine);
+        // as the Cobra King's armor: the silk gloves swirl in & snap onto
+        // the monkey's hands, then the reward panel
+        StartGloveReward();
+    }
+
+    // Silk Gloves  ------------------------------------------------------------
+    // two plain silver silk gloves, as simple as the armor, spiral in from
+    // around the monkey, shrinking as they near, snap onto its hands w/ a
+    // silk burst, a sleeve grows up each arm, they pulse bright, & stay on
+    // for good, softly shining as the armor does
+    private void StartGloveReward() {
+        ArmController[] hands = FindObjectsByType<ArmController>(
+            FindObjectsSortMode.None);
+        gloveHands = hands;
+        gloves = new Transform[hands.Length];
+        sleeves = new Transform[hands.Length];
+        gloveSizes = new float[hands.Length];
+        for (int i = 0; i < hands.Length; i++) {
+            Collider grip = hands[i].GetComponentInChildren<Collider>(true);
+            float size = grip != null
+                ? Mathf.Max(grip.bounds.extents.x, grip.bounds.extents.y,
+                    grip.bounds.extents.z) * 2.3f
+                : 0.45f;
+            gloveSizes[i] = Mathf.Clamp(size * 1.5f, 0.4f, 1.3f);
+            gloves[i] = BuildGlove();
+        }
+        gloveRewardTimeS = 0f;
+        hasGloveLanded = false;
+    }
+
+    // a plain sleeve over the whole arm, from the glove to the shoulder, a
+    // bit wider than the arm; it lives on the arm's stretched cube, so it
+    // stretches w/ it
+    private Transform BuildSleeve(Transform arm) {
+        Transform sleeve = new GameObject("SilkSleeve").transform;
+        sleeve.SetParent(arm, false);
+        AddSleevePart(sleeve, PrimitiveType.Cube, Vector3.zero,
+            new Vector3(1.3f, 1.3f, 1.02f), gloveColor);
+        return sleeve;
+    }
+
+    private void AddSleevePart(Transform sleeve, PrimitiveType type,
+        Vector3 at, Vector3 scale, Color color) {
+        Transform part = CreatePrimitive(type, "SleevePart", Vector3.one,
+            color).transform;
+        part.SetParent(sleeve, false);
+        part.localPosition = at;
+        part.localRotation = Quaternion.identity;
+        part.localScale = scale;
+    }
+
+    private Transform BuildGlove() {
+        Transform glove = new GameObject("SilkGlove").transform;
+        glove.SetParent(transform, false);
+        AddSleevePart(glove, PrimitiveType.Sphere, Vector3.zero,
+            new Vector3(1f, 0.85f, 1f), gloveColor);
+        return glove;
+    }
+
+    // the swirl in, then the panel; time runs till the panel shows
+    private void UpdateGloveReward() {
+        gloveRewardTimeS += Time.unscaledDeltaTime;
+        float t = Mathf.Clamp01(gloveRewardTimeS / GLOVE_REWARD_S);
+        Vector3 outward = monkey.position - trunkCenter;
+        outward.y = 0f;
+        outward = outward.sqrMagnitude > 0.001f ? outward.normalized
+            : Vector3.forward;
+        Vector3 side = Vector3.Cross(Vector3.up, outward);
+        for (int i = 0; i < gloves.Length; i++) {
+            Transform glove = gloves[i];
+            Transform hand = gloveHands[i] != null ? gloveHands[i].transform
+                : null;
+            if (glove == null || hand == null) {
+                continue;
+            }
+            float size = gloveSizes[i];
+            if (t < GLOVE_LAND_SHARE) {
+                float fly = t / GLOVE_LAND_SHARE;
+                float ease = 1f - Mathf.Pow(1f - fly, 3f);
+                float radius = Mathf.Lerp(GLOVE_SWIRL_U, 0f, ease);
+                float spin = (i * 180f + fly * 540f) * Mathf.Deg2Rad;
+                glove.position = hand.position
+                    + (outward * Mathf.Cos(spin) + side * Mathf.Sin(spin))
+                        * radius
+                    + Vector3.up * radius * 0.7f;
+                glove.rotation = Quaternion.LookRotation(outward, Vector3.up)
+                    * Quaternion.Euler(0f, fly * 720f, 0f);
+                glove.localScale = Vector3.one * size * Mathf.Lerp(1.8f, 1f,
+                    ease);
+                continue;
+            }
+            if (!hasGloveLanded) {
+                // on: held by the hand from now on, for good, & its sleeve
+                // grows up the arm
+                glove.SetParent(hand, false);
+                glove.localPosition = Vector3.zero;
+                glove.localRotation = Quaternion.identity;
+                Transform arm = gloveHands[i].ArmVisual;
+                if (arm != null) {
+                    sleeves[i] = BuildSleeve(arm);
+                }
+            }
+            // the sleeve grows from the hand end up to the shoulder
+            if (sleeves[i] != null) {
+                float grow = Mathf.Clamp01((t - GLOVE_LAND_SHARE) / 0.15f);
+                grow = 1f - (1f - grow) * (1f - grow);
+                sleeves[i].localScale = new Vector3(1f, 1f,
+                    Mathf.Max(0.01f, grow));
+                sleeves[i].localPosition = new Vector3(0f, 0f,
+                    -0.5f + 0.5f * grow);
+            }
+            float pulse = Mathf.Sin((t - GLOVE_LAND_SHARE)
+                / (1f - GLOVE_LAND_SHARE) * Mathf.PI);
+            SetWorldScale(glove, size * (1f + 0.35f * pulse));
+        }
+        if (!hasGloveLanded && t >= GLOVE_LAND_SHARE) {
+            hasGloveLanded = true;
+            foreach (Transform glove in gloves) {
+                if (glove != null) {
+                    Burst(glove.position, silkColor, 12);
+                    Burst(glove.position, goldenColor, 6);
+                }
+            }
+        }
+        UpdateSparks();
+        UpdateGloveShine();
+        if (t >= 1f) {
+            gloveRewardTimeS = -1f;
+            hud.ShowRewardPanel(winTitle, winLine, winDetailLine);
+        }
+    }
+
+    // the gloves & sleeves shine softly, as the armor does
+    private void UpdateGloveShine() {
+        if (gloves == null) {
+            return;
+        }
+        float shine = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f);
+        Color color = Color.Lerp(gloveColor, Color.white, shine * 0.35f);
+        for (int i = 0; i < gloves.Length; i++) {
+            TintAll(gloves[i], color);
+            if (sleeves != null) {
+                TintAll(sleeves[i], color);
+            }
+        }
+    }
+
+    private void TintAll(Transform root, Color color) {
+        if (root == null) {
+            return;
+        }
+        foreach (Renderer part in root.GetComponentsInChildren<Renderer>()) {
+            SetColor(part, color);
+        }
+    }
+
+    // a world size kept whatever the hand's own scale
+    private static void SetWorldScale(Transform target, float size) {
+        Transform parent = target.parent;
+        Vector3 lossy = parent != null ? parent.lossyScale : Vector3.one;
+        target.localScale = new Vector3(
+            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.x)),
+            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.y)),
+            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.z)));
     }
 
     // time stops on the reward panel till the player goes on
     private void UpdateRewardPause(GameController game) {
+        // the gloves swirl on first, time running
+        if (gloveRewardTimeS >= 0f) {
+            UpdateGloveReward();
+            return;
+        }
         Time.timeScale = 0f;
         if (game.IsPaused) {
             return;
@@ -4089,6 +4264,11 @@ public class SpiderFightController: MonoBehaviour {
     private const float QUICK_SHOT_WEIGHT = 0.3f;
     private const int CRESCENT_STRANDS = 3;
     private const int SIGIL_PARTS = 9; // the slash charge's red blade sign
+    // the silk gloves' swirl on, real s; its share spent flying in; how far
+    // out it starts; u
+    private const float GLOVE_REWARD_S = 1.6f;
+    private const float GLOVE_LAND_SHARE = 0.7f;
+    private const float GLOVE_SWIRL_U = 2.5f;
     private const int CRESCENT_SPOKES = 5;
     // how far a crescent's middle runs ahead of its tips; u
     private const float CRESCENT_BULGE_U = 0.9f;
@@ -4294,6 +4474,15 @@ public class SpiderFightController: MonoBehaviour {
     private bool isVolleySlowFirst;
     private float nextVolleyTime;
     private int lastStage;
+    // the silk gloves' swirl on: -1 when none plays
+    private float gloveRewardTimeS = -1f;
+    private bool hasGloveLanded;
+    private Transform[] gloves;
+    private Transform[] sleeves; // over the arms, once the gloves are on
+    // the silk gloves' silver
+    private static readonly Color gloveColor = new Color(0.82f, 0.86f, 0.95f);
+    private ArmController[] gloveHands;
+    private float[] gloveSizes;
     private Shot volleyCharge; // a volley's next bullet, charging
     private float callOutEndTime; // real time it is done calling out
     private float volleyChargeFromTime;
