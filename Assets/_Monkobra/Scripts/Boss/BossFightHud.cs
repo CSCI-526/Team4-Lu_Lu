@@ -22,6 +22,18 @@ public class BossFightHud: MonoBehaviour {
         SetHealth(1f);
     }
 
+    /// <summary>
+    /// Builds the UI w/o the name & health bar, eg for a fight skipped as
+    /// beaten, so its armor badge, "Saved!" & flash still show.
+    /// </summary>
+    public void BuildQuiet() {
+        if (!TryBuild()) {
+            return;
+        }
+        rootRect.gameObject.SetActive(true);
+        HideBossBar();
+    }
+
     /// <summary>Sets the health bar to <paramref name="fraction"/> 0~1.
     /// </summary>
     public void SetHealth(float fraction) {
@@ -203,7 +215,13 @@ public class BossFightHud: MonoBehaviour {
         rewardLine.text = line;
         rewardDetail.text = detail;
         rewardPanel.SetActive(true);
+        rewardAgeS = 0f;
     }
+
+    /// <returns>if the win's panel has played in far enough to be closed, so
+    /// a Space still mashed from the fight never skips it</returns>
+    public bool IsRewardReady => rewardPanel != null && rewardPanel.activeSelf
+        && rewardAgeS >= REWARD_READY_S;
 
     /// <summary>Hides the win's reward panel.</summary>
     public void HideRewardPanel() {
@@ -879,6 +897,7 @@ public class BossFightHud: MonoBehaviour {
         if (rewardPanel == null || !rewardPanel.activeSelf) {
             return;
         }
+        rewardAgeS += Time.unscaledDeltaTime;
         float beat = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f);
         rewardButton.localScale = Vector3.one * (1f + 0.06f * beat);
     }
@@ -1082,6 +1101,10 @@ public class BossFightHud: MonoBehaviour {
     private GameObject adSkipButton;
     private RectTransform armorBadge;
     private GameObject rewardPanel;
+    // real s the win panel is up b4 it can be closed, so a Space still
+    // mashed from the fight never skips it
+    private const float REWARD_READY_S = 0.5f;
+    private float rewardAgeS;
     private TextMeshProUGUI rewardTitle;
     private TextMeshProUGUI rewardLine;
     private TextMeshProUGUI rewardDetail;

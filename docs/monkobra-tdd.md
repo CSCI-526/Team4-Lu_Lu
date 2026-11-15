@@ -137,6 +137,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F6 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | F7 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
 | F8 | stick a spider web on the trunk above the monkey | `HackPineappleSpawner` |
+| F9 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`BossFightController.SkipForTest`, its armor worn), live run only, never mid boss fight | `MonkeyController` |
 | F10 | download the analytics session report | `AnalyticsManager` |
 | F11 | close the analytics session and open a new file | `AnalyticsManager` |
 | F12 | save a mock analytics session file | `AnalyticsManager` |

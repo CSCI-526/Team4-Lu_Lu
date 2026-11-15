@@ -101,10 +101,11 @@ MonoBehaviour:
   goldenIntervalS: 10
   goldenShowS: 8
   testStartHeightU: 30
+  monkeySpeedScale: 1.2
   bossName: SPIDER KING
   trunkRadiusU: 5
   arenaHeightU: 18
-  guardDepthU: 14
+  guardDepthU: 20
   cameraDistanceScale: 1.6
   branchRadiusU: 6.6
   melonCount: 5
@@ -119,17 +120,16 @@ MonoBehaviour:
   rushSpeedU: 9
   stalkDistanceU: 4.8
   dashStartU: 5
-  restS: 2.6
-  minRestShare: 0.35
+  restS: 3.2
+  minRestShare: 0.28
   webShotWindUpS: 0.8
   webShotSpeedU: 24
-  dashCooldownS: 2.8
+  dashCooldownS: 3.2
   dashWindUpS: 0.9
   dashLockS: 0.45
   dashSpeedU: 22
   dashOvershootU: 3
   dashHitU: 1.6
-  touchU: 1.5
   stageLostShares: {x: 0.5, y: 0.8}
   webShotsPerStage: {x: 1, y: 2, z: 3}
   slashesPerStage: {x: 1, y: 2, z: 3}
@@ -192,4 +192,4 @@ MonoBehaviour:
   watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
   goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
   airWallMaterial: {fileID: 2100000, guid: 906f4892bde12417d93d23637ab10c7c, type: 2}
-  isTestAtStart: 1
+  isTestAtStart: 0

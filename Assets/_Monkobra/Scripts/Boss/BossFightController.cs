@@ -114,6 +114,9 @@ public class BossFightController: MonoBehaviour {
     /// past it, eg so the Spider King may start</returns>
     public bool IsDone => phase == Phase.Done;
 
+    /// <summary>if the fight has not begun yet</summary>
+    public bool IsWaiting => phase == Phase.Waiting;
+
     /// <returns>if the monkey still wears the gold armor won from the Cobra
     /// King, not yet spent on the climb after</returns>
     public bool HasArmor => hasShield
@@ -238,8 +241,15 @@ public class BossFightController: MonoBehaviour {
             }
             return true;
         }
-        // the kept reward armor on the climb after: the cobra is thrown far
-        // down & frozen, more than a coconut does
+        // the kept reward armor on the climb after: it shatters off w/ a gold
+        // burst, & the cobra is thrown far down & frozen, more than a
+        // coconut does
+        if (armor != null) {
+            foreach (Transform piece in armor) {
+                BurstAt(piece.position, goldenColor);
+                piece.gameObject.SetActive(false);
+            }
+        }
         if (greatCobra != null) {
             greatCobra.KnockBack(armorKnockBackU);
             greatCobra.TryFreeze(armorCobraFreezeS);
@@ -1174,7 +1184,9 @@ public class BossFightController: MonoBehaviour {
         BuildShieldRing();
         hasShield = true;
         phase = Phase.Done;
-        hud.ShowArmorBadge(true);
+        // never shown as a fight, so its UI is built here: "Saved!" & the
+        // flash of a save need it
+        hud.BuildQuiet();
         // no chase call: the cobra is already after the monkey
         hasWarnedChase = true;
         if (Debug.isDebugBuild) {
@@ -2676,7 +2688,6 @@ public class BossFightController: MonoBehaviour {
             hasArmorLanded = true;
             BurstAt(monkey.position + Vector3.up * 0.4f, goldenColor);
             hud.Flash(goldenColor);
-            hud.ShowArmorBadge(true);
         }
         if (t >= 1f) {
             armorRewardTimeS = -1f;
@@ -2897,7 +2908,9 @@ public class BossFightController: MonoBehaviour {
         if (game.IsPaused) {
             return;
         }
-        if (WasPressed(confirmAction)) {
+        // only once the win has played in, so a Space mashed in the fight
+        // never skips it
+        if (hud.IsRewardReady && WasPressed(confirmAction)) {
             ContinueAfterReward();
         }
     }

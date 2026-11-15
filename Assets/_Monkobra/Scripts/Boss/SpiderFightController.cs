@@ -99,7 +99,9 @@ public class SpiderFightController: MonoBehaviour {
             return false;
         }
         // the golden melon: the armor back & full stamina, nothing thrown
-        if (goldenMelon != null && goldenMelon.trigger == fruit) {
+        bool isGoldenGrab = (goldenMelon != null && goldenMelon.trigger == fruit)
+            || (goldenTwin != null && goldenTwin.trigger == fruit);
+        if (isGoldenGrab) {
             HideGoldenMelon();
             nextGoldenTime = Time.time + goldenIntervalS;
             StaminaBarController full = StaminaBarController.I;
@@ -234,6 +236,11 @@ public class SpiderFightController: MonoBehaviour {
     [Min(0f)]
     private float testStartHeightU = 30f;
 
+    [Tooltip("scale on the monkey's climb & orbit speed in the arena")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float monkeySpeedScale = 1.2f;
+
     [SerializeField]
     private string bossName = "SPIDER KING";
 
@@ -251,7 +258,7 @@ public class SpiderFightController: MonoBehaviour {
     [Tooltip("the guarding great cobra's head sits this far below the start; u")]
     [SerializeField]
     [Min(2f)]
-    private float guardDepthU = 14f;
+    private float guardDepthU = 20f;
 
     [Tooltip("how much farther the camera pulls back in the fight, 1 = none")]
     [SerializeField]
@@ -333,12 +340,12 @@ public class SpiderFightController: MonoBehaviour {
     [Tooltip("seconds between attacks at full health")]
     [SerializeField]
     [Min(0.3f)]
-    private float restS = 2.6f;
+    private float restS = 3.2f;
 
     [Tooltip("share of that rest left at no health: weaker, faster")]
     [SerializeField]
     [Range(0.1f, 1f)]
-    private float minRestShare = 0.35f;
+    private float minRestShare = 0.28f;
 
     [Header("Web Wave")]
     [Tooltip("the charge b4 a web wave: the spider rears up, its body swells "
@@ -357,7 +364,7 @@ public class SpiderFightController: MonoBehaviour {
     [Tooltip("seconds after a dash b4 the next one")]
     [SerializeField]
     [Min(0f)]
-    private float dashCooldownS = 2.8f;
+    private float dashCooldownS = 3.2f;
 
     [Tooltip("wind up of the dash: the legs rear up & a red lane shows its "
         + "way on the bark; s")]
@@ -385,11 +392,6 @@ public class SpiderFightController: MonoBehaviour {
     [SerializeField]
     [Min(0.3f)]
     private float dashHitU = 1.6f;
-
-    [Tooltip("the monkey this close to the spider is caught, fatal; u")]
-    [SerializeField]
-    [Min(0.3f)]
-    private float touchU = 1.5f;
 
     [Header("Getting Harder")]
     [Tooltip("the fight gets harder in three stages as the spider's health "
@@ -862,6 +864,8 @@ public class SpiderFightController: MonoBehaviour {
             return;
         }
         monkey = monkeyController.transform;
+        // a bit quicker in the arena, to dodge & reach the melons
+        monkeyController.ArenaSpeedScale = monkeySpeedScale;
         GameController.I.EndStartingZone();
         trunkCenter = monkey.parent.position;
         entryY = monkey.position.y;
@@ -1118,6 +1122,9 @@ public class SpiderFightController: MonoBehaviour {
 
     private void EndBareArena() {
         TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
+        if (monkeyController != null) {
+            monkeyController.ArenaSpeedScale = 1f;
+        }
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
             ramp.ClearExtraBossZone();
@@ -1196,6 +1203,11 @@ public class SpiderFightController: MonoBehaviour {
             Destroy(goldenMelon.branch);
         }
         goldenMelon = null;
+        if (goldenTwin != null && goldenTwin.branch != null) {
+            ForgetFruits(goldenTwin.branch);
+            Destroy(goldenTwin.branch);
+        }
+        goldenTwin = null;
     }
 
     // the golden melon grows beside the monkey now & then while it has no
@@ -1213,13 +1225,18 @@ public class SpiderFightController: MonoBehaviour {
             goldenMelon = AddMelon(0f, entryY);
             goldenMelon.isGolden = true;
             MakeGolden(goldenMelon.root);
+            // two at a time, one either side, so one is always easy to reach
+            goldenTwin = AddMelon(0f, entryY);
+            goldenTwin.isGolden = true;
+            MakeGolden(goldenTwin.root);
             HideGoldenMelon();
             // an armor lost b4 it was made keeps its "at once"
             if (HasArmor()) {
                 nextGoldenTime = Time.time + GOLDEN_FIRST_S;
             }
         }
-        if (goldenMelon.root == null) {
+        if (goldenMelon.root == null || goldenTwin == null
+            || goldenTwin.root == null) {
             return;
         }
         // shown is its branch out, the melon still on it
@@ -1249,6 +1266,17 @@ public class SpiderFightController: MonoBehaviour {
         );
         goldenMelon.branch.SetActive(true);
         goldenMelon.root.SetActive(true);
+        // its twin on the other side of the monkey, a little lower
+        float twinAngle = AngleOf(monkey.position) - side * 30f;
+        float twinY = Mathf.Clamp(monkey.position.y + 1.5f, entryY + 1f,
+            entryY + arenaHeightU - 2f);
+        goldenTwin.branch.transform.SetPositionAndRotation(
+            PointOnTrunk(twinAngle, twinY + BANANA_HANG_U, branchRadiusU),
+            Quaternion.Euler(0f, 90f - twinAngle, 0f)
+        );
+        goldenTwin.branch.SetActive(true);
+        goldenTwin.root.SetActive(true);
+        Burst(goldenTwin.root.transform.position, goldenColor, 10);
         goldenHideTime = Time.time + goldenShowS;
         Burst(goldenMelon.root.transform.position, goldenColor, 10);
         hud.PopText("Golden watermelon!", goldenMelon.root.transform.position,
@@ -1291,6 +1319,12 @@ public class SpiderFightController: MonoBehaviour {
         goldenMelon.root.transform.localScale = goldenRestScale;
         ForgetFruits(goldenMelon.branch);
         goldenMelon.branch.SetActive(false);
+        // both go together: one grabbed, the other is gone too
+        if (goldenTwin != null && goldenTwin.branch != null) {
+            goldenTwin.root.transform.localScale = goldenRestScale;
+            ForgetFruits(goldenTwin.branch);
+            goldenTwin.branch.SetActive(false);
+        }
     }
 
     private void UpdateMelons() {
@@ -1618,20 +1652,16 @@ public class SpiderFightController: MonoBehaviour {
 
         LayWebs(SurfaceDistance(lastAngle, lastY, spiderAngle, spiderY));
 
-        // touching it is fatal, any time in the fight
-        // up close the dash is never called off: its own hit counts then
-        bool isDashBusy = isDashing || attack == Attack.Dash;
-        bool isTouching = teach == TeachStep.Done && !isReturningToStart
-            && !isDashBusy && Time.time >= saveGraceEndTime
-            && DistanceToMonkey() < touchU;
-        if (isTouching) {
-            LethalHit("Bitten!", true);
-        }
+        // touching it is harmless; only its attacks hurt
 
         float glow = mode == Mode.Cocooning || isDashing || isSlashing
             ? 1f
             : AttackGlow();
         body.SetEyeGlow(isStunned ? 0f : glow);
+        if (isSlashing && slashChargeLeftS > 0f && !isStunned) {
+            body.SetEyeGlow(0.7f + 0.3f * Mathf.Sin(Time.time * 30f),
+                warnColor);
+        }
         if (Time.unscaledTime < biteEndTime) {
             float t = 1f - (biteEndTime - Time.unscaledTime) / BITE_S;
             body.SetSwipe(Mathf.Sin(t * Mathf.PI * 2f) * 0.5f + 0.5f);
@@ -2113,7 +2143,7 @@ public class SpiderFightController: MonoBehaviour {
         if (!hasDashHit && DistanceToMonkey() < dashHitU
             && Time.time >= saveGraceEndTime) {
             hasDashHit = true;
-            LethalHit("Caught!", true, true);
+            LethalHit("Caught!", false, true);
         }
         if (!hasArrived && dashTimeS < 1.5f) {
             return 1f;
@@ -2153,9 +2183,10 @@ public class SpiderFightController: MonoBehaviour {
             float charge = 1f - slashChargeLeftS / (slashChargeS * slashSlow);
             body.SetCharge(charge);
             body.SetSwipe(charge);
-            UpdateChargeSparks();
+            UpdateSlashChargeFx(charge);
             if (slashChargeLeftS <= 0f) {
                 body.SetCharge(0f);
+                HideSlashSigil();
             }
             return 0f;
         }
@@ -2206,7 +2237,7 @@ public class SpiderFightController: MonoBehaviour {
 
     // the lowest the spider crawls: a bit below the entry, well above the
     // guard
-    private float ArenaBottomY => entryY - 4f;
+    private float ArenaBottomY => entryY - 6f;
 
     // a point on the bark, u round the trunk & v up from a base spot
     private Vector3 BarkPoint(float baseAngle, float baseY, float u, float v) {
@@ -2326,6 +2357,7 @@ public class SpiderFightController: MonoBehaviour {
                 continue;
             }
             if (isGold && !hasTaughtSlash && !isTeachFrozen) {
+                FreeForLesson();
                 isTeachFrozen = true;
                 frozenCrescent = crescent;
                 lastTapTime = -10f;
@@ -2441,6 +2473,7 @@ public class SpiderFightController: MonoBehaviour {
 
     // the slashes still to come stop; crescents in flight fly on
     private void StopSlashing() {
+        HideSlashSigil();
         isSlashing = false;
         isSlashAiming = false;
         slashChargeLeftS = 0f;
@@ -2502,11 +2535,12 @@ public class SpiderFightController: MonoBehaviour {
     }
 
     // white sparks & rings drawn in to the head while it charges
+    // the web shot's charge: calm & white, silk drawn in to the orb
     private void UpdateChargeSparks() {
         chargeRingS -= Time.deltaTime;
         if (chargeRingS <= 0f) {
             chargeRingS = 0.16f;
-            AddRing(body.HeadPosition, warnColor, 0f, true);
+            AddRing(body.HeadPosition, silkColor, 0f, true);
         }
         chargeSparkS -= Time.deltaTime;
         if (chargeSparkS > 0f) {
@@ -2524,6 +2558,66 @@ public class SpiderFightController: MonoBehaviour {
             lifeS = 0.25f,
             isFloating = true,
         });
+    }
+
+    // the slash's charge: angry & red, nothing like the web shot's: a red
+    // blade sign over its head grows & flickers, red rings burst out & red
+    // streaks spit off it, its eyes blaze red
+    private void UpdateSlashChargeFx(float charge) {
+        Vector3 head = body.HeadPosition;
+        chargeRingS -= Time.deltaTime;
+        if (chargeRingS <= 0f) {
+            chargeRingS = 0.2f;
+            AddRing(head, warnColor, 0f);
+        }
+        chargeSparkS -= Time.deltaTime;
+        if (chargeSparkS <= 0f) {
+            chargeSparkS = 0.06f;
+            BurstStreaks(head, warnColor, 2, 3f, 7f);
+        }
+        if (slashSigil == null) {
+            slashSigil = new Transform[SIGIL_PARTS];
+            for (int i = 0; i < SIGIL_PARTS; i++) {
+                slashSigil[i] = CreatePrimitive(PrimitiveType.Cylinder,
+                    "SlashSign", Vector3.one, warnColor).transform;
+            }
+        }
+        // a crescent facing the camera, opening up over its head
+        Quaternion facing = ViewRotation();
+        Vector3 right = facing * Vector3.right;
+        Vector3 up = facing * Vector3.up;
+        float flicker = 0.75f + 0.25f * Mathf.Sin(Time.time * 45f);
+        float radius = Mathf.Lerp(0.6f, 1.8f, charge);
+        Vector3 center = head + up * (0.6f + 0.5f * charge);
+        float spread = Mathf.Lerp(40f, 150f, charge) * Mathf.Deg2Rad;
+        Color color = Color.Lerp(warnColor, Color.white,
+            0.25f * (1f - flicker));
+        for (int i = 0; i < SIGIL_PARTS; i++) {
+            float a0 = -spread * 0.5f + spread * i / SIGIL_PARTS;
+            float a1 = -spread * 0.5f + spread * (i + 1) / SIGIL_PARTS;
+            Vector3 p0 = center + (right * Mathf.Sin(a0) + up * Mathf.Cos(a0))
+                * radius;
+            Vector3 p1 = center + (right * Mathf.Sin(a1) + up * Mathf.Cos(a1))
+                * radius;
+            // thick in the middle, sharp at the tips
+            float mid = 1f - Mathf.Abs((i + 0.5f) / SIGIL_PARTS * 2f - 1f);
+            slashSigil[i].gameObject.SetActive(true);
+            SetLine(slashSigil[i], p0, p1,
+                (0.05f + 0.2f * mid) * (0.5f + 0.5f * charge) * flicker);
+            SetColor(slashSigil[i].GetComponent<Renderer>(), color);
+        }
+    }
+
+    private void HideSlashSigil() {
+        if (slashSigil == null) {
+            return;
+        }
+        foreach (Transform part in slashSigil) {
+            if (part != null) {
+                Destroy(part.gameObject);
+            }
+        }
+        slashSigil = null;
     }
 
     private void RemoveShot(Shot shot) {
@@ -2680,7 +2774,8 @@ public class SpiderFightController: MonoBehaviour {
     private void UpdateParryInput(GameController game) {
         UpdateTail();
         bool isCaught = struggle != null && struggle.IsTrapped;
-        if (isCaught) {
+        // in a lesson's stop the double tap is always the parry
+        if (isCaught && !isTeachFrozen) {
             lastTapTime = -10f;
             return;
         }
@@ -3133,8 +3228,17 @@ public class SpiderFightController: MonoBehaviour {
     private bool IsParryArmed() => tailTimeS >= 0f
         && tailTimeS < tailWindUpS + tailActiveS;
 
+    // a lesson's stop never finds the monkey stuck in a web, where Space
+    // would only struggle & the lesson could never be passed
+    private void FreeForLesson() {
+        if (struggle != null && struggle.IsTrapped) {
+            struggle.ForceRelease();
+        }
+    }
+
     // the lesson: time stops as the wave turns gold, till the double tap
     private void FreezeForParry(Shot shot) {
+        FreeForLesson();
         isTeachFrozen = true;
         frozenShot = shot;
         lastTapTime = -10f;
@@ -3752,7 +3856,9 @@ public class SpiderFightController: MonoBehaviour {
         if (game.IsPaused) {
             return;
         }
-        if (WasPressed(confirmAction)) {
+        // only once the win has played in, so a Space mashed in the fight
+        // never skips it
+        if (hud.IsRewardReady && WasPressed(confirmAction)) {
             ContinueAfterReward();
         }
     }
@@ -3982,6 +4088,7 @@ public class SpiderFightController: MonoBehaviour {
     private const float QUICK_SLOW_S = 0.25f;
     private const float QUICK_SHOT_WEIGHT = 0.3f;
     private const int CRESCENT_STRANDS = 3;
+    private const int SIGIL_PARTS = 9; // the slash charge's red blade sign
     private const int CRESCENT_SPOKES = 5;
     // how far a crescent's middle runs ahead of its tips; u
     private const float CRESCENT_BULGE_U = 0.9f;
@@ -4143,6 +4250,7 @@ public class SpiderFightController: MonoBehaviour {
 
     private readonly List<Melon> melons = new List<Melon>();
     private Melon goldenMelon;
+    private Melon goldenTwin; // the second golden melon, shown w/ it
     private Melon choiceEasy;
     private Melon choiceNormal;
     private bool isEasy;
@@ -4194,6 +4302,7 @@ public class SpiderFightController: MonoBehaviour {
     private bool isSlashing;
     private bool isSlashAiming;
     private int slashLeft;
+    private Transform[] slashSigil; // the slash charge's sign, null if none
     private int slashGapIndex;
     private bool isSlashSlowFirst;
     private float nextSlashTime;
