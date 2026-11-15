@@ -103,6 +103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightController
   worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
+  spiderFightPrefab: {fileID: 1546172834150697845, guid: 2d5aed9d3ca84b378f8afd2c696c0b5f, type: 3}
   confirmAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   giveUpAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   bossName: COBRA KING

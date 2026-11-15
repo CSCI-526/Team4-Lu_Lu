@@ -106,13 +106,48 @@ public class BossFightController: MonoBehaviour {
     /// <returns>true if the catch was handled here, so the sensor must not
     /// end the run: absorbed by the armor, or in the fight turned into a
     /// boss fight loss that offers a revive</returns>
+    /// <returns>scale on each web escape press in the arena, also used by the
+    /// Spider King's, so both shake a web off in as many presses</returns>
+    public float WebEscapeGainScale => webEscapeGainScale;
+
     /// <returns>if the Cobra King is beaten (or skipped) & the climb is on
     /// past it, eg so the Spider King may start</returns>
     public bool IsDone => phase == Phase.Done;
 
     /// <returns>if the monkey still wears the gold armor won from the Cobra
     /// King, not yet spent on the climb after</returns>
-    public bool HasArmor => hasShield && phase == Phase.Done;
+    public bool HasArmor => hasShield
+        && (phase == Phase.Done || phase == Phase.Waiting);
+
+    /// <summary>
+    /// Puts the gold armor on the monkey w/ the win's swirl, its badge
+    /// showing as it lands, eg at the Spider King fight's start or from its
+    /// golden melon; also before this fight (the Spider King test fight),
+    /// where it is only worn & spent, never starts this fight.
+    /// </summary>
+    /// <returns>if the armor was put on, false if already worn</returns>
+    public bool GiveArmor() {
+        bool isIdle = phase == Phase.Done || phase == Phase.Waiting;
+        if (!isIdle || hasShield) {
+            return false;
+        }
+        if (monkey == null) {
+            MonkeyController found = FindFirstObjectByType<MonkeyController>();
+            if (found == null || found.transform.parent == null) {
+                return false;
+            }
+            monkey = found.transform;
+            monkeyController = found;
+            trunkCenter = monkey.parent.position;
+        }
+        if (armor == null) {
+            BuildShieldRing();
+        }
+        hasShield = true;
+        armorRewardTimeS = 0f;
+        hasArmorLanded = false;
+        return true;
+    }
 
     /// <summary>
     /// Spends the kept gold armor on a fatal hit somewhere else, eg in the
@@ -128,6 +163,14 @@ public class BossFightController: MonoBehaviour {
         hud.ShowArmorBadge(false);
         hud.PopText("Saved!", monkey.position, goldenColor);
         hud.Flash(goldenColor);
+        // the armor shatters off at once, never left hanging where it was
+        if (armor != null) {
+            foreach (Transform piece in armor) {
+                BurstAt(piece.position, goldenColor);
+                piece.gameObject.SetActive(false);
+            }
+        }
+        armorRewardTimeS = -1f;
         return true;
     }
 
@@ -287,6 +330,11 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Tooltip("balance numbers: trigger height, king health, banana damage")]
     private WorldBalanceConfig worldBalanceConfig;
+
+    [Tooltip("the second boss, spawned at start if no scene has one, so "
+        + "every scene w/ this fight also gets the Spider King")]
+    [SerializeField]
+    private SpiderFightController spiderFightPrefab;
 
     [SerializeField]
     [Tooltip("confirms the revive offer, the ad skip & the reward panel, the "
@@ -959,6 +1007,13 @@ public class BossFightController: MonoBehaviour {
         }
         I = this;
 
+        bool hasSpiderFight = FindFirstObjectByType<SpiderFightController>(
+            FindObjectsInactive.Include
+        ) != null;
+        if (spiderFightPrefab != null && !hasSpiderFight) {
+            Instantiate(spiderFightPrefab);
+        }
+
         if (confirmAction == null || giveUpAction == null) {
             Debug.LogWarning(
                 "BossFightController:\tmust assign Inspector Fields: "
@@ -1026,6 +1081,12 @@ public class BossFightController: MonoBehaviour {
             return;
         }
         if (phase == Phase.Waiting) {
+            // armor lent to the Spider King test fight b4 this one; the
+            // ring update also hides it once spent
+            if (monkey != null && armor != null) {
+                UpdateShieldRing();
+                UpdateSparks();
+            }
             if (game.State == GameState.Playing && HasReachedTrigger()) {
                 BeginFight();
             }

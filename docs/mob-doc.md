@@ -227,46 +227,66 @@ UI (`BossFightHud`) is built at runtime on the root Canvas, under the screens: e
 
 ## Spider King (Boss 2)
 
-The `Boss/SpiderFight` prefab (`SpiderFightController`, `SpiderKingBody`, `BossFightHud`) sits at the root of `FullPlayScene`; like the Cobra King, everything is built at runtime from primitives.
+The `Boss/SpiderFight` prefab (`SpiderFightController`, `SpiderKingBody`, `BossFightHud`) is spawned by `BossFightController` (`spiderFightPrefab`) if the scene has none; everything is built at runtime from primitives.
 
-- Trigger: once the Cobra King is beaten (`BossFightController.IsDone`) and the monkey has climbed `spiderTriggerHeightU` (1050 u, `WorldBalanceConfig` Spider Fight group) in Playing and not mid leap. Never in Endless mode
-- Bare Zone: `spiderZoneStartU`~`spiderZoneEndU` (1025~1100) counts as a boss zone in `RampedDifficultyManager.IsInBossZoneY`, so no branch, web, falling cobra or rough bark is generated there; branches left near the arena are removed when the fight begins
-- Arena: `arenaHeightU` above the entry, the climb capped there (`SetHeightCeiling`); the great cobra guards `guardDepthU` below (`StartGuard`), the camera pulls back `cameraDistanceScale`
-- Spider: crawls on the bark (`SpiderKingBody`: dark body, red back mark, small gold crown, 8 legs, 6 eyes), stalking the monkey till `stalkDistanceU` away. A red dotted ring of `territoryRadiusU` round it on the bark is its territory, brighter while the monkey is inside
-- Waiting: from 5 u below `spiderJumpHeightU` on, the spider already sits idle 6 u above the trigger height, so the player sees the fight ahead; the fight starts it from there
-- Health: `spiderMaxHealth` (10)
+- Trigger: once the Cobra King is beaten (`BossFightController.IsDone`) and the monkey has climbed `spiderTriggerHeightU` (1050 u), not mid leap; never in Endless mode. From `spiderJumpHeightU` - 5 u the spider is already seen waiting above
+- Test: `isTestAtStart` (on in the prefab for now) begins the fight at `testStartHeightU` (30 u), w/o the Cobra King; switch it off for the real run. The arena's bare range is only set when the fight begins and lifted after the win, so w/ the test off the climb near the start grows as always
+- Bare Zone: `spiderZoneStartU`~`spiderZoneEndU` (1025~1100) counts as a boss zone (`RampedDifficultyManager.IsInBossZoneY`); the arena itself, 4 u below the entry to 6 u above its top, is also made bare when the fight begins (`SetExtraBossZone`, also for the test fight): the climb's branches, fruit, webs, falling cobras and rough bark there go and none grow there till the win
+- Arena: `arenaHeightU` above the entry, the climb capped there; the great cobra guards `guardDepthU` below; the camera pulls back
 
-### Silk Knots (how to win)
+### How to Win
 
-- `knotCount` glowing silk balls hang on banana branches round the arena (the banana model hidden, its collider kept), grabbed like any fruit; `ArmController` hands the grab to `SpiderFightController.TryGrab`
-- A rip takes `knotDamage` (1); a knot inside the territory glows gold and takes `territoryKnotDamage` (2), and makes the spider attack sooner
-- Repair: a ripped knot within `repairRangeU` of the spider is crawled to and re-spun in `repairS`, healing `repairHeal` (1), at most once per `repairCooldownS`; a far knot just grows back after `knotRegrowS` with no heal
+- The spider (`spiderMaxHealth`, 20) chases the monkey round the arena; once within `stalkDistanceU` (4 u) it always dashes (see below); the weaker it gets, the shorter its rests (`restS` down to `minRestShare`)
+- `melonCount` melon branches (the banana branch w/ the melon model, like the Cobra King's arena) regrow `melonRespawnS` after a grab; a grabbed melon (or banana) restores stamina and a copy arcs round the trunk to the spider (`melonFlyS`): `melonDamage` (1), stuck or not
+- A web breaks in as many Space presses as in the Cobra King's arena (`BossFightController.WebEscapeGainScale`)
+- The arena starts w/o webs: the spider spins all the way it crawls, a sticky web every `webLayEveryU` (1.5 u) behind it as it crawls at `stalkSpeedU` (5.5 u/s) (not in the lesson, not while dashing), never within `webMonkeyGapU` of the monkey, near a melon or within `webGapU` of another web; each goes by itself after `webLifeS` (10 s), its last second shrinking, never while it holds the monkey; no cap on their number
 
 ### Attacks
 
-Every attack is telegraphed by the eyes glowing red over its wind up, plus a red "!" sign (`BossFightHud.AddWarning`).
-
-| Attack | When | Effect | Counter |
+| Attack | Look | Effect | Counter |
 | --- | --- | --- | --- |
-| Web Shot (WEB!) | out of the territory | a silk ball flies to where the monkey was `webShotLockS` before the shot and sticks a real `SpiderWebTrap` there; a miss stays on the trunk as a sticky web (`maxStickyWebs`, the oldest goes) | keep moving |
-| Silk Hook (SILK!) | `dragChance` within `dragRangeU` | a silk line reels the monkey along the bark at `dragSpeedU`; reaching `dragReachU` is a wrap (fatal) | tap Space `dragEscapeTaps` times, or grab anything |
-| Cocoon | the monkey is trapped in any web | the spider crawls over at `cocoonSpeedU`; arriving within `cocoonReachU` is a wrap (fatal) | mash Space to break the web first |
-| Leg Swipe (SWIPE!) | the monkey in the territory | front legs rear up, a knock-down within `swipeRangeU`, never fatal | leave the ring |
+| Web shot | only while it is in view (`IsInView`: on screen and on the trunk's near side; out of view it rushes at the monkey at `rushSpeedU` first); the charge (`webShotWindUpS`): it rears up off the bark, tilted back & quivering (its size & colors stay), a white orb grows at its head w/ sparks and red rings drawn in | one silk bullet (a long glowing capsule) homing in at `webShotSpeedU` (24 u/s); white, gold & flashing within `waveGoldU` (4.5 u); a sticky web on the monkey when it arrives | parry: double tap Space once it turns gold |
+| Dash | always, once it is within `dashStartU` (7 u), at most every `dashCooldownS`; legs rear up, "DASH!" sign, and a red lane on the bark showing exactly where it catches: two edges `dashHitU` to either side of its way, from the spider out to its run's end plus `dashHitU`, following the monkey till `dashLockS` before the dash, then bright & flashing (`dashWindUpS` in all) | a fast charge at `dashSpeedU` exactly along the locked lane, never turning (`dashStartAngle`, `dashWayU/V`, `dashLengthU`), `dashOvershootU` past where the monkey was, its lane cut where it would leave the arena (whose floor for the spider is 4 u below the entry), so the lane drawn is the whole run; once the lane shows the dash is never called off: not by a trap, nor a touch (its own hit counts), nor another attack, and the armor saving the monkey lets it charge on through; catching the monkey within `dashHitU` is fatal | step off the lane once it locks; cannot be parried |
+| Slash | from afar, within `slashRangeU` (16 u) but never closer than `slashMinRangeU` (6 u), `slashChance` of its attacks, only in view; first a charge like the web shot's (`slashChargeS`: it rears up & swells, its front legs high), then `slashCount` (3) slashes, each: the front leg rears & a dashed red aim line runs along the bark at the monkey (`slashWindUpS`, following it), then a silk blade (three silk strands tied by spokes, `slashWidthU` (12 u) wide, hard to step out of but not impossible, so batting it back pays, bulging forward) flies along the bark that way at `slashSpeedU` (26 u/s); the gaps after a slash slow then fast or fast then slow (`slashSlowGapS`, `slashFastGapS`); white, gold & flashing within `waveGoldU` of the monkey | fatal where a blade passes the monkey | step out of its way, or parry it once it turns gold: it flies back and takes `slashParryDamage` (1) off the spider |
 
-Rest between attacks is `restS`, times `territoryRestScale` while the monkey is in the territory, down to `lowHealthRestScale` as health runs out.
+A trapped monkey is crawled to and wrapped on arrival (fatal) unless it breaks free first. In the fight any touch of the spider (within `touchU`) is fatal; a touch, or the dash catching the monkey, shows it must not be touched: the spider bites (front legs snap, eyes lit), two red rings & red sparks burst off the monkey, "Don't touch it!" pops.
 
-### Fruit Lure
+### Getting Harder
 
-- `lureFruitCount` bananas (normal, regrow after `lureRespawnS`); a grab restores stamina and tosses a banana copy round the trunk to the side opposite the monkey, away from the spider, since the player cannot aim
-- The spider drops its wind up, runs there (`lureRunSpeedU`) and eats `lureEatS`, taking its territory along: the window to rip the knots near it safely
+The fight has three stages by the share of its health lost (`stageLostShares`, a third & two thirds); each new stage starts w/ a roar (three red rings, "You'll pay for that!" / "ENOUGH!"):
+
+| | Stage 1 | Stage 2 | Stage 3 |
+| --- | --- | --- | --- |
+| Web bullets per charge (`webShotsPerStage`) | 1 | 2 | 3 |
+| Slashes in a row (`slashesPerStage`) | 3 | 3 | 4 |
+
+A volley's bullets follow w/ gaps slow then fast or fast then slow (`volleySlowGapS`, `volleyFastGapS`), each to bat back. On top, as its health goes, everything lerps smoothly: rests shorten (`minRestShare`), the speed of bullets, slashes, crawl & dash rises to `lateSpeedScale` (1.3), wind ups & gaps shrink to `lateTimeScale` (0.75), the dash cooldown to `lateDashCooldownS`. The lessons are never sped up.
+
+### Tail Parry
+
+A double tap of Space (`doubleTapS`), only while a web bullet or a slash is charging or on its way, swings the monkey's own tail (the `Tail` transform of `_Monkey`, its colliders off while it swings): a wind up drawing back (`tailWindUpS`), the swing itself, a hard swish across w/ a flick up (`tailActiveS`), and a follow through swinging back (`tailRecoverS`), all in real time. It bats things back from the double tap to the end of the swing (the wind up is only the look). A swing that bats something back readies the tail at once, so all three slashes of a chain (gaps `slashSlowGapS` 0.75 s / `slashFastGapS` 0.25 s, plus each slash's wind up) can be met; a whiff waits its whole follow through (`tailRecoverS`, 0.55 s), so mashing never works, only timing.
+
+- A web bullet within `parryReachU` (2 u; it turns gold within `waveGoldU`, 3.2 u) is batted back: it hurts the spider `webParryDamage` (-2) and sticks it in its own web for `parryStunS` ("STUCK!"), a fixed time, and its slashes still to come are called off
+- A slash blade within `parryReachU` ahead of the monkey (and on its way) is batted back along its way and takes `slashParryDamage` (-2) off the spider
+- The clash, in real time, hard: the tail glows gold through its swing; the batted thing snaps into the middle of the monkey's body (`TailContact`), speeding up (`CLASH_IN_S`); at the touch time stops dead (`CLASH_STOP_S`), the camera punches in tighter and shakes (`SHAKE_S`), two white strokes cross, a white orb pops, two shock rings open facing the camera, orange & yellow spark streaks fly off, the tail flashes white and "PARRY!" shows; it holds there shaking & grinding out sparks (`CLASH_HOLD_S`), then is kicked off back to the spider, fastest at once, gold, leaving a gold trail (`CLASH_OUT_S`); the damage pops on the spider when it lands
+- A parry plays in slow motion (`parrySlowS` real s at `parrySlowTimeScale`) w/ the camera close in on the monkey (`parryCloseUpScale`), no flash
+- While the monkey is stuck in a web, Space taps never swing the tail
+
+### Lessons
+
+Short words only; a lesson never kills, a failed one just starts over:
+
+- Parry, at the start (the whole arena, melons too, is there already): bullets come `teachSlowScale` slower; as one turns gold, time stops (`timeScale` 0) w/ "Now! Tap SPACE 2 times to bounce it back" (no hold-&-release key prompt), till the double tap, which always parries it; "Nice!"
+- Slash, right after: "Bounce it back too!", one slowed slash; as the blade turns gold, time stops again w/ the same line till the double tap, which bats it back and hurts the spider; "Nice!", and the fight is on. Caught in a web meanwhile: the waves wait
+- After a revive only "Get ready!" (`readyS`), or the lessons again if they were never passed (`hasPassedLessons`)
 
 ### Armor, Loss & Win
 
-- Armor: the Cobra King's gold armor, if not used on the climb (`BossFightController.HasArmor`), saves one fatal hit (`TrySpendArmor`): the spider is stunned `armorStunS` and backs off; a used armor stays used
-- Great Cobra: a catch by the guard is a fatal hit too (`CobraSensor` asks `SpiderFightController.TryAbsorbCobraCatch` first)
-- Loss: the same slow K.O., revive offer and mock course ad as the Cobra King; a revive restarts the fight at full health
-- Win: the spider falls off the trunk, a reward panel stops time till Space or Continue: the Silk Gloves, `SpiderWebStruggle.EscapeGainScale` = `glovesEscapeGainScale` (2) for the rest of the run; then the great cobra chases again from `winCobraDropU` down
-- Test: the `SpiderJump` hack key (F9, `HackShortcutConfig`) skips the Cobra King as beaten (`SkipForTest`, armor worn) and teleports the monkey to `spiderJumpHeightU` (1000 u)
+- Armor: the fight starts w/ the gold armor, as in the Cobra King's arena: `BossFightController.GiveArmor` swirls it onto the monkey w/ its badge, no words (worn already, it stays; also works before the Cobra King's fight, for the test fight); it saves one fatal hit (`TrySpendArmor`) and shatters off at once: "Saved!" and the usual knock down, as in the Cobra King's arena; the spider is neither thrown off nor stunned
+- Golden Melon: once the fight is on, every `goldenIntervalS` while no armor is worn a pulsing gold melon grows beside the monkey for `goldenShowS`; grabbing it gives the armor back & full stamina, nothing thrown
+- Great Cobra: a catch by the guard is a fatal hit too (`SpiderFightController.TryAbsorbCobraCatch`)
+- Loss: slow K.O., revive offer and mock ad; a revive restarts at full health w/o webs, the armor swirling on again; the K.O. words are plain: "Bitten!" (touch), "Hit!" (slash), "Wrapped!" (cocoon), "Caught!" (dash)
+- Win: the spider falls, a reward panel stops time: Silk Gloves, `SpiderWebStruggle.EscapeGainScale` = `glovesEscapeGainScale` (2) for the run; the great cobra chases again from `winCobraDropU` down
 
 ## Known Gaps
 

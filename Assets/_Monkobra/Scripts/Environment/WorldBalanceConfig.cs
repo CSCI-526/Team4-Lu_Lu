@@ -116,7 +116,8 @@ public class WorldBalanceConfig: ScriptableObject {
     /// <returns>climbed height where the Spider King's zone ends; u</returns>
     public float SpiderZoneEndU => spiderZoneEndU;
 
-    /// <returns>climbed height the spider jump hack key lands at; u</returns>
+    /// <returns>climbed height from which the Spider King is seen waiting;
+    /// u</returns>
     public float SpiderJumpHeightU => spiderJumpHeightU;
 
     /// <returns>health of the Spider King</returns>
@@ -323,12 +324,13 @@ public class WorldBalanceConfig: ScriptableObject {
     private float spiderZoneEndU = 1100f;
 
     [SerializeField]
-    [Tooltip("climbed height the spider jump hack key lands at; u")]
+    [Tooltip("climbed height from which the Spider King is seen waiting "
+        + "above its trigger height; u")]
     private float spiderJumpHeightU = 1000f;
 
     [SerializeField]
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
-    private int spiderMaxHealth = 10;
+    private int spiderMaxHealth = 20;
 
     // Editor Validation  ######################################################
     private void OnValidate() {

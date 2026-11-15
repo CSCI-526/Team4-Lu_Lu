@@ -810,4 +810,4 @@ MonoBehaviour:
   spiderTriggerHeightU: 1050
   spiderZoneEndU: 1100
   spiderJumpHeightU: 1000
-  spiderMaxHealth: 10
+  spiderMaxHealth: 20

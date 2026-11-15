@@ -118,9 +118,16 @@ public class SpiderKingBody: MonoBehaviour {
         // a little bob while it walks or eats
         float bob = Mathf.Sin(Time.time * (eating ? 14f : 9f))
             * (eating ? 0.08f : 0.05f * walk);
+        // a charge rears it up off the bark, tilted back, its body swelling
+        // & quivering
+        // a charge rears it up off the bark, tilted back, quivering; its
+        // size & colors stay
+        float quiver = charge > 0f ? Mathf.Sin(Time.time * 60f) * 0.04f * charge
+            : 0f;
         root.SetPositionAndRotation(
-            spot + outward * bob,
+            spot + outward * (bob + 0.6f * charge + quiver),
             Quaternion.LookRotation(Vector3.up, outward)
+                * Quaternion.AngleAxis(-25f * charge, Vector3.right)
         );
 
         walkPhase += Time.deltaTime * Mathf.Lerp(0f, 12f, walk);
@@ -143,10 +150,16 @@ public class SpiderKingBody: MonoBehaviour {
     /// <summary>Sets how far an attack has wound up: 0 dark eyes, 1 lit.
     /// </summary>
     public void SetEyeGlow(float glow) {
+        SetEyeGlow(glow, eyeLitColor);
+    }
+
+    /// <summary>Same, glowing toward <paramref name="litColor"/>, eg green
+    /// for poison.</summary>
+    public void SetEyeGlow(float glow, Color litColor) {
         if (eyes == null) {
             return;
         }
-        Color color = Color.Lerp(eyeDarkColor, eyeLitColor, Mathf.Clamp01(glow));
+        Color color = Color.Lerp(eyeDarkColor, litColor, Mathf.Clamp01(glow));
         foreach (Renderer eye in eyes) {
             SetColor(eye, color);
         }
@@ -156,6 +169,12 @@ public class SpiderKingBody: MonoBehaviour {
     /// </summary>
     public void SetSwipe(float amount) {
         swipe = Mathf.Clamp01(amount);
+    }
+
+    /// <summary>Sets how far a charge has built up, 0~1: it rears up off the
+    /// bark & its body swells.</summary>
+    public void SetCharge(float amount) {
+        charge = Mathf.Clamp01(amount);
     }
 
     /// <summary>Switches the quick eating bob on or off.</summary>
@@ -170,6 +189,7 @@ public class SpiderKingBody: MonoBehaviour {
         }
         root = null;
         head = null;
+        charge = 0f;
         eyes = null;
         Contact = null;
         hips = new Transform[0];
@@ -341,5 +361,8 @@ public class SpiderKingBody: MonoBehaviour {
     private MaterialPropertyBlock colorBlock;
     private float walkPhase;
     private float swipe;
+    private float charge;
+
+
     private bool eating;
 }

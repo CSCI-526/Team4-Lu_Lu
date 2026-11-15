@@ -3,29 +3,26 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// The second boss, the Spider King, high on the climb. At
-/// <see cref="WorldBalanceConfig.SpiderTriggerHeightU"/> the spawners are
-/// already paused (its zone is a boss zone too), the great cobra guards from
-/// below & the Spider King crawls on the trunk beside the monkey.
+/// The second boss, the Spider King, high on the climb (or near the start
+/// w/ <see cref="isTestAtStart"/>). The arena is full of sticky webs from
+/// the start, & the spider chases the monkey round it. The player kills it
+/// by grabbing watermelons, each thrown at the spider.
 ///
-/// The player wins by ripping its glowing silk knots, grabbed like fruit:
-/// 1 damage each, 2 inside the red ring of its territory, where it attacks
-/// faster & swipes w/ its front legs. A ripped knot near the spider is
-/// re-spun, healing it 1, unless it is busy elsewhere; a far knot just grows
-/// back. Attacks, each telegraphed by its eyes glowing red:
+/// Attacks:
 /// <list type="bullet">
-/// <item>web shot at the monkey: a miss leaves a sticky web on the trunk</item>
-/// <item>silk hook: drags the monkey in, tap Space or grab to break free
-/// </item>
-/// <item>cocoon: a trapped monkey is crawled to, & wrapped (fatal) on
-/// arrival</item>
-/// <item>leg swipe in its territory: a knock down, never fatal</item>
+/// <item>web shot: seen charging, it fires a fast homing silk bullet:
+/// double tap Space as it turns gold to bat it back w/ the tail (the
+/// spider is stuck a while), else the monkey is stuck in a web</item>
+/// <item>dash: once it has crawled up close it rears up, then charges at
+/// the monkey along a red lane; only dodged, fatal like any touch of it</item>
+/// <item>slash: from afar, three slashes of its front legs, each a red
+/// crescent flying fast along the bark at the monkey, the gaps slow then
+/// fast or fast then slow; fatal, only dodged</item>
 /// </list>
-/// A grabbed banana is tossed round to the far side of the trunk: the
-/// spider leaves to eat it a few seconds, taking its territory along.
-/// The Cobra King's gold armor, if still worn, saves one fatal hit. A win
-/// gives the silk gloves: webs break twice as fast for the rest of the run.
-/// Built at runtime from primitives, w/ the <see cref="BossFightHud"/>.
+/// A trapped monkey is crawled to & wrapped (fatal) unless it breaks free
+/// first. The fight opens w/ lessons, each passed only by doing it. The
+/// Cobra King's gold armor, if still worn, saves one fatal hit; a win gives
+/// the silk gloves. Built at runtime from primitives.
 /// </summary>
 [RequireComponent(typeof(SpiderKingBody))]
 [RequireComponent(typeof(BossFightHud))]
@@ -86,48 +83,51 @@ public class SpiderFightController: MonoBehaviour {
     }
 
     /// <summary>
-    /// Called by <see cref="ArmController"/> on every grab: a silk knot is
-    /// ripped, a banana is tossed round the trunk as a lure; any grab also
-    /// breaks the silk hook's drag.
+    /// Called by <see cref="ArmController"/> on every grab: an arena melon
+    /// (or a banana) restores stamina & is thrown at the spider.
     /// </summary>
     /// <returns>true if the grab was handled here, so the arm skips its own
     /// fly-to-the-bar effect</returns>
     public bool TryGrab(Collider fruit, Vector3 from) {
-        if (phase != Phase.Fighting || fruit == null) {
+        if (phase != Phase.Fighting || fruit == null
+            || !fruit.CompareTag(FRUIT_TAG)) {
             return false;
         }
-        if (isDragging) {
-            EndDrag(true);
+        ScorePickup pickup = fruit.GetComponentInParent<ScorePickup>();
+        if (pickup != null && pickup.Kind == PickupKind.Coconut) {
+            return false;
         }
-
-        int knot = knots.FindIndex(k => k.trigger == fruit);
-        if (knot >= 0) {
-            RipKnot(knot);
-            return true;
-        }
-        int lureIndex = lureFruits.FindIndex(f => f.trigger == fruit);
-        if (lureIndex >= 0) {
-            ArenaItem picked = lureFruits[lureIndex];
-            picked.backTime = Time.time + lureRespawnS;
-            lureFruits[lureIndex] = picked;
-            StaminaBarController stamina = StaminaBarController.I;
-            if (stamina != null) {
-                stamina.AddStaminaByFruit();
+        // the golden melon: the armor back & full stamina, nothing thrown
+        if (goldenMelon != null && goldenMelon.trigger == fruit) {
+            HideGoldenMelon();
+            nextGoldenTime = Time.time + goldenIntervalS;
+            StaminaBarController full = StaminaBarController.I;
+            if (full != null) {
+                full.AddStamina(full.MaxStamina);
             }
-            ThrowLure(from);
+            GiveArmor();
             return true;
         }
-        return false;
+        int index = melons.FindIndex(m => m.trigger == fruit);
+        if (index >= 0) {
+            melons[index].backTime = Time.time + melonRespawnS;
+        }
+        StaminaBarController stamina = StaminaBarController.I;
+        if (stamina != null) {
+            stamina.AddStaminaByFruit();
+        }
+        LaunchMelon(fruit.gameObject, from);
+        return true;
     }
 
     // Inspector Fields  #######################################################
     [Header("Wiring")]
-    [Tooltip("zone & trigger heights, the Spider King's health")]
+    [Tooltip("zone & trigger heights")]
     [SerializeField]
     private WorldBalanceConfig worldBalanceConfig;
 
     [Tooltip("watches the ad / goes on after the reward, Player/Jump; also "
-        + "the taps that break the silk hook's drag")]
+        + "the double tap of the parry")]
     [SerializeField]
     private InputActionReference confirmAction;
 
@@ -139,16 +139,50 @@ public class SpiderFightController: MonoBehaviour {
     [SerializeField]
     private SpiderWebTrap webPrefab;
 
-    [Tooltip("the climb's banana branch: bears the silk knots & the lures")]
+    [Tooltip("the climb's banana branch: bears the arena melons")]
     [SerializeField]
     private GameObject bananaBranchPrefab;
+
+    [Tooltip("the melon model swapped onto the banana")]
+    [SerializeField]
+    private Mesh watermelonMesh;
+
+    [Tooltip("local scale of the melon model on the banana's mesh object")]
+    [SerializeField]
+    private Vector3 watermelonScale = new Vector3(6f, 6f, 6f);
+
+    [Tooltip("local offset of the melon model")]
+    [SerializeField]
+    private Vector3 watermelonOffset = new Vector3(0f, -0.629f, 0.06f);
 
     [Tooltip("the course page the mock ad's button opens")]
     [SerializeField]
     private string courseUrl =
         "https://classes.usc.edu/term-20263/course/csci-526";
 
+    [Header("Golden Melon")]
+    [Tooltip("seconds b/t two golden melons; one only shows w/ no armor on")]
+    [SerializeField]
+    [Min(1f)]
+    private float goldenIntervalS = 18f;
+
+    [Tooltip("seconds a golden melon stays b4 it goes")]
+    [SerializeField]
+    [Min(1f)]
+    private float goldenShowS = 7f;
+
     [Header("Arena")]
+    [Tooltip("test only: the fight begins once the monkey has climbed "
+        + "testStartHeightU, w/o the Cobra King or the trigger height; "
+        + "switch off for the real run")]
+    [SerializeField]
+    private bool isTestAtStart;
+
+    [Tooltip("test only: climbed height the test fight begins at; u")]
+    [SerializeField]
+    [Min(0f)]
+    private float testStartHeightU = 30f;
+
     [SerializeField]
     private string bossName = "SPIDER KING";
 
@@ -156,11 +190,6 @@ public class SpiderFightController: MonoBehaviour {
     [SerializeField]
     [Min(0.5f)]
     private float trunkRadiusU = 5f;
-
-    [Tooltip("radius the branch roots sit at, as the segments' branch ring; u")]
-    [SerializeField]
-    [Min(0.5f)]
-    private float branchRadiusU = 6.6f;
 
     [Tooltip("height of the arena above where the fight began; the climb is "
         + "capped there; u")]
@@ -178,154 +207,231 @@ public class SpiderFightController: MonoBehaviour {
     [Min(1f)]
     private float cameraDistanceScale = 1.6f;
 
-    [Header("Silk Knots")]
-    [Tooltip("silk knots in the arena")]
-    [SerializeField]
-    [Min(1)]
-    private int knotCount = 6;
-
-    [Tooltip("health a ripped knot takes off far from the spider")]
-    [SerializeField]
-    [Min(1)]
-    private int knotDamage = 1;
-
-    [Tooltip("health a ripped knot takes off inside the spider's territory")]
-    [SerializeField]
-    [Min(1)]
-    private int territoryKnotDamage = 2;
-
-    [Tooltip("seconds a ripped knot takes to grow back on its own, no heal")]
-    [SerializeField]
-    [Min(1f)]
-    private float knotRegrowS = 14f;
-
-    [Tooltip("diameter of a knot's glowing ball; u")]
-    [SerializeField]
-    [Min(0.1f)]
-    private float knotSizeU = 1.1f;
-
-    [Tooltip("color of the knots")]
-    [SerializeField]
-    private Color knotColor = new Color(0.95f, 0.97f, 1f);
-
-    [Header("Repair")]
-    [Tooltip("a ripped knot this close to the spider is re-spun by it; u")]
-    [SerializeField]
-    [Min(0f)]
-    private float repairRangeU = 9f;
-
-    [Tooltip("seconds the spider spins at a knot to re-spin it")]
-    [SerializeField]
-    [Min(0.2f)]
-    private float repairS = 2.5f;
-
-    [Tooltip("seconds b4 it looks for another knot to re-spin")]
-    [SerializeField]
-    [Min(0f)]
-    private float repairCooldownS = 5f;
-
-    [Tooltip("health a re-spun knot gives back")]
-    [SerializeField]
-    [Min(0)]
-    private int repairHeal = 1;
-
-    [Header("Movement & Territory")]
-    [Tooltip("radius of the territory ring round the spider, on the bark; u")]
-    [SerializeField]
-    [Min(1f)]
-    private float territoryRadiusU = 4.5f;
-
-    [Tooltip("the spider stalks the monkey till this far off; u")]
-    [SerializeField]
-    [Min(1f)]
-    private float stalkDistanceU = 7f;
-
-    [Tooltip("crawl speed while stalking; u/s")]
-    [SerializeField]
-    [Min(0.1f)]
-    private float stalkSpeedU = 1.6f;
-
-    [Tooltip("crawl speed to a knot it re-spins; u/s")]
-    [SerializeField]
-    [Min(0.1f)]
-    private float repairSpeedU = 3f;
-
-    [Header("Attacks")]
-    [Tooltip("seconds between attacks far from its territory")]
-    [SerializeField]
-    [Min(0.3f)]
-    private float restS = 2.6f;
-
-    [Tooltip("scale on the rest while the monkey is in its territory")]
-    [SerializeField]
-    [Range(0.2f, 1f)]
-    private float territoryRestScale = 0.55f;
-
-    [Tooltip("scale on the rest once all its health is lost, lerped")]
-    [SerializeField]
-    [Range(0.2f, 1f)]
-    private float lowHealthRestScale = 0.7f;
-
-    [Tooltip("wind up of a web shot, its eyes glowing; s")]
-    [SerializeField]
-    [Min(0.2f)]
-    private float webShotWindUpS = 1f;
-
-    [Tooltip("the aim stops following the monkey this long b4 the shot; s")]
-    [SerializeField]
-    [Min(0f)]
-    private float webShotLockS = 0.35f;
-
-    [Tooltip("speed of a web shot; u/s")]
-    [SerializeField]
-    [Min(1f)]
-    private float webShotSpeedU = 16f;
-
-    [Tooltip("missed webs kept on the trunk, the oldest goes first")]
-    [SerializeField]
-    [Min(0)]
-    private int maxStickyWebs = 5;
-
-    [Tooltip("chance an attack out of its territory is the silk hook")]
-    [SerializeField]
-    [Range(0f, 1f)]
-    private float dragChance = 0.35f;
-
-    [Tooltip("the silk hook reaches this far; u")]
-    [SerializeField]
-    [Min(1f)]
-    private float dragRangeU = 14f;
-
-    [Tooltip("wind up of the silk hook; s")]
-    [SerializeField]
-    [Min(0.2f)]
-    private float dragWindUpS = 1.1f;
-
-    [Tooltip("speed the hook reels the monkey in; u/s")]
-    [SerializeField]
-    [Min(0.1f)]
-    private float dragSpeedU = 2.6f;
-
-    [Tooltip("taps that break the silk hook")]
-    [SerializeField]
-    [Min(1)]
-    private int dragEscapeTaps = 5;
-
-    [Tooltip("reeled this close the monkey is wrapped, fatal; u")]
-    [SerializeField]
-    [Min(0.3f)]
-    private float dragReachU = 1.8f;
-
-    [Tooltip("wind up of the leg swipe; s")]
-    [SerializeField]
-    [Min(0.1f)]
-    private float swipeWindUpS = 0.55f;
-
-    [Tooltip("the leg swipe knocks down a monkey this close; u")]
+    [Tooltip("radius the branch roots sit at, as the segments' branch ring; u")]
     [SerializeField]
     [Min(0.5f)]
-    private float swipeRangeU = 3.5f;
+    private float branchRadiusU = 6.6f;
 
+    [Header("Melons")]
+    [Tooltip("melon branches in the arena")]
+    [SerializeField]
+    [Min(1)]
+    private int melonCount = 5;
+
+    [Tooltip("seconds a grabbed melon takes to grow back")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float melonRespawnS = 7f;
+
+    [Tooltip("flight of a thrown melon to the spider; s")]
+    [SerializeField]
+    [Min(0.1f)]
+    private float melonFlyS = 0.55f;
+
+    [Tooltip("health a melon takes off the spider")]
+    [SerializeField]
+    [Min(1)]
+    private int melonDamage = 1;
+
+    [Header("Laid Webs")]
+    [Tooltip("the spider spins webs all the way as it crawls, one every this "
+        + "far, a trail behind it; the arena starts w/o webs; u")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float webLayEveryU = 1.5f;
+
+    [Tooltip("seconds a web stays on the trunk, its last second shrinking; "
+        + "any number of them, each goes by itself")]
+    [SerializeField]
+    [Min(1f)]
+    private float webLifeS = 10f;
+
+    [Tooltip("min gap b/t two webs; u")]
+    [SerializeField]
+    [Min(0.3f)]
+    private float webGapU = 1.4f;
+
+    [Tooltip("a web is never laid this close to the monkey; u")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float webMonkeyGapU = 2.5f;
+
+    [Header("Movement")]
+    [Tooltip("crawl speed after the monkey; u/s")]
+    [SerializeField]
+    [Min(0.1f)]
+    private float stalkSpeedU = 5.5f;
+
+    [Tooltip("speed it rushes at to get in the camera's view, so its charge "
+        + "can be seen; u/s")]
+    [SerializeField]
+    [Min(0.1f)]
+    private float rushSpeedU = 9f;
+
+    [Tooltip("it crawls after the monkey till this close; u")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float stalkDistanceU = 4f;
+
+    [Tooltip("this close it dashes; u")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float dashStartU = 7f;
+
+    [Header("Rhythm")]
+    [Tooltip("seconds between attacks at full health")]
+    [SerializeField]
+    [Min(0.3f)]
+    private float restS = 2.2f;
+
+    [Tooltip("share of that rest left at no health: weaker, faster")]
+    [SerializeField]
+    [Range(0.1f, 1f)]
+    private float minRestShare = 0.5f;
+
+    [Header("Web Wave")]
+    [Tooltip("the charge b4 a web wave: the spider rears up, its body swells "
+        + "& a white orb gathers at its head; s")]
+    [SerializeField]
+    [Min(0.1f)]
+    private float webShotWindUpS = 0.8f;
+
+    [Tooltip("speed of the web wave, homing in on the monkey, so it can "
+        + "only be parried, never dodged; u/s")]
+    [SerializeField]
+    [Min(1f)]
+    private float webShotSpeedU = 24f;
+
+    [Header("Dash")]
+    [Tooltip("seconds after a dash b4 the next one")]
+    [SerializeField]
+    [Min(0f)]
+    private float dashCooldownS = 1.2f;
+
+    [Tooltip("wind up of the dash: the legs rear up & a red lane shows its "
+        + "way on the bark; s")]
+    [SerializeField]
+    [Min(0.1f)]
+    private float dashWindUpS = 0.9f;
+
+    [Tooltip("the lane stops following the monkey this long b4 the dash, "
+        + "the time to step off it; s")]
+    [SerializeField]
+    [Min(0.05f)]
+    private float dashLockS = 0.45f;
+
+    [Tooltip("speed of the dash; u/s")]
+    [SerializeField]
+    [Min(1f)]
+    private float dashSpeedU = 22f;
+
+    [Tooltip("the dash runs this far past where the monkey was; u")]
+    [SerializeField]
+    [Min(0f)]
+    private float dashOvershootU = 3f;
+
+    [Tooltip("the dash catches a monkey this close, fatal; u")]
+    [SerializeField]
+    [Min(0.3f)]
+    private float dashHitU = 1.6f;
+
+    [Tooltip("the monkey this close to the spider is caught, fatal; u")]
+    [SerializeField]
+    [Min(0.3f)]
+    private float touchU = 1.5f;
+
+    [Header("Getting Harder")]
+    [Tooltip("the fight gets harder in three stages as the spider's health "
+        + "goes: under these shares of its health lost, stage 1, then 2, "
+        + "then 3")]
+    [SerializeField]
+    private Vector2 stageLostShares = new Vector2(0.34f, 0.67f);
+
+    [Tooltip("web bullets fired after one charge in stages 1, 2 & 3: in the "
+        + "later ones a volley, each to bat back")]
+    [SerializeField]
+    private Vector3Int webShotsPerStage = new Vector3Int(1, 2, 3);
+
+    [Tooltip("slashes in a row in stages 1, 2 & 3")]
+    [SerializeField]
+    private Vector3Int slashesPerStage = new Vector3Int(3, 3, 4);
+
+    [Tooltip("the long gap b/t two bullets of a volley; s")]
+    [SerializeField]
+    [Min(0.05f)]
+    private float volleySlowGapS = 0.75f;
+
+    [Tooltip("the short gap b/t two bullets of a volley; s")]
+    [SerializeField]
+    [Min(0.05f)]
+    private float volleyFastGapS = 0.35f;
+
+    [Tooltip("at the last stage: scale on the speed of slashes, bullets, its "
+        + "crawl & dash, lerped from 1 as its health goes")]
+    [SerializeField]
+    [Min(1f)]
+    private float lateSpeedScale = 1.3f;
+
+    [Tooltip("at the last stage: scale on wind ups & gaps, lerped from 1")]
+    [SerializeField]
+    [Range(0.3f, 1f)]
+    private float lateTimeScale = 0.75f;
+
+    [Tooltip("seconds b/t dashes at the last stage, lerped from "
+        + "dashCooldownS")]
+    [SerializeField]
+    [Min(0f)]
+    private float lateDashCooldownS = 0.6f;
+
+    [Header("Slash")]
+    [Tooltip("it never slashes from closer than this; u")]
+    [SerializeField]
+    [Min(0f)]
+    private float slashMinRangeU = 6f;
+
+    [Tooltip("chance an attack from afar is a slash, not a web shot")]
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float slashChance = 0.45f;
+
+    [Tooltip("it slashes from this far at most, & a crescent flies about "
+        + "this far; u")]
+    [SerializeField]
+    [Min(2f)]
+    private float slashRangeU = 16f;
+
+    [Tooltip("the charge b4 the slashes, seen like the web shot's: it rears up "
+        + "& swells, its front legs high; s")]
+    [SerializeField]
+    [Min(0.1f)]
+    private float slashChargeS = 0.8f;
+
+    [Tooltip("wind up of each slash: the leg rears & the red aim line shows; s")]
+    [SerializeField]
+    [Min(0.05f)]
+    private float slashWindUpS = 0.3f;
+
+    [Tooltip("speed of a crescent along the bark; u/s")]
+    [SerializeField]
+    [Min(1f)]
+    private float slashSpeedU = 26f;
+
+    [Tooltip("width of a crescent across its way; u")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float slashWidthU = 12f;
+
+    [Tooltip("the long gap after a slash b4 the next one winds up; s")]
+    [SerializeField]
+    [Min(0f)]
+    private float slashSlowGapS = 0.75f;
+
+    [Tooltip("the short gap after a slash b4 the next one winds up; s")]
+    [SerializeField]
+    [Min(0f)]
+    private float slashFastGapS = 0.25f;
+
+    [Header("Cocoon")]
     [Tooltip("crawl speed to a trapped monkey; u/s")]
     [SerializeField]
     [Min(0.1f)]
@@ -336,47 +442,105 @@ public class SpiderFightController: MonoBehaviour {
     [Min(0.3f)]
     private float cocoonReachU = 1.6f;
 
-    [Tooltip("scale on the web escape gain in the fight")]
+    [Tooltip("scale on the crawl the first time the monkey is trapped")]
     [SerializeField]
-    [Min(0.1f)]
-    private float webEscapeGainScale = 1.25f;
+    [Range(0.2f, 1f)]
+    private float firstCocoonSpeedScale = 0.6f;
 
-    [Header("Fruit Lure")]
-    [Tooltip("bananas in the arena")]
+    [Header("Tail Parry")]
+    [Tooltip("max seconds b/t the two Space taps of a parry")]
     [SerializeField]
-    [Min(0)]
-    private int lureFruitCount = 3;
+    [Min(0.05f)]
+    private float doubleTapS = 0.3f;
 
-    [Tooltip("seconds a grabbed banana takes to grow back")]
+    [Tooltip("the tail swing's wind up: it draws back, nothing is batted yet; "
+        + "real s")]
     [SerializeField]
-    [Min(1f)]
-    private float lureRespawnS = 10f;
+    [Min(0f)]
+    private float tailWindUpS = 0.06f;
 
-    [Tooltip("flight of a tossed banana round the trunk; s")]
+    [Tooltip("the swing itself: only now a bullet or slash is batted back; "
+        + "real s")]
     [SerializeField]
-    [Min(0.1f)]
-    private float lureFlyS = 0.9f;
+    [Min(0.05f)]
+    private float tailActiveS = 0.2f;
 
-    [Tooltip("crawl speed to a tossed banana; u/s")]
+    [Tooltip("the swing's follow through after a whiff: the tail swings back "
+        + "& no new swing can start, so mashing never works, only timing; a "
+        + "parry readies the tail at once; real s")]
     [SerializeField]
-    [Min(0.1f)]
-    private float lureRunSpeedU = 5f;
+    [Min(0f)]
+    private float tailRecoverS = 0.55f;
 
-    [Tooltip("seconds the spider eats a banana, no attacks meanwhile")]
+    [Tooltip("the wave turns gold this close to the monkey: the moment to "
+        + "double tap; u")]
     [SerializeField]
     [Min(0.5f)]
-    private float lureEatS = 4f;
+    private float waveGoldU = 3.2f;
+
+    [Tooltip("an armed parry bats the wave back this close to the monkey; u")]
+    [SerializeField]
+    [Min(0.3f)]
+    private float parryReachU = 2f;
+
+    [Tooltip("seconds the spider is stuck in its own batted back web")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float parryStunS = 3.5f;
+
+    [Tooltip("real seconds of slow motion on a parry, the camera close in on "
+        + "the monkey")]
+    [SerializeField]
+    [Min(0f)]
+    private float parrySlowS = 0.75f;
+
+    [Tooltip("time scale of that slow motion")]
+    [SerializeField]
+    [Range(0.05f, 1f)]
+    private float parrySlowTimeScale = 0.2f;
+
+    [Tooltip("camera distance scale of the parry close up, < 1 is closer")]
+    [SerializeField]
+    [Range(0.2f, 1f)]
+    private float parryCloseUpScale = 0.45f;
+
+    [Tooltip("health a batted back slash takes off the spider")]
+    [SerializeField]
+    [Min(0)]
+    private int slashParryDamage = 2;
+
+    [Tooltip("health a batted back web bullet takes off the spider, as well "
+        + "as sticking it")]
+    [SerializeField]
+    [Min(0)]
+    private int webParryDamage = 2;
+
+    [Header("Teaching")]
+    [Tooltip("scale on wind ups in the lessons")]
+    [SerializeField]
+    [Min(1f)]
+    private float teachSlowScale = 1.8f;
+
+    [Tooltip("seconds b4 the next lesson attack")]
+    [SerializeField]
+    [Min(0.3f)]
+    private float teachGapS = 1.6f;
+
+    [Tooltip("seconds the last lesson's banner stays b4 the fight")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float finalS = 2f;
+
+    [Tooltip("seconds of calm after a revive b4 the fight goes on")]
+    [SerializeField]
+    [Min(0.5f)]
+    private float readyS = 3f;
 
     [Header("Loss & Revive")]
     [Tooltip("seconds of grace after the armor saves the monkey")]
     [SerializeField]
     [Min(0f)]
     private float saveGraceS = 2f;
-
-    [Tooltip("seconds the spider is stunned after the armor saves the monkey")]
-    [SerializeField]
-    [Min(0f)]
-    private float armorStunS = 2.5f;
 
     [Tooltip("time scale of the slow last blow")]
     [SerializeField]
@@ -426,8 +590,7 @@ public class SpiderFightController: MonoBehaviour {
     private string winLine = "You got the Silk Gloves";
 
     [SerializeField]
-    private string winDetailLine =
-        "Break free of spider webs twice as fast";
+    private string winDetailLine = "Get out of webs 2x faster";
 
     [Header("Colors")]
     [SerializeField]
@@ -439,14 +602,15 @@ public class SpiderFightController: MonoBehaviour {
     [SerializeField]
     private Color goldenColor = new Color(1f, 0.8f, 0.15f);
 
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (worldBalanceConfig == null || bananaBranchPrefab == null
-            || webPrefab == null) {
+        if (worldBalanceConfig == null || webPrefab == null
+            || bananaBranchPrefab == null) {
             Debug.LogError(
                 "SpiderFightController:\tmust assign Inspector Fields: "
-                    + "worldBalanceConfig, bananaBranchPrefab, webPrefab",
+                    + "worldBalanceConfig, webPrefab, bananaBranchPrefab",
                 this
             );
             enabled = false;
@@ -477,12 +641,19 @@ public class SpiderFightController: MonoBehaviour {
         hud.ContinueClicked += ContinueAfterReward;
         hud.SkipAdClicked += SkipAd;
         colorBlock = new MaterialPropertyBlock();
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "SpiderFightController:\tready, test at start " + isTestAtStart,
+                this
+            );
+        }
     }
 
     private void OnDestroy() {
         if (I == this) {
             I = null;
         }
+        TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
     }
 
     // the actions are shared, so only switched on here, never off
@@ -497,6 +668,7 @@ public class SpiderFightController: MonoBehaviour {
             || phase == Phase.ReviveOffer
             || phase == Phase.WatchingAd
             || phase == Phase.Rewarding
+            || isTimeBent
         ) {
             Time.timeScale = 1f;
         }
@@ -531,15 +703,19 @@ public class SpiderFightController: MonoBehaviour {
 
         hud.SpeechAnchor = body.HeadPosition;
         UpdateCamera();
-        UpdateProjectiles();
-        UpdateLureFlight();
+        UpdateSparks();
+        UpdateClashFx();
         if (phase == Phase.Fighting) {
             UpdateReturnToStart();
-            UpdateItems();
+            UpdateMelons();
+            UpdateGoldenMelon();
+            UpdateWebs();
+            UpdateCrescents();
+            UpdateParryInput(game);
             UpdateSpider();
-            UpdateDrag(game);
-            UpdateTerritoryRing();
-            UpdateCocoonBanner();
+            UpdateShots();
+            UpdateThrows();
+            UpdateTimeScale(game);
         } else if (phase == Phase.ReviveOffer || phase == Phase.WatchingAd) {
             UpdateRevive(game);
         } else if (phase == Phase.Finishing) {
@@ -553,23 +729,29 @@ public class SpiderFightController: MonoBehaviour {
     // Setup  ------------------------------------------------------------------
     // after the Cobra King, never in the endless run, never mid leap
     private bool CanBegin(GameController game) {
-        if (game.State != GameState.Playing || game.IsLeaping
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (!game.IsRunLive || game.IsLeaping || ramp == null
             || game.Mode == RunMode.Endless) {
             return false;
         }
+        if (isTestAtStart) {
+            return ramp.CurrentPlayerClimbedYDistance >= testStartHeightU;
+        }
         BossFightController cobraKing = BossFightController.I;
-        if (cobraKing != null && !cobraKing.IsDone) {
+        if (game.State != GameState.Playing
+            || (cobraKing != null && !cobraKing.IsDone)) {
             return false;
         }
-        RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        return ramp != null
-            && ramp.CurrentPlayerClimbedYDistance
-                >= worldBalanceConfig.SpiderTriggerHeightU;
+        return ramp.CurrentPlayerClimbedYDistance
+            >= worldBalanceConfig.SpiderTriggerHeightU;
     }
 
     // from just below the spider jump height on, the Spider King already
     // waits idle above its trigger height, so the player sees the fight ahead
     private void UpdatePreview(GameController game) {
+        if (isTestAtStart) {
+            return;
+        }
         if (body.IsBuilt) {
             body.Place(previewAngle, previewY, 0f);
             return;
@@ -587,16 +769,10 @@ public class SpiderFightController: MonoBehaviour {
             return;
         }
         trunkCenter = found.transform.parent.position;
-        previewAngle = AngleOf(found.transform.position) + 70f;
+        previewAngle = AngleOf(found.transform.position) + START_TURN_DEG;
         previewY = ramp.PlayerGameStartYPosition
-            + worldBalanceConfig.SpiderTriggerHeightU + 6f;
+            + worldBalanceConfig.SpiderTriggerHeightU + START_ABOVE_U;
         body.Build(trunkCenter, previewAngle, previewY);
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                "SpiderFightController:\tSpider King waits at y " + previewY,
-                this
-            );
-        }
     }
 
     private void BeginFight() {
@@ -612,67 +788,61 @@ public class SpiderFightController: MonoBehaviour {
             return;
         }
         monkey = monkeyController.transform;
+        GameController.I.EndStartingZone();
         trunkCenter = monkey.parent.position;
         entryY = monkey.position.y;
         entryPosition = monkey.position;
         entryRotation = monkey.rotation;
-        maxHealth = worldBalanceConfig.SpiderMaxHealth;
-        health = maxHealth;
         phase = Phase.Fighting;
         FightStarted?.Invoke();
 
-        // anything grown near the arena from b4 the zone goes
-        foreach (BranchController branch in
-            FindObjectsByType<BranchController>(FindObjectsSortMode.None)) {
-            if (branch.transform.IsChildOf(transform)) {
-                continue;
-            }
-            float y = branch.transform.position.y;
-            if (y > entryY - 3f && y < entryY + arenaHeightU + 4f) {
-                ForgetFruits(branch.gameObject);
-                Destroy(branch.gameObject);
-            }
-        }
+        MakeArenaBare();
 
         cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         greatCobra = FindFirstObjectByType<CobraMotor>();
         if (greatCobra != null) {
             greatCobra.StartGuard(entryY - guardDepthU);
         }
+        // a web breaks in as many presses as in the Cobra King's arena
         struggle = FindFirstObjectByType<SpiderWebStruggle>();
         if (struggle != null) {
-            struggle.EscapeGainScale = webEscapeGainScale;
+            BossFightController cobraArena = BossFightController.I;
+            struggle.EscapeGainScale = cobraArena != null
+                ? cobraArena.WebEscapeGainScale
+                : 2f;
         }
         monkeyController.SetHeightCeiling(entryY + arenaHeightU);
+        tail = FindChild(monkey, "Tail");
+        if (tail == null) {
+            Debug.LogWarning(
+                "SpiderFightController:\tno Tail under the monkey, the parry "
+                    + "swings nothing",
+                this
+            );
+        }
 
-        // the spider starts where it waited, else a little above & a
-        // quarter round the trunk
-        bool hasWaited = body.IsBuilt;
-        startAngle = hasWaited ? previewAngle : AngleOf(monkey.position) + 70f;
-        startY = hasWaited
-            ? Mathf.Clamp(previewY, entryY + 2f, entryY + arenaHeightU - 1f)
-            : entryY + 6f;
+        startAngle = body.IsBuilt
+            ? previewAngle
+            : AngleOf(monkey.position) + START_TURN_DEG;
+        startY = entryY + START_ABOVE_U;
         spiderAngle = startAngle;
         spiderY = startY;
+        maxHealth = worldBalanceConfig.SpiderMaxHealth;
+        health = maxHealth;
         body.Build(trunkCenter, spiderAngle, spiderY);
-        BuildTerritoryRing();
-        SpawnKnots();
-        SpawnLures();
+        // the whole arena is there from the start, melons too
+        SpawnMelons();
+        ClearStickyWebs();
         ResetSpiderState();
 
         hud.Show(bossName);
         hud.SetHealth(1f);
         hud.Flash(warnColor);
-        BossFightController cobraKing = BossFightController.I;
-        bool hasArmor = cobraKing != null && cobraKing.HasArmor;
-        hud.ShowBannerFor(
-            bossName,
-            "Grab the glowing silk knots to rip its web!\n"
-                + "Inside its red ring a rip does double damage"
-                + (hasArmor ? "\nYour gold armor still guards you" : ""),
-            silkColor,
-            4.5f
-        );
+        teach = TeachStep.Parry;
+        ShowStepBanner();
+        // the gold armor, as in the Cobra King's arena: it swirls on, no
+        // words; worn already, it stays
+        GiveArmor();
         hud.Say("My web, my rules!");
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -684,46 +854,126 @@ public class SpiderFightController: MonoBehaviour {
 
     private void ResetSpiderState() {
         mode = Mode.Idle;
+        modeTimeS = 0f;
         attack = Attack.None;
         attackTimeS = 0f;
-        nextAttackTime = Time.time + 2.5f;
-        nextRepairTime = Time.time + repairCooldownS;
+        nextAttackTime = Time.time + 2f;
         stunEndTime = 0f;
         saveGraceEndTime = 0f;
-        hasShownLureHint = false;
-        isCocoonBannerShown = false;
+        isDashing = false;
+        ClearDashLane();
+        volleyLeft = 0;
+        lastStage = Stage;
+        ClearSlash();
+        nextDashTime = Time.time + 1f;
+        parrySlowEndTime = 0f;
+        tailTimeS = -1f;
+        isTeachFrozen = false;
+        frozenShot = null;
+        frozenCrescent = null;
+        ClearShots();
+        ClearThrows();
+        if (stuckWeb != null) {
+            Destroy(stuckWeb);
+            stuckWeb = null;
+        }
         body.SetEyeGlow(0f);
         body.SetSwipe(0f);
         body.SetEating(false);
     }
 
-    // Knots & Lures  ----------------------------------------------------------
-    private void SpawnKnots() {
-        ClearItems(knots);
-        float baseAngle = AngleOf(monkey.position);
-        for (int i = 0; i < knotCount; i++) {
-            // round the trunk, at three alternating heights
-            float angle = baseAngle + 30f + i * 360f / knotCount
-                + Random.Range(-12f, 12f);
-            float y = entryY + Mathf.Lerp(2f, arenaHeightU - 2.5f,
-                (i % 3) / 2f);
-            knots.Add(AddItem(angle, y, true));
+    // Bare Arena  -------------------------------------------------------------
+    // the arena is a space of its own, cut off from the climb: the climb's
+    // generators skip it (also in the test fight near the start) & what
+    // they grew there b4 goes: branches w/ their fruit, webs, falling
+    // cobras, rough bark
+    private void MakeArenaBare() {
+        bareBottomY = entryY - 4f;
+        bareTopY = entryY + arenaHeightU + 6f;
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp != null) {
+            ramp.SetExtraBossZone(bareBottomY, bareTopY);
+        }
+        foreach (BranchController branch in
+            FindObjectsByType<BranchController>(FindObjectsSortMode.None)) {
+            if (!branch.transform.IsChildOf(transform)) {
+                RemoveIfInArena(branch.gameObject);
+            }
+        }
+        foreach (SpiderWebTrap web in
+            FindObjectsByType<SpiderWebTrap>(FindObjectsSortMode.None)) {
+            if (!web.transform.IsChildOf(transform)) {
+                RemoveIfInArena(web.gameObject);
+            }
+        }
+        foreach (FallingCobraController cobra in
+            FindObjectsByType<FallingCobraController>(FindObjectsSortMode.None)) {
+            RemoveIfInArena(cobra.gameObject);
+        }
+        foreach (RoughBarkZone bark in
+            FindObjectsByType<RoughBarkZone>(FindObjectsSortMode.None)) {
+            RemoveIfInArena(bark.gameObject);
+        }
+        TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
+    }
+
+    private void RemoveIfInArena(GameObject thing) {
+        float y = thing.transform.position.y;
+        if (y < bareBottomY || y > bareTopY) {
+            return;
+        }
+        ForgetFruits(thing);
+        // inactive first, Destroy only lands at the end of the frame
+        thing.SetActive(false);
+        Destroy(thing);
+    }
+
+    // a segment recycled into the arena grows nothing there
+    private void OnBranchesGenerated(TreeSegmentController segment) {
+        if (!IsInArena || segment == null) {
+            return;
+        }
+        foreach (BranchController branch in
+            segment.GetComponentsInChildren<BranchController>(true)) {
+            RemoveIfInArena(branch.gameObject);
         }
     }
 
-    private void SpawnLures() {
-        ClearItems(lureFruits);
-        float baseAngle = AngleOf(monkey.position);
-        for (int i = 0; i < lureFruitCount; i++) {
-            // between the knots
-            float angle = baseAngle + i * 360f / Mathf.Max(1, lureFruitCount);
-            float y = entryY + Mathf.Lerp(1f, arenaHeightU - 4f,
-                lureFruitCount > 1 ? i / (lureFruitCount - 1f) : 0.5f);
-            lureFruits.Add(AddItem(angle, y, false));
+    private void EndBareArena() {
+        TreeSegmentController.BranchesGenerated -= OnBranchesGenerated;
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp != null) {
+            ramp.ClearExtraBossZone();
         }
     }
 
-    private ArenaItem AddItem(float angle, float y, bool isKnot) {
+    // Melons & Webs  ---------------------------------------------------------
+    // melon branches spread round the arena at a few heights
+    private void SpawnMelons() {
+        ClearMelons();
+        float baseAngle = AngleOf(monkey.position);
+        for (int i = 0; i < melonCount; i++) {
+            float angle = baseAngle + 25f + i * 360f / melonCount
+                + Random.Range(-15f, 15f);
+            float y = entryY + Mathf.Lerp(1.5f, arenaHeightU - 3f,
+                melonCount > 1 ? (i * 2 % melonCount) / (melonCount - 1f) : 0.5f);
+            Melon melon = AddMelon(angle, y);
+            melons.Add(melon);
+            // no web right on a melon
+            foreach (LaidWeb laid in stickyWebs) {
+                if (laid.web != null && !IsWebHoldingMonkey(laid.web)
+                    && Vector3.Distance(laid.web.transform.position,
+                        melon.root.transform.position) < 2.5f) {
+                    Destroy(laid.web.gameObject);
+                }
+            }
+        }
+        stickyWebs.RemoveAll(w => w.web == null);
+    }
+
+    // the climb's banana branch, its banana swapped for a melon model; the
+    // collider & scripts stay, so the grab works as on any fruit
+    private Melon AddMelon(float angle, float y) {
         GameObject branch = Instantiate(bananaBranchPrefab, transform);
         branch.transform.SetPositionAndRotation(
             PointOnTrunk(angle, y + BANANA_HANG_U, branchRadiusU),
@@ -735,14 +985,20 @@ public class SpiderFightController: MonoBehaviour {
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject fruit = pickup != null ? pickup.gameObject : branch;
+        if (watermelonMesh != null) {
+            foreach (MeshFilter filter in
+                fruit.GetComponentsInChildren<MeshFilter>(true)) {
+                filter.sharedMesh = watermelonMesh;
+                filter.transform.localRotation = Quaternion.identity;
+                filter.transform.localScale = watermelonScale;
+                filter.transform.localPosition = watermelonOffset;
+            }
+        }
         Collider trigger = fruit.GetComponent<Collider>();
         if (trigger == null) {
             trigger = fruit.GetComponentInChildren<Collider>(true);
         }
-        if (isKnot) {
-            MakeKnot(fruit, trigger);
-        }
-        return new ArenaItem {
+        return new Melon {
             root = fruit,
             branch = branch,
             trigger = trigger,
@@ -750,183 +1006,285 @@ public class SpiderFightController: MonoBehaviour {
         };
     }
 
-    // the banana's model is hidden behind a glowing silk ball; its collider
-    // & scripts stay, so the grab works as on any fruit
-    private void MakeKnot(GameObject fruit, Collider trigger) {
-        foreach (Renderer part in fruit.GetComponentsInChildren<Renderer>(true)) {
-            part.enabled = false;
+    private void ClearMelons() {
+        foreach (Melon melon in melons) {
+            if (melon.branch != null) {
+                ForgetFruits(melon.branch);
+                Destroy(melon.branch);
+            }
         }
-        GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        ball.name = "SilkKnot";
-        DestroyImmediate(ball.GetComponent<Collider>());
-        ball.transform.SetParent(fruit.transform, false);
-        ball.transform.position = trigger != null
-            ? trigger.bounds.center
-            : fruit.transform.position;
-        float scale = Mathf.Max(0.0001f, fruit.transform.lossyScale.x);
-        ball.transform.localScale = Vector3.one * (knotSizeU / scale);
-        Renderer ballRenderer = ball.GetComponent<Renderer>();
-        if (body.PrimitiveMaterial != null) {
-            ballRenderer.sharedMaterial = body.PrimitiveMaterial;
+        melons.Clear();
+        if (goldenMelon != null && goldenMelon.branch != null) {
+            ForgetFruits(goldenMelon.branch);
+            Destroy(goldenMelon.branch);
         }
-        SetColor(ballRenderer, knotColor);
-        knotBalls[fruit] = ballRenderer;
+        goldenMelon = null;
     }
 
-    private void ClearItems(List<ArenaItem> items) {
-        foreach (ArenaItem item in items) {
-            if (item.branch != null) {
-                ForgetFruits(item.branch);
-                Destroy(item.branch);
-            }
+    // the golden melon grows beside the monkey now & then while it has no
+    // armor; a pulsing gold melon, gone again after goldenShowS
+    private void UpdateGoldenMelon() {
+        if (melons.Count == 0 || teach != TeachStep.Done) {
+            return;
         }
-        items.Clear();
+        if (goldenMelon == null) {
+            goldenMelon = AddMelon(0f, entryY);
+            goldenMelon.isGolden = true;
+            foreach (Renderer part in
+                goldenMelon.root.GetComponentsInChildren<Renderer>(true)) {
+                SetColor(part, goldenColor);
+            }
+            HideGoldenMelon();
+            nextGoldenTime = Time.time + goldenIntervalS;
+        }
+        if (goldenMelon.root == null) {
+            return;
+        }
+        if (goldenMelon.root.activeSelf) {
+            float pulse = 1f + 0.12f * Mathf.Sin(Time.time * 6f);
+            goldenMelon.root.transform.localScale = goldenRestScale * pulse;
+            if (Time.time >= goldenHideTime) {
+                HideGoldenMelon();
+                nextGoldenTime = Time.time + goldenIntervalS;
+            }
+            return;
+        }
+        if (Time.time < nextGoldenTime || HasArmor()) {
+            return;
+        }
+        // beside the monkey, a bit up, in reach
+        float side = Random.value < 0.5f ? -1f : 1f;
+        float angle = AngleOf(monkey.position) + side * 35f;
+        float y = Mathf.Clamp(monkey.position.y + 1.5f, entryY + 1f,
+            entryY + arenaHeightU - 2f);
+        goldenMelon.branch.transform.SetPositionAndRotation(
+            PointOnTrunk(angle, y + BANANA_HANG_U, branchRadiusU),
+            Quaternion.Euler(0f, 90f - angle, 0f)
+        );
+        goldenMelon.branch.SetActive(true);
+        goldenMelon.root.SetActive(true);
+        goldenHideTime = Time.time + goldenShowS;
+        Burst(goldenMelon.root.transform.position, goldenColor, 10);
     }
 
-    // knots grow back on their own, bananas too; knots pulse their glow
-    private void UpdateItems() {
-        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 4f);
-        for (int i = 0; i < knots.Count; i++) {
-            ArenaItem knot = knots[i];
-            if (knot.root == null) {
-                continue;
-            }
-            if (!knot.root.activeSelf && knot.backTime >= 0f
-                && Time.time >= knot.backTime) {
-                RestoreKnot(i, false);
-                continue;
-            }
-            if (knotBalls.TryGetValue(knot.root, out Renderer ball)) {
-                // a knot in the territory glows gold: worth double
-                Color glow = IsInTerritory(knot.root.transform.position)
-                    ? goldenColor
-                    : knotColor;
-                SetColor(ball, Color.Lerp(glow * 0.75f, glow, pulse));
-            }
+    private void HideGoldenMelon() {
+        if (goldenMelon == null || goldenMelon.branch == null) {
+            return;
         }
-        for (int i = 0; i < lureFruits.Count; i++) {
-            ArenaItem fruit = lureFruits[i];
-            if (fruit.root == null || fruit.root.activeSelf
-                || fruit.backTime < 0f || Time.time < fruit.backTime) {
+        if (goldenRestScale == Vector3.zero) {
+            goldenRestScale = goldenMelon.root.transform.localScale;
+        }
+        goldenMelon.root.transform.localScale = goldenRestScale;
+        ForgetFruits(goldenMelon.branch);
+        goldenMelon.branch.SetActive(false);
+    }
+
+    private void UpdateMelons() {
+        foreach (Melon melon in melons) {
+            if (melon.root == null || melon.root.activeSelf
+                || melon.backTime < 0f || Time.time < melon.backTime) {
                 continue;
             }
-            fruit.root.SetActive(true);
-            fruit.backTime = -1f;
-            lureFruits[i] = fruit;
+            melon.root.SetActive(true);
+            melon.backTime = -1f;
         }
     }
 
-    private void RipKnot(int index) {
-        ArenaItem knot = knots[index];
-        Vector3 spot = knot.root.transform.position;
-        bool isClose = IsInTerritory(spot);
-        int damage = isClose ? territoryKnotDamage : knotDamage;
-        knot.backTime = Time.time + knotRegrowS;
-        knots[index] = knot;
+    // the arena starts full of sticky webs, kept off the melons & the
+    // monkey's start spot, never overlapping
+    // the spider spins all the way it crawls: a web every webLayEveryU
+    // where it is, off the monkey, the melons & other webs; none in a dash
+    private void LayWebs(float movedU) {
+        if (teach != TeachStep.Done || isDashing) {
+            return;
+        }
+        layDistanceU += movedU;
+        if (layDistanceU < webLayEveryU) {
+            return;
+        }
+        Vector3 spot = PointOnTrunk(spiderAngle, spiderY, trunkRadiusU + 0.02f);
+        if (IsWebSpotFree(spot)) {
+            layDistanceU = 0f;
+            PlaceWeb(spiderAngle, spiderY);
+        }
+    }
 
+    // each web goes by itself after webLifeS, shrinking its last second;
+    // never the one holding the monkey
+    private void UpdateWebs() {
+        for (int i = stickyWebs.Count - 1; i >= 0; i--) {
+            LaidWeb laid = stickyWebs[i];
+            if (laid.web == null) {
+                stickyWebs.RemoveAt(i);
+                continue;
+            }
+            if (IsWebHoldingMonkey(laid.web)) {
+                continue;
+            }
+            float leftS = laid.endTime - Time.time;
+            if (leftS <= 0f) {
+                laid.web.gameObject.SetActive(false);
+                Destroy(laid.web.gameObject);
+                stickyWebs.RemoveAt(i);
+                continue;
+            }
+            if (leftS < 1f) {
+                laid.web.transform.localScale = laid.restScale
+                    * Mathf.Lerp(0.2f, 1f, leftS);
+            }
+        }
+    }
+
+    private bool IsWebSpotFree(Vector3 spot) {
+        if (Vector3.Distance(spot, monkey.position) < webMonkeyGapU) {
+            return false;
+        }
+        foreach (LaidWeb laid in stickyWebs) {
+            if (laid.web != null
+                && Vector3.Distance(laid.web.transform.position, spot) < webGapU) {
+                return false;
+            }
+        }
+        foreach (Melon melon in melons) {
+            if (melon.root != null
+                && Vector3.Distance(melon.root.transform.position, spot) < 2.5f) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // as the segments' spawner: the web's face looks away from the trunk
+    private void PlaceWeb(float angle, float y) {
+        SpiderWebTrap web = Instantiate(
+            webPrefab,
+            PointOnTrunk(angle, y, trunkRadiusU + 0.02f),
+            Quaternion.Euler(0f, -angle, 0f),
+            transform
+        );
+        stickyWebs.Add(new LaidWeb {
+            web = web,
+            endTime = Time.time + webLifeS,
+            restScale = web.transform.localScale,
+        });
+    }
+
+    private bool IsWebHoldingMonkey(SpiderWebTrap web) {
+        return struggle != null && struggle.IsTrapped && monkey != null
+            && Vector3.Distance(web.transform.position, monkey.position) < 2f;
+    }
+
+    private void ClearStickyWebs() {
+        foreach (LaidWeb laid in stickyWebs) {
+            if (laid.web != null) {
+                Destroy(laid.web.gameObject);
+            }
+        }
+        stickyWebs.Clear();
+    }
+
+    // Throws  -----------------------------------------------------------------
+    // a copy of the grabbed fruit arcs round the trunk to the spider,
+    // spinning; on arrival it hits
+    private void LaunchMelon(GameObject source, Vector3 from) {
+        GameObject copy = Instantiate(source);
+        copy.transform.localScale = source.transform.lossyScale;
+        MakeDecor(copy);
+        copy.SetActive(true);
+        copy.transform.position = from;
+        throws.Add(new Throw {
+            transform = copy.transform,
+            from = from,
+        });
+    }
+
+    private void UpdateThrows() {
+        for (int i = throws.Count - 1; i >= 0; i--) {
+            Throw thrown = throws[i];
+            if (thrown.transform == null) {
+                throws.RemoveAt(i);
+                continue;
+            }
+            thrown.ageS += Time.deltaTime;
+            float t = Mathf.Clamp01(thrown.ageS / melonFlyS);
+            thrown.transform.position = ArcPoint(thrown.from, body.HeadPosition,
+                t, 2.5f);
+            thrown.transform.Rotate(Vector3.right, 720f * Time.deltaTime,
+                Space.World);
+            if (t < 1f) {
+                continue;
+            }
+            Destroy(thrown.transform.gameObject);
+            throws.RemoveAt(i);
+            OnMelonHit();
+        }
+    }
+
+    private void ClearThrows() {
+        foreach (Throw thrown in throws) {
+            if (thrown.transform != null) {
+                Destroy(thrown.transform.gameObject);
+            }
+        }
+        throws.Clear();
+    }
+
+    private void OnMelonHit() {
+        Hurt(melonDamage);
+    }
+
+    private static void GiveArmor() {
+        BossFightController cobraKing = BossFightController.I;
+        if (cobraKing != null) {
+            cobraKing.GiveArmor();
+        }
+    }
+
+    private static bool HasArmor() {
+        BossFightController cobraKing = BossFightController.I;
+        return cobraKing != null && cobraKing.HasArmor;
+    }
+
+    // a melon or a batted back slash
+    private void Hurt(int damage) {
+        if (phase != Phase.Fighting || damage <= 0) {
+            return;
+        }
         health = Mathf.Max(0, health - damage);
         hud.SetHealth(health / (float)maxHealth);
-        hud.PopDamage(isClose ? "-" + damage + " CLOSE!" : "-" + damage, spot);
-        hud.Flash(isClose ? goldenColor : silkColor);
+        hud.PopDamage("-" + damage, body.HeadPosition);
+        Burst(body.HeadPosition, new Color(0.9f, 0.2f, 0.25f), 10);
         if (health <= 0) {
             StartFinisher(true);
             return;
         }
-        if (isClose) {
-            hud.Say("Get away from my web!");
-            // ripped right under its nose: it lashes out soon
-            if (mode == Mode.Idle) {
-                nextAttackTime = Mathf.Min(nextAttackTime, Time.time + 0.6f);
-            }
+        int stage = Stage;
+        if (stage > lastStage) {
+            // a new stage: a roar of red rings, its eyes blazing
+            lastStage = stage;
+            AddRing(body.HeadPosition, warnColor, 0f);
+            AddRing(body.HeadPosition, warnColor, 0.1f);
+            AddRing(body.HeadPosition, warnColor, 0.2f);
+            hud.Say(stage == 1 ? "You'll pay for that!" : "ENOUGH!");
+            return;
         }
+        hud.Say(health <= maxHealth / 3 ? "No! Stop it!" : "Ouch!");
     }
 
-    private void RestoreKnot(int index, bool isRepair) {
-        ArenaItem knot = knots[index];
-        knot.root.SetActive(true);
-        knot.backTime = -1f;
-        knots[index] = knot;
-        if (!isRepair || repairHeal <= 0 || health >= maxHealth) {
-            return;
-        }
-        health = Mathf.Min(maxHealth, health + repairHeal);
-        hud.SetHealth(health / (float)maxHealth);
-        hud.PopText("+" + repairHeal + " re-spun", knot.root.transform.position,
-            silkColor);
-    }
-
-    // a banana copy flies round the trunk to the far side from the monkey,
-    // so the spider leaves to eat it there; the player only picks when
-    private void ThrowLure(Vector3 from) {
-        if (lure != null) {
-            Destroy(lure.gameObject);
-        }
-        lure = CreatePrimitive(PrimitiveType.Capsule, "Lure",
-            new Vector3(0.5f, 0.8f, 0.5f), new Color(1f, 0.85f, 0.2f)).transform;
-        lureFromAngle = AngleOf(from);
-        lureFromY = from.y;
-        lureFromRadius = Mathf.Max(trunkRadiusU + 0.5f,
-            HorizontalDistance(from));
-        // round the side away from the spider
-        float toSpider = Mathf.DeltaAngle(lureFromAngle, spiderAngle);
-        lureTurnDeg = toSpider >= 0f ? -180f : 180f;
-        lureToY = Mathf.Clamp(from.y, entryY + 1f, entryY + arenaHeightU - 1f);
-        lureAgeS = 0f;
-        isLureFlying = true;
-        lure.position = from;
-    }
-
-    private void UpdateLureFlight() {
-        if (lure == null) {
-            return;
-        }
-        if (!isLureFlying) {
-            // eaten away while the spider munches
-            if (mode == Mode.Eating) {
-                float left = 1f - Mathf.Clamp01(modeTimeS / lureEatS);
-                lure.localScale = new Vector3(0.5f, 0.8f, 0.5f)
-                    * Mathf.Max(0.15f, left);
-            }
-            return;
-        }
-        lureAgeS += Time.deltaTime;
-        float t = Mathf.Clamp01(lureAgeS / lureFlyS);
-        float angle = lureFromAngle + lureTurnDeg * t;
-        float radius = Mathf.Lerp(lureFromRadius, trunkRadiusU + 0.35f, t)
-            + Mathf.Sin(t * Mathf.PI) * 3f;
-        float y = Mathf.Lerp(lureFromY, lureToY, t) + Mathf.Sin(t * Mathf.PI) * 2f;
-        lure.position = PointOnTrunk(angle, y, radius);
-        lure.rotation = Quaternion.Euler(t * 540f, angle, 0f);
-        if (t < 1f) {
-            return;
-        }
-        isLureFlying = false;
-        lureAngle = lureFromAngle + lureTurnDeg;
-        lureY = lureToY;
-        lure.rotation = Quaternion.Euler(0f, -lureAngle, 90f);
-        // the snack wins over anything but a wrap already under way
-        CancelAttack();
-        if (isDragging) {
-            EndDrag(true);
-        }
-        SetMode(Mode.ToLure);
-        hud.Say("Ooh, a snack...");
-        if (!hasShownLureHint) {
-            hasShownLureHint = true;
-            hud.ShowBannerFor(
-                "Lured!",
-                "It goes for the fruit: rip the knots near it now!",
-                goldenColor,
-                2.5f
-            );
-        }
+    // a point on an arc round the trunk, never through it
+    private Vector3 ArcPoint(Vector3 from, Vector3 to, float t, float bulgeU) {
+        float angleFrom = AngleOf(from);
+        float angle = angleFrom + Mathf.DeltaAngle(angleFrom, AngleOf(to)) * t;
+        float y = Mathf.Lerp(from.y, to.y, t);
+        float radius = Mathf.Lerp(HorizontalDistance(from), HorizontalDistance(to),
+            t) + Mathf.Sin(t * Mathf.PI) * bulgeU;
+        return PointOnTrunk(angle, y, Mathf.Max(radius, trunkRadiusU + 0.3f));
     }
 
     // Spider  -----------------------------------------------------------------
     private void SetMode(Mode next) {
         mode = next;
         modeTimeS = 0f;
-        body.SetEating(next == Mode.Eating || next == Mode.Repairing);
     }
 
     private void UpdateSpider() {
@@ -934,51 +1292,50 @@ public class SpiderFightController: MonoBehaviour {
         float walk = 0f;
         bool isTrapped = struggle != null && struggle.IsTrapped;
         bool isStunned = Time.time < stunEndTime;
+        UpdateStuckWeb(isStunned);
 
-        // a trapped monkey is crawled to, unless a snack holds it
-        if (isTrapped && !isStunned && mode != Mode.Eating
-            && mode != Mode.ToLure && mode != Mode.Cocooning) {
+        // a trapped monkey is crawled to & wrapped up
+        bool isDashCommitted = isDashing || attack == Attack.Dash;
+        if (isTrapped && !isStunned && teach == TeachStep.Done
+            && mode != Mode.Cocooning && !isDashCommitted && !isSlashing) {
             CancelAttack();
             SetMode(Mode.Cocooning);
-            hud.Say("Hold still, little monkey...");
+            hud.Say("Hold still...");
         }
 
-        switch (mode) {
-            case Mode.Idle:
-                walk = UpdateIdle(isStunned);
-                break;
-            case Mode.Repairing:
-                walk = UpdateRepair();
-                break;
-            case Mode.ToLure:
-                walk = MoveToward(lureAngle, lureY, lureRunSpeedU, 1.2f)
-                    ? 0f
-                    : 1f;
-                if (lure == null || isLureFlying) {
-                    SetMode(Mode.Idle);
-                } else if (walk == 0f) {
-                    SetMode(Mode.Eating);
-                }
-                break;
-            case Mode.Eating:
-                if (modeTimeS >= lureEatS) {
-                    if (lure != null) {
-                        Destroy(lure.gameObject);
-                    }
-                    lure = null;
-                    SetMode(Mode.Idle);
-                    nextAttackTime = Time.time + 1f;
-                }
-                break;
-            case Mode.Cocooning:
-                walk = UpdateCocoon(isTrapped, isStunned);
-                break;
+        float lastAngle = spiderAngle;
+        float lastY = spiderY;
+        if (isSlashing) {
+            walk = UpdateSlash();
+        } else if (isDashing) {
+            walk = UpdateDash();
+        } else if (mode == Mode.Cocooning) {
+            walk = UpdateCocoon(isTrapped, isStunned);
+        } else {
+            walk = UpdateIdle(isStunned);
         }
 
-        float glow = attack != Attack.None
-            ? Mathf.Clamp01(attackTimeS / WindUpOf(attack))
-            : mode == Mode.Cocooning ? 1f : 0f;
-        body.SetEyeGlow(glow);
+        LayWebs(SurfaceDistance(lastAngle, lastY, spiderAngle, spiderY));
+
+        // touching it is fatal, any time in the fight
+        // up close the dash is never called off: its own hit counts then
+        bool isDashBusy = isDashing || attack == Attack.Dash;
+        bool isTouching = teach == TeachStep.Done && !isReturningToStart
+            && !isDashBusy && Time.time >= saveGraceEndTime
+            && DistanceToMonkey() < touchU;
+        if (isTouching) {
+            LethalHit("Bitten!", true);
+        }
+
+        float glow = mode == Mode.Cocooning || isDashing || isSlashing
+            ? 1f
+            : AttackGlow();
+        body.SetEyeGlow(isStunned ? 0f : glow);
+        if (Time.unscaledTime < biteEndTime) {
+            float t = 1f - (biteEndTime - Time.unscaledTime) / BITE_S;
+            body.SetSwipe(Mathf.Sin(t * Mathf.PI * 2f) * 0.5f + 0.5f);
+            body.SetEyeGlow(1f);
+        }
         body.Place(spiderAngle, spiderY, walk);
     }
 
@@ -990,101 +1347,84 @@ public class SpiderFightController: MonoBehaviour {
             UpdateAttack();
             return 0f;
         }
-        if (TryStartRepair()) {
+        if (teach != TeachStep.Done) {
+            return UpdateTeach();
+        }
+        if (isReturningToStart) {
             return 0f;
         }
-        float walk = 0f;
-        Vector3 at = monkey.position;
-        if (SurfaceDistance(spiderAngle, spiderY, AngleOf(at), at.y)
-            > stalkDistanceU) {
-            MoveToward(AngleOf(at), at.y, stalkSpeedU, stalkDistanceU);
-            walk = 0.5f;
+        UpdateVolley();
+        bool isBusy = HasLiveShots
+            || (struggle != null && struggle.IsTrapped);
+        // its charge must be seen: out of view it rushes at the monkey
+        bool isDue = Time.time >= nextAttackTime && !isBusy;
+        bool isRushing = isDue && !IsInView();
+        float walk = isRushing ? Rush() : Stalk();
+        // caught up: it always dashes at once, to be dodged
+        if (!isBusy && IsCloseEnoughToDash()) {
+            BeginAttack(Attack.Dash, false);
+            return 0f;
         }
-        if (Time.time >= nextAttackTime && !isDragging) {
+        if (isDue && !isRushing) {
             StartAttack();
         }
         return walk;
     }
 
-    // a ripped knot near it is re-spun, the nearest first
-    private bool TryStartRepair() {
-        if (Time.time < nextRepairTime) {
-            return false;
-        }
-        int best = -1;
-        float bestDistance = repairRangeU;
-        for (int i = 0; i < knots.Count; i++) {
-            ArenaItem knot = knots[i];
-            if (knot.root == null || knot.root.activeSelf) {
-                continue;
-            }
-            Vector3 spot = knot.root.transform.position;
-            float distance = SurfaceDistance(spiderAngle, spiderY,
-                AngleOf(spot), spot.y);
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                best = i;
-            }
-        }
-        if (best < 0) {
-            return false;
-        }
-        repairIndex = best;
-        SetMode(Mode.Repairing);
-        isRepairSpinning = false;
-        return true;
+    private float Rush() {
+        Vector3 at = monkey.position;
+        bool hasArrived = MoveToward(AngleOf(at), at.y, rushSpeedU,
+            stalkDistanceU);
+        return hasArrived ? 0f : 1f;
     }
 
-    private float UpdateRepair() {
-        if (repairIndex < 0 || repairIndex >= knots.Count
-            || knots[repairIndex].root == null) {
-            SetMode(Mode.Idle);
-            return 0f;
+    // if the spider, its charge, is on screen & on the trunk's near side
+    private bool IsInView() {
+        Camera view = Camera.main;
+        if (view == null) {
+            return true;
         }
-        ArenaItem knot = knots[repairIndex];
-        // grown back meanwhile: nothing to mend
-        if (knot.root.activeSelf) {
-            SetMode(Mode.Idle);
-            nextRepairTime = Time.time + repairCooldownS;
-            return 0f;
-        }
-        if (!isRepairSpinning) {
-            Vector3 spot = knot.root.transform.position;
-            bool hasArrived = MoveToward(AngleOf(spot), spot.y, repairSpeedU,
-                1f);
-            if (!hasArrived) {
-                return 0.8f;
-            }
-            isRepairSpinning = true;
-            modeTimeS = 0f;
-            hud.Say("Mending...");
-            return 0f;
-        }
-        if (modeTimeS >= repairS) {
-            RestoreKnot(repairIndex, true);
-            SetMode(Mode.Idle);
-            nextRepairTime = Time.time + repairCooldownS;
-            nextAttackTime = Mathf.Max(nextAttackTime, Time.time + 0.8f);
-        }
-        return 0f;
+        Vector3 head = body.HeadPosition;
+        Vector3 port = view.WorldToViewportPoint(head);
+        bool isOnScreen = port.z > 0f && port.x > 0.08f && port.x < 0.92f
+            && port.y > 0.08f && port.y < 0.92f;
+        Vector3 toCamera = view.transform.position - trunkCenter;
+        toCamera.y = 0f;
+        float radians = spiderAngle * Mathf.Deg2Rad;
+        Vector3 outward = new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
+        bool isNearSide = toCamera.sqrMagnitude < 0.001f
+            || Vector3.Dot(outward, toCamera.normalized) > 0.25f;
+        return isOnScreen && isNearSide;
+    }
+
+    // crawls after the monkey round the arena
+    private float Stalk() {
+        Vector3 at = monkey.position;
+        bool hasArrived = MoveToward(AngleOf(at), at.y, stalkSpeedU * SpeedScale,
+            stalkDistanceU);
+        return hasArrived ? 0f : 0.6f;
     }
 
     private float UpdateCocoon(bool isTrapped, bool isStunned) {
         if (!isTrapped) {
+            hasBeenTrapped = true;
             SetMode(Mode.Idle);
-            nextAttackTime = Time.time + RestNow() * 0.7f;
+            nextAttackTime = Time.time + RestNow() * 0.6f;
             return 0f;
         }
         if (isStunned) {
             return 0f;
         }
         Vector3 at = monkey.position;
-        bool hasArrived = MoveToward(AngleOf(at), at.y, cocoonSpeedU,
-            cocoonReachU);
+        float speedU = hasBeenTrapped
+            ? cocoonSpeedU
+            : cocoonSpeedU * firstCocoonSpeedScale;
+        bool hasArrived = MoveToward(AngleOf(at), at.y, speedU, cocoonReachU);
         if (hasArrived) {
             LethalHit("Wrapped!");
+            return 0f;
         }
-        return hasArrived ? 0f : 1f;
+        return 1f;
     }
 
     // moves along the bark, the shortest way round; true once within reach
@@ -1094,7 +1434,7 @@ public class SpiderFightController: MonoBehaviour {
         float speedU,
         float reachU
     ) {
-        targetY = Mathf.Clamp(targetY, entryY - 1f, entryY + arenaHeightU);
+        targetY = Mathf.Clamp(targetY, ArenaBottomY, entryY + arenaHeightU);
         float arcU = Mathf.DeltaAngle(spiderAngle, targetAngle)
             * Mathf.Deg2Rad * trunkRadiusU;
         float dy = targetY - spiderY;
@@ -1109,94 +1449,168 @@ public class SpiderFightController: MonoBehaviour {
     }
 
     // Attacks  ----------------------------------------------------------------
+    // the weaker, the shorter the rests
     private float RestNow() {
-        float lostShare = 1f - health / (float)maxHealth;
-        float rest = restS * Mathf.Lerp(1f, lowHealthRestScale, lostShare);
-        if (IsInTerritory(monkey.position)) {
-            rest *= territoryRestScale;
-        }
-        return rest;
+        return restS * Mathf.Lerp(minRestShare, 1f, health / (float)maxHealth);
     }
 
-    private float WindUpOf(Attack kind) {
-        switch (kind) {
-            case Attack.WebShot:
-                return webShotWindUpS;
-            case Attack.Drag:
-                return dragWindUpS;
-            case Attack.Swipe:
-                return swipeWindUpS;
-            default:
-                return 1f;
-        }
-    }
+    // share of its health lost, 0~1: the fight gets harder w/ it
+    private float Rage => maxHealth > 0 ? 1f - health / (float)maxHealth : 0f;
 
-    private void StartAttack() {
+    // 0, 1 or 2: the three stages of the fight
+    private int Stage => Rage < stageLostShares.x ? 0
+        : Rage < stageLostShares.y ? 1 : 2;
+
+    // speed scale, 1 at full health up to lateSpeedScale at none
+    private float SpeedScale => teach == TeachStep.Done
+        ? Mathf.Lerp(1f, lateSpeedScale, Rage)
+        : 1f;
+
+    // wind up & gap scale, 1 at full health down to lateTimeScale at none
+    private float TimeScaleNow => teach == TeachStep.Done
+        ? Mathf.Lerp(1f, lateTimeScale, Rage)
+        : 1f;
+
+    private static int PerStage(Vector3Int values, int stage) =>
+        Mathf.Max(1, stage == 0 ? values.x : stage == 1 ? values.y : values.z);
+
+    private float DistanceToMonkey() {
         Vector3 at = monkey.position;
-        float distance = SurfaceDistance(spiderAngle, spiderY, AngleOf(at),
-            at.y);
-        bool isTrapped = struggle != null && struggle.IsTrapped;
-        if (isTrapped) {
+        return SurfaceDistance(spiderAngle, spiderY, AngleOf(at), at.y);
+    }
+
+    private bool HasLiveShots => shots.Exists(s => !s.isCharging)
+        || volleyLeft > 0;
+
+    private float VolleyGap() {
+        bool isSlow = (volleyGapIndex % 2 == 0) == isVolleySlowFirst;
+        volleyGapIndex++;
+        return (isSlow ? volleySlowGapS : volleyFastGapS) * TimeScaleNow;
+    }
+
+    // the next bullet of a volley, its orb flashing at the head
+    private void UpdateVolley() {
+        if (volleyLeft <= 0 || Time.time < nextVolleyTime) {
             return;
         }
-        if (distance < territoryRadiusU) {
-            attack = Attack.Swipe;
-        } else if (distance < dragRangeU && Random.value < dragChance) {
-            attack = Attack.Drag;
-        } else {
-            attack = Attack.WebShot;
+        volleyLeft--;
+        nextVolleyTime = Time.time + VolleyGap();
+        Shot bullet = NewShot(ShotKind.Web, monkey.position);
+        bullet.isCharging = false;
+        bullet.ball.gameObject.SetActive(false);
+        bullet.from = body.HeadPosition;
+        bullet.length = PathLength(bullet);
+        AddRing(body.HeadPosition, silkColor, 0f, true);
+        if (volleyLeft == 0) {
+            nextAttackTime = Time.time + RestNow();
         }
+    }
+
+    private bool IsCloseEnoughToDash() {
+        return Time.time >= nextDashTime
+            && DistanceToMonkey() <= dashStartU;
+    }
+
+    // from afar: a web shot or a slash
+    private void StartAttack() {
+        if (struggle != null && struggle.IsTrapped) {
+            return;
+        }
+        float distance = DistanceToMonkey();
+        bool canSlash = distance <= slashRangeU && distance >= slashMinRangeU;
+        if (canSlash && Random.value < slashChance) {
+            StartSlash();
+            return;
+        }
+        BeginAttack(Attack.Web, false);
+    }
+
+    // the wind up: the eyes glow; a web shot charges its orb, a dash rears
+    // the legs up & shows its lane
+    private void BeginAttack(Attack kind, bool isTeaching) {
+        attack = kind;
         attackTimeS = 0f;
-        aimPoint = at;
-        string word = attack == Attack.Swipe
-            ? "SWIPE!"
-            : attack == Attack.Drag ? "SILK!" : "WEB!";
-        warningId = hud.AddWarning(aimPoint, word);
-        if (attack == Attack.Drag) {
-            ShowSilk(true);
+        float slow = isTeaching ? teachSlowScale : 1f;
+        aimPoint = monkey.position;
+        switch (kind) {
+            case Attack.Web:
+                attackWindUpS = webShotWindUpS * slow * TimeScaleNow;
+                chargingShot = NewShot(ShotKind.Web, aimPoint);
+                break;
+            default:
+                attackWindUpS = dashWindUpS * slow * TimeScaleNow;
+                warningId = hud.AddWarning(aimPoint, "DASH!");
+                break;
         }
+        if (isTeaching) {
+            ShowStepBanner();
+        }
+    }
+
+    private float AttackGlow() {
+        return attack == Attack.None
+            ? 0f
+            : Mathf.Clamp01(attackTimeS / attackWindUpS);
     }
 
     private void UpdateAttack() {
         attackTimeS += Time.deltaTime;
-        float windUp = WindUpOf(attack);
-        float progress = Mathf.Clamp01(attackTimeS / windUp);
-        // the aim follows the monkey till a moment b4 the shot
-        bool isLocked = attack == Attack.WebShot
-            && attackTimeS >= windUp - webShotLockS;
-        if (!isLocked) {
-            aimPoint = monkey.position;
+        float progress = Mathf.Clamp01(attackTimeS / attackWindUpS);
+        aimPoint = monkey.position;
+        if (chargingShot != null) {
+            chargingShot.target = aimPoint;
+            chargingShot.fill = progress;
         }
         if (warningId >= 0) {
-            hud.UpdateWarning(warningId, aimPoint, progress);
+            hud.UpdateWarning(warningId, monkey.position, progress);
         }
-        if (attack == Attack.Swipe) {
+        if (attack == Attack.Dash) {
             body.SetSwipe(progress);
+            bool isDashLocked = attackTimeS >= attackWindUpS - dashLockS;
+            if (!isDashLocked) {
+                AimDash();
+            }
+            DrawDashLane(isDashLocked);
         }
-        if (attack == Attack.Drag) {
-            UpdateSilkLine(Random.value < 0.75f);
+        if (attack == Attack.Web) {
+            body.SetCharge(progress);
+            UpdateChargeSparks();
         }
-        if (progress < 1f) {
+        if (attackTimeS < attackWindUpS) {
             return;
         }
 
         Attack fired = attack;
-        CancelAttack();
-        nextAttackTime = Time.time + RestNow();
+        Shot shot = chargingShot;
+        chargingShot = null;
+        CancelAttack(fired == Attack.Dash);
+        if (fired != Attack.Dash) {
+            nextAttackTime = Time.time
+                + (teach == TeachStep.Done ? RestNow() : teachGapS);
+        }
         switch (fired) {
-            case Attack.WebShot:
-                FireWeb();
+            case Attack.Web:
+                if (shot != null) {
+                    shot.isCharging = false;
+                    shot.from = body.HeadPosition;
+                    shot.length = PathLength(shot);
+                }
+                // later a volley: the rest follow, slow then fast or fast
+                // then slow, each to bat back
+                if (teach == TeachStep.Done) {
+                    volleyLeft = PerStage(webShotsPerStage, Stage) - 1;
+                    volleyGapIndex = 0;
+                    isVolleySlowFirst = Random.value < 0.5f;
+                    nextVolleyTime = Time.time + VolleyGap();
+                }
                 break;
-            case Attack.Drag:
-                StartDrag();
-                break;
-            case Attack.Swipe:
-                Swipe();
+            case Attack.Dash:
+                StartDash();
                 break;
         }
     }
 
-    private void CancelAttack() {
+    private void CancelAttack(bool isKeepingLane = false) {
         attack = Attack.None;
         attackTimeS = 0f;
         if (warningId >= 0) {
@@ -1204,268 +1618,1266 @@ public class SpiderFightController: MonoBehaviour {
             warningId = -1;
         }
         body.SetSwipe(0f);
-        if (!isDragging) {
-            ShowSilk(false);
+        body.SetCharge(0f);
+        if (chargingShot != null) {
+            RemoveShot(chargingShot);
+            chargingShot = null;
+        }
+        if (!isKeepingLane) {
+            ClearDashLane();
         }
     }
 
-    private void FireWeb() {
-        Transform shot = CreatePrimitive(PrimitiveType.Sphere, "WebShot",
-            Vector3.one * 0.7f, silkColor).transform;
-        shot.position = body.HeadPosition;
-        projectiles.Add(new Projectile {
-            transform = shot,
-            target = aimPoint,
+    // Dash  -------------------------------------------------------------------
+    // a fast charge along the bark to where the monkey was, a bit past it;
+    // touching the monkey on the way knocks it down
+    // the dash runs to where the lane was locked
+    private void StartDash() {
+        isDashing = true;
+        hasDashHit = false;
+        dashTimeS = 0f;
+        dashTravelU = 0f;
+        body.SetSwipe(1f);
+    }
+
+    // the dash's end: where the monkey is, a bit past it; the start, way &
+    // length are kept, so the dash runs exactly along the lane drawn
+    private void AimDash() {
+        Vector3 at = monkey.position;
+        float arcU = Mathf.DeltaAngle(spiderAngle, AngleOf(at)) * Mathf.Deg2Rad
+            * trunkRadiusU;
+        float dy = at.y - spiderY;
+        float distance = Mathf.Max(0.01f, Mathf.Sqrt(arcU * arcU + dy * dy));
+        dashStartAngle = spiderAngle;
+        dashStartY = spiderY;
+        dashWayU = arcU / distance;
+        dashWayV = dy / distance;
+        dashLengthU = distance + dashOvershootU;
+        // cut where it would leave the arena, so the lane is the whole run
+        if (dashWayV > 0.001f) {
+            dashLengthU = Mathf.Min(dashLengthU,
+                (entryY + arenaHeightU - spiderY) / dashWayV);
+        } else if (dashWayV < -0.001f) {
+            dashLengthU = Mathf.Min(dashLengthU,
+                (ArenaBottomY - spiderY) / dashWayV);
+        }
+        dashLengthU = Mathf.Max(0.5f, dashLengthU);
+        dashAngle = spiderAngle
+            + dashWayU * dashLengthU / trunkRadiusU * Mathf.Rad2Deg;
+        dashY = spiderY + dashWayV * dashLengthU;
+    }
+
+    // a red lane on the bark from the spider to the dash's end, as wide as
+    // the dash catches; dim while it aims, bright & flashing once locked
+    // the lane: exactly where the dash catches, its run (dashLengthU) plus
+    // the catch reach (dashHitU) past its end, dashHitU to either side
+    private void DrawDashLane(bool isLocked) {
+        if (dashLane == null) {
+            dashLane = new Transform[PATH_PARTS * 2];
+            for (int i = 0; i < dashLane.Length; i++) {
+                dashLane[i] = CreatePrimitive(PrimitiveType.Cylinder, "DashLane",
+                    Vector3.one * 0.1f, warnColor).transform;
+            }
+        }
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 30f);
+        Color color = isLocked
+            ? Color.Lerp(warnColor, Color.white, pulse * 0.5f)
+            : warnColor * 0.6f;
+        float thickness = isLocked ? 0.22f : 0.12f;
+        float reach = dashLengthU + dashHitU;
+        // across the way, on the bark
+        float acrossU = -dashWayV * dashHitU;
+        float acrossV = dashWayU * dashHitU;
+        for (int edge = 0; edge < 2; edge++) {
+            float sign = edge == 0 ? -1f : 1f;
+            for (int i = 0; i < PATH_PARTS; i++) {
+                float d0 = reach * i / PATH_PARTS;
+                float d1 = reach * (i + 1) / PATH_PARTS;
+                Vector3 from = BarkPoint(dashStartAngle, dashStartY,
+                    dashWayU * d0 + acrossU * sign, dashWayV * d0 + acrossV * sign);
+                Vector3 to = BarkPoint(dashStartAngle, dashStartY,
+                    dashWayU * d1 + acrossU * sign, dashWayV * d1 + acrossV * sign);
+                SetDashLanePart(edge * PATH_PARTS + i, from, to, thickness, color);
+            }
+        }
+    }
+
+    private void SetDashLanePart(int index, Vector3 from, Vector3 to,
+        float thickness, Color color) {
+        SetLine(dashLane[index], from, to, thickness);
+        SetColor(dashLane[index].GetComponent<Renderer>(), color);
+    }
+
+    private void ClearDashLane() {
+        if (dashLane == null) {
+            return;
+        }
+        foreach (Transform part in dashLane) {
+            if (part != null) {
+                Destroy(part.gameObject);
+            }
+        }
+        dashLane = null;
+    }
+
+    private float UpdateDash() {
+        dashTimeS += Time.deltaTime;
+        // straight along the locked lane, never turning; the arena's top or
+        // bottom ends it early
+        dashTravelU = Mathf.Min(dashLengthU,
+            dashTravelU + dashSpeedU * SpeedScale * Time.deltaTime);
+        float nextY = dashStartY + dashWayV * dashTravelU;
+        bool isOutOfArena = nextY < ArenaBottomY - 0.01f
+            || nextY > entryY + arenaHeightU + 0.01f;
+        if (!isOutOfArena) {
+            spiderAngle = dashStartAngle
+                + dashWayU * dashTravelU / trunkRadiusU * Mathf.Rad2Deg;
+            spiderY = nextY;
+        }
+        bool hasArrived = dashTravelU >= dashLengthU || isOutOfArena;
+        if (!hasDashHit && DistanceToMonkey() < dashHitU
+            && Time.time >= saveGraceEndTime) {
+            hasDashHit = true;
+            LethalHit("Caught!", true);
+        }
+        if (!hasArrived && dashTimeS < 1.5f) {
+            return 1f;
+        }
+        isDashing = false;
+        body.SetSwipe(0f);
+        ClearDashLane();
+        nextDashTime = Time.time + Mathf.Lerp(dashCooldownS, lateDashCooldownS,
+            Rage);
+        if (teach == TeachStep.Done) {
+            nextAttackTime = Mathf.Max(nextAttackTime, Time.time + 0.8f);
+        }
+        return 0f;
+    }
+
+    // Slash  ------------------------------------------------------------------
+    // from afar, after a charge it is seen at, its front legs slash three
+    // times, each first a red aim line on the bark, then a silk blade that
+    // flies fast along the bark at where the monkey was; the gaps b/t
+    // slashes go slow then fast or fast then slow. Fatal, unless dodged or
+    // batted back w/ the tail as it turns gold, which hurts the spider
+    private void StartSlash(bool isTeaching = false) {
+        isSlashing = true;
+        slashLeft = isTeaching ? 1 : PerStage(slashesPerStage, Stage);
+        slashSlow = isTeaching ? teachSlowScale : 1f;
+        slashChargeLeftS = slashChargeS * slashSlow;
+        slashGapIndex = 0;
+        isSlashSlowFirst = Random.value < 0.5f;
+        nextSlashTime = Time.time;
+        isSlashAiming = false;
+    }
+
+    private float UpdateSlash() {
+        // the charge, seen like the web shot's
+        if (slashChargeLeftS > 0f) {
+            slashChargeLeftS -= Time.deltaTime;
+            float charge = 1f - slashChargeLeftS / (slashChargeS * slashSlow);
+            body.SetCharge(charge);
+            body.SetSwipe(charge);
+            UpdateChargeSparks();
+            if (slashChargeLeftS <= 0f) {
+                body.SetCharge(0f);
+            }
+            return 0f;
+        }
+        if (!isSlashAiming) {
+            if (Time.time < nextSlashTime) {
+                return 0f;
+            }
+            slashTimeS = 0f;
+            isSlashAiming = true;
+        }
+        slashTimeS += Time.deltaTime;
+        // the aim follows the monkey till the slash
+        slashAimDeg = AimDegToMonkey();
+        float windUpS = slashWindUpS * slashSlow * TimeScaleNow;
+        float progress = Mathf.Clamp01(slashTimeS / windUpS);
+        body.SetSwipe(progress);
+        DrawSlashAim(progress);
+        if (slashTimeS < windUpS) {
+            return 0f;
+        }
+
+        isSlashAiming = false;
+        body.SetSwipe(0f);
+        ShowSlashAim(false);
+        LaunchCrescent(slashAimDeg);
+        slashLeft--;
+        if (slashLeft <= 0) {
+            isSlashing = false;
+            nextAttackTime = Time.time
+                + (teach == TeachStep.Done ? RestNow() : teachGapS);
+            return 0f;
+        }
+        bool isSlow = (slashGapIndex % 2 == 0) == isSlashSlowFirst;
+        slashGapIndex++;
+        nextSlashTime = Time.time
+            + (isSlow ? slashSlowGapS : slashFastGapS) * TimeScaleNow;
+        return 0f;
+    }
+
+    // the direction from the spider to the monkey on the bark; deg, 0 round
+    // the trunk, 90 up
+    private float AimDegToMonkey() {
+        Vector3 at = monkey.position;
+        float arcU = Mathf.DeltaAngle(spiderAngle, AngleOf(at)) * Mathf.Deg2Rad
+            * trunkRadiusU;
+        return Mathf.Atan2(at.y - spiderY, arcU) * Mathf.Rad2Deg;
+    }
+
+    // the lowest the spider crawls: a bit below the entry, well above the
+    // guard
+    private float ArenaBottomY => entryY - 4f;
+
+    // a point on the bark, u round the trunk & v up from a base spot
+    private Vector3 BarkPoint(float baseAngle, float baseY, float u, float v) {
+        return PointOnTrunk(baseAngle + u / trunkRadiusU * Mathf.Rad2Deg,
+            baseY + v, trunkRadiusU + 0.12f);
+    }
+
+    // the aim: a thin red line along the bark out to the slash's reach,
+    // brighter as the slash nears
+    private void DrawSlashAim(float progress) {
+        if (slashAim == null) {
+            slashAim = new Transform[PATH_PARTS];
+            for (int i = 0; i < slashAim.Length; i++) {
+                slashAim[i] = CreatePrimitive(PrimitiveType.Cylinder, "SlashAim",
+                    Vector3.one * 0.1f, warnColor).transform;
+            }
+        }
+        ShowSlashAim(true);
+        float radians = slashAimDeg * Mathf.Deg2Rad;
+        float du = Mathf.Cos(radians);
+        float dv = Mathf.Sin(radians);
+        Color color = Color.Lerp(warnColor * 0.5f, warnColor, progress);
+        for (int i = 0; i < PATH_PARTS; i++) {
+            // dashed: every other part
+            bool isShown = i % 2 == 0;
+            slashAim[i].gameObject.SetActive(isShown);
+            float d0 = slashRangeU * i / PATH_PARTS;
+            float d1 = slashRangeU * (i + 1) / PATH_PARTS;
+            SetLine(slashAim[i],
+                BarkPoint(spiderAngle, spiderY, du * d0, dv * d0),
+                BarkPoint(spiderAngle, spiderY, du * d1, dv * d1),
+                Mathf.Lerp(0.06f, 0.14f, progress));
+            SetColor(slashAim[i].GetComponent<Renderer>(), color);
+        }
+    }
+
+    private void ShowSlashAim(bool isShown) {
+        if (slashAim == null) {
+            return;
+        }
+        foreach (Transform part in slashAim) {
+            if (part != null) {
+                part.gameObject.SetActive(isShown);
+            }
+        }
+    }
+
+    // a crescent bulging forward, as wide as slashWidthU, flat on the bark
+    private void LaunchCrescent(float directionDeg) {
+        Crescent crescent = new Crescent {
+            originAngle = spiderAngle,
+            originY = spiderY,
+            directionDeg = directionDeg,
+            distanceU = 0.8f,
+            parts = new Transform[CRESCENT_STRANDS * CRESCENT_PARTS
+                + CRESCENT_SPOKES],
+        };
+        for (int i = 0; i < crescent.parts.Length; i++) {
+            crescent.parts[i] = CreatePrimitive(PrimitiveType.Cylinder,
+                "SilkBlade", Vector3.one * 0.1f, silkColor).transform;
+        }
+        crescents.Add(crescent);
+        Burst(body.HeadPosition, silkColor, 6);
+    }
+
+    private void UpdateCrescents() {
+        for (int i = crescents.Count - 1; i >= 0; i--) {
+            Crescent crescent = crescents[i];
+            float speedU = slashSpeedU * SpeedScale / (teach == TeachStep.Slash
+                ? teachSlowScale
+                : 1f);
+            if (crescent.isReflected) {
+                // the clash: it slows into the tail, sparks, holds, then
+                // speeds off back to where it was slashed from, the spider
+                crescent.clashS += Time.unscaledDeltaTime;
+                float inShare = ClashIn(crescent.clashS);
+                if (inShare < 1f) {
+                    crescent.distanceU = Mathf.Lerp(crescent.parryDistanceU,
+                        crescent.contactDistanceU, inShare * inShare);
+                } else {
+                    if (!crescent.hasClashed) {
+                        crescent.hasClashed = true;
+                        Clash(TailContact());
+                    }
+                    float outShare = ClashOut(crescent.clashS);
+                    float kick = 1f - (1f - outShare) * (1f - outShare);
+                    crescent.distanceU = Mathf.Lerp(crescent.contactDistanceU,
+                        0.8f, kick);
+                    if (outShare >= 1f) {
+                        RemoveCrescent(crescent);
+                        Burst(body.HeadPosition, goldenColor, 14);
+                        Hurt(slashParryDamage);
+                        if (phase != Phase.Fighting) {
+                            break;
+                        }
+                        continue;
+                    }
+                }
+                ClashTrail(crescent.clashS, CrescentPoint(crescent, 0f),
+                    ref crescent.nextFxS);
+                DrawCrescent(crescent, true);
+                continue;
+            }
+            crescent.distanceU += speedU * Time.deltaTime;
+            if (crescent.distanceU > slashRangeU + 4f) {
+                RemoveCrescent(crescent);
+                continue;
+            }
+            float ahead = CrescentAhead(crescent, out float across);
+            bool isOnWay = Mathf.Abs(across) <= slashWidthU * 0.5f + 0.6f;
+            bool isGold = isOnWay && ahead >= -0.5f && ahead <= waveGoldU;
+            DrawCrescent(crescent, isGold);
+            if (isOnWay && ahead >= -0.5f && ahead <= parryReachU
+                && IsParryArmed()) {
+                OnCrescentParried(crescent);
+                continue;
+            }
+            if (isGold && teach == TeachStep.Slash && !isTeachFrozen) {
+                isTeachFrozen = true;
+                frozenCrescent = crescent;
+                lastTapTime = -10f;
+                Teach("Now!", "Tap SPACE 2 times to bounce it back",
+                    goldenColor, 0f);
+            }
+            if (IsHitByCrescent(crescent) && teach == TeachStep.Done
+                && Time.time >= saveGraceEndTime) {
+                RemoveCrescent(crescent);
+                // a loss or the armor clears the list, so stop here
+                LethalHit("Hit!");
+                break;
+            }
+        }
+    }
+
+    // how far the monkey is ahead of the crescent's middle along its way,
+    // & how far across it
+    private float CrescentAhead(Crescent crescent, out float across) {
+        Vector3 at = monkey.position;
+        float mu = Mathf.DeltaAngle(crescent.originAngle, AngleOf(at))
+            * Mathf.Deg2Rad * trunkRadiusU;
+        float mv = at.y - crescent.originY;
+        float radians = crescent.directionDeg * Mathf.Deg2Rad;
+        float along = mu * Mathf.Cos(radians) + mv * Mathf.Sin(radians);
+        across = -mu * Mathf.Sin(radians) + mv * Mathf.Cos(radians);
+        return along - (crescent.distanceU + CRESCENT_BULGE_U);
+    }
+
+    // a point of the crescent: lateral from -1 to 1 across it, back that
+    // far behind its front
+    private Vector3 CrescentPoint(Crescent crescent, float lateral,
+        float back = 0f) {
+        float radians = crescent.directionDeg * Mathf.Deg2Rad;
+        float du = Mathf.Cos(radians);
+        float dv = Mathf.Sin(radians);
+        float side = lateral * slashWidthU * 0.5f;
+        float ahead = crescent.distanceU - back
+            + CRESCENT_BULGE_U * (1f - lateral * lateral);
+        return BarkPoint(crescent.originAngle, crescent.originY,
+            du * ahead - dv * side, dv * ahead + du * side);
+    }
+
+    // a silk blade: three silk strands one behind the other, tied by short
+    // spokes like a torn piece of web; white, gold & flashing when it can
+    // be batted back, gold flying back
+    private void DrawCrescent(Crescent crescent, bool isGold) {
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
+        Color color = crescent.isReflected
+            ? goldenColor
+            : isGold ? Color.Lerp(goldenColor, Color.white, pulse) : Color.white;
+        int index = 0;
+        for (int strand = 0; strand < CRESCENT_STRANDS; strand++) {
+            float back = strand * 0.3f;
+            float width = 1f - strand * 0.15f;
+            for (int i = 0; i < CRESCENT_PARTS; i++) {
+                float l0 = (-1f + 2f * i / CRESCENT_PARTS) * width;
+                float l1 = (-1f + 2f * (i + 1) / CRESCENT_PARTS) * width;
+                float middle = 1f - Mathf.Abs((l0 + l1) * 0.5f);
+                SetCrescentPart(crescent, index++,
+                    CrescentPoint(crescent, l0, back),
+                    CrescentPoint(crescent, l1, back),
+                    Mathf.Lerp(0.04f, strand == 0 ? 0.16f : 0.09f, middle),
+                    color);
+            }
+        }
+        for (int i = 0; i < CRESCENT_SPOKES; i++) {
+            float lateral = -0.8f + 1.6f * i / (CRESCENT_SPOKES - 1f);
+            SetCrescentPart(crescent, index++,
+                CrescentPoint(crescent, lateral, 0f),
+                CrescentPoint(crescent, lateral * 0.7f,
+                    (CRESCENT_STRANDS - 1) * 0.3f),
+                0.04f, color);
+        }
+    }
+
+    private void SetCrescentPart(Crescent crescent, int index, Vector3 from,
+        Vector3 to, float thickness, Color color) {
+        SetLine(crescent.parts[index], from, to, thickness);
+        SetColor(crescent.parts[index].GetComponent<Renderer>(), color);
+    }
+
+    // the monkey where the crescent is now, along it & across it
+    private bool IsHitByCrescent(Crescent crescent) {
+        Vector3 at = monkey.position;
+        float mu = Mathf.DeltaAngle(crescent.originAngle, AngleOf(at))
+            * Mathf.Deg2Rad * trunkRadiusU;
+        float mv = at.y - crescent.originY;
+        float radians = crescent.directionDeg * Mathf.Deg2Rad;
+        float along = mu * Mathf.Cos(radians) + mv * Mathf.Sin(radians);
+        float across = -mu * Mathf.Sin(radians) + mv * Mathf.Cos(radians);
+        float halfWidth = slashWidthU * 0.5f;
+        if (Mathf.Abs(across) > halfWidth) {
+            return false;
+        }
+        float lateral = across / halfWidth;
+        float front = crescent.distanceU
+            + CRESCENT_BULGE_U * (1f - lateral * lateral);
+        return Mathf.Abs(along - front) < 0.8f;
+    }
+
+    private void RemoveCrescent(Crescent crescent) {
+        foreach (Transform part in crescent.parts) {
+            if (part != null) {
+                Destroy(part.gameObject);
+            }
+        }
+        crescents.Remove(crescent);
+    }
+
+    // the slashes still to come stop; crescents in flight fly on
+    private void StopSlashing() {
+        isSlashing = false;
+        isSlashAiming = false;
+        slashChargeLeftS = 0f;
+        body.SetCharge(0f);
+        ShowSlashAim(false);
+        body.SetSwipe(0f);
+    }
+
+    // all of it gone, crescents too
+    private void ClearSlash() {
+        StopSlashing();
+        if (slashAim != null) {
+            foreach (Transform part in slashAim) {
+                if (part != null) {
+                    Destroy(part.gameObject);
+                }
+            }
+        }
+        slashAim = null;
+        while (crescents.Count > 0) {
+            RemoveCrescent(crescents[0]);
+        }
+    }
+
+    // Shots  ------------------------------------------------------------------
+    private Shot NewShot(ShotKind kind, Vector3 target) {
+        Shot shot = new Shot {
+            kind = kind,
+            target = target,
+            from = body.HeadPosition,
+            isCharging = true,
+        };
+        // the ball is the charge orb at the head
+        shot.ball = CreatePrimitive(PrimitiveType.Sphere, kind.ToString(),
+            Vector3.one * 0.4f, silkColor).transform;
+        shot.wave = BuildWave();
+        shot.wave.gameObject.SetActive(false);
+        shot.length = PathLength(shot);
+        shots.Add(shot);
+        return shot;
+    }
+
+    // a silk bullet: one long glowing capsule, flying along its length
+    private Transform BuildWave() {
+        Transform bullet = new GameObject("SilkBullet").transform;
+        bullet.SetParent(transform, false);
+        Transform core = CreatePrimitive(PrimitiveType.Capsule, "Bullet",
+            Vector3.one, Color.white).transform;
+        core.SetParent(bullet, false);
+        core.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        core.localScale = new Vector3(0.45f, 0.75f, 0.45f);
+        return bullet;
+    }
+
+    private void ColorWave(Transform wave, Color color) {
+        foreach (Renderer part in wave.GetComponentsInChildren<Renderer>(true)) {
+            SetColor(part, color);
+        }
+    }
+
+    // white sparks & rings drawn in to the head while it charges
+    private void UpdateChargeSparks() {
+        chargeRingS -= Time.deltaTime;
+        if (chargeRingS <= 0f) {
+            chargeRingS = 0.16f;
+            AddRing(body.HeadPosition, warnColor, 0f, true);
+        }
+        chargeSparkS -= Time.deltaTime;
+        if (chargeSparkS > 0f) {
+            return;
+        }
+        chargeSparkS = 0.03f;
+        Vector3 head = body.HeadPosition;
+        Vector3 start = head + Random.onUnitSphere * 2.2f;
+        Transform spark = CreatePrimitive(PrimitiveType.Cube, "Spark",
+            Vector3.one * 0.15f, Color.white).transform;
+        spark.position = start;
+        sparks.Add(new Spark {
+            transform = spark,
+            velocity = (head - start) / 0.25f,
+            lifeS = 0.25f,
+            isFloating = true,
         });
     }
 
-    // web shots fly straight to their aim, & stick a web on the trunk there
-    private void UpdateProjectiles() {
-        for (int i = projectiles.Count - 1; i >= 0; i--) {
-            Projectile shot = projectiles[i];
-            if (shot.transform == null) {
-                projectiles.RemoveAt(i);
+    private void RemoveShot(Shot shot) {
+        if (shot.ball != null) {
+            Destroy(shot.ball.gameObject);
+        }
+        if (shot.wave != null) {
+            Destroy(shot.wave.gameObject);
+        }
+        shots.Remove(shot);
+    }
+
+    private void ClearShots() {
+        while (shots.Count > 0) {
+            RemoveShot(shots[0]);
+        }
+        chargingShot = null;
+    }
+
+    // bullets home in on the monkey; a batted back one flies back from
+    // where it was hit
+    private Vector3 PathPoint(Shot shot, float t) {
+        Vector3 to = shot.isReflected ? shot.target : monkey.position;
+        return ArcPoint(shot.from, to, t, 1.5f);
+    }
+
+    private float PathLength(Shot shot) {
+        float length = 0f;
+        Vector3 last = PathPoint(shot, 0f);
+        for (int i = 1; i <= PATH_PARTS; i++) {
+            Vector3 next = PathPoint(shot, i / (float)PATH_PARTS);
+            length += Vector3.Distance(last, next);
+            last = next;
+        }
+        return Mathf.Max(0.1f, length);
+    }
+
+    private void UpdateShots() {
+        for (int i = shots.Count - 1; i >= 0; i--) {
+            Shot shot = shots[i];
+            if (shot.ball == null) {
+                shots.RemoveAt(i);
                 continue;
             }
-            shot.transform.position = Vector3.MoveTowards(
-                shot.transform.position,
-                shot.target,
-                webShotSpeedU * Time.deltaTime
-            );
-            if (shot.transform.position != shot.target) {
+            if (shot.isCharging) {
+                shot.from = body.HeadPosition;
+                shot.length = PathLength(shot);
+                // the orb swells & throbs at the head
+                float throb = 1f + 0.15f * Mathf.Sin(Time.time * 40f);
+                shot.ball.position = body.HeadPosition;
+                shot.ball.localScale = Vector3.one
+                    * (0.2f + 0.9f * shot.fill) * throb;
                 continue;
             }
-            Destroy(shot.transform.gameObject);
-            projectiles.RemoveAt(i);
-            if (phase == Phase.Fighting) {
-                PlaceWeb(AngleOf(shot.target), shot.target.y);
+            if (shot.isReflected) {
+                UpdateClashShot(shot);
+                continue;
+            }
+            shot.length = PathLength(shot);
+            float speedU = webShotSpeedU * SpeedScale
+                / (teach == TeachStep.Parry ? teachSlowScale : 1f);
+            shot.t += speedU * Time.deltaTime / shot.length;
+            shot.t = Mathf.Clamp01(shot.t);
+            Vector3 at = PathPoint(shot, shot.t);
+            shot.lastPosition = at;
+            shot.ball.gameObject.SetActive(false);
+            float toMonkey = Vector3.Distance(at, monkey.position);
+            bool isGold = toMonkey <= waveGoldU;
+            DrawWave(shot, at, isGold);
+            if (toMonkey <= parryReachU && IsParryArmed()) {
+                OnParry(shot, at);
+                continue;
+            }
+            if (isGold && teach == TeachStep.Parry && !isTeachFrozen) {
+                FreezeForParry(shot);
+            }
+            if (shot.t >= 1f) {
+                RemoveShot(shot);
+                Vector3 landing = monkey.position;
+                PlaceWeb(AngleOf(landing), landing.y);
             }
         }
     }
 
-    // as the segments' spawner: the web's face looks away from the trunk
-    private void PlaceWeb(float angle, float y) {
-        stickyWebs.RemoveAll(w => w == null);
-        while (maxStickyWebs > 0 && stickyWebs.Count >= maxStickyWebs) {
-            SpiderWebTrap oldest = stickyWebs[0];
-            stickyWebs.RemoveAt(0);
-            // never pull the web holding the monkey right now
-            if (oldest != null && !IsWebHoldingMonkey(oldest)) {
-                Destroy(oldest.gameObject);
+    // the batted back bullet: slows into the tail, sparks, holds, then
+    // speeds off back to the spider, sticking & hurting it
+    private void UpdateClashShot(Shot shot) {
+        shot.clashS += Time.unscaledDeltaTime;
+        Vector3 contact = TailContact();
+        Vector3 at;
+        float inShare = ClashIn(shot.clashS);
+        if (inShare < 1f) {
+            at = Vector3.Lerp(shot.clashFrom, contact, inShare * inShare);
+        } else {
+            if (!shot.hasClashed) {
+                shot.hasClashed = true;
+                Clash(contact);
             }
-        }
-        SpiderWebTrap web = Instantiate(
-            webPrefab,
-            PointOnTrunk(angle, y, trunkRadiusU + 0.02f),
-            Quaternion.Euler(0f, -angle, 0f),
-            transform
-        );
-        stickyWebs.Add(web);
-    }
-
-    private bool IsWebHoldingMonkey(SpiderWebTrap web) {
-        return struggle != null && struggle.IsTrapped && monkey != null
-            && Vector3.Distance(web.transform.position, monkey.position) < 2f;
-    }
-
-    private void Swipe() {
-        Vector3 at = monkey.position;
-        float distance = SurfaceDistance(spiderAngle, spiderY, AngleOf(at),
-            at.y);
-        if (distance > swipeRangeU || Time.time < saveGraceEndTime) {
-            return;
-        }
-        hud.PopText("Swiped!", at, warnColor);
-        KnockDown(body.Contact);
-    }
-
-    // the silk hook reels the monkey in along the bark; taps or a grab
-    // break it, reaching the spider wraps it
-    private void StartDrag() {
-        if (monkeyController == null
-            || (struggle != null && (struggle.IsTrapped || struggle.IsProtected))
-            || Time.time < saveGraceEndTime) {
-            ShowSilk(false);
-            return;
-        }
-        isDragging = true;
-        dragTaps = 0;
-        dragTimeS = 0f;
-        monkeyController.IsHeld = true;
-        ShowSilk(true);
-        hud.ShowBannerFor("Silk hook!", "Tap SPACE or grab to break free",
-            warnColor, 0f);
-    }
-
-    private void UpdateDrag(GameController game) {
-        if (!isDragging) {
-            return;
-        }
-        dragTimeS += Time.deltaTime;
-        UpdateSilkLine(true);
-        if (!game.IsPaused && WasPressed(confirmAction)) {
-            dragTaps++;
-            hud.PopText((dragEscapeTaps - dragTaps).ToString(),
-                monkey.position, silkColor);
-            if (dragTaps >= dragEscapeTaps) {
-                EndDrag(true);
+            float outShare = ClashOut(shot.clashS);
+            float kick = 1f - (1f - outShare) * (1f - outShare);
+            at = outShare <= 0f
+                ? contact + Random.insideUnitSphere * 0.12f
+                : ArcPoint(contact, body.HeadPosition, kick, 1.5f);
+            if (outShare >= 1f) {
+                RemoveShot(shot);
+                Burst(body.HeadPosition, goldenColor, 14);
+                WebTheSpider();
+                Hurt(webParryDamage);
                 return;
             }
         }
-        // a web took over, or the hook ran out of reel
-        if ((struggle != null && struggle.IsTrapped) || dragTimeS > 8f) {
-            EndDrag(false);
-            return;
+        ClashTrail(shot.clashS, at, ref shot.nextFxS);
+        Vector3 heading = at - shot.lastPosition;
+        shot.lastPosition = at;
+        shot.wave.gameObject.SetActive(true);
+        if (heading.sqrMagnitude > 0.000001f) {
+            shot.wave.SetPositionAndRotation(at,
+                Quaternion.LookRotation(heading.normalized, Vector3.up));
+        } else {
+            shot.wave.position = at;
         }
-        Vector3 at = monkey.position;
-        float monkeyAngle = AngleOf(at);
-        float arcU = Mathf.DeltaAngle(monkeyAngle, spiderAngle)
-            * Mathf.Deg2Rad * trunkRadiusU;
-        float dy = spiderY - at.y;
-        float distance = Mathf.Sqrt(arcU * arcU + dy * dy);
-        if (distance <= dragReachU) {
-            EndDrag(false);
-            LethalHit("Wrapped!");
-            return;
-        }
-        // a pull target a short way ahead along the bark
-        float lead = Mathf.Min(0.6f, distance);
-        float radius = HorizontalDistance(at);
-        Vector3 target = PointOnTrunk(
-            monkeyAngle + arcU / distance * lead / trunkRadiusU * Mathf.Rad2Deg,
-            at.y + dy / distance * lead,
-            radius
-        );
-        monkeyController.PullTo(target, dragSpeedU);
+        shot.wave.localScale = Vector3.one * 1.2f;
+        ColorWave(shot.wave, goldenColor);
     }
 
-    private void EndDrag(bool isEscape) {
-        if (!isDragging) {
+    // the bullet flies along its length; white, gold & flashing once close
+    // enough to parry
+    private void DrawWave(Shot shot, Vector3 at, bool isGold) {
+        shot.wave.gameObject.SetActive(true);
+        float step = shot.isReflected ? -0.05f : 0.05f;
+        Vector3 ahead = PathPoint(shot, Mathf.Clamp01(shot.t + step));
+        Vector3 heading = ahead - at;
+        if (heading.sqrMagnitude < 0.0001f) {
+            heading = monkey.position - at;
+        }
+        if (heading.sqrMagnitude > 0.0001f) {
+            shot.wave.SetPositionAndRotation(at,
+                Quaternion.LookRotation(heading.normalized, Vector3.up));
+        } else {
+            shot.wave.position = at;
+        }
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
+        Color color = shot.isReflected
+            ? goldenColor
+            : isGold ? Color.Lerp(goldenColor, Color.white, pulse) : Color.white;
+        shot.wave.localScale = Vector3.one * (isGold ? 1.25f : 1f);
+        ColorWave(shot.wave, color);
+    }
+
+    // Parry  ------------------------------------------------------------------
+    // a double tap of Space swings the monkey's own tail: for a moment a gold
+    // web wave close by is batted back, & the spider is stuck in it
+    private void UpdateParryInput(GameController game) {
+        UpdateTail();
+        bool isCaught = struggle != null && struggle.IsTrapped;
+        if (isCaught) {
+            lastTapTime = -10f;
             return;
         }
-        isDragging = false;
-        ShowSilk(false);
-        hud.HideBanner();
+        if (game.IsPaused || !WasPressed(confirmAction)) {
+            return;
+        }
+        // only w/ something to bat on its way (or charging): a double tap
+        // for a grab otherwise never swings the tail
+        bool isComing = shots.Exists(s => !s.isReflected)
+            || crescents.Exists(c => !c.isReflected) || isSlashing;
+        if (!isComing) {
+            lastTapTime = -10f;
+            return;
+        }
+        float now = Time.unscaledTime;
+        // a swing can't start till the last one is over, unless that one
+        // hit: a parry readies the tail at once, so a chain of slashes can
+        // all be batted back, but a whiff waits its whole follow through
+        bool isSwinging = tailTimeS >= 0f && !hasSwingHit;
+        if (now - lastTapTime <= doubleTapS && !isSwinging) {
+            lastTapTime = -10f;
+            StartTail();
+            if (isTeachFrozen) {
+                ParryFrozen();
+            }
+        } else {
+            lastTapTime = now;
+        }
+    }
+
+    // the lesson's frozen bullet or slash is batted back at once
+    private void ParryFrozen() {
+        isTeachFrozen = false;
+        hud.SetPrompt(false, Vector3.zero);
+        if (frozenShot != null && frozenShot.wave != null) {
+            Shot shot = frozenShot;
+            frozenShot = null;
+            OnParry(shot, shot.wave.position);
+        } else if (frozenCrescent != null) {
+            Crescent crescent = frozenCrescent;
+            frozenCrescent = null;
+            OnCrescentParried(crescent);
+        }
+    }
+
+    // a parry plays in slow motion w/ the camera close in on the monkey,
+    // no flash: "PARRY!" & gold sparks
+    private void ParryEffect(Vector3 at) {
+        parrySlowEndTime = Time.unscaledTime + parrySlowS;
+    }
+
+    // a batted back slash flies back at the spider & hurts it
+    private void OnCrescentParried(Crescent crescent) {
+        hasSwingHit = true;
+        crescent.isReflected = true;
+        crescent.clashS = 0f;
+        crescent.hasClashed = false;
+        crescent.parryDistanceU = crescent.distanceU;
+        // its middle meets the tail at the monkey
+        float ahead = CrescentAhead(crescent, out float _);
+        crescent.contactDistanceU = crescent.distanceU + Mathf.Max(0f, ahead);
+        ParryEffect(CrescentPoint(crescent, 0f));
+        if (teach == TeachStep.Slash) {
+            teach = TeachStep.Final;
+            teachTimeS = 0f;
+            hasPassedLessons = true;
+            Teach("Nice!", "", goldenColor, 1.2f);
+        }
+    }
+
+    // where a batted thing is met: the middle of the monkey's body, a hair
+    // out toward the camera side
+    private Vector3 TailContact() {
+        Vector3 outward = monkey.position - trunkCenter;
+        outward.y = 0f;
+        outward = outward.sqrMagnitude > 0.001f ? outward.normalized
+            : Vector3.forward;
+        return monkey.position + outward * 0.25f;
+    }
+
+    // the clash: sparks flying off the tail where the thing meets it, &
+    // "PARRY!"
+    private void Clash(Vector3 at) {
+        clashStopEndTime = Time.unscaledTime + CLASH_STOP_S;
+        shakeEndTime = Time.unscaledTime + SHAKE_S;
+        hud.PopText("PARRY!", at, goldenColor);
+        AddCross(at);
+        BurstStreaks(at, new Color(1f, 0.55f, 0.1f), 26, 6f, 15f);
+        BurstStreaks(at, new Color(1f, 0.9f, 0.4f), 16, 4f, 10f);
+        Burst(at, Color.white, 6);
+        AddRing(at, goldenColor, 0f);
+        AddRing(at, Color.white, 0.07f);
+        AddPop(at);
+        tailFlashEndTime = Time.unscaledTime + 0.15f;
+    }
+
+    // two long white strokes crossing at the clash, a hard flash of it
+    private void AddCross(Vector3 at) {
+        Camera view = Camera.main;
+        Vector3 right = view != null ? view.transform.right : Vector3.right;
+        Vector3 up = view != null ? view.transform.up : Vector3.up;
+        for (int i = 0; i < 2; i++) {
+            Vector3 way = (right + (i == 0 ? up : -up)).normalized;
+            Transform stroke = CreatePrimitive(PrimitiveType.Cylinder, "Cross",
+                Vector3.one, Color.white).transform;
+            SetLine(stroke, at - way * 1.6f, at + way * 1.6f, 0.12f);
+            pops.Add(new Spark {
+                transform = stroke,
+                lifeS = 0.16f,
+                isStroke = true,
+                size = 0.12f,
+            });
+        }
+    }
+
+    // sparks that streak: long thin bits along their flight
+    private void BurstStreaks(Vector3 at, Color color, int count,
+        float minSpeedU, float maxSpeedU) {
+        for (int i = 0; i < count; i++) {
+            Transform spark = CreatePrimitive(PrimitiveType.Cube, "Streak",
+                Vector3.one * 0.1f, color).transform;
+            spark.position = at;
+            sparks.Add(new Spark {
+                transform = spark,
+                velocity = Random.onUnitSphere
+                    * Random.Range(minSpeedU, maxSpeedU),
+                lifeS = Random.Range(0.25f, 0.5f),
+                isStreak = true,
+            });
+        }
+    }
+
+    // a still bead that fades, eg the trail of a batted back thing
+    private void AddTrailBead(Vector3 at) {
+        Transform bead = CreatePrimitive(PrimitiveType.Sphere, "TrailBead",
+            Vector3.one * 0.3f, goldenColor).transform;
+        bead.position = at;
+        sparks.Add(new Spark {
+            transform = bead,
+            velocity = Vector3.zero,
+            lifeS = 0.25f,
+            isFloating = true,
+            size = 0.35f,
+        });
+    }
+
+    // a shock ring facing the camera, opening fast & thinning
+    private void AddRing(Vector3 at, Color color, float delayS,
+        bool isInward = false) {
+        Ring ring = new Ring {
+            center = at,
+            color = color,
+            ageS = -delayS,
+            isInward = isInward,
+            parts = new Transform[RING_PARTS],
+        };
+        for (int i = 0; i < RING_PARTS; i++) {
+            ring.parts[i] = CreatePrimitive(PrimitiveType.Cylinder, "ShockRing",
+                Vector3.one * 0.1f, color).transform;
+            ring.parts[i].gameObject.SetActive(false);
+        }
+        rings.Add(ring);
+    }
+
+    // a white orb that swells & fades at the clash
+    private void AddPop(Vector3 at) {
+        Transform orb = CreatePrimitive(PrimitiveType.Sphere, "ClashPop",
+            Vector3.one * 0.2f, Color.white).transform;
+        orb.position = at;
+        pops.Add(new Spark {
+            transform = orb,
+            lifeS = 0.22f,
+            size = 1.5f,
+        });
+    }
+
+    private void UpdateClashFx() {
+        Camera view = Camera.main;
+        for (int i = rings.Count - 1; i >= 0; i--) {
+            Ring ring = rings[i];
+            ring.ageS += Time.unscaledDeltaTime;
+            float t = ring.ageS / RING_S;
+            if (t >= 1f) {
+                foreach (Transform part in ring.parts) {
+                    if (part != null) {
+                        Destroy(part.gameObject);
+                    }
+                }
+                rings.RemoveAt(i);
+                continue;
+            }
+            if (t < 0f) {
+                continue;
+            }
+            float ease = 1f - (1f - t) * (1f - t);
+            float radius = ring.isInward
+                ? Mathf.Lerp(3f, 0.3f, ease)
+                : Mathf.Lerp(0.2f, 2.4f, ease);
+            float thickness = ring.isInward
+                ? Mathf.Lerp(0.03f, 0.14f, t)
+                : Mathf.Lerp(0.16f, 0.02f, t);
+            // a drawn in ring follows the head it closes on
+            if (ring.isInward && body.IsBuilt) {
+                ring.center = body.HeadPosition;
+            }
+            Vector3 right = view != null ? view.transform.right : Vector3.right;
+            Vector3 up = view != null ? view.transform.up : Vector3.up;
+            for (int k = 0; k < RING_PARTS; k++) {
+                float a0 = k * Mathf.PI * 2f / RING_PARTS;
+                float a1 = (k + 1) * Mathf.PI * 2f / RING_PARTS;
+                Vector3 p0 = ring.center + (right * Mathf.Cos(a0)
+                    + up * Mathf.Sin(a0)) * radius;
+                Vector3 p1 = ring.center + (right * Mathf.Cos(a1)
+                    + up * Mathf.Sin(a1)) * radius;
+                ring.parts[k].gameObject.SetActive(true);
+                SetLine(ring.parts[k], p0, p1, thickness);
+            }
+        }
+        for (int i = pops.Count - 1; i >= 0; i--) {
+            Spark pop = pops[i];
+            pop.ageS += Time.unscaledDeltaTime;
+            float t = pop.ageS / pop.lifeS;
+            if (pop.transform == null || t >= 1f) {
+                if (pop.transform != null) {
+                    Destroy(pop.transform.gameObject);
+                }
+                pops.RemoveAt(i);
+                continue;
+            }
+            if (pop.isStroke) {
+                // a stroke thins away along its length
+                Vector3 scaleNow = pop.transform.localScale;
+                scaleNow.x = scaleNow.z = pop.size * (1f - t);
+                pop.transform.localScale = scaleNow;
+                pops[i] = pop;
+                continue;
+            }
+            // up fast, then gone
+            float scale = t < 0.4f
+                ? Mathf.Lerp(0.2f, pop.size, t / 0.4f)
+                : Mathf.Lerp(pop.size, 0f, (t - 0.4f) / 0.6f);
+            pop.transform.localScale = Vector3.one * scale;
+            pops[i] = pop;
+        }
+        UpdateTailTint();
+    }
+
+    // the tail glows gold through its swing, white at a clash
+    private void UpdateTailTint() {
+        if (tail == null) {
+            return;
+        }
+        bool isFlash = Time.unscaledTime < tailFlashEndTime;
+        bool isLit = isFlash || IsParryArmed();
+        if (!isLit) {
+            if (isTailTinted) {
+                isTailTinted = false;
+                foreach (Renderer part in tail.GetComponentsInChildren<Renderer>(true)) {
+                    part.SetPropertyBlock(null);
+                }
+            }
+            return;
+        }
+        isTailTinted = true;
+        Color color = isFlash ? Color.white : goldenColor;
+        foreach (Renderer part in tail.GetComponentsInChildren<Renderer>(true)) {
+            SetColor(part, color);
+        }
+    }
+
+    // the grinding sparks while a batted thing is held on the tail, & the
+    // gold trail as it flies back
+    private void ClashTrail(float clashS, Vector3 at, ref float nextFxS) {
+        bool isHeld = clashS >= CLASH_IN_S && clashS < CLASH_IN_S + CLASH_HOLD_S;
+        bool isOut = clashS >= CLASH_IN_S + CLASH_HOLD_S;
+        if ((!isHeld && !isOut) || clashS < nextFxS) {
+            return;
+        }
+        nextFxS = clashS + (isHeld ? 0.03f : 0.025f);
+        if (isHeld) {
+            BurstStreaks(at, new Color(1f, 0.6f, 0.15f), 3, 2f, 6f);
+        } else {
+            AddTrailBead(at);
+        }
+    }
+
+    // a clash's share 0~1 of its slowing in, its hold & its speeding off,
+    // all in real time
+    private static float ClashIn(float clashS) =>
+        Mathf.Clamp01(clashS / CLASH_IN_S);
+
+    private static float ClashOut(float clashS) =>
+        Mathf.Clamp01((clashS - CLASH_IN_S - CLASH_HOLD_S) / CLASH_OUT_S);
+
+    // the swing bats things back from the double tap to the end of its
+    // active part: its wind up is only the look
+    private bool IsParryArmed() => tailTimeS >= 0f
+        && tailTimeS < tailWindUpS + tailActiveS;
+
+    // the lesson: time stops as the wave turns gold, till the double tap
+    private void FreezeForParry(Shot shot) {
+        isTeachFrozen = true;
+        frozenShot = shot;
+        lastTapTime = -10f;
+        Teach("Now!", "Tap SPACE 2 times to bounce it back", goldenColor,
+            0f);
+    }
+
+    // a hit stop, a gold flash & sparks; the ball turns gold & flies back
+    private void OnParry(Shot shot, Vector3 at) {
+        hasSwingHit = true;
+        shot.isReflected = true;
+        shot.clashS = 0f;
+        shot.clashFrom = at;
+        shot.hasClashed = false;
+        ParryEffect(at);
+        if (teach == TeachStep.Parry) {
+            // next, the slash: it can be batted back too
+            teach = TeachStep.Slash;
+            teachTimeS = 0f;
+            nextAttackTime = Time.time + parryStunS + 0.5f;
+            Teach("Nice!", "", goldenColor, 1.2f);
+        }
+    }
+
+    private void WebTheSpider() {
+        volleyLeft = 0;
+        // already stuck: more batted back bullets never add to it
+        if (Time.time < stunEndTime) {
+            Burst(body.Position, silkColor, 6);
+            return;
+        }
+        stunEndTime = Time.time + parryStunS;
+        CancelAttack();
+        isDashing = false;
+        StopSlashing();
+        if (mode == Mode.Cocooning) {
+            SetMode(Mode.Idle);
+        }
+        nextAttackTime = Mathf.Max(nextAttackTime, stunEndTime + 0.5f);
+        hud.PopText("STUCK!", body.HeadPosition, goldenColor);
+        hud.Say("Ugh! My own web!");
+        Burst(body.Position, silkColor, 14);
+        if (stuckWeb == null) {
+            stuckWeb = Instantiate(webPrefab, body.Position, Quaternion.identity,
+                transform).gameObject;
+            MakeDecor(stuckWeb);
+            stuckWeb.transform.localScale *= 1.5f;
+        }
+    }
+
+    // the web wrapped round the stuck spider, gone once it breaks out
+    private void UpdateStuckWeb(bool isStunned) {
+        if (stuckWeb == null) {
+            return;
+        }
+        if (!isStunned) {
+            Destroy(stuckWeb);
+            stuckWeb = null;
+            return;
+        }
+        stuckWeb.transform.SetPositionAndRotation(
+            PointOnTrunk(spiderAngle, spiderY, trunkRadiusU + 1.7f),
+            Quaternion.Euler(0f, -spiderAngle, 0f)
+        );
+    }
+
+    // the swing of the monkey's own tail: a quick swish side to side w/ a
+    // flick up, back to its rest pose after
+    private void StartTail() {
+        if (tail != null && tailTimeS < 0f) {
+            tailRest = tail.localRotation;
+        }
+        hasSwingHit = false;
+        tailTimeS = 0f;
+        SetTailColliders(false);
+    }
+
+    // the swinging tail's colliders are off, so the swing never shoves the
+    // body or the grab; back on at rest
+    private void SetTailColliders(bool isOn) {
+        if (tail == null) {
+            return;
+        }
+        foreach (Collider part in tail.GetComponentsInChildren<Collider>(true)) {
+            part.enabled = isOn;
+        }
+    }
+
+    // draws back, swishes hard across w/ a flick up, then swings back
+    private void UpdateTail() {
+        if (tailTimeS < 0f) {
+            return;
+        }
+        tailTimeS += Time.unscaledDeltaTime;
+        float total = tailWindUpS + tailActiveS + tailRecoverS;
+        if (tailTimeS >= total) {
+            tailTimeS = -1f;
+            if (tail != null) {
+                tail.localRotation = tailRest;
+            }
+            SetTailColliders(true);
+            return;
+        }
+        if (tail == null) {
+            return;
+        }
+        float swish;
+        float flick;
+        if (tailTimeS < tailWindUpS) {
+            float t = tailTimeS / Mathf.Max(0.001f, tailWindUpS);
+            swish = -45f * t;
+            flick = -15f * t;
+        } else if (tailTimeS < tailWindUpS + tailActiveS) {
+            float t = (tailTimeS - tailWindUpS) / tailActiveS;
+            float ease = 1f - (1f - t) * (1f - t);
+            swish = Mathf.Lerp(-45f, 95f, ease);
+            flick = -15f - 45f * Mathf.Sin(t * Mathf.PI);
+        } else {
+            float t = (tailTimeS - tailWindUpS - tailActiveS)
+                / Mathf.Max(0.001f, tailRecoverS);
+            swish = Mathf.Lerp(95f, 0f, t * t * (3f - 2f * t));
+            flick = Mathf.Lerp(-15f, 0f, t);
+        }
+        tail.localRotation = tailRest
+            * Quaternion.AngleAxis(flick, Vector3.right)
+            * Quaternion.AngleAxis(swish, Vector3.up);
+    }
+
+    // the slow motion of a parry, & the stops of the lessons
+    private void UpdateTimeScale(GameController game) {
+        if (game.IsPaused || phase != Phase.Fighting) {
+            return;
+        }
+        float scale = isTeachFrozen || Time.unscaledTime < clashStopEndTime
+            ? 0f
+            : Time.unscaledTime < parrySlowEndTime ? parrySlowTimeScale : 1f;
+        if (scale < 1f || isTimeBent) {
+            Time.timeScale = scale;
+            isTimeBent = scale < 1f;
+        }
+    }
+
+    // Sparks  -----------------------------------------------------------------
+    private void Burst(Vector3 at, Color color, int count) {
+        for (int i = 0; i < count; i++) {
+            Transform spark = CreatePrimitive(PrimitiveType.Cube, "Spark",
+                Vector3.one * 0.18f, color).transform;
+            spark.position = at;
+            sparks.Add(new Spark {
+                transform = spark,
+                velocity = Random.onUnitSphere * Random.Range(3f, 7f),
+                lifeS = Random.Range(0.4f, 0.8f),
+            });
+        }
+    }
+
+    private void UpdateSparks() {
+        for (int i = sparks.Count - 1; i >= 0; i--) {
+            Spark spark = sparks[i];
+            spark.ageS += Time.unscaledDeltaTime;
+            if (spark.transform == null || spark.ageS >= spark.lifeS) {
+                if (spark.transform != null) {
+                    Destroy(spark.transform.gameObject);
+                }
+                sparks.RemoveAt(i);
+                continue;
+            }
+            if (!spark.isFloating) {
+                spark.velocity += Vector3.down * 9f * Time.unscaledDeltaTime;
+            }
+            spark.transform.position += spark.velocity * Time.unscaledDeltaTime;
+            float left = 1f - spark.ageS / spark.lifeS;
+            if (spark.isStreak) {
+                if (spark.velocity.sqrMagnitude > 0.0001f) {
+                    spark.transform.rotation =
+                        Quaternion.LookRotation(spark.velocity.normalized);
+                }
+                spark.transform.localScale = new Vector3(0.07f, 0.07f,
+                    0.1f + 0.06f * spark.velocity.magnitude) * left;
+            } else {
+                float size = spark.size > 0f ? spark.size : 0.18f;
+                spark.transform.localScale = Vector3.one * size * left;
+            }
+            sparks[i] = spark;
+        }
+    }
+
+    // Teaching  ---------------------------------------------------------------
+    // the one lesson, the parry: slowed waves till one is batted back; no
+    // other attack meanwhile & a lesson never kills (only the guard below)
+    private float UpdateTeach() {
+        teachTimeS += Time.deltaTime;
         bool isTrapped = struggle != null && struggle.IsTrapped;
-        if (monkeyController != null && !isTrapped) {
-            monkeyController.SyncOrbitAngle();
-            monkeyController.IsHeld = false;
+        if (isTrapped) {
+            nextAttackTime = Time.time + teachGapS;
+            return 0f;
         }
-        if (isEscape && monkey != null) {
-            hud.PopText("Broke free!", monkey.position, goldenColor);
+        bool isFree = !HasLiveShots;
+        switch (teach) {
+            case TeachStep.Parry:
+                if (Time.time >= nextAttackTime && isFree) {
+                    BeginAttack(Attack.Web, true);
+                }
+                return 0f;
+            case TeachStep.Slash:
+                bool isSlashFree = !isSlashing
+                    && !crescents.Exists(c => !c.isReflected);
+                if (Time.time >= nextAttackTime && isFree && isSlashFree) {
+                    Teach("Bounce it back too!", "", warnColor, 0f);
+                    StartSlash(true);
+                }
+                return 0f;
+            case TeachStep.Final:
+            case TeachStep.Ready:
+                float waitS = teach == TeachStep.Ready ? readyS : finalS;
+                if (teachTimeS >= waitS) {
+                    teach = TeachStep.Done;
+                    hud.HideBanner();
+                    nextAttackTime = Time.time + 1.5f;
+                }
+                return 0f;
+        }
+        return 0f;
+    }
+
+    private void AdvanceTeach(TeachStep next) {
+        teach = next;
+        teachTimeS = 0f;
+        nextAttackTime = Time.time + teachGapS;
+        hud.SetPrompt(false, Vector3.zero);
+        ShowStepBanner();
+    }
+
+    private void ShowStepBanner() {
+        switch (teach) {
+            case TeachStep.Parry:
+                Teach(bossName, "", warnColor, 2f);
+                break;
         }
     }
 
-    private void ShowSilk(bool isShown) {
-        if (isShown && silkLine == null) {
-            silkLine = CreatePrimitive(PrimitiveType.Cylinder, "SilkLine",
-                Vector3.one * 0.08f, silkColor).transform;
-        }
-        if (silkLine != null) {
-            silkLine.gameObject.SetActive(isShown);
-            if (isShown) {
-                UpdateSilkLine(true);
-            }
-        }
+    private void Teach(string title, string line, Color color, float seconds) {
+        hud.ShowBannerFor(title, line, color, seconds);
     }
 
-    private void UpdateSilkLine(bool isVisible) {
-        if (silkLine == null) {
-            return;
-        }
-        silkLine.gameObject.SetActive(isVisible);
-        Vector3 from = body.HeadPosition;
-        Vector3 to = monkey.position;
-        Vector3 span = to - from;
-        if (span.sqrMagnitude < 0.0001f) {
-            return;
-        }
-        silkLine.SetPositionAndRotation(
-            (from + to) * 0.5f,
-            Quaternion.FromToRotation(Vector3.up, span.normalized)
-        );
-        // thin while it winds up, thicker once it holds
-        float thickness = isDragging ? 0.12f : 0.05f;
-        silkLine.localScale = new Vector3(thickness, span.magnitude * 0.5f,
-            thickness);
-    }
-
-    private void UpdateCocoonBanner() {
-        bool isCocooning = mode == Mode.Cocooning;
-        if (isCocooning == isCocoonBannerShown) {
-            return;
-        }
-        isCocoonBannerShown = isCocooning;
-        if (isCocooning) {
-            hud.ShowBannerFor("Trapped!",
-                "Mash SPACE before it reaches you", warnColor, 0f);
-        } else if (!isDragging) {
-            hud.HideBanner();
-        }
-    }
-
-    // Territory  --------------------------------------------------------------
-    private bool IsInTerritory(Vector3 position) {
-        return SurfaceDistance(spiderAngle, spiderY, AngleOf(position),
-            position.y) < territoryRadiusU;
-    }
-
-    private void BuildTerritoryRing() {
-        ClearTerritoryRing();
-        for (int i = 0; i < TERRITORY_DOTS; i++) {
-            ringDots.Add(CreatePrimitive(PrimitiveType.Sphere, "TerritoryDot",
-                Vector3.one * 0.3f, warnColor).GetComponent<Renderer>());
-        }
-    }
-
-    private void ClearTerritoryRing() {
-        foreach (Renderer dot in ringDots) {
-            if (dot != null) {
-                Destroy(dot.gameObject);
-            }
-        }
-        ringDots.Clear();
-    }
-
-    // a ring of red dots on the bark round the spider, bright while the
-    // monkey is inside
-    private void UpdateTerritoryRing() {
-        bool isInside = IsInTerritory(monkey.position);
-        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * (isInside ? 10f : 3f));
-        Color color = Color.Lerp(warnColor * 0.55f, warnColor,
-            isInside ? 0.6f + 0.4f * pulse : 0.3f * pulse);
-        for (int i = 0; i < ringDots.Count; i++) {
-            float t = (i + Time.time * 0.15f) / ringDots.Count * Mathf.PI * 2f;
-            float angle = spiderAngle + Mathf.Cos(t) * territoryRadiusU
-                / trunkRadiusU * Mathf.Rad2Deg;
-            float y = spiderY + Mathf.Sin(t) * territoryRadiusU;
-            ringDots[i].transform.position =
-                PointOnTrunk(angle, y, trunkRadiusU + 0.08f);
-            SetColor(ringDots[i], color);
-        }
-    }
-
-    // Loss, Finisher & Revive  ------------------------------------------------
-    // a fatal hit: the kept gold armor takes it, else the slow last blow
-    private void LethalHit(string word) {
+    private void LethalHit(string word, bool isTouch = false) {
         if (phase != Phase.Fighting || isReturningToStart
             || Time.time < saveGraceEndTime) {
             return;
         }
+        if (isTouch) {
+            ShowTouchWarning();
+        }
+        // the armor saves as in the Cobra King's arena: "Saved!" & the usual
+        // knock down; the spider goes on
         if (TrySpendArmor()) {
-            // the spider reels back, stunned, & the monkey is let go
-            stunEndTime = Time.time + armorStunS;
-            SetMode(Mode.Idle);
-            CancelAttack();
-            float away = Mathf.Sign(Mathf.DeltaAngle(AngleOf(monkey.position),
-                spiderAngle));
-            spiderAngle += (away == 0f ? 1f : away) * 6f / trunkRadiusU
-                * Mathf.Rad2Deg;
-            nextAttackTime = stunEndTime + 1f;
+            if (mode == Mode.Cocooning) {
+                SetMode(Mode.Idle);
+                nextAttackTime = Time.time + RestNow();
+            }
+            KnockDown(body.Contact);
             return;
         }
         hud.PopText(word, monkey.position, warnColor);
         StartFinisher(false);
+    }
+
+    // it must never be touched: it bites, red rings & sparks burst off the
+    // monkey & "Don't touch it!" shows
+    private void ShowTouchWarning() {
+        biteEndTime = Time.unscaledTime + BITE_S;
+        Vector3 at = monkey.position;
+        AddRing(at, warnColor, 0f);
+        AddRing(at, warnColor, 0.08f);
+        BurstStreaks(at, warnColor, 16, 5f, 12f);
+        hud.PopText("Don't touch it!", body.HeadPosition, warnColor);
     }
 
     // the Cobra King's leftover armor, if worn; frees the monkey too
@@ -1475,9 +2887,6 @@ public class SpiderFightController: MonoBehaviour {
             return false;
         }
         saveGraceEndTime = Time.time + saveGraceS;
-        if (isDragging) {
-            EndDrag(false);
-        }
         if (struggle != null) {
             struggle.ForceRelease();
         }
@@ -1489,11 +2898,16 @@ public class SpiderFightController: MonoBehaviour {
         isFinisherWin = isWin;
         finisherTimeS = 0f;
         CancelAttack();
-        if (isDragging) {
-            EndDrag(false);
-        }
         hud.HideBanner();
         hud.ClearWarnings();
+        hud.SetPrompt(false, Vector3.zero);
+        isTimeBent = false;
+        isTeachFrozen = false;
+        frozenShot = null;
+        frozenCrescent = null;
+        parrySlowEndTime = 0f;
+        isDashing = false;
+        ClearSlash();
         Time.timeScale = finisherTimeScale;
         if (isWin) {
             hud.Flash(Color.white);
@@ -1608,28 +3022,30 @@ public class SpiderFightController: MonoBehaviour {
         hud.HideRevive();
         Time.timeScale = 1f;
         phase = Phase.Fighting;
+        // a new try starts in the armor too, swirled on
+        GiveArmor();
+        ClearThrows();
         health = maxHealth;
         hud.SetHealth(1f);
-        foreach (Projectile shot in projectiles) {
-            if (shot.transform != null) {
-                Destroy(shot.transform.gameObject);
+        foreach (Melon melon in melons) {
+            if (melon.root != null) {
+                melon.root.SetActive(true);
+                melon.backTime = -1f;
             }
         }
-        projectiles.Clear();
         ClearStickyWebs();
-        if (lure != null) {
-            Destroy(lure.gameObject);
-        }
-        lure = null;
-        isLureFlying = false;
-        for (int i = 0; i < knots.Count; i++) {
-            if (knots[i].root != null) {
-                RestoreKnot(i, false);
-            }
-        }
         spiderAngle = startAngle;
         spiderY = startY;
         ResetSpiderState();
+        teachTimeS = 0f;
+        if (!hasPassedLessons) {
+            // the parry lesson was never passed: it starts over
+            teach = TeachStep.Parry;
+            ShowStepBanner();
+        } else {
+            teach = TeachStep.Ready;
+            Teach("Get ready!", "", silkColor, readyS);
+        }
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
             stamina.AddStamina(stamina.MaxStamina);
@@ -1647,9 +3063,6 @@ public class SpiderFightController: MonoBehaviour {
         if (monkeyController == null) {
             return;
         }
-        if (isDragging) {
-            EndDrag(false);
-        }
         if (struggle != null) {
             struggle.ForceRelease();
         }
@@ -1657,7 +3070,8 @@ public class SpiderFightController: MonoBehaviour {
         monkeyController.SetHeightCeiling(entryY + arenaHeightU);
         monkeyController.ClearStun();
         monkeyController.IsHeld = true;
-        monkeyController.PullTo(entryPosition, reviveReturnSpeedU);
+        returnTarget = entryPosition;
+        monkeyController.PullTo(returnTarget, reviveReturnSpeedU);
         isReturningToStart = true;
     }
 
@@ -1667,7 +3081,7 @@ public class SpiderFightController: MonoBehaviour {
         }
         if (
             monkeyController.HasReachedPullTarget
-            || (monkey.position - entryPosition).sqrMagnitude < 0.01f
+            || (monkey.position - returnTarget).sqrMagnitude < 0.01f
         ) {
             isReturningToStart = false;
             monkeyController.SyncOrbitAngle();
@@ -1676,23 +3090,16 @@ public class SpiderFightController: MonoBehaviour {
         }
     }
 
-    private void ClearStickyWebs() {
-        foreach (SpiderWebTrap web in stickyWebs) {
-            if (web != null) {
-                Destroy(web.gameObject);
-            }
-        }
-        stickyWebs.Clear();
-    }
-
     // Win  --------------------------------------------------------------------
     private void Defeat() {
         phase = Phase.Defeated;
         defeatTimeS = 0f;
         hud.SetHealth(0f);
         hud.ClearWarnings();
-        ClearTerritoryRing();
+        ClearShots();
+        ClearThrows();
         ClearStickyWebs();
+        Burst(body.Position, silkColor, 20);
         hud.Say("My beautiful web...");
         if (Debug.isDebugBuild) {
             Debug.Log("SpiderFightController:\tSpider King defeated", this);
@@ -1734,15 +3141,8 @@ public class SpiderFightController: MonoBehaviour {
         hud.HideRewardPanel();
         Time.timeScale = 1f;
         phase = Phase.Done;
-        ClearItems(knots);
-        ClearItems(lureFruits);
-        knotBalls.Clear();
-        if (lure != null) {
-            Destroy(lure.gameObject);
-        }
-        if (silkLine != null) {
-            Destroy(silkLine.gameObject);
-        }
+        ClearMelons();
+        EndBareArena();
         if (greatCobra != null) {
             greatCobra.StopGuard();
             greatCobra.KnockBack(winCobraDropU);
@@ -1768,6 +3168,18 @@ public class SpiderFightController: MonoBehaviour {
     // pulled back, aimed a little toward the spider, so both stay in view
     private void UpdateCamera() {
         if (cameraFraming == null) {
+            return;
+        }
+        // the parry close up: in on the monkey while time crawls, punched in
+        // tighter & shaking at the clash
+        if (Time.unscaledTime < parrySlowEndTime) {
+            bool isShaking = Time.unscaledTime < shakeEndTime;
+            float shake = isShaking
+                ? Random.Range(-0.5f, 0.5f)
+                    * (shakeEndTime - Time.unscaledTime) / SHAKE_S
+                : 0f;
+            float punch = isShaking ? 0.75f : 1f;
+            cameraFraming.SetBossFraming(shake, parryCloseUpScale * punch);
             return;
         }
         float focus = Mathf.Clamp((spiderY - monkey.position.y) * 0.3f, 0f, 3f);
@@ -1871,10 +3283,65 @@ public class SpiderFightController: MonoBehaviour {
         target.SetPropertyBlock(colorBlock);
     }
 
+    private static Transform FindChild(Transform root, string childName) {
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true)) {
+            if (child.name == childName) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    // a cylinder stretched b/t two world points
+    private static void SetLine(Transform line, Vector3 from, Vector3 to,
+        float thickness) {
+        Vector3 span = to - from;
+        if (span.sqrMagnitude < 0.000001f) {
+            return;
+        }
+        line.SetPositionAndRotation(
+            (from + to) * 0.5f,
+            Quaternion.FromToRotation(Vector3.up, span.normalized)
+        );
+        line.localScale = new Vector3(thickness, span.magnitude * 0.5f,
+            thickness);
+    }
+
+    // a prefab copy kept only as a picture: no collider, no script
+    private static void MakeDecor(GameObject decor) {
+        foreach (Collider part in decor.GetComponentsInChildren<Collider>(true)) {
+            DestroyImmediate(part);
+        }
+        // at once, so none wakes up when the copy is switched on
+        foreach (MonoBehaviour script in
+            decor.GetComponentsInChildren<MonoBehaviour>(true)) {
+            DestroyImmediate(script);
+        }
+    }
+
     // private members  ########################################################
+    private const string FRUIT_TAG = "FruitCollider";
+    private const int PATH_PARTS = 14;
+    private const int RING_PARTS = 20;
+    private const float BITE_S = 0.4f; // real s of the touch bite
+    // the clash: time stops dead this long at the touch; the camera shakes
+    private const float CLASH_STOP_S = 0.07f;
+    private const float SHAKE_S = 0.22f;
+    private const float RING_S = 0.35f; // real s a shock ring opens
+    private const int CRESCENT_PARTS = 12;
+    // the clash of a parry, real s: slowing into the tail, held, speeding off
+    private const float CLASH_IN_S = 0.12f;
+    private const float CLASH_HOLD_S = 0.14f;
+    private const float CLASH_OUT_S = 0.3f;
+    private const int CRESCENT_STRANDS = 3;
+    private const int CRESCENT_SPOKES = 5;
+    // how far a crescent's middle runs ahead of its tips; u
+    private const float CRESCENT_BULGE_U = 0.9f;
     // the banana hangs about this far below its branch root; u
     private const float BANANA_HANG_U = 1f;
-    private const int TERRITORY_DOTS = 16;
+    // the spider starts right above the monkey, this far up, in view
+    private const float START_TURN_DEG = 0f;
+    private const float START_ABOVE_U = 7f;
     private static readonly int BASE_COLOR = Shader.PropertyToID("_BaseColor");
     private static readonly int COLOR = Shader.PropertyToID("_Color");
 
@@ -1892,29 +3359,96 @@ public class SpiderFightController: MonoBehaviour {
 
     private enum Mode {
         Idle, // stalks the monkey & attacks
-        Repairing, // to a ripped knot near it, then spins it back
-        ToLure, // runs to a tossed banana
-        Eating,
         Cocooning, // crawls to a trapped monkey
     }
 
     private enum Attack {
         None,
-        WebShot,
-        Drag,
-        Swipe,
+        Web,
+        Dash,
     }
 
-    private struct ArenaItem {
+    private enum ShotKind {
+        Web, // a fast white ball along a silk line w/ a gold end, parried
+    }
+
+    private enum TeachStep {
+        Parry, // bat a slowed web bullet back
+        Slash, // bat a slowed slash back
+        Final, // "Go!", then the fight
+        Ready, // the calm after a revive
+        Done,
+    }
+
+    private class Crescent {
+        public float originAngle; // where the spider slashed from
+        public float originY;
+        public float directionDeg; // its way on the bark, 0 round the trunk
+        public float distanceU; // how far it has flown
+        public Transform[] parts;
+        public bool isReflected; // batted back at the spider
+        public float clashS; // real s since it was batted back
+        public bool hasClashed;
+        public float nextFxS; // clash time of its next spark or trail bead
+        public float parryDistanceU;
+        public float contactDistanceU;
+    }
+
+    private class LaidWeb {
+        public SpiderWebTrap web;
+        public float endTime; // Time.time it goes
+        public Vector3 restScale;
+    }
+
+    private class Melon {
+        public bool isGolden;
         public GameObject root; // the grabbable fruit
         public GameObject branch;
         public Collider trigger;
         public float backTime; // Time.time it grows back, -1 if hanging
     }
 
-    private struct Projectile {
+    private class Throw {
         public Transform transform;
+        public Vector3 from;
+        public float ageS;
+    }
+
+    private class Shot {
+        public ShotKind kind;
+        public Transform ball;
+        public Transform wave; // a web shot's silk bullet
+        public Vector3 from;
         public Vector3 target;
+        public float t; // 0 at the spider, 1 at the target
+        public float length; // path length; u
+        public float fill; // share of the wind up done
+        public bool isCharging; // still winding up, not flying
+        public bool isReflected; // batted back at the spider
+        public float clashS; // real s since it was batted back
+        public Vector3 clashFrom;
+        public bool hasClashed;
+        public float nextFxS;
+        public Vector3 lastPosition;
+    }
+
+    private struct Spark {
+        public Transform transform;
+        public Vector3 velocity;
+        public float ageS;
+        public float lifeS;
+        public bool isFloating; // no gravity, eg drawn in to the charge
+        public bool isStreak; // long & thin along its flight
+        public bool isStroke; // a clash stroke, thinning
+        public float size; // its start size, 0 for the usual
+    }
+
+    private class Ring {
+        public Vector3 center;
+        public Color color;
+        public float ageS; // < 0 while it waits to show
+        public bool isInward; // closing in, eg on the charging head
+        public Transform[] parts;
     }
 
     private SpiderKingBody body;
@@ -1928,6 +3462,7 @@ public class SpiderFightController: MonoBehaviour {
     private Vector3 trunkCenter;
     private float entryY;
     private Vector3 entryPosition;
+    private Vector3 returnTarget; // where a fly back ends
     private Quaternion entryRotation;
 
     private Phase phase = Phase.Waiting;
@@ -1935,9 +3470,11 @@ public class SpiderFightController: MonoBehaviour {
     private float modeTimeS;
     private Attack attack = Attack.None;
     private float attackTimeS;
+    private float attackWindUpS = 1f;
     private float nextAttackTime;
     private Vector3 aimPoint;
     private int warningId = -1;
+    private Shot chargingShot;
     private int health;
     private int maxHealth;
 
@@ -1949,35 +3486,77 @@ public class SpiderFightController: MonoBehaviour {
     private float spiderY;
     private float stunEndTime;
     private float saveGraceEndTime;
-    private float nextRepairTime;
-    private int repairIndex = -1;
-    private bool isRepairSpinning;
 
-    private readonly List<ArenaItem> knots = new List<ArenaItem>();
-    private readonly List<ArenaItem> lureFruits = new List<ArenaItem>();
-    private readonly Dictionary<GameObject, Renderer> knotBalls =
-        new Dictionary<GameObject, Renderer>();
-    private readonly List<SpiderWebTrap> stickyWebs = new List<SpiderWebTrap>();
-    private readonly List<Projectile> projectiles = new List<Projectile>();
-    private readonly List<Renderer> ringDots = new List<Renderer>();
+    private readonly List<Melon> melons = new List<Melon>();
+    private Melon goldenMelon;
+    private bool hasPassedLessons; // the parry lessons are done, once a run
+    private float nextGoldenTime;
+    private float goldenHideTime;
+    private Vector3 goldenRestScale;
+    private readonly List<Throw> throws = new List<Throw>();
+    private readonly List<Shot> shots = new List<Shot>();
+    private readonly List<Spark> sparks = new List<Spark>();
+    private readonly List<Spark> pops = new List<Spark>();
+    private readonly List<Ring> rings = new List<Ring>();
+    private float tailFlashEndTime;
+    private float clashStopEndTime; // real time the clash's dead stop ends
+    private float shakeEndTime;
+    private float biteEndTime; // real time the touch bite ends
+    private bool isTailTinted;
+    private readonly List<LaidWeb> stickyWebs = new List<LaidWeb>();
+    private float layDistanceU;
 
-    private Transform lure;
-    private bool isLureFlying;
-    private float lureAgeS;
-    private float lureFromAngle;
-    private float lureFromY;
-    private float lureFromRadius;
-    private float lureTurnDeg;
-    private float lureToY;
-    private float lureAngle;
-    private float lureY;
-    private bool hasShownLureHint;
+    private bool isDashing;
+    private bool hasDashHit;
+    private float dashTimeS;
+    private float nextDashTime;
+    private float dashAngle;
+    private float dashY;
+    private Transform[] dashLane; // its red lane, null when none
+    private float dashStartAngle;
+    private float dashStartY;
+    private float dashWayU; // unit way on the bark, round the trunk
+    private float dashWayV; // & up
+    private float dashLengthU;
+    private float dashTravelU;
+    private int volleyLeft;
+    private int volleyGapIndex;
+    private bool isVolleySlowFirst;
+    private float nextVolleyTime;
+    private int lastStage;
+    private bool isSlashing;
+    private bool isSlashAiming;
+    private int slashLeft;
+    private int slashGapIndex;
+    private bool isSlashSlowFirst;
+    private float nextSlashTime;
+    private float slashTimeS;
+    private float slashAimDeg; // its aim on the bark, 0 round the trunk
+    private Transform[] slashAim; // the red aim line, null when none
+    private readonly List<Crescent> crescents = new List<Crescent>();
+    private float slashChargeLeftS;
+    private float slashSlow = 1f; // the lesson's slower slash
+    private Crescent frozenCrescent; // the lesson's frozen slash
 
-    private bool isDragging;
-    private int dragTaps;
-    private float dragTimeS;
-    private Transform silkLine;
-    private bool isCocoonBannerShown;
+    private bool hasBeenTrapped;
+
+    private float lastTapTime = -10f;
+    private float parrySlowEndTime; // real time the parry slow motion ends
+    private Transform tail; // the monkey's own tail, swung for a parry
+    private Quaternion tailRest;
+    private float chargeSparkS;
+    private float chargeRingS;
+    private float tailTimeS = -1f;
+    private bool hasSwingHit; // the current swing batted something back
+    private GameObject stuckWeb;
+    private bool isTimeBent;
+    private bool isTeachFrozen; // the parry lesson stops time on a gold wave
+    private Shot frozenShot;
+    private float bareBottomY;
+    private float bareTopY;
+
+    private TeachStep teach = TeachStep.Parry;
+    private float teachTimeS;
 
     private bool isFinisherWin;
     private float finisherTimeS;
