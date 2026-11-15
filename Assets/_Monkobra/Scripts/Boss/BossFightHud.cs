@@ -58,6 +58,28 @@ public class BossFightHud: MonoBehaviour {
         );
     }
 
+    /// <summary>
+    /// A line the boss calls out: it shows in a bubble at its head, then
+    /// glides up to dock under the health bar & stays there till the next
+    /// call out or <see cref="ClearCallOut"/>.
+    /// </summary>
+    public void CallOut(string line, Vector3 worldPosition, Color color) {
+        if (rootRect == null) {
+            return;
+        }
+        ClearCallOut();
+        callOutRect = CreateRect("CallOut", rootRect);
+        AddImage(callOutRect, new Color(0f, 0f, 0f, 0.8f));
+        callOutLabel = CreateLabel("Line", callOutRect, line, 34f, color);
+        Stretch(callOutLabel.rectTransform);
+        callOutRect.sizeDelta = new Vector2(
+            Mathf.Max(260f, callOutLabel.GetPreferredValues(line).x + 56f),
+            64f
+        );
+        callOutWorld = worldPosition;
+        callOutAgeS = 0f;
+    }
+
     /// <summary>Pops a rising damage number at a world point.</summary>
     public void PopDamage(string text, Vector3 worldPosition) {
         PopText(text, worldPosition, damageColor);
@@ -455,6 +477,37 @@ public class BossFightHud: MonoBehaviour {
         }
         UpdatePops();
         UpdateWarnings();
+        UpdateCallOut();
+    }
+
+    // at the head a beat, gliding up to under the health bar, held, faded
+    private void UpdateCallOut() {
+        if (callOutRect == null) {
+            return;
+        }
+        callOutAgeS += Time.unscaledDeltaTime;
+        PlaceOnScreen(callOutRect, callOutWorld, speechOffset);
+        Vector2 from = callOutRect.anchoredPosition;
+        Vector2 half = canvasRect != null ? canvasRect.rect.size * 0.5f
+            : Vector2.zero;
+        Vector2 docked = new Vector2(0f,
+            half.y - 96f - callOutRect.rect.height * 0.5f);
+        float glide = Mathf.Clamp01((callOutAgeS - CALL_AT_HEAD_S)
+            / CALL_GLIDE_S);
+        glide = glide * glide * (3f - 2f * glide);
+        callOutRect.anchoredPosition = Vector2.Lerp(from, docked, glide);
+        // a pop as it shows
+        float pop = Mathf.Clamp01(callOutAgeS / 0.15f);
+        callOutRect.localScale = Vector3.one * Mathf.Lerp(1.3f, 1f, pop);
+    }
+
+    /// <summary>Takes the docked call out away.</summary>
+    public void ClearCallOut() {
+        if (callOutRect != null) {
+            Destroy(callOutRect.gameObject);
+        }
+        callOutRect = null;
+        callOutLabel = null;
     }
 
     // signs beat faster & grow as the hit nears
@@ -556,6 +609,17 @@ public class BossFightHud: MonoBehaviour {
         );
         flashImage.enabled = alpha > 0f;
     }
+
+    /// <summary>Real s a call out takes from its head to its dock.</summary>
+    public const float CALL_OUT_S = CALL_AT_HEAD_S + CALL_GLIDE_S;
+
+    // a call out's beats, real s
+    private const float CALL_AT_HEAD_S = 0.9f;
+    private const float CALL_GLIDE_S = 0.6f;
+    private RectTransform callOutRect;
+    private TextMeshProUGUI callOutLabel;
+    private Vector3 callOutWorld;
+    private float callOutAgeS;
 
     private void UpdatePops() {
         for (int i = pops.Count - 1; i >= 0; i--) {

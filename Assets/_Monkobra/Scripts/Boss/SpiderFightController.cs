@@ -215,7 +215,7 @@ public class SpiderFightController: MonoBehaviour {
     [Tooltip("seconds b/t two golden melons; one only shows w/ no armor on")]
     [SerializeField]
     [Min(1f)]
-    private float goldenIntervalS = 15f;
+    private float goldenIntervalS = 10f;
 
     [Tooltip("seconds a golden melon stays b4 it goes")]
     [SerializeField]
@@ -333,12 +333,12 @@ public class SpiderFightController: MonoBehaviour {
     [Tooltip("seconds between attacks at full health")]
     [SerializeField]
     [Min(0.3f)]
-    private float restS = 1.8f;
+    private float restS = 2.6f;
 
     [Tooltip("share of that rest left at no health: weaker, faster")]
     [SerializeField]
     [Range(0.1f, 1f)]
-    private float minRestShare = 0.5f;
+    private float minRestShare = 0.35f;
 
     [Header("Web Wave")]
     [Tooltip("the charge b4 a web wave: the spider rears up, its body swells "
@@ -357,7 +357,7 @@ public class SpiderFightController: MonoBehaviour {
     [Tooltip("seconds after a dash b4 the next one")]
     [SerializeField]
     [Min(0f)]
-    private float dashCooldownS = 2.2f;
+    private float dashCooldownS = 2.8f;
 
     [Tooltip("wind up of the dash: the legs rear up & a red lane shows its "
         + "way on the bark; s")]
@@ -422,6 +422,12 @@ public class SpiderFightController: MonoBehaviour {
     [SerializeField]
     [Min(1f)]
     private float lateSpeedScale = 1.3f;
+
+    [Tooltip("at the last stage: scale on its chase & circling only, lerped "
+        + "from 1 as its health goes")]
+    [SerializeField]
+    [Min(1f)]
+    private float lateChaseScale = 1.08f;
 
     [Tooltip("at the last stage: scale on wind ups & gaps, lerped from 1")]
     [SerializeField]
@@ -570,11 +576,11 @@ public class SpiderFightController: MonoBehaviour {
     [Min(0)]
     private int slashParryDamage = 1;
 
-    [Tooltip("health a batted back web bullet takes off the spider, as well "
-        + "as sticking it")]
+    [Tooltip("health a batted back web bullet takes off the spider; 0: it "
+        + "only sticks it")]
     [SerializeField]
     [Min(0)]
-    private int webParryDamage = 1;
+    private int webParryDamage = 0;
 
     [Header("Teaching")]
     [Tooltip("scale on wind ups in the lessons")]
@@ -931,6 +937,7 @@ public class SpiderFightController: MonoBehaviour {
         nextAttackTime = Time.time + 2f;
         stunEndTime = 0f;
         saveGraceEndTime = 0f;
+        websBeforeSlash = 0;
         isDashing = false;
         ClearDashLane();
         volleyLeft = 0;
@@ -1207,7 +1214,10 @@ public class SpiderFightController: MonoBehaviour {
             goldenMelon.isGolden = true;
             MakeGolden(goldenMelon.root);
             HideGoldenMelon();
-            nextGoldenTime = Time.time + GOLDEN_FIRST_S;
+            // an armor lost b4 it was made keeps its "at once"
+            if (HasArmor()) {
+                nextGoldenTime = Time.time + GOLDEN_FIRST_S;
+            }
         }
         if (goldenMelon.root == null) {
             return;
@@ -1215,12 +1225,17 @@ public class SpiderFightController: MonoBehaviour {
         // shown is its branch out, the melon still on it
         if (goldenMelon.branch.activeSelf) {
             if (Time.time >= goldenHideTime) {
+                // missed: the next after a short wait the first time, then
+                // the usual interval
                 HideGoldenMelon();
-                nextGoldenTime = Time.time + goldenIntervalS;
+                goldenSinceArmor++;
+                nextGoldenTime = Time.time + (goldenSinceArmor == 1
+                    ? GOLDEN_AFTER_ARMOR_S : goldenIntervalS);
             }
             return;
         }
-        if (Time.time < nextGoldenTime || HasArmor()) {
+        // not while the monkey is thrown off: it shows once it lands
+        if (Time.time < nextGoldenTime || HasArmor() || isReturningToStart) {
             return;
         }
         // beside the monkey, a bit up, in reach, as the Cobra King's
@@ -1525,14 +1540,37 @@ public class SpiderFightController: MonoBehaviour {
         if (stage > lastStage) {
             // a new stage: a roar of red rings, its eyes blazing
             lastStage = stage;
+            // a stage of volleys opens w/ at least two of them, no slash
+            // till then
+            int volley = PerStage(webShotsPerStage, stage);
+            if (volley >= 2) {
+                websBeforeSlash = VOLLEYS_FIRST;
+            }
             AddRing(body.HeadPosition, warnColor, 0f);
             AddRing(body.HeadPosition, warnColor, 0.1f);
             AddRing(body.HeadPosition, warnColor, 0.2f);
-            hud.Say(stage == 1 ? "You'll pay for that!" : "ENOUGH!");
+            // its volleys grow: called out once, from its head up to under
+            // the health bar
+            if (volley >= 2) {
+                hud.CallOut(volley >= 3 ? "Triple fire ready!"
+                    : "Rapid fire ready!", body.HeadPosition, warnColor);
+                HoldForCallOut();
+            } else {
+                hud.Say(stage == 1 ? "You'll pay for that!" : "ENOUGH!");
+            }
+            BurstStreaks(body.HeadPosition, warnColor, 18, 4f, 10f);
             return;
         }
         hud.Say(health <= maxHealth / 3 ? "No! Stop it!" : "Ouch!");
     }
+
+    // while it calls out it starts no new attack, only follows the monkey;
+    // what it had begun is played out
+    private void HoldForCallOut() {
+        callOutEndTime = Time.unscaledTime + BossFightHud.CALL_OUT_S;
+    }
+
+    private bool IsCallingOut => Time.unscaledTime < callOutEndTime;
 
     // a point on an arc round the trunk, never through it
     private Vector3 ArcPoint(Vector3 from, Vector3 to, float t, float bulgeU) {
@@ -1621,13 +1659,14 @@ public class SpiderFightController: MonoBehaviour {
             return 0f;
         }
         UpdateVolley();
-        bool isBusy = HasLiveShots
+        bool isBusy = HasLiveShots || IsCallingOut
             || (struggle != null && struggle.IsTrapped);
         // its charge must be seen: out of view it rushes at the monkey
         bool isDue = Time.time >= nextAttackTime && !isBusy;
         bool isRushing = isDue && !IsInView();
         float walk = isRushing ? Rush() : Stalk();
-        // caught up: it always dashes at once, to be dodged
+        // caught up: it always dashes at once, to be dodged (not while it
+        // calls out)
         if (!isBusy && IsCloseEnoughToDash()) {
             BeginAttack(Attack.Dash, false);
             return 0f;
@@ -1653,23 +1692,59 @@ public class SpiderFightController: MonoBehaviour {
         }
         Vector3 head = body.HeadPosition;
         Vector3 port = view.WorldToViewportPoint(head);
-        bool isOnScreen = port.z > 0f && port.x > 0.08f && port.x < 0.92f
-            && port.y > 0.08f && port.y < 0.92f;
+        bool isOnScreen = port.z > 0f
+            && port.x > VIEW_EDGE && port.x < 1f - VIEW_EDGE
+            && port.y > VIEW_EDGE && port.y < 1f - VIEW_EDGE;
         Vector3 toCamera = view.transform.position - trunkCenter;
         toCamera.y = 0f;
         float radians = spiderAngle * Mathf.Deg2Rad;
         Vector3 outward = new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
         bool isNearSide = toCamera.sqrMagnitude < 0.001f
-            || Vector3.Dot(outward, toCamera.normalized) > 0.25f;
+            || Vector3.Dot(outward, toCamera.normalized) > 0.45f;
         return isOnScreen && isNearSide;
     }
 
     // crawls after the monkey round the arena
     private float Stalk() {
         Vector3 at = monkey.position;
-        bool hasArrived = MoveToward(AngleOf(at), at.y, stalkSpeedU * SpeedScale,
+        bool hasArrived = MoveToward(AngleOf(at), at.y, stalkSpeedU * ChaseScale,
             stalkDistanceU);
-        return hasArrived ? 0f : 0.6f;
+        if (!hasArrived) {
+            return 0.6f;
+        }
+        Prowl(at);
+        return 0.5f;
+    }
+
+    // never standing still b/t attacks: it circles the monkey at its
+    // distance, now one way, now the other
+    private void Prowl(Vector3 at) {
+        if (Time.time >= nextProwlFlipTime) {
+            prowlSign = -prowlSign;
+            nextProwlFlipTime = Time.time + Random.Range(1.2f, 2.6f);
+        }
+        float arcU = Mathf.DeltaAngle(spiderAngle, AngleOf(at))
+            * Mathf.Deg2Rad * trunkRadiusU;
+        float dy = at.y - spiderY;
+        float distance = Mathf.Sqrt(arcU * arcU + dy * dy);
+        if (distance < 0.01f) {
+            return;
+        }
+        // across the line to the monkey, & a pull back onto its distance
+        float toU = arcU / distance;
+        float toV = dy / distance;
+        float speedU = stalkSpeedU * ChaseScale * PROWL_SHARE;
+        float pull = Mathf.Clamp(distance - stalkDistanceU, -1f, 1f) * 2f;
+        float stepU = (-toV * prowlSign * speedU + toU * pull) * Time.deltaTime;
+        float stepV = (toU * prowlSign * speedU + toV * pull) * Time.deltaTime;
+        float nextY = spiderY + stepV;
+        // turned back at the arena's floor & top
+        if (nextY < ArenaBottomY || nextY > entryY + arenaHeightU) {
+            prowlSign = -prowlSign;
+            return;
+        }
+        spiderAngle += stepU / trunkRadiusU * Mathf.Rad2Deg;
+        spiderY = nextY;
     }
 
     private float UpdateCocoon(bool isTrapped, bool isStunned) {
@@ -1729,6 +1804,11 @@ public class SpiderFightController: MonoBehaviour {
     private int Stage => Mathf.Min(isEasy ? 1 : 2,
         Rage < stageLostShares.x ? 0 : Rage < stageLostShares.y ? 1 : 2);
 
+    // its chase's speed scale, 1 at full health up to lateChaseScale at none
+    private float ChaseScale => teach == TeachStep.Done
+        ? Mathf.Lerp(1f, lateChaseScale, Rage) * (isEasy ? easySpeedScale : 1f)
+        : 1f;
+
     // speed scale, 1 at full health up to lateSpeedScale at none
     private float SpeedScale => teach == TeachStep.Done
         ? Mathf.Lerp(1f, lateSpeedScale, Rage) * (isEasy ? easySpeedScale : 1f)
@@ -1760,17 +1840,35 @@ public class SpiderFightController: MonoBehaviour {
 
     // the next bullet of a volley, its orb flashing at the head
     private void UpdateVolley() {
-        if (volleyLeft <= 0 || Time.time < nextVolleyTime) {
+        if (volleyCharge != null && !shots.Contains(volleyCharge)) {
+            volleyCharge = null;
+        }
+        if (volleyLeft <= 0) {
+            return;
+        }
+        // the gap is its new charge: the orb swells at the head again
+        if (volleyCharge == null) {
+            volleyCharge = NewShot(ShotKind.Web, monkey.position);
+            volleyChargeFromTime = Time.time;
+        }
+        float chargeS = Mathf.Max(0.05f, nextVolleyTime - volleyChargeFromTime);
+        float progress = Mathf.Clamp01((Time.time - volleyChargeFromTime)
+            / chargeS);
+        volleyCharge.target = monkey.position;
+        volleyCharge.fill = progress;
+        body.SetCharge(progress);
+        UpdateChargeSparks();
+        if (Time.time < nextVolleyTime) {
             return;
         }
         volleyLeft--;
         nextVolleyTime = Time.time + VolleyGap();
-        Shot bullet = NewShot(ShotKind.Web, monkey.position);
+        Shot bullet = volleyCharge;
+        volleyCharge = null;
+        body.SetCharge(0f);
         bullet.isCharging = false;
-        bullet.ball.gameObject.SetActive(false);
         bullet.from = body.HeadPosition;
         bullet.length = PathLength(bullet);
-        AddRing(body.HeadPosition, silkColor, 0f, true);
         if (volleyLeft == 0) {
             nextAttackTime = Mathf.Max(Time.time + RestNow(),
                 stunEndTime + 0.5f);
@@ -1793,7 +1891,8 @@ public class SpiderFightController: MonoBehaviour {
         float chance = distance > slashMinRangeU * 2f
             ? Mathf.Max(slashChance, 0.75f)
             : slashChance;
-        if (canSlash && Random.value < chance) {
+        // a stage of volleys opens w/ a couple of them b4 any slash
+        if (canSlash && websBeforeSlash <= 0 && Random.value < chance) {
             StartSlash();
             return;
         }
@@ -1873,6 +1972,7 @@ public class SpiderFightController: MonoBehaviour {
                 // later a volley: the rest follow, slow then fast or fast
                 // then slow, each to bat back
                 if (teach == TeachStep.Done) {
+                    websBeforeSlash = Mathf.Max(0, websBeforeSlash - 1);
                     volleyLeft = PerStage(webShotsPerStage, Stage) - 1;
                     volleyGapIndex = 0;
                     isVolleySlowFirst = Random.value < 0.5f;
@@ -2013,7 +2113,7 @@ public class SpiderFightController: MonoBehaviour {
         if (!hasDashHit && DistanceToMonkey() < dashHitU
             && Time.time >= saveGraceEndTime) {
             hasDashHit = true;
-            LethalHit("Caught!", true);
+            LethalHit("Caught!", true, true);
         }
         if (!hasArrived && dashTimeS < 1.5f) {
             return 1f;
@@ -2629,7 +2729,12 @@ public class SpiderFightController: MonoBehaviour {
     // a parry plays in slow motion w/ the camera close in on the monkey,
     // no flash: "Nice!" & gold sparks
     private void ParryEffect(Vector3 at) {
-        parrySlowEndTime = Time.unscaledTime + parrySlowS;
+        // more on its way (a volley's next bullet, the next slash): only a
+        // short beat, the camera barely in, so the next one is seen in time
+        bool isMore = IsMoreComing();
+        parrySlowEndTime = Time.unscaledTime
+            + (isMore ? QUICK_SLOW_S : parrySlowS);
+        shotMaxWeight = isMore ? QUICK_SHOT_WEIGHT : 1f;
         // a shot already on goes on w/o easing in again
         float now = Time.unscaledTime;
         bool isShotOn = now < shotEndTime;
@@ -2637,9 +2742,30 @@ public class SpiderFightController: MonoBehaviour {
         shotStartTime = isShotOn ? Mathf.Min(shotStartTime, now - SHOT_IN_S)
             : now;
         shotEndTime = parrySlowEndTime + SHOT_OUT_S;
+        if (!isShotOn) {
+            shotWeightCap = shotMaxWeight;
+        }
         shotFrom = at;
         shotSide = isShotOn ? shotSide : (Random.value < 0.5f ? -1f : 1f);
         shotClashTime = -10f;
+    }
+
+    // anything still to bat or dodge: a bullet or slash coming, a volley or
+    // a row of slashes not done
+    private bool IsMoreComing() => shots.Exists(s => !s.isReflected)
+        || crescents.Exists(c => !c.isReflected) || isSlashing
+        || volleyLeft > 0 || (chargingShot != null);
+
+    // a full parry shot is cut short the moment another attack comes, so it
+    // never hides it
+    private void CutShotIfMoreComes() {
+        float now = Time.unscaledTime;
+        if (now >= shotEndTime || shotMaxWeight < 1f || !IsMoreComing()) {
+            return;
+        }
+        shotMaxWeight = QUICK_SHOT_WEIGHT;
+        parrySlowEndTime = Mathf.Min(parrySlowEndTime, now + 0.1f);
+        shotEndTime = Mathf.Min(shotEndTime, now + SHOT_OUT_S * 0.6f);
     }
 
     // The Parry Shot  ---------------------------------------------------------
@@ -2659,8 +2785,11 @@ public class SpiderFightController: MonoBehaviour {
         Transform eye = view.transform;
         float t = now - shotStartTime;
         float total = shotEndTime - shotStartTime;
+        // eased down, not jumped, when cut short for a coming attack
+        shotWeightCap = Mathf.MoveTowards(shotWeightCap, shotMaxWeight,
+            Time.unscaledDeltaTime * 4f);
         float weight = Mathf.Min(Ease(t / SHOT_IN_S),
-            Ease((shotEndTime - now) / SHOT_OUT_S));
+            Ease((shotEndTime - now) / SHOT_OUT_S)) * shotWeightCap;
         if (weight <= 0f) {
             return;
         }
@@ -3257,7 +3386,8 @@ public class SpiderFightController: MonoBehaviour {
         hud.ShowBannerFor(title, line, color, seconds);
     }
 
-    private void LethalHit(string word, bool isTouch = false) {
+    private void LethalHit(string word, bool isTouch = false,
+        bool isDash = false) {
         if (phase != Phase.Fighting || isReturningToStart
             || Time.time < saveGraceEndTime) {
             return;
@@ -3277,7 +3407,9 @@ public class SpiderFightController: MonoBehaviour {
                 SetMode(Mode.Idle);
                 nextAttackTime = Time.time + RestNow();
             }
-            if (isTouch) {
+            if (isDash) {
+                ThrowOffDash();
+            } else if (isTouch) {
                 ThrowOffSpider();
             } else {
                 KnockDown(body.Contact);
@@ -3324,6 +3456,44 @@ public class SpiderFightController: MonoBehaviour {
         isReturningToStart = true;
     }
 
+    // saved from a dash: thrown out sideways off its lane, the side it was
+    // caught on (the other if the arena's top or floor is in the way), so the
+    // spider running on along it never touches it again
+    private void ThrowOffDash() {
+        if (monkeyController == null) {
+            return;
+        }
+        if (struggle != null) {
+            struggle.ForceRelease();
+        }
+        Vector3 at = monkey.position;
+        float mu = Mathf.DeltaAngle(dashStartAngle, AngleOf(at))
+            * Mathf.Deg2Rad * trunkRadiusU;
+        float mv = at.y - dashStartY;
+        float side = dashWayU * mv - dashWayV * mu >= 0f ? 1f : -1f;
+        float lowY = entryY;
+        float highY = entryY + arenaHeightU - 0.5f;
+        float sideY = at.y + side * dashWayU * DASH_THROW_U;
+        // too little room that way: the other side
+        if (sideY < lowY || sideY > highY) {
+            float otherY = at.y - side * dashWayU * DASH_THROW_U;
+            if (otherY >= lowY && otherY <= highY) {
+                side = -side;
+            }
+        }
+        float throwU = -side * dashWayV * DASH_THROW_U;
+        float throwV = side * dashWayU * DASH_THROW_U;
+        returnTarget = PointOnTrunk(
+            AngleOf(at) + throwU / trunkRadiusU * Mathf.Rad2Deg,
+            Mathf.Clamp(at.y + throwV, lowY, highY),
+            HorizontalDistance(at));
+        SetUntouchable(true);
+        monkeyController.ClearStun();
+        monkeyController.IsHeld = true;
+        monkeyController.PullTo(returnTarget, reviveReturnSpeedU);
+        isReturningToStart = true;
+    }
+
     // the Cobra King's leftover armor, if worn; frees the monkey too
     private bool TrySpendArmor() {
         BossFightController cobraKing = BossFightController.I;
@@ -3334,7 +3504,8 @@ public class SpiderFightController: MonoBehaviour {
         // the golden melon waits a short while after the armor goes, so it
         // never pops up at once beside the monkey, eg back at the start;
         // after that, unpicked, its full interval
-        nextGoldenTime = Time.time + GOLDEN_AFTER_ARMOR_S;
+        nextGoldenTime = Time.time;
+        goldenSinceArmor = 0;
         if (struggle != null) {
             struggle.ForceRelease();
         }
@@ -3347,6 +3518,7 @@ public class SpiderFightController: MonoBehaviour {
         finisherTimeS = 0f;
         CancelAttack();
         hud.HideBanner();
+        hud.ClearCallOut();
         hud.ClearWarnings();
         hud.SetPrompt(false, Vector3.zero);
         isTimeBent = false;
@@ -3620,10 +3792,12 @@ public class SpiderFightController: MonoBehaviour {
     // Camera & Helpers  -------------------------------------------------------
     // pulled back, aimed a little toward the spider, so both stay in view
     private void UpdateCamera() {
+        // the parry close up is its own camera move (ParryShot), on top,
+        // cut short once another attack comes
+        CutShotIfMoreComes();
         if (cameraFraming == null) {
             return;
         }
-        // the parry close up is its own camera move (ParryShot), on top
         float focus = Mathf.Clamp((spiderY - monkey.position.y) * 0.3f, 0f, 3f);
         cameraFraming.SetBossFraming(focus, cameraDistanceScale);
     }
@@ -3774,7 +3948,16 @@ public class SpiderFightController: MonoBehaviour {
     private const float SKY_WIDE_U = 1200f;
     // how far a touch the armor saves throws the monkey off; u
     private const float TOUCH_THROW_U = 7f;
+    // how far a dash the armor saves throws the monkey off its lane; u
+    private const float DASH_THROW_U = 8f;
     private const float MIN_VOLLEY_GAP_S = 0.6f;
+    // its circling speed b/t attacks, a share of its stalk speed
+    private const float PROWL_SHARE = 0.4f;
+    // volleys a stage of volleys opens w/, b4 any slash
+    private const int VOLLEYS_FIRST = 2;
+    // how far in from the screen's edges the spider must be to count as in
+    // view for a ranged attack, a share of the screen
+    private const float VIEW_EDGE = 0.18f;
     // seconds into the fight b4 the first golden melon may show
     private const float GOLDEN_FIRST_S = 8f;
     // seconds after the armor goes b4 the golden melon may show
@@ -3794,6 +3977,10 @@ public class SpiderFightController: MonoBehaviour {
     private const float SHOT_IN_S = 0.14f;
     private const float SHOT_OUT_S = 0.35f;
     private const float SHOT_SLAM_S = 0.25f;
+    // a parry w/ more coming: a short slow beat & the camera only this far
+    // into its shot, 0~1
+    private const float QUICK_SLOW_S = 0.25f;
+    private const float QUICK_SHOT_WEIGHT = 0.3f;
     private const int CRESCENT_STRANDS = 3;
     private const int CRESCENT_SPOKES = 5;
     // how far a crescent's middle runs ahead of its tips; u
@@ -3999,6 +4186,11 @@ public class SpiderFightController: MonoBehaviour {
     private bool isVolleySlowFirst;
     private float nextVolleyTime;
     private int lastStage;
+    private Shot volleyCharge; // a volley's next bullet, charging
+    private float callOutEndTime; // real time it is done calling out
+    private float volleyChargeFromTime;
+    private int goldenSinceArmor; // golden melons missed since the armor went
+    private int websBeforeSlash; // volleys still due b4 a slash may come
     private bool isSlashing;
     private bool isSlashAiming;
     private int slashLeft;
@@ -4017,9 +4209,13 @@ public class SpiderFightController: MonoBehaviour {
 
     private float lastTapTime = -10f;
     private float parrySlowEndTime; // real time the parry slow motion ends
+    private float prowlSign = 1f; // which way it circles the monkey
+    private float nextProwlFlipTime;
     // the parry shot, real times
     private float shotStartTime;
     private float shotEndTime;
+    private float shotMaxWeight = 1f; // how far in the shot may go, 0~1
+    private float shotWeightCap = 1f; // eased toward that
     private float shotClashTime = -10f;
     private float shotSide = 1f; // which way it swings round the monkey
     private Vector3 shotFrom; // where the batted thing came from

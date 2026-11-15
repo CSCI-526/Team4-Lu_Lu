@@ -98,7 +98,7 @@ MonoBehaviour:
   easySpeedScale: 0.85
   goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
   goldenOutlineWidthScale: 2
-  goldenIntervalS: 15
+  goldenIntervalS: 10
   goldenShowS: 8
   testStartHeightU: 30
   bossName: SPIDER KING
@@ -119,11 +119,11 @@ MonoBehaviour:
   rushSpeedU: 9
   stalkDistanceU: 4.8
   dashStartU: 5
-  restS: 1.8
-  minRestShare: 0.5
+  restS: 2.6
+  minRestShare: 0.35
   webShotWindUpS: 0.8
   webShotSpeedU: 24
-  dashCooldownS: 2.2
+  dashCooldownS: 2.8
   dashWindUpS: 0.9
   dashLockS: 0.45
   dashSpeedU: 22
@@ -136,6 +136,7 @@ MonoBehaviour:
   volleySlowGapS: 1.1
   volleyFastGapS: 0.7
   lateSpeedScale: 1.3
+  lateChaseScale: 1.08
   lateTimeScale: 0.75
   lateDashCooldownS: 1.5
   slashMinRangeU: 4
@@ -163,7 +164,7 @@ MonoBehaviour:
   parryOrbitDeg: 32
   parryRollDeg: 10
   slashParryDamage: 1
-  webParryDamage: 1
+  webParryDamage: 0
   teachSlowScale: 1.8
   teachGapS: 1.6
   finalS: 2
