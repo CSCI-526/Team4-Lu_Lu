@@ -11,7 +11,8 @@ Profile settings (Pages cannot set response headers):
 
 - Compression Format: `Disabled`; a `Gzip` or `Brotli` build fails to load
 - Decompression Fallback: off; tick it only if size forces compression back on
-- WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right. For touch play it sets `touch-action: none`, switches off text selection and the tap highlight, and blocks the long-press context menu, so no drag scrolls or zooms the page and a held finger (the grab) stays with the game. It reaches a build only on the next export; never edit `Monkobra/` by hand. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops
+- WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right once the game is up. For touch play it sets `touch-action: none`, switches off text selection and the tap highlight, and blocks the long-press context menu, so no drag scrolls or zooms the page and a held finger (the grab) stays with the game. It reaches a build only on the next export; never edit `Monkobra/` by hand. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops. It also draws the [Loading Page](#loading-page)
+- Splash Screen: "Show Splash Screen" off (Player Settings > Splash Image), so the loading page hands straight over to the title
 - Development Build: on, since the hack hints and dev-only UI need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
 - Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `FullPlayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
 - Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `FullPlayScene`, `EndlessScene`
@@ -46,6 +47,20 @@ Steps:
 8. Check: load in a private window, watch the devtools Network tab
 
 Limits: 1,000 files, 240 characters per path, 500 MB total, 200 MB per file.
+
+## Loading Page
+
+Both WebGL builds open on a loading page drawn by `FitWindow/index.html` (HTML and JS, before Unity starts), over the game canvas:
+
+- Team logos: first USC Games (left, on the background) and Peel Five (right, on its light plate) side by side, a thin divider on the centre line; they fade in, hold, and fade out to the background colour (never black), and after a short pause the loading picture fades in, all while the game downloads; a click or a key cuts the hold short but keeps the fades, and a reload in the same tab skips them too (`LOGOS_ONCE_PER_SESSION`); `LOGOS_USC_PLATE` puts a dark plate behind USC Games, off by default; the timings sit at the top of the script
+- Picture: the TitleScreen picture (vines, Monkobra logo, branch) on `#0A1F12`; the cobra eats a row of dots along the branch, each dot becoming one body segment, while the monkey hops ahead and lands at the end
+- Progress: the cobra's head follows the real download progress of `createUnityInstance`, smoothed, and never faster than `LOADER_MIN_DURATION_S` (1.3 s) allows, counted from when the loading picture is fully in, so a cached, near-instant load still shows one short chase; the tuning constants sit at the top of the script
+- Hand-over: its last frame is the `TitleScreen` prefab picture, with "Loading" where the title shows its start prompt; `TitleScreen` calls `Plugins/WebGL/TitleScreenLoader.jslib` after its first frame and the page then fades out, or after 8 s if no call comes
+- Input: while the page is up it takes every click, tap and key, so none reaches Unity underneath and starts the title unseen; keys keep their browser default
+- Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the title font into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files
+- Layout: one 1280×720 table, written twice: the `LAYOUT` block of `index.html` and the table in `TitleScreenLayoutBuilder` (Editor script), which builds the `TitleScreen` prefab picture from `Monkobra > Build Title Screen`; change both together and rebuild, or the hand-over shows a jump
+
+The Windows build has no page: it opens on the title and shows no team logos.
 
 ## Dev Keys
 
