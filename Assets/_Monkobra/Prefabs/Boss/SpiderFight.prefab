@@ -46,9 +46,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acd7715cee3f4992813deddbdd34707f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderKingBody
-  bodyMaterial: {fileID: 2100000, guid: d2e646acba059234fa840f3630a714ea, type: 2}
   trunkRadiusU: 5
   bodyOutU: 0.8
+  bodyColor: {r: 0.16, g: 0.09, b: 0.2, a: 1}
+  markColor: {r: 0.8, g: 0.1, b: 0.12, a: 1}
+  crownColor: {r: 1, g: 0.8, b: 0.15, a: 1}
+  eyeDarkColor: {r: 0.35, g: 0.02, b: 0.05, a: 1}
+  eyeLitColor: {r: 1, g: 0.2, b: 0.1, a: 1}
+  bodyMaterial: {fileID: 2100000, guid: d2e646acba059234fa840f3630a714ea, type: 2}
 --- !u!114 &8455061723049586734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83,10 +88,107 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87cf3a8756c54eaca06f94aeb8479e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderFightController
+  watermelonScale: {x: 6, y: 6, z: 6}
+  watermelonOffset: {x: 0, y: -0.629, z: 0.06}
+  courseUrl: https://classes.usc.edu/term-20263/course/csci-526
+  choiceSideDeg: 28
+  choiceAboveU: 1.5
+  easyHealthScale: 0.6
+  easyTimeScale: 1.4
+  easySpeedScale: 0.85
+  goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
+  goldenOutlineWidthScale: 2
+  goldenIntervalS: 15
+  goldenShowS: 8
+  testStartHeightU: 30
+  bossName: SPIDER KING
+  trunkRadiusU: 5
+  arenaHeightU: 18
+  guardDepthU: 14
+  cameraDistanceScale: 1.6
+  branchRadiusU: 6.6
+  melonCount: 5
+  melonRespawnS: 7
+  melonFlyS: 0.55
+  melonDamage: 1
+  webLayEveryU: 1.5
+  webLifeS: 10
+  webGapU: 1.4
+  webMonkeyGapU: 2.5
+  stalkSpeedU: 5.5
+  rushSpeedU: 9
+  stalkDistanceU: 4.8
+  dashStartU: 5
+  restS: 1.8
+  minRestShare: 0.5
+  webShotWindUpS: 0.8
+  webShotSpeedU: 24
+  dashCooldownS: 2.2
+  dashWindUpS: 0.9
+  dashLockS: 0.45
+  dashSpeedU: 22
+  dashOvershootU: 3
+  dashHitU: 1.6
+  touchU: 1.5
+  stageLostShares: {x: 0.5, y: 0.8}
+  webShotsPerStage: {x: 1, y: 2, z: 3}
+  slashesPerStage: {x: 1, y: 2, z: 3}
+  volleySlowGapS: 1.1
+  volleyFastGapS: 0.7
+  lateSpeedScale: 1.3
+  lateTimeScale: 0.75
+  lateDashCooldownS: 1.5
+  slashMinRangeU: 4
+  slashChance: 0.5
+  slashRangeU: 16
+  slashChargeS: 0.8
+  slashWindUpS: 0.3
+  slashSpeedU: 26
+  slashWidthU: 4.5
+  slashSlowGapS: 0.75
+  slashFastGapS: 0.25
+  cocoonSpeedU: 3
+  cocoonReachU: 1.6
+  firstCocoonSpeedScale: 0.6
+  doubleTapS: 0.3
+  tailWindUpS: 0.06
+  tailActiveS: 0.2
+  tailRecoverS: 0.55
+  waveGoldU: 3.2
+  parryReachU: 2
+  parryStunS: 3.5
+  parrySlowS: 0.75
+  parrySlowTimeScale: 0.2
+  parryCloseUpU: 4.6
+  parryOrbitDeg: 32
+  parryRollDeg: 10
+  slashParryDamage: 1
+  webParryDamage: 1
+  teachSlowScale: 1.8
+  teachGapS: 1.6
+  finalS: 2
+  readyS: 3
+  saveGraceS: 0.25
+  finisherTimeScale: 0.25
+  finisherRealS: 1.2
+  reviveOfferS: 5
+  adSkipAfterS: 3
+  reviveReturnSpeedU: 20
+  defeatFallS: 2
+  glovesEscapeGainScale: 2
+  winCobraDropU: 45
+  winTitle: SPIDER KING DEFEATED!
+  winLine: You got the Silk Gloves
+  winDetailLine: Get out of webs 2x faster
+  warnColor: {r: 0.95, g: 0.2, b: 0.15, a: 1}
+  silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
+  goldenColor: {r: 1, g: 0.8, b: 0.15, a: 1}
   worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
   confirmAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   giveUpAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
   bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
   watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
+  goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
+  airWallMaterial: {fileID: 2100000, guid: 906f4892bde12417d93d23637ab10c7c, type: 2}
   isTestAtStart: 1
