@@ -99,4 +99,4 @@ All of it is built by Editor menus, never by editing prefab YAML:
 - Leaderboard: a plate whose gold rim replaces the old gold top line, a Cream title, Divider rules, Cream rows on faint Cream stripes, the player's row in Gold on a Gold stripe, drawn Bold, ie ExtraBold
 - Boss fight panels, built in code by `BossFightHud`: the win's reward panel, the revive card, the badge, tags, the health bar plate and the speech bubble take `UIStyle` colors (Background wash, Panel plates, Gold titles drawn Bold, Cream words, a Gold button with a Brown label for the main choice); the mock course ad keeps its own course colors, and the signal colors (health red, warning red, the EASY green) stay
 
-The old fonts and `Sprites/PopUp/PopUpBackground` are deleted last, in their own change, once every screen is checked.
+Every screen is in the style; the old fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite are gone, so Baloo 2 is the one UI font, with LiberationSans left only as TMP's fallback for a glyph outside the set.

@@ -46,6 +46,10 @@ todo vertical version
 
 ### Removed
 
+##### Yuqing Lu
+
+- the old UI fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite: Baloo 2 is now the only font
+
 ### Fixed
 
 ##### Yuqing Lu
