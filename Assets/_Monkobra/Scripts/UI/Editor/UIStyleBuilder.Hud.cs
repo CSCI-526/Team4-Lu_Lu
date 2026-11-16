@@ -449,24 +449,23 @@ public static partial class UIStyleBuilder {
             });
         }
 
-        // each popup variant sets its own text color: a warning red, a frozen
-        // blue stay; a plain white becomes cream
-        // listed from the folder itself: a stale asset database can miss one
-        foreach (string found in System.IO.Directory.GetFiles(POP_UPS, "*.prefab")) {
-            string variant = found.Replace('\\', '/');
-            string file = System.IO.Path.GetFileName(variant);
-            if (file.StartsWith("_")) {
-                continue; // the bases & the _PopUps container
-            }
-            EditPrefab(variant, root => {
-                foreach (string part in new[] { "Text", "Tail" }) {
-                    TMP_Text text = root.transform.Find(part)?.GetComponent<TMP_Text>();
-                    Color c = text != null ? text.color : Color.clear;
-                    if (c.r > 0.99f && c.g > 0.99f && c.b > 0.99f) {
-                        text.color = WithAlpha(UIStyle.Cream, c.a);
-                    }
+        // each popup sets its own text color in the catalog: a warning red, a
+        // frozen blue stay; a plain white becomes cream
+        PopUpCatalog catalog =
+            AssetDatabase.LoadAssetAtPath<PopUpCatalog>(POP_UP_CATALOG);
+        if (catalog != null) {
+            SerializedObject so = new SerializedObject(catalog);
+            SerializedProperty list = so.FindProperty("definitions");
+            for (int i = 0; i < list.arraySize; i++) {
+                SerializedProperty color = list.GetArrayElementAtIndex(i)
+                    .FindPropertyRelative("textColor");
+                Color c = color.colorValue;
+                if (c.r > 0.99f && c.g > 0.99f && c.b > 0.99f) {
+                    color.colorValue = WithAlpha(UIStyle.Cream, c.a);
                 }
-            });
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(catalog);
         }
     }
 
@@ -720,10 +719,11 @@ public static partial class UIStyleBuilder {
         "Assets/_Monkobra/Prefabs/Environment/HeightMarkerSystem.prefab";
     private const string TUTORIAL =
         "Assets/_Monkobra/Prefabs/TutorialScreen/TutorialScreen.prefab";
-    private const string POP_UPS = "Assets/_Monkobra/Prefabs/PopUp";
+    private const string POP_UP_CATALOG =
+        "Assets/_Monkobra/Settings/PopUp/PopUpCatalog.asset";
     private static readonly string[] POP_UP_BASES = {
         "Assets/_Monkobra/Prefabs/PopUp/_PopUpBase.prefab",
-        "Assets/_Monkobra/Prefabs/PopUp/_PopUpFruitBase.prefab",
+        "Assets/_Monkobra/Prefabs/PopUp/PopUp_Fruit.prefab",
     };
     private static readonly string[] GAMEPLAY_SCENES = {
         "Assets/_Monkobra/Scenes/GameplayScene.unity",

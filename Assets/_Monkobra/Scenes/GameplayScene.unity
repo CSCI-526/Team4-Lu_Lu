@@ -773,7 +773,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7500000000000001, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40039, type: 3}
       propertyPath: m_Name
-      value: _PopUps
+      value: PopUpManager
       objectReference: {fileID: 0}
     - target: {fileID: 7500000000000002, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40039, type: 3}
       propertyPath: m_Pivot.x

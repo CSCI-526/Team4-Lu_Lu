@@ -44,6 +44,29 @@ public class HintIconSlot: MonoBehaviour {
         return rect;
     }
 
+    /// <summary>
+    /// Swaps the icons at runtime, so one slot serves several hints. A
+    /// popup entity calls it before each show. Both null switches the slot
+    /// off, so a layout around it closes up.
+    /// </summary>
+    public void SetIcons(GameObject keyboard, GameObject touch) {
+        keyboardPrefab = keyboard;
+        touchPrefab = touch;
+        if (!isAwake) {
+            return; // Awake builds from the fields
+        }
+
+        Clear();
+        bool hasIcon = keyboard != null || touch != null;
+        if (hasIcon) {
+            Build();
+        }
+        gameObject.SetActive(hasIcon);
+        if (hasIcon) {
+            Apply(ControlStyleManager.Current);
+        }
+    }
+
     // Inspector Fields  #######################################################
     [Header("Icons")]
     [SerializeField]
@@ -67,13 +90,13 @@ public class HintIconSlot: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        isAwake = true;
         if (keyboardPrefab == null && touchPrefab == null) {
             gameObject.SetActive(false);
             return;
         }
 
-        keyboardHolder = Spawn("Keyboard", keyboardPrefab);
-        touchHolder = Spawn("Touch", touchPrefab);
+        Build();
     }
 
     private void OnEnable() {
@@ -88,8 +111,26 @@ public class HintIconSlot: MonoBehaviour {
     // private members  ########################################################
     private GameObject keyboardHolder;
     private GameObject touchHolder;
+    private bool isAwake;
 
     // private methods  ########################################################
+    private void Build() {
+        keyboardHolder = Spawn("Keyboard", keyboardPrefab);
+        touchHolder = Spawn("Touch", touchPrefab);
+    }
+
+    // off at once, so the layout does not count a holder awaiting its end of
+    // frame
+    private void Clear() {
+        foreach (GameObject holder in new[] { keyboardHolder, touchHolder }) {
+            if (holder != null) {
+                holder.SetActive(false);
+                Destroy(holder);
+            }
+        }
+        keyboardHolder = touchHolder = null;
+    }
+
     // a holder per style, so the style flip is a SetActive and the icon's
     // Animator restarts from its first key each time it shows
     private GameObject Spawn(string holderName, GameObject prefab) {

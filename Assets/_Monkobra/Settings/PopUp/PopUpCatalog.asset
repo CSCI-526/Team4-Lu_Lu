@@ -1,0 +1,213 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d3e539d81369e2409a34fdaf0c3b5ae, type: 3}
+  m_Name: PopUpCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::PopUpCatalog
+  definitions:
+  - id: 8
+    kind: 1
+    message: Banana! Hold
+    touchMessage: Banana! Touch and hold
+    fontSize: 30
+    textColor: {r: 1, g: 0.9490196, b: 0.8235294, a: 1}
+    showS: 0
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 1
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.5
+    offsetY: 80
+    icon: {fileID: 21300000, guid: add613f41614c454a8c3e58331889ab9, type: 3}
+    keyboardHintPrefab: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
+    touchHintPrefab: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
+  - id: 5
+    kind: 0
+    message: Run! The Great Cobra is chasing you!
+    touchMessage: 
+    fontSize: 50
+    textColor: {r: 1, g: 0.2, b: 0.15, a: 1}
+    showS: 1.5
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 5
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.65
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 0}
+    touchHintPrefab: {fileID: 0}
+  - id: 4
+    kind: 0
+    message: The cobra is speeding up!{0}
+    touchMessage: 
+    fontSize: 50
+    textColor: {r: 1, g: 0.2, b: 0.15, a: 1}
+    showS: 1.5
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 5
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.65
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 0}
+    touchHintPrefab: {fileID: 0}
+  - id: 0
+    kind: 0
+    message: Coconut! Double-tap to freeze the cobra
+    touchMessage: Coconut! Double-tap anywhere to freeze the cobra
+    fontSize: 36
+    textColor: {r: 0.55, g: 0.85, b: 1, a: 1}
+    showS: 3.5
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 3
+    isRunOnly: 1
+    isOncePerScene: 1
+    anchorY: 0.76
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 730230748627612476, guid: 4d56a71b3898e9a44a87f177a3a4353b, type: 3}
+    touchHintPrefab: {fileID: 864652495869705088, guid: 53fe0e4afa4d64f49a47edea7cd5270d, type: 3}
+  - id: 1
+    kind: 0
+    message: Cobra frozen for {0}s!
+    touchMessage: 
+    fontSize: 36
+    textColor: {r: 0.55, g: 0.85, b: 1, a: 1}
+    showS: 2
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 3
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.76
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 0}
+    touchHintPrefab: {fileID: 0}
+  - id: 10
+    kind: 1
+    message: Coconut! Hold
+    touchMessage: Coconut! Touch and hold
+    fontSize: 30
+    textColor: {r: 1, g: 0.9490196, b: 0.8235294, a: 1}
+    showS: 0
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 1
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.5
+    offsetY: 80
+    icon: {fileID: 21300000, guid: c5df4545aea2520489a327b188bfce88, type: 3}
+    keyboardHintPrefab: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
+    touchHintPrefab: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
+  - id: 2
+    kind: 0
+    message: Cobra is already frozen
+    touchMessage: 
+    fontSize: 36
+    textColor: {r: 0.55, g: 0.85, b: 1, a: 1}
+    showS: 2
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 3
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.76
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 0}
+    touchHintPrefab: {fileID: 0}
+  - id: 3
+    kind: 0
+    message: The cobra is moving again!
+    touchMessage: 
+    fontSize: 36
+    textColor: {r: 1, g: 0.6, b: 0.15, a: 1}
+    showS: 2
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 3
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.76
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 0}
+    touchHintPrefab: {fileID: 0}
+  - id: 6
+    kind: 0
+    message: "Low energy \u2014 eat bananas before you slow down!"
+    touchMessage: 
+    fontSize: 30
+    textColor: {r: 1, g: 0.9490196, b: 0.8235294, a: 1}
+    showS: 4
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 1
+    isRunOnly: 1
+    isOncePerScene: 1
+    anchorY: 0.5
+    offsetY: -150
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 0}
+    touchHintPrefab: {fileID: 0}
+  - id: 9
+    kind: 1
+    message: Pineapple! Hold
+    touchMessage: Pineapple! Touch and hold
+    fontSize: 30
+    textColor: {r: 1, g: 0.9490196, b: 0.8235294, a: 1}
+    showS: 0
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 1
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.5
+    offsetY: 80
+    icon: {fileID: 21300000, guid: 570857a8010fc8141a2174b2b4837eec, type: 3}
+    keyboardHintPrefab: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
+    touchHintPrefab: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
+  - id: 7
+    kind: 0
+    message: Trapped in a web! Press rapidly to escape!
+    touchMessage: Trapped in a web! Tap rapidly to escape!
+    fontSize: 30
+    textColor: {r: 1, g: 0.9490196, b: 0.8235294, a: 1}
+    showS: 0
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 10
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.5
+    offsetY: 80
+    icon: {fileID: 0}
+    keyboardHintPrefab: {fileID: 730230748627612476, guid: 89d03c1086b6e8c42a809e715cb7987e, type: 3}
+    touchHintPrefab: {fileID: 864652495869705088, guid: 124c681a5b0645e4abc209d9ff3808f6, type: 3}

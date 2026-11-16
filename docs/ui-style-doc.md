@@ -88,7 +88,7 @@ All of it is built by Editor menus, never by editing prefab YAML:
 - Climb progress: the bar is a Scrollbar turned 90 degrees and stretched 1.8 along its length; its heads and readout turn back and undo that stretch (scale y 1/1.8), so they stand upright at true size; the monkey and cobra wear the loading page's heads, the cobra's neck is a column of its green segments, stretched from under the head down to the bar's bottom end (`ProgressBarWidget.cobraBody`), so the cobra rises from the bottom and never hangs out of the bar; it stays in the bar when it nears the monkey, its head tucking under the monkey's (`isMarkerSideStepped` off); the head flashes red while the cobra surges (`ProgressBarWidget.markerFlash`); the distance reads cream on a Brown plate with a Gold rim
 - Energy and web bars: a Panel track with a Brown rim, a Gold fill
 - Score: a [plate](#plate) 220×64 in the top-left safe margin, level with the pause button, a "Score" caption at its left and the number right-aligned (it grows leftward, away from the bonus feed on its right), Gold with the HudNumber material; the bonus numbers take that material too, in their per-reward colors
-- Popups: a [plate](#plate), as see-through as the old black one, so the monkey's reaching arm stays in sight behind a grab hint; plain text is Cream, while a variant's own signal color (a warning red, a frozen blue) stays
+- Popups: a [plate](#plate), as see-through as the old black one, so the monkey's reaching arm stays in sight behind a grab hint; plain text is Cream, while a popup's own signal color (a warning red, a frozen blue) stays
 - Tutorial: a dark Background wash, Baloo 2 words, keycaps
 - Hack key list (F1–F12): hidden when a scene starts, F9 shows or hides it
 
