@@ -110,25 +110,18 @@ public static partial class UIStyleBuilder {
     // gap from the next and sized from its own rect, so no aspect ratio can
     // make them meet
     private static void StyleTopRight() {
-        EditPrefab(IN_GAME_HUD, root => {
-            Transform pause = root.transform.Find("PauseButton");
-            if (pause == null) {
-                Debug.LogError("UIStyleBuilder:\tno PauseButton in " + IN_GAME_HUD);
-                return;
-            }
+        float hintLeft = 0f;
+        // the button's own parts: its Esc hint and label, left of the face
+        EditPrefab(PAUSE_BUTTON, pause => {
             StyleIconButton(pause.GetComponent<Button>(), "Icon_Pause");
-            RectTransform button = (RectTransform)pause;
+            RectTransform button = (RectTransform)pause.transform;
             button.anchorMin = button.anchorMax = Vector2.one;
             button.pivot = new Vector2(0.5f, 0.5f);
             Vector2 size = button.sizeDelta;
-            button.anchoredPosition = new Vector2(
-                -(SAFE_MARGIN - MARGIN_RIGHT) - size.x / 2f,
-                -(SAFE_MARGIN - MARGIN_TOP) - size.y / 2f
-            );
             float faceLeft = -size.x / 2f + MARGIN_LEFT;
             float faceY = FaceCenter().y;
 
-            RectTransform label = (RectTransform)pause.Find("PauseKeyLabel");
+            RectTransform label = (RectTransform)pause.transform.Find("PauseKeyLabel");
             float labelLeft = faceLeft - HINT_GAP;
             if (label != null) {
                 TMP_Text text = label.GetComponent<TMP_Text>();
@@ -142,8 +135,8 @@ public static partial class UIStyleBuilder {
                 label.anchoredPosition = new Vector2(faceLeft - HINT_GAP, faceY);
                 labelLeft = faceLeft - HINT_GAP - width;
             }
-            float hintLeft = labelLeft;
-            RectTransform key = (RectTransform)pause.Find("PauseKeyIcon");
+            hintLeft = labelLeft;
+            RectTransform key = (RectTransform)pause.transform.Find("PauseKeyIcon");
             if (key != null) {
                 MakeKeycap(key.GetComponent<Image>());
                 key.anchorMin = key.anchorMax = new Vector2(0.5f, 0.5f);
@@ -154,6 +147,25 @@ public static partial class UIStyleBuilder {
                 );
                 hintLeft = labelLeft - KEY_LABEL_GAP - KEY_HINT_SIZE;
             }
+        });
+
+        // the cluster's place in the HUD: the button hugs the corner and the
+        // counter sits left of the button's hint
+        EditPrefab(IN_GAME_HUD, root => {
+            Transform pause = root.transform.Find("PauseButton");
+            if (pause == null) {
+                Debug.LogError("UIStyleBuilder:	no PauseButton in " + IN_GAME_HUD);
+                return;
+            }
+            RectTransform button = (RectTransform)pause;
+            button.anchorMin = button.anchorMax = Vector2.one;
+            button.pivot = new Vector2(0.5f, 0.5f);
+            Vector2 size = button.sizeDelta;
+            button.anchoredPosition = new Vector2(
+                -(SAFE_MARGIN - MARGIN_RIGHT) - size.x / 2f,
+                -(SAFE_MARGIN - MARGIN_TOP) - size.y / 2f
+            );
+            float faceY = FaceCenter().y;
 
             // the counter's number & how-to hang right of its icon, so its
             // right end is the icon's right plus that overhang
@@ -669,6 +681,7 @@ public static partial class UIStyleBuilder {
     private const string PREFABS = "Assets/_Monkobra/Prefabs/";
     private const string UI_PREFABS = PREFABS + "UI/";
     private const string IN_GAME_HUD = UI_PREFABS + "InGameHUD.prefab";
+    private const string PAUSE_BUTTON = PREFABS + "PauseScreen/PauseButton.prefab";
     private const string COCONUT_HUD = PREFABS + "ItemCoconut/CoconutHUD.prefab";
     private const string FREEZE_TIMER = PREFABS + "ItemCoconut/FreezeTimerHUD.prefab";
     private const string PROGRESS_BAR = UI_PREFABS + "ProgressBar.prefab";
