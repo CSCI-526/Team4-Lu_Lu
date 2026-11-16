@@ -61,7 +61,7 @@ A panel that shows what is behind it: `Sprites/UI/Plate_Fill`, tinted Panel at a
 
 The input icons (`Sprites/InputIcons/`) stay, worn as keycaps: the icon's Image draws the matching `*_keycap` silhouette in Brown with a Shadow component (2 right, 3 down, Shadow color), and a child `Outline` Image draws the original outline in Cream on top (`UIStyleBuilder.MakeKeycap`). The fill has no holes, so the shadow never shows through the key.
 
-A Space icon with a press clip keeps its keycap on the root Image and draws the key on the `Outline` child, so the clip's sprite curve points at `Outline`; the finger icons are no keys and only take the Cream. An animated input icon (`Prefabs/InputIcons/`) is sized by its rect, never by its scale: its press clip writes the scale (1, 0.92, back to 1), so a scaled icon looks right in the Editor and shrinks back in Play. `UIStyleBuilder.SizeAnimatedIcons` moves any such scale into the rect.
+A Space icon with a press clip keeps its keycap on the root Image and draws the key on the `Outline` child, so the clip's sprite curve points at `Outline`; the finger icons are no keys and only take the Cream. An animated input icon (the `InputIcon_Key` and `InputIcon_Touch` entities in `Prefabs/InputIcons/`, driven by the controllers in `Animations/InputIcons/`) is sized by its rect, never by its scale: its press clip writes the scale (1, 0.92, back to 1), so a scaled icon looks right in the Editor and shrinks back in Play. `UIStyleBuilder.SizeAnimatedIcons` moves any such scale into the rect.
 
 ## Layout
 

@@ -29,8 +29,8 @@ MonoBehaviour:
     anchorY: 0.5
     offsetY: 80
     icon: {fileID: 21300000, guid: add613f41614c454a8c3e58331889ab9, type: 3}
-    keyboardHintPrefab: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
-    touchHintPrefab: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
+    keyboardHintController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
+    touchHintController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
   - id: 5
     kind: 0
     message: Run! The Great Cobra is chasing you!
@@ -47,8 +47,8 @@ MonoBehaviour:
     anchorY: 0.65
     offsetY: 0
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 0}
-    touchHintPrefab: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
   - id: 4
     kind: 0
     message: The cobra is speeding up!{0}
@@ -65,8 +65,8 @@ MonoBehaviour:
     anchorY: 0.65
     offsetY: 0
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 0}
-    touchHintPrefab: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
   - id: 0
     kind: 0
     message: Coconut! Double-tap to freeze the cobra
@@ -83,8 +83,8 @@ MonoBehaviour:
     anchorY: 0.76
     offsetY: 0
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 730230748627612476, guid: 4d56a71b3898e9a44a87f177a3a4353b, type: 3}
-    touchHintPrefab: {fileID: 864652495869705088, guid: 53fe0e4afa4d64f49a47edea7cd5270d, type: 3}
+    keyboardHintController: {fileID: 9100000, guid: f7c5a6d8e9fa6b52c3a4b5c6d7e8f9a0, type: 2}
+    touchHintController: {fileID: 9100000, guid: a8d6b7e9fa0b7c63d4b5c6d7e8f9a0b1, type: 2}
   - id: 1
     kind: 0
     message: Cobra frozen for {0}s!
@@ -101,8 +101,8 @@ MonoBehaviour:
     anchorY: 0.76
     offsetY: 0
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 0}
-    touchHintPrefab: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
   - id: 10
     kind: 1
     message: Coconut! Hold
@@ -119,8 +119,8 @@ MonoBehaviour:
     anchorY: 0.5
     offsetY: 80
     icon: {fileID: 21300000, guid: c5df4545aea2520489a327b188bfce88, type: 3}
-    keyboardHintPrefab: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
-    touchHintPrefab: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
+    keyboardHintController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
+    touchHintController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
   - id: 2
     kind: 0
     message: Cobra is already frozen
@@ -137,8 +137,8 @@ MonoBehaviour:
     anchorY: 0.76
     offsetY: 0
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 0}
-    touchHintPrefab: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
   - id: 3
     kind: 0
     message: The cobra is moving again!
@@ -155,8 +155,8 @@ MonoBehaviour:
     anchorY: 0.76
     offsetY: 0
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 0}
-    touchHintPrefab: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
   - id: 6
     kind: 0
     message: "Low energy \u2014 eat bananas before you slow down!"
@@ -173,8 +173,8 @@ MonoBehaviour:
     anchorY: 0.5
     offsetY: -150
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 0}
-    touchHintPrefab: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
   - id: 9
     kind: 1
     message: Pineapple! Hold
@@ -191,8 +191,8 @@ MonoBehaviour:
     anchorY: 0.5
     offsetY: 80
     icon: {fileID: 21300000, guid: 570857a8010fc8141a2174b2b4837eec, type: 3}
-    keyboardHintPrefab: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
-    touchHintPrefab: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
+    keyboardHintController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
+    touchHintController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
   - id: 7
     kind: 0
     message: Trapped in a web! Press rapidly to escape!
@@ -209,5 +209,5 @@ MonoBehaviour:
     anchorY: 0.5
     offsetY: 80
     icon: {fileID: 0}
-    keyboardHintPrefab: {fileID: 730230748627612476, guid: 89d03c1086b6e8c42a809e715cb7987e, type: 3}
-    touchHintPrefab: {fileID: 864652495869705088, guid: 124c681a5b0645e4abc209d9ff3808f6, type: 3}
+    keyboardHintController: {fileID: 9100000, guid: d5a3e4b6c7d84930a1e2f3a4b5c6d7e8, type: 2}
+    touchHintController: {fileID: 9100000, guid: e6b4f5c7d8e95a41b2f3a4b5c6d7e8f9, type: 2}

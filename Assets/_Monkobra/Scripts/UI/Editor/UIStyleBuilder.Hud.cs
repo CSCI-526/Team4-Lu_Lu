@@ -37,35 +37,34 @@ public static partial class UIStyleBuilder {
     }
 
     // input icons  ------------------------------------------------------------
-    // a Space icon becomes a keycap; its press clip swaps the root Image's
-    // sprite, so that curve moves to the child that now draws the key
+    // the Space entity becomes a keycap; the press clips swap the root
+    // Image's sprite, so each key controller's curve moves to the child that
+    // now draws the key
     private static void StyleInputIcons() {
+        EditPrefab(KEY_ICON, root => {
+            Image image = root.GetComponent<Image>();
+            if (image != null) {
+                MakeKeycap(image);
+            }
+        });
         foreach (string icon in SPACE_ICONS) {
-            EditPrefab(INPUT_ICONS + icon + ".prefab", root => {
-                Image image = root.GetComponent<Image>();
-                if (image != null) {
-                    MakeKeycap(image);
-                }
-                Animator animator = root.GetComponent<Animator>();
-                RuntimeAnimatorController controller = animator != null
-                    ? animator.runtimeAnimatorController
-                    : null;
-                if (controller != null) {
-                    foreach (AnimationClip clip in controller.animationClips) {
-                        MoveSpriteCurves(clip, "Outline");
-                    }
-                }
-            });
+            RuntimeAnimatorController controller =
+                AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
+                    INPUT_ANIMATIONS + icon + ".controller");
+            if (controller == null) {
+                continue;
+            }
+            foreach (AnimationClip clip in controller.animationClips) {
+                MoveSpriteCurves(clip, "Outline");
+            }
         }
         // a finger is no key: only the cream of the outlines
-        foreach (string icon in TAP_ICONS) {
-            EditPrefab(INPUT_ICONS + icon + ".prefab", root => {
-                Image image = root.GetComponent<Image>();
-                if (image != null) {
-                    image.color = UIStyle.Cream;
-                }
-            });
-        }
+        EditPrefab(TOUCH_ICON, root => {
+            Image image = root.GetComponent<Image>();
+            if (image != null) {
+                image.color = UIStyle.Cream;
+            }
+        });
     }
 
     private static void MoveSpriteCurves(AnimationClip clip, string childPath) {
@@ -696,12 +695,13 @@ public static partial class UIStyleBuilder {
 
     private const string TITLE_SPRITES = "Assets/_Monkobra/Sprites/TitleScreen/";
     private const string INPUT_ICONS = "Assets/_Monkobra/Prefabs/InputIcons/";
+    private const string KEY_ICON = INPUT_ICONS + "InputIcon_Key.prefab";
+    private const string TOUCH_ICON = INPUT_ICONS + "InputIcon_Touch.prefab";
+    private const string INPUT_ANIMATIONS =
+        "Assets/_Monkobra/Animations/InputIcons/";
     private static readonly string[] SPACE_ICONS = {
         "SpacePress", "SpacePress_Double", "SpacePress_Hold",
-        "SpacePress_Rapid", "SpaceStill",
-    };
-    private static readonly string[] TAP_ICONS = {
-        "TouchTap", "TouchTap_Double", "TouchTap_Hold", "TouchTap_Rapid",
+        "SpacePress_Rapid",
     };
     private const string PREFABS = "Assets/_Monkobra/Prefabs/";
     private const string UI_PREFABS = PREFABS + "UI/";

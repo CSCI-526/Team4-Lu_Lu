@@ -188,7 +188,7 @@ public class MessagePopUp: MonoBehaviour {
         }
         if (hintSlot != null) {
             hintSlot.SetIcons(
-                shown.KeyboardHintPrefab, shown.TouchHintPrefab
+                shown.KeyboardHintController, shown.TouchHintController
             );
         }
     }

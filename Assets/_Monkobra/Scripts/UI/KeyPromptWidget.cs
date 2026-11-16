@@ -13,12 +13,13 @@ public class KeyPromptWidget: MonoBehaviour {
     public static Vector2 DefaultOffset => new Vector2(0f, 80f);
 
     // Public Methods  #########################################################
-    /// <summary>Builds the prompt, initially hidden. The icon prefabs are the
-    /// animated hold-and-release icons of each control style.</summary>
+    /// <summary>Builds the prompt, initially hidden. The controllers animate
+    /// the hold-and-release icons of each control style.</summary>
     public static KeyPromptWidget Create(
         RectTransform parent,
-        GameObject keyboardIcon,
-        GameObject touchIcon,
+        HintIconLibrary library,
+        RuntimeAnimatorController keyboardController,
+        RuntimeAnimatorController touchController,
         string objectName = "Prompt"
     ) {
         if (parent == null) {
@@ -28,7 +29,7 @@ public class KeyPromptWidget: MonoBehaviour {
         RectTransform rect = CreateRect(objectName, parent);
         KeyPromptWidget prompt =
             rect.gameObject.AddComponent<KeyPromptWidget>();
-        prompt.Build(rect, parent, keyboardIcon, touchIcon);
+        prompt.Build(rect, parent, library, keyboardController, touchController);
         rect.gameObject.SetActive(false);
         return prompt;
     }
@@ -95,8 +96,9 @@ public class KeyPromptWidget: MonoBehaviour {
     private void Build(
         RectTransform rect,
         RectTransform parent,
-        GameObject keyboardIcon,
-        GameObject touchIcon
+        HintIconLibrary library,
+        RuntimeAnimatorController keyboardController,
+        RuntimeAnimatorController touchController
     ) {
         promptRect = rect;
         parentRect = parent;
@@ -110,7 +112,8 @@ public class KeyPromptWidget: MonoBehaviour {
         promptRect.sizeDelta = new Vector2(260f, ICON_SIZE + 46f);
 
         RectTransform icon = HintIconSlot.Create(
-            promptRect, keyboardIcon, touchIcon, ICON_SIZE
+            promptRect, library, keyboardController, touchController,
+            ICON_SIZE
         );
         icon.anchorMin = icon.anchorMax = new Vector2(0.5f, 1f);
         icon.pivot = new Vector2(0.5f, 1f);

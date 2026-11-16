@@ -73,12 +73,15 @@ public class PopUpDefinition {
     /// null</returns>
     public Sprite Icon => icon;
 
-    /// <returns>animated hint icon while a keyboard is in use, or null
+    /// <returns>animates the hint icon while a keyboard is in use, or null
     /// </returns>
-    public GameObject KeyboardHintPrefab => keyboardHintPrefab;
+    public RuntimeAnimatorController KeyboardHintController =>
+        keyboardHintController;
 
-    /// <returns>animated hint icon while touch is in use, or null</returns>
-    public GameObject TouchHintPrefab => touchHintPrefab;
+    /// <returns>animates the hint icon while touch is in use, or null
+    /// </returns>
+    public RuntimeAnimatorController TouchHintController =>
+        touchHintController;
 
     // Inspector Fields  #######################################################
     [Header("Wiring")]
@@ -161,10 +164,12 @@ public class PopUpDefinition {
     private Sprite icon;
 
     [SerializeField]
-    [Tooltip("animated hint icon while a keyboard is in use; blank for none")]
-    private GameObject keyboardHintPrefab;
+    [Tooltip("animates the hint icon while a keyboard is in use; blank for "
+        + "none")]
+    private RuntimeAnimatorController keyboardHintController;
 
     [SerializeField]
-    [Tooltip("animated hint icon while touch is in use; blank for none")]
-    private GameObject touchHintPrefab;
+    [Tooltip("animates the hint icon while touch is in use; blank for none")]
+    private RuntimeAnimatorController touchHintController;
+
 }

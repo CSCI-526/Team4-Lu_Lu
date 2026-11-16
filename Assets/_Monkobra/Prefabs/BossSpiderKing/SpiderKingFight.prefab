@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acd7715cee3f4992813deddbdd34707f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderKingBody
+  bodyMaterial: {fileID: 2100000, guid: d2e646acba059234fa840f3630a714ea, type: 2}
   trunkRadiusU: 5
   bodyOutU: 0.8
   bodyColor: {r: 0.16, g: 0.09, b: 0.2, a: 1}
@@ -53,7 +54,6 @@ MonoBehaviour:
   crownColor: {r: 1, g: 0.8, b: 0.15, a: 1}
   eyeDarkColor: {r: 0.35, g: 0.02, b: 0.05, a: 1}
   eyeLitColor: {r: 1, g: 0.2, b: 0.1, a: 1}
-  bodyMaterial: {fileID: 2100000, guid: d2e646acba059234fa840f3630a714ea, type: 2}
 --- !u!114 &8455061723049586734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70,8 +70,9 @@ MonoBehaviour:
   speechShowS: 2.2
   speechOffset: {x: 0, y: 90}
   promptOffset: {x: 0, y: 80}
-  promptKeyboardIcon: {fileID: 730230748627612476, guid: e230bc5003d3fef4fa33a689ba952d6a, type: 3}
-  promptTouchIcon: {fileID: 864652495869705088, guid: cf60c7f6a7675cd46ad3e3687cefc695, type: 3}
+  hintIconLibrary: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
+  promptKeyboardController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
+  promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
   healthColor: {r: 0.55, g: 0.2, b: 0.75, a: 1}
   damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
@@ -88,6 +89,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87cf3a8756c54eaca06f94aeb8479e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderFightController
+  worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
+  confirmAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  giveUpAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
+  bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
+  watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
   watermelonScale: {x: 6, y: 6, z: 6}
   watermelonOffset: {x: 0, y: -0.629, z: 0.06}
   courseUrl: https://classes.usc.edu/term-20263/course/csci-526
@@ -96,10 +103,13 @@ MonoBehaviour:
   easyHealthScale: 0.6
   easyTimeScale: 1.4
   easySpeedScale: 0.85
+  airWallMaterial: {fileID: 2100000, guid: 906f4892bde12417d93d23637ab10c7c, type: 2}
+  goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
   goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
   goldenOutlineWidthScale: 2
   goldenIntervalS: 10
   goldenShowS: 8
+  isTestAtStart: 0
   testStartHeightU: 30
   monkeySpeedScale: 1.2
   bossName: SPIDER KING
@@ -184,12 +194,3 @@ MonoBehaviour:
   warnColor: {r: 0.95, g: 0.2, b: 0.15, a: 1}
   silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
   goldenColor: {r: 1, g: 0.8, b: 0.15, a: 1}
-  worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
-  confirmAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  giveUpAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
-  bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
-  watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
-  goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
-  airWallMaterial: {fileID: 2100000, guid: 906f4892bde12417d93d23637ab10c7c, type: 2}
-  isTestAtStart: 0

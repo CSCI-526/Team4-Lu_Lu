@@ -447,12 +447,18 @@ public class BossFightHud: MonoBehaviour {
     private Vector2 promptOffset = new Vector2(0f, 80f);
 
     [SerializeField]
-    [Tooltip("prompt icon prefab while a keyboard is in use (Space press)")]
-    private GameObject promptKeyboardIcon;
+    [Tooltip("the keycap and finger entities the prompt shows")]
+    private HintIconLibrary hintIconLibrary;
 
     [SerializeField]
-    [Tooltip("prompt icon prefab while touch is in use (finger tap)")]
-    private GameObject promptTouchIcon;
+    [Tooltip("animates the prompt keycap while a keyboard is in use (Space "
+        + "hold)")]
+    private RuntimeAnimatorController promptKeyboardController;
+
+    [SerializeField]
+    [Tooltip("animates the prompt finger while touch is in use (hold)")]
+    private RuntimeAnimatorController promptTouchController;
+
 
     [SerializeField]
     private Color healthColor = new Color(0.85f, 0.15f, 0.15f);
@@ -596,7 +602,8 @@ public class BossFightHud: MonoBehaviour {
 
         // animated hold-and-release icon, one per control style
         keyPrompt = KeyPromptWidget.Create(
-            rootRect, promptKeyboardIcon, promptTouchIcon
+            rootRect, hintIconLibrary, promptKeyboardController,
+            promptTouchController
         );
 
         // banner, screen center
