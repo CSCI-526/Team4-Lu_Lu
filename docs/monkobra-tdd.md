@@ -11,6 +11,7 @@ How Monkobra is built: the engine and packages, the run lifecycle, the systems t
 | [Mobs](mob-doc.md) | cobra, falling cobra, branches, spider webs, and what each does when the monkey touches it |
 | [Grab System](grab-doc.md) | detection zones, arm reach, release check, camera swap, outline feedback |
 | [Build](build-doc.md) | the WebGL export, the three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) and their settings |
+| [UI Style](ui-style-doc.md) | the logo-style look of every screen: palette, Baloo 2 type scale, buttons, key icons, and the menus that apply them |
 | [AGENTS.md](../AGENTS.md) | rules for agents |
 | [CONTEXT.md](../CONTEXT.md) | descriptive system map and known gaps |
 | [PopUps](pop-up-doc.md) | the center messages: one plate-and-text look, priority and queue, gating, how to add one |
@@ -139,12 +140,13 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F6 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | F7 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
 | F8 | stick a spider web on the trunk above the monkey | `HackPineappleSpawner` |
-| F9 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`BossFightController.SkipForTest`, its armor worn), live run only, never mid boss fight | `MonkeyController` |
+| 9 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`BossFightController.SkipForTest`, its armor worn), live run only, never mid boss fight | `MonkeyController` |
 | F10 | download the analytics session report | `AnalyticsManager` |
 | F11 | close the analytics session and open a new file | `AnalyticsManager` |
 | F12 | save a mock analytics session file | `AnalyticsManager` |
+| F9 | show or hide this list on screen (hidden when a scene starts) | `HackShortcutPanel` |
 
-`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
+`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and F9 (`ToggleHints`) shows or hides it. A new hack key is a new `HackAction` plus an entry in the asset.
 
 ## Game Balance
 
@@ -285,17 +287,17 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 | Stamina Bar | `UI/StaminaBarController` | current stamina, under an `Energy` label |
 | Fruit Fly | `UI/FruitFlyEffect` | a grabbed fruit's sprite flying to the bar, the coconut counter, or the monkey ([Grab System](grab-doc.md#fruit-fly)) |
 | Coconut | `UI/CoconutWidget`, `UI/FreezeTimerWidget`, `UI/CoconutMessageWidget` | count and double-tap hint; freeze countdown & bar; coconut messages through `PopUpManager`, all driven by `CoconutManager` ([Grab System](grab-doc.md#coconut)) |
-| Climb Progress | `UI/ProgressBarWidget` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is and the gap in world units labelled `m` |
-| Score | `UI/ScoreWidget` | total score, on the HUD and the lose panel |
+| Climb Progress | `UI/ProgressBarWidget` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is and the gap in world units labelled `m`; the monkey and cobra wear the loading page's heads, the cobra's neck its green segments, which `cobraBody` stretches down to the bar's bottom end, and `markerFlash` (the head) flashes while it surges; with `isMarkerSideStepped` off the cobra stays in the bar as it nears the monkey |
+| Score | `UI/ScoreWidget` | total score, on the HUD (on a plate with a "Score" caption, `ScoreHeight` prefab) and the lose panel |
 | Height Markers | `Environment/HeightMarkerSystem` | climbed height every `intervalU` beside the trunk, in world space rather than on the HUD canvas, see below |
 | Screens | `UI/ScreensManager` | tutorial and lose panels |
 | Lose Stats | `UI/LoseScreen` | final height (highest point climbed), final score, and bananas collected, filled each time the lose panel is enabled |
 | Web Prompt | `UI/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
 | Low Stamina Prompt | `UI/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
 | PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
-| Pause Button | `UI/PauseButton` | square sprite button top right of `InGameHUD` (Sprite Swap, `HUDPause_*`), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
+| Pause Button | `UI/PauseButton` | square `IconButton` top right of `InGameHUD` inside the 24 safe margin (Sprite Swap, `IconButton_*`, the `Icon_Pause` glyph), with its Esc key hint and the coconut counter laid out leftward from it ([UI Style](ui-style-doc.md#hud)), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
 | Touch Controls | `UI/TouchControlsPanel` | the joystick and full-screen action zone of the `TouchControls` prefab, shown only in Touch mode ([Input](#input)) |
-| Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit buttons as 3-column rows (key icon, button, text label; the key icons show in Keyboard style only) while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
+| Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit `IconButton`s as 3-column rows (keycap, button, text label; the keycaps show in Keyboard style only, [UI Style](ui-style-doc.md#run-screens)) while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
 The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage` (the host of `CoconutMessageWidget`), and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it, with the `_PopUps` root just before `Screens`. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
 
@@ -305,7 +307,7 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 - Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in a config, e.g. `bossTriggerHeightU`, reads straight off the trunk
 - Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
 - Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette, one on each side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
-- Boss Marker: the marker at or just below `BossFightController.TriggerHeightU` (the trigger height rarely lands on a marker, so it snaps down to the interval) gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `BossFightController.BuildMarkerFigure` on top of it, kept on whichever pooled label shows it; once `BossFightController.IsInArena` it is no longer shown
+- Boss Marker: the marker at or just below `BossFightController.TriggerHeightU` (the trigger height rarely lands on a marker, so it snaps down to the interval) gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `BossFightController.BuildMarkerFigure` holding it, kept on whichever pooled label shows it; once `BossFightController.IsInArena` it is no longer shown. The Spider King's marker (`SpiderFightController.TriggerHeightU`, 1,050 m) gets the same plate and a spider look-alike from `SpiderFightController.BuildMarkerFigure`, gone once `IsMarkerDone`. A look-alike is a `BossMarkerFigure`, primitives in the label's space that the marker system fits to the plate each frame (`Fit`): the cobra coils round both ends & drapes along the top, the spider perches on the top edge gripping the face & sides; both animate
 - Passing: a collision, not a height poll. Each label pair has one pooled `HeightMarkerTrigger` (the `HeightMarker` prefab, `markerPrefab` field) standing at the marker's exact height on the trunk axis, a thin trigger slab wider than the monkey's orbit ring; the plates are drawn at the height of its `LabelAnchor` child, a fixed way above, so a marker is drawn above the height at which it counts as passed. Only the monkey's physical parts trigger it (`CobraSensor.IsMonkeyPart`)
 - Pulse: the first time the monkey touches a marker's trigger, the label grows to `pulseScale` and its plate brightens for `pulseDurationS`; re-climbing after a drop does not repeat it
 - Physics: neither label nor plate has a collider, so no spawner's overlap check or grab sees them
@@ -315,11 +317,10 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 
 Every center message is a `PopUp` variant; the rules, the parts, and how to add one are in [PopUps](pop-up-doc.md).
 
-Menu buttons swap sprites by state (Transition: Sprite Swap): Highlighted and Selected show the green Hover sprite, Pressed the red Click sprite, Disabled the grey Locked sprite. `MenuButtonHover` makes a hover select, so mouse and keys share the one green highlight. Text buttons use the sliced wide set `Button_Normal`, `_Hover`, `_Click`, `_Locked`; the pause button, the pause screen's Resume, Restart and Exit and the lose screen's Restart and Exit use the square `HUDPause_*`, `HUDResume_*`, `HUDRestart_*` and `HUDExit_*` sets, with the key icons (Esc, R) in a `ControlStyleSwitch` for Keyboard only. All are sub-sprites of `Sprites/InputIcons/FreeGUI-Button.png`, each state with the 9-slice border of its Normal.
+Menu buttons swap sprites by state (Transition: Sprite Swap) over the [UI Style](ui-style-doc.md#buttons) gold sets: Highlighted and Selected show a lighter face in a cream ring, Pressed the face sunk onto its shadow, Disabled the sand Locked face. `MenuButtonHover` makes a hover select, so mouse and keys share the one highlight, and `MenuButtonPop` grows the selected button, sinks the pressed one's label or glyph, and shows a lock while it is not interactable. The level selection uses the wide `MenuButton`; the pause button, the pause screen's Resume, Restart and Exit, and the lose screen's Restart and Exit use the square `IconButton` with a glyph, with the key icons (Esc, R) as keycaps in a `ControlStyleSwitch` for Keyboard only. The old FreeGUI sets in `Sprites/InputIcons/FreeGUI-Button.png` are no longer used by a menu.
 
-The tutorial in `FullPlayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. The translucent white overlay washes out the game behind the tutorial to show that the run has not started, and `ScreensManager` shows and hides the whole panel.
+The tutorial in `FullPlayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. A dark Background wash dims the game behind the tutorial to show that the run has not started; its words are Baloo 2 and its keys keycaps, per the [UI Style](ui-style-doc.md#hud), and `ScreensManager` shows and hides the whole panel.
 
-`Fonts/UI/MonkobraTutorial-SemiBold.ttf` is a renamed, static weight-600 subset of [Noto Sans TC](https://github.com/google/fonts/tree/main/ofl/notosanstc), distributed with its SIL Open Font License in `Fonts/UI/OFL.txt`. It embeds printable ASCII and a small set of Chinese glyphs, so the tutorial renders in WebGL without system fonts. Wording that uses other characters requires extending the font subset or supplying a font with those glyphs. The subset has no em dash `—`; the TMP `LiberationSans SDF` atlas has one, so the low-stamina hint uses that font.
 
 ## Conventions
 

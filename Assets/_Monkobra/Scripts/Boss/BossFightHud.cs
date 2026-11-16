@@ -81,8 +81,9 @@ public class BossFightHud: MonoBehaviour {
         }
         ClearCallOut();
         callOutRect = CreateRect("CallOut", rootRect);
-        AddImage(callOutRect, new Color(0f, 0f, 0f, 0.8f));
+        AddImage(callOutRect, Tint(UIStyle.Panel, 0.85f));
         callOutLabel = CreateLabel("Line", callOutRect, line, 34f, color);
+        callOutLabel.fontStyle = FontStyles.Bold;
         Stretch(callOutLabel.rectTransform);
         callOutRect.sizeDelta = new Vector2(
             Mathf.Max(260f, callOutLabel.GetPreferredValues(line).x + 56f),
@@ -130,14 +131,14 @@ public class BossFightHud: MonoBehaviour {
 
         RectTransform panel = CreateRect("Victory", rootRect);
         Stretch(panel);
-        AddImage(panel, new Color(0f, 0f, 0f, 0.55f));
+        AddImage(panel, Tint(UIStyle.Background, 0.8f));
         AddCenterLabel(panel, "Victory!", 90f, damageColor, 140f);
         AddCenterLabel(
-            panel, "You defeated the Cobra King!", 36f, Color.white, 50f
+            panel, "You defeated the Cobra King!", 36f, UIStyle.Cream, 50f
         );
-        AddCenterLabel(panel, "Final Score: " + score, 36f, Color.white, -10f);
+        AddCenterLabel(panel, "Final Score: " + score, 36f, UIStyle.Cream, -10f);
         AddCenterLabel(
-            panel, "Press Space to Play Again", 32f, Color.white, -110f,
+            panel, "Press Space to Play Again", 32f, UIStyle.Cream, -110f,
             ""
         );
     }
@@ -168,7 +169,7 @@ public class BossFightHud: MonoBehaviour {
     public void ShowBannerFor(
         string text, string subtitle, Color color, float seconds
     ) {
-        ShowBanner("<size=70%>" + text + "</size>\n<size=40%><color=#FFFFFF>"
+        ShowBanner("<size=70%>" + text + "</size>\n<size=40%><color=#FFF2D2>"
             + subtitle + "</color></size>", color);
         // low on screen, clear of the key prompt & the action mid-screen
         bannerLabel.rectTransform.anchoredPosition = bannerLowPosition;
@@ -281,8 +282,7 @@ public class BossFightHud: MonoBehaviour {
         if (easyTag == null) {
             easyTag = CreateTag("EasyTag", "EASY",
                 new Color(0.55f, 0.95f, 0.55f));
-            normalTag = CreateTag("NormalTag", "NORMAL",
-                new Color(1f, 0.82f, 0.2f));
+            normalTag = CreateTag("NormalTag", "NORMAL", UIStyle.Gold);
         }
         easyTag.gameObject.SetActive(isShown);
         normalTag.gameObject.SetActive(isShown);
@@ -572,14 +572,14 @@ public class BossFightHud: MonoBehaviour {
         bar.pivot = new Vector2(0.5f, 1f);
         bar.anchoredPosition = new Vector2(0f, -54f);
         bar.sizeDelta = new Vector2(440f, 22f);
-        AddImage(bar, new Color(0f, 0f, 0f, 0.6f));
+        AddImage(bar, Tint(UIStyle.Panel, 0.85f));
         healthFill = CreateRect("Fill", bar);
         Stretch(healthFill);
         healthFill.offsetMin = new Vector2(3f, 3f);
         healthFill.offsetMax = new Vector2(-3f, -3f);
         healthFill.anchorMax = new Vector2(1f, 1f);
         AddImage(healthFill, healthColor);
-        nameLabel = CreateLabel("Name", rootRect, "", 28f, Color.white);
+        nameLabel = CreateLabel("Name", rootRect, "", 28f, UIStyle.Cream);
         RectTransform nameRect = nameLabel.rectTransform;
         nameRect.anchorMin = nameRect.anchorMax = new Vector2(0.5f, 1f);
         nameRect.pivot = new Vector2(0.5f, 1f);
@@ -589,8 +589,8 @@ public class BossFightHud: MonoBehaviour {
         // speech bubble
         speechRect = CreateRect("Speech", rootRect);
         speechRect.sizeDelta = new Vector2(360f, 56f);
-        AddImage(speechRect, new Color(0f, 0f, 0f, 0.75f));
-        speechLabel = CreateLabel("Line", speechRect, "", 28f, Color.white);
+        AddImage(speechRect, Tint(UIStyle.Panel, 0.85f));
+        speechLabel = CreateLabel("Line", speechRect, "", 28f, UIStyle.Cream);
         Stretch(speechLabel.rectTransform);
         speechRect.gameObject.SetActive(false);
 
@@ -601,7 +601,7 @@ public class BossFightHud: MonoBehaviour {
 
         // banner, screen center
         bannerLabel = CreateLabel(
-            "Banner", rootRect, "", 80f, new Color(1f, 0.85f, 0.2f)
+            "Banner", rootRect, "", 80f, UIStyle.Gold
         );
         bannerLabel.rectTransform.sizeDelta = new Vector2(1100f, 240f);
         bannerLabel.rectTransform.anchoredPosition = new Vector2(0f, 120f);
@@ -765,24 +765,26 @@ public class BossFightHud: MonoBehaviour {
 
         RectTransform offer = CreateRect("ReviveOffer", rootRect);
         Stretch(offer);
-        AddImage(offer, new Color(0f, 0f, 0f, 0.6f));
+        AddImage(offer, Tint(UIStyle.Background, 0.75f));
         RectTransform card = CreateRect("Card", offer);
         card.sizeDelta = new Vector2(580f, 340f);
-        AddImage(card, new Color(0.13f, 0.1f, 0.2f, 0.95f));
-        PlaceLabel(CreateLabel("Title", card, "Revive?", 60f, gold),
-            new Vector2(0f, 110f), new Vector2(540f, 70f));
+        AddImage(card, Tint(UIStyle.Panel, 0.96f));
+        TextMeshProUGUI reviveTitle =
+            CreateLabel("Title", card, "Revive?", 60f, UIStyle.Gold);
+        reviveTitle.fontStyle = FontStyles.Bold;
+        PlaceLabel(reviveTitle, new Vector2(0f, 110f), new Vector2(540f, 70f));
         PlaceLabel(CreateLabel(
                 "Line", card, "Watch a short ad to keep fighting!", 26f,
-                Color.white
+                UIStyle.Cream
             ), new Vector2(0f, 50f), new Vector2(540f, 40f));
-        reviveCountLabel = CreateLabel("Count", card, "", 48f, gold);
+        reviveCountLabel = CreateLabel("Count", card, "", 48f, UIStyle.Gold);
         PlaceLabel(reviveCountLabel, new Vector2(0f, -10f),
             new Vector2(200f, 60f));
         CreateButton("WatchAd", card, "Watch Ad  [Space]",
-            new Color(0.2f, 0.7f, 0.3f), new Vector2(-135f, -105f),
-            () => WatchAdClicked?.Invoke(), "Watch Ad");
+            UIStyle.Gold, new Vector2(-135f, -105f),
+            () => WatchAdClicked?.Invoke(), "Watch Ad", UIStyle.Brown);
         CreateButton("GiveUp", card, "Give Up  [R]",
-            new Color(0.4f, 0.4f, 0.45f), new Vector2(135f, -105f),
+            UIStyle.Divider, new Vector2(135f, -105f),
             () => GiveUpClicked?.Invoke(), "Give Up");
         revivePanel = offer.gameObject;
         revivePanel.SetActive(false);
@@ -865,27 +867,28 @@ public class BossFightHud: MonoBehaviour {
 
     // the win's pause: dimmed screen, title, lines & a beating Continue
     private GameObject CreateRewardPanel() {
-        Color gold = new Color(1f, 0.82f, 0.2f);
+        Color gold = UIStyle.Gold;
         RectTransform panel = CreateRect("RewardPanel", rootRect);
         Stretch(panel);
-        AddImage(panel, new Color(0f, 0f, 0f, 0.6f));
+        AddImage(panel, Tint(UIStyle.Background, 0.75f));
         RectTransform diamond = CreateRect("Diamond", panel);
         diamond.anchoredPosition = new Vector2(0f, 190f);
         diamond.sizeDelta = new Vector2(56f, 56f);
         diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
         AddImage(diamond, gold);
         rewardTitle = CreateLabel("Title", panel, "", 84f, gold);
+        rewardTitle.fontStyle = FontStyles.Bold;
         PlaceLabel(rewardTitle, new Vector2(0f, 100f), new Vector2(1100f, 100f));
-        rewardLine = CreateLabel("Line", panel, "", 42f, Color.white);
+        rewardLine = CreateLabel("Line", panel, "", 42f, UIStyle.Cream);
         PlaceLabel(rewardLine, new Vector2(0f, 20f), new Vector2(1100f, 60f));
         rewardDetail = CreateLabel(
-            "Detail", panel, "", 30f, new Color(1f, 0.92f, 0.7f)
+            "Detail", panel, "", 30f, Tint(UIStyle.Cream, 0.85f)
         );
         PlaceLabel(rewardDetail, new Vector2(0f, -30f), new Vector2(1100f, 44f));
         GameObject button = CreateButton(
             "Continue", panel, "Continue  [Space]",
-            new Color(0.2f, 0.7f, 0.3f), new Vector2(0f, -120f),
-            () => ContinueClicked?.Invoke(), "Continue"
+            gold, new Vector2(0f, -120f),
+            () => ContinueClicked?.Invoke(), "Continue", UIStyle.Brown
         );
         rewardButton = (RectTransform)button.transform;
         panel.gameObject.SetActive(false);
@@ -904,13 +907,13 @@ public class BossFightHud: MonoBehaviour {
 
     // a dark plate w/ a gold diamond & GOLDEN ARMOR
     private RectTransform CreateArmorBadge() {
-        Color gold = new Color(1f, 0.82f, 0.2f);
+        Color gold = UIStyle.Gold;
         RectTransform badge = CreateRect("ArmorBadge", rootRect);
         badge.anchorMin = badge.anchorMax = badge.pivot = new Vector2(1f, 0f);
         // left of the progress bar along the right edge
         badge.anchoredPosition = new Vector2(-70f, 24f);
         badge.sizeDelta = new Vector2(250f, 54f);
-        AddImage(badge, new Color(0f, 0f, 0f, 0.65f));
+        AddImage(badge, Tint(UIStyle.Panel, 0.85f));
         RectTransform diamond = CreateRect("Diamond", badge);
         diamond.anchorMin = diamond.anchorMax = new Vector2(0f, 0.5f);
         diamond.anchoredPosition = new Vector2(30f, 0f);
@@ -943,7 +946,7 @@ public class BossFightHud: MonoBehaviour {
     private RectTransform CreateTag(string tagName, string text, Color color) {
         RectTransform tag = CreateRect(tagName, rootRect);
         tag.sizeDelta = new Vector2(130f, 40f);
-        AddImage(tag, new Color(0f, 0f, 0f, 0.7f));
+        AddImage(tag, Tint(UIStyle.Panel, 0.85f));
         TextMeshProUGUI label = CreateLabel("Label", tag, text, 26f, color);
         Stretch(label.rectTransform);
         tag.gameObject.SetActive(false);
@@ -964,7 +967,8 @@ public class BossFightHud: MonoBehaviour {
         Color color,
         Vector2 position,
         System.Action onClick,
-        string touchText = null
+        string touchText = null,
+        Color? labelColor = null
     ) {
         RectTransform rect = CreateRect(buttonName, parent);
         rect.sizeDelta = new Vector2(240f, 60f);
@@ -983,7 +987,7 @@ public class BossFightHud: MonoBehaviour {
             onClick();
         });
         TextMeshProUGUI label = CreateLabel("Label", rect, text, 24f,
-            Color.white);
+            labelColor ?? UIStyle.Cream);
         Stretch(label.rectTransform);
         AddStyleText(label, text, touchText);
         return rect.gameObject;
@@ -1032,6 +1036,12 @@ public class BossFightHud: MonoBehaviour {
         rect.anchorMax = Vector2.one;
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
+    }
+
+    // a palette color at another alpha
+    private static Color Tint(Color color, float alpha) {
+        color.a = alpha;
+        return color;
     }
 
     private static Image AddImage(RectTransform rect, Color color) {

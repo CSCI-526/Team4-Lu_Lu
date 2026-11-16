@@ -36,6 +36,17 @@ public class SpiderKingBody: MonoBehaviour {
     public Material PrimitiveMaterial => bodyMaterial;
 
     // Public Methods  #########################################################
+    /// <summary>
+    /// Builds the small look-alike for the trunk height marker at the fight's
+    /// height: the spider perched on the plate, its legs gripping it
+    /// (<see cref="BossMarkerFigure"/>).
+    /// </summary>
+    /// <returns>the figure's root, w/o a parent</returns>
+    public Transform BuildMarkerFigure() {
+        return BossMarkerFigure.Create(BossMarkerFigure.Kind.Spider,
+            bodyMaterial, bodyColor, markColor, eyeLitColor);
+    }
+
     /// <summary>Builds the body at a spot on the trunk.</summary>
     /// <param name="center">trunk axis point, its y ignored</param>
     /// <param name="angleDeg">angle round the trunk; deg</param>

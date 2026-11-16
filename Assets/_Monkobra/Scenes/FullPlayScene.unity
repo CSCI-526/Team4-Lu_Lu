@@ -788,18 +788,6 @@ PrefabInstance:
       propertyPath: m_text
       value: 123,456
       objectReference: {fileID: 0}
-    - target: {fileID: 7726135104903352774, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
-      propertyPath: m_fontAsset
-      value: 
-      objectReference: {fileID: 11400000, guid: 9bba8ca2eb7295546970b6518697a642, type: 2}
-    - target: {fileID: 7726135104903352774, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
-      propertyPath: m_sharedMaterial
-      value: 
-      objectReference: {fileID: -4860796789507034417, guid: 9bba8ca2eb7295546970b6518697a642, type: 2}
-    - target: {fileID: 7726135104903352774, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
-      propertyPath: m_hasFontAssetChanged
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 9028611714819451317, guid: 281251d9a19cb4b4a8ccdeebd3105865, type: 3}
       propertyPath: cobraHead
       value: 

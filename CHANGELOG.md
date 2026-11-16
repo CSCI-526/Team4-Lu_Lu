@@ -27,6 +27,7 @@ todo vertical version
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
 - title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
 - team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
+- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the one UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
 
 ### Changed
 
@@ -34,12 +35,28 @@ todo vertical version
 
 - pause & lose screens: Exit goes back to the level selection, not the title
 - Made with Unity splash screen off
+- level selection in the UI style: the loading page's vines, a logo-style title, gold buttons, the unlock hint under Endless Mode instead of over it, W and S side by side in the key hint
+- title start prompt & the loading page's "Loading" in Baloo 2, so the hand-over keeps one font
+- in-game HUD in the UI style: a smaller gold pause button, its Esc hint and the coconut counter laid out from the top-right corner so they never overlap; the progress bar wears the loading page's monkey and cobra heads, the cobra's neck its green segments; Baloo 2 energy, popups & tutorial; the score on a see-through plate with a "Score" caption, level with the pause button; popups on the same see-through plate, so the monkey's arm shows behind a grab hint; Space key icons as keycaps
+- hack key list (F1–F12) hidden at start, F9 shows or hides it
+- pause & lose screens in the UI style: square gold buttons with their words beside them and their keys on keycaps, logo-style titles; the lose screen's run card & leaderboard as matching plates with the key hint row under both; the boss fight's reward panel, revive card & badges in the UI palette
 
 ### Deprecated
 
 ### Removed
 
+##### Yuqing Lu
+
+- the old UI fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite: Baloo 2 is now the only font
+
 ### Fixed
+
+##### Yuqing Lu
+
+- lose screen: the Download Analytic button is big enough for its words, and the key hint row fits at 4:3, now under both panels
+- lose screen: the Restart and Exit buttons have their words back
+- progress bar faces no longer squashed: their counter-stretch now matches the bar's
+- progress bar: the cobra stays inside the bar as it reaches the monkey, and its body fills the bar from the bottom instead of hanging out below
 
 ### Security
 
@@ -136,6 +153,9 @@ todo vertical version
 
 - second boss, the Spider King, at 1050 u (zone 1025~1100, bare like the cobra's): rip glowing silk knots by grabbing (x2 damage in its territory ring), it re-spins knots near itself; web shot leaves sticky webs, silk hook drag (tap Space / grab to escape), cocoon on a trapped monkey, leg swipe in its territory; grabbed bananas are tossed to the far side as a lure; the Cobra King armor carries over if unused; win gives Silk Gloves (webs break 2x faster); the Spider King is already seen waiting from 995 u; for testing, `isTestAtStart` (on for now) begins the fight at 30 u
 - Spider King redone: starts w/ the gold armor swirled on (no words), a golden melon now & then gives it back; parries hurt it -1 & play a clash: the thing slows into the glowing tail, a white pop, shock rings & spark streaks, held grinding sparks, then it speeds back w/ a gold trail, all in a 1 s slow motion; the parry spot is closer to the monkey (gold at 2.8 u, batted at 1.6 u); the spent armor shatters off instead of hanging there; a dash is never called off once its red lane shows (its lane cut to the arena); the parry counts from the double tap; the dash lane shows exactly its run plus its catch reach (no end cap); a harder clash: a snap in, a dead stop w/ a camera punch in & shake, crossing white strokes, then a kick off; a parry readies the tail at once so all 3 slashes can be met, a whiff waits 0.55 s; a plainer charge (red rings drawn in round its head; no growing or red glow); the parry is met at the monkey's middle; the armor save is as in the Cobra King's arena (a knock down, the spider not thrown off); laid webs last 10 s; slash blades 4.5 u wide & faster (26 u/s), their hit swept so none skips past; never from closer than 6 u; the fight gets harder in 3 stages (at half & four fifths of its health lost) (web volleys of 2 then 3 bullets; slashes 1, then 2, then 3 in a row) & smoothly faster as its health goes; touching the spider plays a bite w/ red rings & "Don't touch it!"; a revive puts the armor back on w/ its swirl; plain K.O. words; the dash keeps exactly to its red lane; its arena is bare like a boss zone (also the test fight, lifted after the win); no webs at the start, the spider spins a trail of webs all the way it crawls (one per 1.5 u), each gone after 10 s; it starts right above the monkey & chases it (faster, 5.5 u/s), any touch of it is fatal; attacks: one homing silk bullet (24 u/s), charged only in view (it rushes into view first), only parried by double-tapping Space as each turns gold, the tail swings only w/ a bullet coming, so grabs never hitch (the monkey's real tail swings; the spider is stuck a fixed time however many come back), a dash from 7 u along a red lane that locks 0.45 s before it goes, and from afar a slash: after a seen charge, 3 silk blades flying fast along the bark at the monkey, each after a short red aim line, slow-fast or fast-slow, parryable as they turn gold & hurting the spider when batted back; the tail swing has a wind up & follow through instead of a cooldown; a parry plays in slow motion w/ a camera close up; the slash parry is taught right after the web one; killed by thrown melons (20 health), which are there from the start; only web bullets till the first parry (it stops time to teach it), then the fight; the first slash stops time once too; volley gaps 0.7/1.1 s (never under 0.6 s) so each bullet can be batted back; slashes from 4 u, likelier from afar; it keeps 8 u off & dashes only within 5 u, every 2.5 s (1.6 s late); stuck is stuck; nothing hurts in the first lesson; a touch the armor saves throws the monkey 7 u off, out of webs; the golden melon has the Cobra King's gold outline & waits 5 s after the armor goes, then 15 s; the armor takes one hit w/o a 2 s grace; a revive offers EASY / NORMAL as the Cobra King's; the loss is only the K.O.; the golden melon now really shows, as the Cobra King's; rope pull, giant web, knots & poison removed
+- boss height markers: the Cobra King's look-alike now coils round its marker's plate (both ends & along the top, slithering, head swaying) & the Spider King's 1,050 m marker gets the red beating plate w/ a spider perched on it, legs gripping, flexing & tapping (`BossMarkerFigure`)
+- Spider King UI in the UI style (`UIStyle`): its call out on a Panel plate, bold; its gold banners & pops in the UI Gold
+- spider jump hack key moved from F9 to 9 (`HackAction.SpiderJump` = 12 after `ToggleHints`), as the UI style branch takes F9 for the hack key list
 - Spider King: the gloves & sleeves plain silver, shining softly as the armor does; its screen flashes as the Cobra King's (white at the start & the winning blow, red on the K.O., gold on a spent armor); no flash on a revive or a reward snapping on, in either king's fight; the Spider King's last blow slow motion as the Cobra King's (0.2x for 1.4 s real)
 - Spider King: the silk gloves are bigger & a silk sleeve grows up each whole arm, stretching w/ it (`ArmController.ArmVisual`)
 - Spider King: no "Ouch!" line on a hit; on the win the Silk Gloves swirl onto the monkey's hands (spider style: dark, silk cuffs & web, red claws) as the Cobra King's armor does, & stay on, b4 the reward panel

@@ -42,6 +42,21 @@ public class SpiderFightController: MonoBehaviour {
     /// King's leftover armor logic leaves it alone</returns>
     public bool IsFraming => IsInArena;
 
+    /// <returns>climbed height the fight starts at, for its trunk height
+    /// marker; u, -1 when unknown</returns>
+    public float TriggerHeightU => worldBalanceConfig != null
+        ? worldBalanceConfig.SpiderTriggerHeightU
+        : -1f;
+
+    /// <returns>if its height marker is done w/: the fight has begun</returns>
+    public bool IsMarkerDone => phase != Phase.Waiting;
+
+    /// <returns>a small look-alike of the spider for its height marker, or
+    /// null w/o a body</returns>
+    public Transform BuildMarkerFigure() {
+        return body != null ? body.BuildMarkerFigure() : null;
+    }
+
     /// <summary>raised when the fight begins</summary>
     public event System.Action FightStarted;
 
@@ -1286,9 +1301,9 @@ public class SpiderFightController: MonoBehaviour {
         goldenHideTime = Time.time + goldenShowS;
         Burst(goldenMelon.root.transform.position, goldenColor, 10);
         hud.PopText("Golden watermelon!", goldenMelon.root.transform.position,
-            goldenColor);
+            UIStyle.Gold);
         hud.ShowBannerFor("Golden watermelon!", "Grab it for a Golden Armor",
-            goldenColor, 3f);
+            UIStyle.Gold, 3f);
     }
 
     // as the Cobra King's golden watermelon: its reach outline swapped for a
@@ -1498,7 +1513,7 @@ public class SpiderFightController: MonoBehaviour {
         teachTimeS = 0f;
         Teach(isEasy ? "EASY" : "NORMAL", "", isEasy
             ? new Color(0.55f, 0.95f, 0.55f)
-            : goldenColor, readyS);
+            : UIStyle.Gold, readyS);
     }
 
     // Throws  -----------------------------------------------------------------
@@ -2371,7 +2386,7 @@ public class SpiderFightController: MonoBehaviour {
                 frozenCrescent = crescent;
                 lastTapTime = -10f;
                 Teach("Now!", "Tap SPACE 2 times to bounce it back",
-                    goldenColor, 0f);
+                    UIStyle.Gold, 0f);
             }
             if (IsHitByCrescent(crescent, lastDistanceU)
                 && Time.time >= saveGraceEndTime) {
@@ -3024,7 +3039,7 @@ public class SpiderFightController: MonoBehaviour {
         clashStopEndTime = Time.unscaledTime + CLASH_STOP_S;
         shotClashTime = Time.unscaledTime;
         shakeEndTime = Time.unscaledTime + SHAKE_S;
-        hud.PopText("Nice!", at, goldenColor);
+        hud.PopText("Nice!", at, UIStyle.Gold);
         AddCross(at);
         BurstStreaks(at, new Color(1f, 0.55f, 0.1f), 26, 6f, 15f);
         BurstStreaks(at, new Color(1f, 0.9f, 0.4f), 16, 4f, 10f);
@@ -3251,7 +3266,7 @@ public class SpiderFightController: MonoBehaviour {
         isTeachFrozen = true;
         frozenShot = shot;
         lastTapTime = -10f;
-        Teach("Now!", "Tap SPACE 2 times to bounce it back", goldenColor,
+        Teach("Now!", "Tap SPACE 2 times to bounce it back", UIStyle.Gold,
             0f);
     }
 
@@ -3289,7 +3304,7 @@ public class SpiderFightController: MonoBehaviour {
             SetMode(Mode.Idle);
         }
         nextAttackTime = Mathf.Max(nextAttackTime, stunEndTime + 0.5f);
-        hud.PopText("STUCK!", body.HeadPosition, goldenColor);
+        hud.PopText("STUCK!", body.HeadPosition, UIStyle.Gold);
         hud.Say("Ugh! My own web!");
         Burst(body.Position, silkColor, 14);
         if (stuckWeb == null) {
@@ -3781,7 +3796,7 @@ public class SpiderFightController: MonoBehaviour {
         health = maxHealth;
         teach = TeachStep.Choose;
         SpawnChoices();
-        Teach("Easy or Normal?", "Grab a melon", goldenColor, 0f);
+        Teach("Easy or Normal?", "Grab a melon", UIStyle.Gold, 0f);
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
             stamina.AddStamina(stamina.MaxStamina);
