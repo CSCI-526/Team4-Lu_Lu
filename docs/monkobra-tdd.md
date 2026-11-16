@@ -143,8 +143,9 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F10 | download the analytics session report | `AnalyticsManager` |
 | F11 | close the analytics session and open a new file | `AnalyticsManager` |
 | F12 | save a mock analytics session file | `AnalyticsManager` |
+| F9 | show or hide this list on screen (hidden when a scene starts) | `HackShortcutPanel` |
 
-`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build. A new hack key is a new `HackAction` plus an entry in the asset.
+`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and F9 (`ToggleHints`) shows or hides it. A new hack key is a new `HackAction` plus an entry in the asset.
 
 ## Game Balance
 

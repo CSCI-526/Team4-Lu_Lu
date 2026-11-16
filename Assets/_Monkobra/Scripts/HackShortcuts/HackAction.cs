@@ -38,4 +38,8 @@ public enum HackAction {
 
     /// <summary>saves a mock analytics session file, for layout checks</summary>
     MockSession,
+
+    /// <summary>shows or hides the on-screen list of hack keys
+    /// (<see cref="HackShortcutPanel"/>), hidden when a scene starts</summary>
+    ToggleHints,
 }
