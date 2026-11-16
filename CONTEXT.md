@@ -63,14 +63,14 @@ monkobra/
 
 Three scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `GameplayScene` (both run modes, picked on load). The two menu scenes are shells of `MenuCamera`, `MenuEventSystem`, their screen prefab (`TitleScreen` or `LevelSelectScreen`), `Analytics` and `ControlStyleManager`; the menus read the `InputSystem_Actions` UI map through their own event system, so the gameplay `EventSystem` stays unchanged. Endless Mode is the same scene started through `SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Endless)`, so nothing is kept in step by hand.
 
-`GameplayScene`'s root is 11 prefab instances, so teammates edit different files, plus 3 plain scene objects: `UI` (the `Canvas`), `Envs`, and a Cinemachine `Target Group`. `UI` and `Envs` nest one prefab per unit and have no prefab of their own, so adding or removing one of their children edits `GameplayScene.unity` itself.
+`GameplayScene`'s root is 9 prefab instances, so teammates edit different files, plus 4 plain scene objects: `UI` (the `Canvas`), `Envs`, `Entities`, and a Cinemachine `Target Group`. `UI`, `Envs` and `Entities` nest one prefab per unit and have no prefab of their own, so adding or removing one of their children edits `GameplayScene.unity` itself. `Entities` is the monkey's orbit center: `MonkeyController` and `CameraAnchor` read `transform.parent.position` of `_Monkey`, so `Entities` stays at the tree axis and keeps `_Monkey` and `GreatCobra` as children.
 
 | Root | Nests |
 | --- | --- |
 | `Cameras` | the climb camera, the three event shot cameras (coconut, cobra alert, leap), the camera anchor and two shot targets, the director, framing and shake components |
 | `World/DirectionalLight`, `World/GlobalVolume`, `World/EventSystem` | three separate root prefabs, no wrapper |
 | `Envs` (plain scene object) | `DynamicTreeSegmentPool` (with both spawners), `StartingZoneExitTrigger`, `Tree` (mock tree), `RoughBarkSystem` (`RoughBarkSpawner`), `HeightMarkerSystem` (`HeightMarkerSystem`, on the trunk axis) |
-| `Player/Monkey`, `MobGreatCobra/GreatCobra` | scene roots, 1 prefab each |
+| `Player/_Monkey`, `MobGreatCobra/GreatCobra` | children of the plain `Entities` object, 1 prefab each |
 | `BossCobraKing/CobraKingFight` | `CobraKingFightController`, `CobraKingBody`, `BossFightHud`; builds the Cobra King arena at runtime, its position does not matter |
 | `BossSpiderKing/SpiderKingFight` | `SpiderKingFightController`, `SpiderKingBody`, `BossFightHud`; builds the Spider King arena at runtime; spawned by `CobraKingFightController.spiderFightPrefab` when a scene has none |
 | `Resources/Analytics` | one GameObject carrying `AnalyticsManager`, in every scene and made by `PersistentBootstrap` when none exists; the first one is kept across scene loads, a later copy warns and destroys itself |

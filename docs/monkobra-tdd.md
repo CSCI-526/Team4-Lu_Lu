@@ -38,7 +38,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | --- | --- |
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
-| `GameplayScene` | both run modes (see Run mode below); its root is 11 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Monkey`, `GreatCobra`, `CobraKingFight`, `SpiderKingFight`, `GameController`, `Analytics`, `ControlStyleManager`) plus 3 plain objects, `UI` (the `Canvas`), `Envs`, and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `GameController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
 graph LR
