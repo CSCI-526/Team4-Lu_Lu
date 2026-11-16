@@ -172,9 +172,9 @@ public class KeyPromptWidget: MonoBehaviour {
     }
 
     private static RectTransform CreateRect(string rectName, Transform parent) {
-        var go = new GameObject(rectName, typeof(RectTransform));
+        GameObject go = new GameObject(rectName, typeof(RectTransform));
         go.layer = 5; // UI
-        var rect = (RectTransform)go.transform;
+        RectTransform rect = (RectTransform)go.transform;
         rect.SetParent(parent, false);
         return rect;
     }
