@@ -233,6 +233,8 @@ UI (`BossFightHud`) is built at runtime on the root Canvas, under the screens: e
 
 The `BossSpiderKing/SpiderKingFight` prefab (`SpiderKingFightController`, `SpiderKingBody`, `BossFightHud`) is spawned by `CobraKingFightController` (`spiderFightPrefab`) if the scene has none; everything is built at runtime from primitives. Every tuning value is written out in the prefab, so the prefab, not the script's defaults, is what the game uses; change them there (Inspector).
 
+Code: `SpiderKingFightController` is the Coordinator (the public API, the lifecycle, and the phase dispatch); the work is split by role into `SpiderKingArena`, `SpiderKingMelons`, `SpiderKingMovement`, `SpiderKingAttacks`, `SpiderKingShots`, `SpiderKingParry`, `SpiderKingTeaching`, `SpiderKingDamage`, `SpiderKingEnding`, and `SpiderKingFeedback`, which share the state in `SpiderKingRig` and read every Inspector value from `SpiderKingTuning`, the `tuning` object on the prefab.
+
 - Trigger: once the Cobra King is beaten (`CobraKingFightController.IsDone`) and the monkey has climbed `spiderTriggerHeightU` (1050 u), not mid leap; never in Endless mode. From `spiderJumpHeightU` - 5 u the spider is already seen waiting above
 - Monkey Speed: in the arena the monkey climbs & orbits `monkeySpeedScale` (1.2) times as fast (`MonkeyController.ArenaSpeedScale`), back to 1 when the fight is over
 - Height Marker: as the Cobra King's, the 1,050 m marker sits on a bigger, red, beating plate w/ a small Spider King perched on its top edge, 4 legs over the face & 4 hooked round the sides, breathing, its legs flexing in turn & a front leg tapping the plate (`SpiderKingBody.BuildMarkerFigure`, `BossMarkerFigure`); gone once the fight begins (`IsMarkerDone`)
