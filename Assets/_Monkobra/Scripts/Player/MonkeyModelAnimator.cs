@@ -102,23 +102,26 @@ public class MonkeyModelAnimator: MonoBehaviour {
     [Header("Legs")]
     [SerializeField]
     [Tooltip("foot distance out from the middle, model units")]
-    private float footSideU = 0.3f;
+    private float footSideU = 0.32f;
 
     [SerializeField]
-    [Tooltip("foot height at the bottom / top of its stroke, model units")]
-    private Vector2 footHeightU = new Vector2(0.25f, 0.62f);
+    [Tooltip(
+        "foot height at the bottom / top of its stroke, model units; the hip "
+            + "is at 0.91, a high foot folds the thigh up into the body"
+    )]
+    private Vector2 footHeightU = new Vector2(0.15f, 0.45f);
 
     [SerializeField]
     [Tooltip(
         "foot distance toward the trunk at the bottom / top of its stroke, "
             + "model units"
     )]
-    private Vector2 footDepthU = new Vector2(0.36f, 0.42f);
+    private Vector2 footDepthU = new Vector2(0.15f, 0.28f);
 
     [SerializeField]
     [Min(0f)]
     [Tooltip("how far a swinging foot lifts off the bark, model units")]
-    private float footClearanceU = 0.12f;
+    private float footClearanceU = 0.1f;
 
     [SerializeField]
     [Min(0f)]
@@ -135,10 +138,11 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
     [SerializeField]
     [Tooltip(
-        "direction the knees bend toward, model frame: x out to the leg's own "
-            + "side (mirrored per leg), y up, z toward the trunk"
+        "direction the knees point, model frame: x out to the leg's own side "
+            + "(mirrored per leg), y up, z toward the trunk; the thigh twists "
+            + "so the kneecap faces it, the shin folds behind"
     )]
-    private Vector3 kneePole = new Vector3(1f, 0f, 0.4f);
+    private Vector3 kneePole = new Vector3(0.8f, 0.2f, 0.6f);
 
     [Header("Body")]
     [SerializeField]
@@ -170,6 +174,15 @@ public class MonkeyModelAnimator: MonoBehaviour {
             + "thickness when stretched"
     )]
     private float elbowForearmShare = 0.6f;
+
+    [Header("Leg Skin")]
+    [SerializeField]
+    [Range(0f, 0.6f)]
+    [Tooltip(
+        "share of the thigh's top ring that stays with the hips, cushioning "
+            + "the butt so a raised thigh never folds it into the body"
+    )]
+    private float hipRingHipsShare = 0.25f;
 
     [Header("Tail")]
     [SerializeField]
@@ -335,6 +348,14 @@ public class MonkeyModelAnimator: MonoBehaviour {
     // half width of an arm ring's band, as a share of the forearm's length
     private const float ARM_RING_BAND = 0.25f;
 
+    // leg rings: half heights of the hip & knee bands, the ankle band's
+    // height above the ankle, and the foot's share of the ankle ring; model
+    // units, the rest pose's rings sit 0.4u apart
+    private const float HIP_RING_BAND_U = 0.13f;
+    private const float KNEE_RING_BAND_U = 0.08f;
+    private const float ANKLE_RING_BAND_U = 0.06f;
+    private const float ANKLE_FOOT_SHARE = 0.65f;
+
     private bool isReady;
 
     private ArmController leftArm;
@@ -399,6 +420,9 @@ public class MonkeyModelAnimator: MonoBehaviour {
             : 1f;
         leg.footInModel =
             Quaternion.Inverse(modelRoot.rotation) * leg.foot.rotation;
+        // standing at rest, the kneecap faces the model's front
+        leg.kneeFrontInThigh =
+            Quaternion.Inverse(leg.thigh.rotation) * modelRoot.forward;
         Remember(leg.thigh);
         Remember(leg.shin);
         Remember(leg.foot);
@@ -446,6 +470,8 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
         ReskinArm(data, ".L");
         ReskinArm(data, ".R");
+        ReskinLeg(data, ".L");
+        ReskinLeg(data, ".R");
         AddTailBones(data);
 
         skinMesh = Instantiate(source);
@@ -509,6 +535,85 @@ public class MonkeyModelAnimator: MonoBehaviour {
                 );
             }
         }
+    }
+
+    // the asset skins each leg ring unevenly: the thigh's top ring rides the
+    // thigh alone, so a raised thigh folds the butt into the body, and the
+    // knee & ankle rings mix their bones vertex by vertex, pinching as they
+    // bend. Each ring is made one even piece: the hip ring cushioned by the
+    // hips, the knee split thigh & shin, the ankle mostly the foot's
+    private void ReskinLeg(SkinData data, string suffix) {
+        Transform thigh = Bone("ORG-thigh" + suffix);
+        Transform shin = Bone("ORG-shin" + suffix);
+        Transform foot = Bone("ORG-foot" + suffix);
+        if (thigh == null || shin == null || foot == null) {
+            return;
+        }
+        int hipsIndex = data.bones.IndexOf(hips);
+        int thighIndex = data.bones.IndexOf(thigh);
+        int shinIndex = data.bones.IndexOf(shin);
+        int footIndex = data.bones.IndexOf(foot);
+        if (hipsIndex < 0 || thighIndex < 0 || shinIndex < 0 || footIndex < 0) {
+            return;
+        }
+        // the shin's other children, the heel bones, turn with the foot
+        HashSet<int> lowerLeg = new HashSet<int>();
+        foreach (Transform part in shin.GetComponentsInChildren<Transform>(true)) {
+            int index = data.bones.IndexOf(part);
+            if (index >= 0) {
+                lowerLeg.Add(index);
+            }
+        }
+        HashSet<int> wholeLeg = new HashSet<int>(lowerLeg) { thighIndex };
+
+        float side =
+            modelRoot.InverseTransformPoint(thigh.position).x < 0f ? -1f : 1f;
+        float hipY = modelRoot.InverseTransformPoint(thigh.position).y;
+        float kneeY = modelRoot.InverseTransformPoint(shin.position).y;
+        float ankleY = modelRoot.InverseTransformPoint(foot.position).y;
+
+        for (int i = 0; i < data.weights.Length; i++) {
+            Vector3 point = data.restPoints[i];
+            if (point.x * side <= 0f) {
+                continue;
+            }
+            BoneWeight weight = data.weights[i];
+            float thighShare = ShareOf(weight, thighIndex);
+            float legShare = ShareOf(weight, wholeLeg);
+            float lowerShare = ShareOf(weight, lowerLeg);
+
+            if (Mathf.Abs(point.y - hipY) < HIP_RING_BAND_U && thighShare >= 0.5f) {
+                data.weights[i] = MakeWeight(
+                    new List<int> { thighIndex, hipsIndex },
+                    new List<float> { 1f - hipRingHipsShare, hipRingHipsShare }
+                );
+            } else if (Mathf.Abs(point.y - kneeY) < KNEE_RING_BAND_U
+                && legShare >= 0.5f) {
+                data.weights[i] = MakeWeight(
+                    new List<int> { thighIndex, shinIndex },
+                    new List<float> { 0.5f, 0.5f }
+                );
+            } else if (point.y >= ankleY && point.y < ankleY + ANKLE_RING_BAND_U
+                && lowerShare >= 0.5f) {
+                data.weights[i] = MakeWeight(
+                    new List<int> { footIndex, shinIndex },
+                    new List<float> { ANKLE_FOOT_SHARE, 1f - ANKLE_FOOT_SHARE }
+                );
+            }
+        }
+    }
+
+    private static float ShareOf(BoneWeight weight, int bone) {
+        return ShareOf(weight, new HashSet<int> { bone });
+    }
+
+    private static float ShareOf(BoneWeight weight, HashSet<int> bones) {
+        float share = 0f;
+        if (bones.Contains(weight.boneIndex0)) share += weight.weight0;
+        if (bones.Contains(weight.boneIndex1)) share += weight.weight1;
+        if (bones.Contains(weight.boneIndex2)) share += weight.weight2;
+        if (bones.Contains(weight.boneIndex3)) share += weight.weight3;
+        return share;
     }
 
     // gives the hips-skinned tail its own bone chain
@@ -883,7 +988,8 @@ public class MonkeyModelAnimator: MonoBehaviour {
             leg.shin,
             leg.foot,
             modelRoot.TransformPoint(footInModel),
-            pole
+            pole,
+            leg.kneeFrontInThigh
         );
 
         // sole flat on the bark, toes up, eased while the foot swings; the
@@ -945,6 +1051,9 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
         // the foot's rest rotation in the model's frame
         public Quaternion footInModel;
+
+        // the way the kneecap faces, in the thigh's own frame
+        public Vector3 kneeFrontInThigh;
     }
 
     // the mesh's skinning while it is rebuilt

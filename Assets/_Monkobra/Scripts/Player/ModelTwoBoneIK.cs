@@ -21,12 +21,18 @@ public static class ModelTwoBoneIK {
     /// <param name="target">where the end bone goes, world space</param>
     /// <param name="pole">direction the middle joint bends toward, world
     /// space</param>
+    /// <param name="jointFrontInUpper">optional: the way the middle joint's
+    /// front faces at rest (a kneecap's forward), in the upper bone's own
+    /// frame. Given, the upper bone also twists round its length so that front
+    /// faces the bend, so the joint folds the way it is built to, never
+    /// backward. Zero skips the twist</param>
     public static void Solve(
         Transform upper,
         Transform lower,
         Transform end,
         Vector3 target,
-        Vector3 pole
+        Vector3 pole,
+        Vector3 jointFrontInUpper = default
     ) {
         Vector3 root = upper.position;
         float upperU = Vector3.Distance(root, lower.position);
@@ -70,6 +76,27 @@ public static class ModelTwoBoneIK {
         upper.rotation =
             Quaternion.FromToRotation(lower.position - root, joint - root)
             * upper.rotation;
+
+        // spin the upper bone round its own length, which leaves the joint
+        // where it is, till the joint's front faces the bend
+        if (jointFrontInUpper != Vector3.zero) {
+            Vector3 axis = (joint - root).normalized;
+            Vector3 front = Vector3.ProjectOnPlane(
+                upper.rotation * jointFrontInUpper,
+                axis
+            );
+            Vector3 facing = Vector3.ProjectOnPlane(bend, axis);
+            if (front.sqrMagnitude > MIN_LENGTH_U * MIN_LENGTH_U
+                && facing.sqrMagnitude > MIN_LENGTH_U * MIN_LENGTH_U) {
+                upper.rotation =
+                    Quaternion.AngleAxis(
+                        Vector3.SignedAngle(front, facing, axis),
+                        axis
+                    )
+                    * upper.rotation;
+            }
+        }
+
         lower.rotation =
             Quaternion.FromToRotation(
                 end.position - lower.position,
