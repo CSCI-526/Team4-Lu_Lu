@@ -13,6 +13,21 @@ using UnityEngine.UI;
 /// references, and the input icons the scene overrides), only moving it.
 /// </summary>
 public static class TitleScreenLayoutBuilder {
+    // public members  #########################################################
+    // the loading page's vines on a full-screen panel, replacing any there;
+    // the level selection uses them too, so both screens hang them alike
+    internal static RectTransform BuildVines(Transform panel) {
+        Transform old = panel.Find("Vines");
+        if (old != null) {
+            Object.DestroyImmediate(old.gameObject);
+        }
+        RectTransform vines = Group(panel, "Vines");
+        foreach (Item item in VINES) {
+            Picture(vines, item);
+        }
+        return vines;
+    }
+
     // private methods  ########################################################
     [MenuItem("Monkobra/Build Title Screen")]
     private static void Build() {
@@ -42,10 +57,7 @@ public static class TitleScreenLayoutBuilder {
             }
             panel.GetComponent<Image>().color = BACKGROUND;
 
-            RectTransform vines = Group(panel, "Vines");
-            foreach (Item item in VINES) {
-                Picture(vines, item);
-            }
+            RectTransform vines = BuildVines(panel);
             Picture(panel, LOGO);
             BuildRunway(Group(panel, "Runway"));
             MovePrompt((RectTransform)prompt);
@@ -95,13 +107,28 @@ public static class TitleScreenLayoutBuilder {
 
     // the start prompt (input icons and words, laid out by its own group)
     // stays as it is and keeps its size; it only moves to where the loading
-    // page writes "Loading", so the words change in place at the hand-over
+    // page writes "Loading", and its words take that label's font, size and
+    // color (Baloo 2 SemiBold, cream), so they change in place at the hand-over
     private static void MovePrompt(RectTransform prompt) {
         Vector2 size = prompt.sizeDelta;
         Place(prompt, Item.Centred(
             prompt.name, "", LABEL.X + LABEL.W / 2, LABEL.Y + LABEL.H / 2,
             size.x, size.y, CENTRE
         ));
+
+        TMPro.TMP_FontAsset font = UIStyleBuilder.SemiBold;
+        if (font == null) {
+            Debug.LogWarning(
+                "TitleScreenLayoutBuilder:\tprompt words kept their font, run "
+                    + "Monkobra/UI Style/1. Build Fonts first"
+            );
+            return;
+        }
+        foreach (TMPro.TMP_Text word in
+            prompt.GetComponentsInChildren<TMPro.TMP_Text>(true)) {
+            UIStyleBuilder.StyleText(word, font, LABEL_SIZE, UIStyle.Cream);
+        }
+        UIStyleBuilder.SizeAnimatedIcons(prompt);
     }
 
     private static RectTransform Group(Transform parent, string name) {
@@ -209,6 +236,8 @@ public static class TitleScreenLayoutBuilder {
     };
 
     private static readonly Color BACKGROUND = new Color32(10, 31, 18, 255);
+    // the loading page's "Loading" label size, the prompt words' size
+    private const float LABEL_SIZE = 40f;
 
     private static readonly Vector2 CENTRE = new Vector2(0.5f, 0.5f);
     private static readonly Vector2 TOP_LEFT = new Vector2(0f, 1f);
