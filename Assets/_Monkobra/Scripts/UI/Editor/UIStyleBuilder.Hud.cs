@@ -149,15 +149,15 @@ public static partial class UIStyleBuilder {
             }
         });
 
-        // the cluster's place in the HUD: the button hugs the corner and the
-        // counter sits left of the button's hint
-        EditPrefab(IN_GAME_HUD, root => {
-            Transform pause = root.transform.Find("PauseButton");
-            if (pause == null) {
-                Debug.LogError("UIStyleBuilder:	no PauseButton in " + IN_GAME_HUD);
-                return;
+        // the cluster's place in the HUD, on the scene's instances: the
+        // button hugs the corner and the counter sits left of its hint
+        EditGameplayScenes(() => {
+            RectTransform button = FindSceneRect("PauseButton");
+            RectTransform coconut = FindSceneRect("CoconutHUD");
+            if (button == null) {
+                Debug.LogError("UIStyleBuilder:	no PauseButton in the scene");
+                return false;
             }
-            RectTransform button = (RectTransform)pause;
             button.anchorMin = button.anchorMax = Vector2.one;
             button.pivot = new Vector2(0.5f, 0.5f);
             Vector2 size = button.sizeDelta;
@@ -169,7 +169,6 @@ public static partial class UIStyleBuilder {
 
             // the counter's number & how-to hang right of its icon, so its
             // right end is the icon's right plus that overhang
-            RectTransform coconut = (RectTransform)root.transform.Find("CoconutHUD");
             if (coconut != null) {
                 RectTransform count = (RectTransform)coconut.Find("Count");
                 float overhang = count != null
@@ -184,6 +183,7 @@ public static partial class UIStyleBuilder {
                     button.anchoredPosition.y + faceY
                 );
             }
+            return true;
         });
     }
 
@@ -612,6 +612,32 @@ public static partial class UIStyleBuilder {
         }
     }
 
+    // run an edit on each gameplay scene's objects, save the scene when the
+    // edit says it changed something, then return to the scene left open
+    private static void EditGameplayScenes(System.Func<bool> edit) {
+        string open = SceneManager.GetActiveScene().path;
+        foreach (string scenePath in GAMEPLAY_SCENES) {
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            if (edit()) {
+                EditorSceneManager.SaveScene(scene);
+            }
+        }
+        if (!string.IsNullOrEmpty(open)) {
+            EditorSceneManager.OpenScene(open, OpenSceneMode.Single);
+        }
+    }
+
+    private static RectTransform FindSceneRect(string objectName) {
+        foreach (RectTransform rect in Object.FindObjectsByType<RectTransform>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None
+        )) {
+            if (rect.name == objectName) {
+                return rect;
+            }
+        }
+        return null;
+    }
+
     // font & material only, size & color kept
     private static void Restyle(
         TMP_Text text, TMP_FontAsset font, Material material = null
@@ -680,7 +706,6 @@ public static partial class UIStyleBuilder {
     };
     private const string PREFABS = "Assets/_Monkobra/Prefabs/";
     private const string UI_PREFABS = PREFABS + "UI/";
-    private const string IN_GAME_HUD = UI_PREFABS + "InGameHUD.prefab";
     private const string PAUSE_BUTTON = PREFABS + "PauseScreen/PauseButton.prefab";
     private const string COCONUT_HUD = PREFABS + "ItemCoconut/CoconutHUD.prefab";
     private const string FREEZE_TIMER = PREFABS + "ItemCoconut/FreezeTimerHUD.prefab";

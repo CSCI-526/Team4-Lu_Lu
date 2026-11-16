@@ -561,7 +561,7 @@ public class BossFightHud: MonoBehaviour {
         rootRect = CreateRect("BossFightHud", canvasRect);
         Stretch(rootRect);
         // under the screens, so pause, tutorial & lose panels cover it
-        Transform screens = FindChildNamed(canvasRect, "Screens");
+        Transform screens = FindChildNamed(canvasRect, "Screen");
         if (screens != null) {
             rootRect.SetSiblingIndex(screens.GetSiblingIndex());
         }

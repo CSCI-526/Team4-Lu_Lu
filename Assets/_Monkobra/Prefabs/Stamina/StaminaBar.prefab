@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 1756673476927966057}
   - component: {fileID: 2796074396119240967}
   - component: {fileID: 7156069852339571375}
+  - component: {fileID: 8461527293740015858}
   m_Layer: 5
   m_Name: StaminaBar
   m_TagString: Untagged
@@ -161,6 +162,18 @@ MonoBehaviour:
   shakeMagnitudePx: {x: 8, y: 4}
   shakeDurationS: 0.3
   shakeCooldownS: 0.2
+--- !u!114 &8461527293740015858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2002897558980733833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0b4d0f286a049ba82dc320cbcfddf11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LowStaminaWidget
 --- !u!1 &2089550947058290794
 GameObject:
   m_ObjectHideFlags: 0
