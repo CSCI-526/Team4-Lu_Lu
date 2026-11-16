@@ -48,7 +48,7 @@ monkobra/
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file), WebGL/TitleScreenLoader.jslib (tells the loading page the title is drawn)
 │   │   ├── Prefabs/   per module; `UI/` holds the `MenuButton` and `IconButton` prefabs of the [UI Style](docs/ui-style-doc.md); `PopUp/` holds `_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup; `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
 │   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Sprites/UI/` the button frames and glyphs, `Sprites/InputIcons/` the key icons and their `*_keycap` fills; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
-│   │   ├── Fonts/     `baloo2/` the UI font (Baloo 2 SemiBold & ExtraBold, Latin set, their TMP assets & Title material); older fonts still in use until every screen is restyled
+│   │   ├── Fonts/     `Baloo2/` the UI font (Baloo 2 SemiBold & ExtraBold, Latin set, their TMP assets & Title material); older fonts still in use until every screen is restyled
 │   │   └── Settings/  `_Shared/` (URP assets, volume profiles) plus one folder per module, assets directly inside
 │   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page and its loading page (USC Games and Peel Five logos, then the cobra eats dots on real download progress), whose last frame is the `TitleScreen` picture
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed

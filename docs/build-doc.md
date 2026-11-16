@@ -57,7 +57,7 @@ Both WebGL builds open on a loading page drawn by `FitWindow/index.html` (HTML a
 - Progress: the cobra's head follows the real download progress of `createUnityInstance`, smoothed, and never faster than `LOADER_MIN_DURATION_S` (1.3 s) allows, counted from when the loading picture is fully in, so a cached, near-instant load still shows one short chase; the tuning constants sit at the top of the script
 - Hand-over: its last frame is the `TitleScreen` prefab picture, with "Loading" where the title shows its start prompt; `TitleScreen` calls `Plugins/WebGL/TitleScreenLoader.jslib` after its first frame and the page then fades out, or after 8 s if no call comes
 - Input: while the page is up it takes every click, tap and key, so none reaches Unity underneath and starts the title unseen; keys keep their browser default
-- Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the UI font (`Fonts/baloo2/Baloo2-SemiBold.ttf`, see [UI Style](ui-style-doc.md)) into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files
+- Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the UI font (`Fonts/Baloo2/Baloo2-SemiBold.ttf`, see [UI Style](ui-style-doc.md)) into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files
 - Layout: one 1280×720 table, written twice: the `LAYOUT` block of `index.html` and the table in `TitleScreenLayoutBuilder` (Editor script), which builds the `TitleScreen` prefab picture from `Monkobra > Build Title Screen`; change both together and rebuild, or the hand-over shows a jump
 
 The Windows build has no page: it opens on the title and shows no team logos.

@@ -552,7 +552,7 @@ public static partial class UIStyleBuilder {
     private const int UI_LAYER = 5;
 
     // fonts: 2 weights, Latin set, one 1024 atlas each
-    private const string FONTS = "Assets/_Monkobra/Fonts/baloo2/";
+    private const string FONTS = "Assets/_Monkobra/Fonts/Baloo2/";
     private const string SEMIBOLD_TTF = FONTS + "Baloo2-SemiBold.ttf";
     private const string EXTRABOLD_TTF = FONTS + "Baloo2-ExtraBold.ttf";
     internal const string SEMIBOLD_SDF = FONTS + "Baloo2-SemiBold SDF.asset";
