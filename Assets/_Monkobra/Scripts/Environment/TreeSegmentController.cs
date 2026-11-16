@@ -276,12 +276,15 @@ public class TreeSegmentController: MonoBehaviour {
         return RampedDifficultyManager.I.PlayerGameStartYPosition + climbedY;
     }
 
-    // fixedLocalHeight: segment-local y to grow at, NaN for a random one
+    // fixedLocalHeight: segment-local y to grow at, NaN for a random one;
+    // centerYaw: angle in deg around the trunk to grow near, within the
+    // guaranteed branch spread either way, NaN for a random one
     private void SpawnBranch(
         BranchKind kind,
         float segmentHeight,
         List<Vector3> placedPositions,
-        float fixedLocalHeight = float.NaN
+        float fixedLocalHeight = float.NaN,
+        float centerYaw = float.NaN
     ) {
         Quaternion branchRotation = Quaternion.identity;
         Vector3 branchPosition = Vector3.zero;
@@ -289,7 +292,11 @@ public class TreeSegmentController: MonoBehaviour {
         int maxAttempts = placementConfig.MaxPlacementAttempts;
         bool isClear = false;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
-            branchRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+            float spreadDeg = worldBalanceConfig.GuaranteedBranchYawSpreadDeg;
+            float branchYaw = float.IsNaN(centerYaw)
+                ? Random.Range(0f, 360f)
+                : centerYaw + Random.Range(-spreadDeg, spreadDeg);
+            branchRotation = Quaternion.Euler(0f, branchYaw, 0f);
             float branchHeight = float.IsNaN(fixedLocalHeight)
                 ? Random.Range(0f, segmentHeight)
                 : fixedLocalHeight;
