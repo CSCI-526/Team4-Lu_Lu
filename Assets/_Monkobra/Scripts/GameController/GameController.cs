@@ -68,8 +68,8 @@ public class GameController: MonoBehaviour {
         }
     }
 
-    /// <summary>which kind of run this scene plays</summary>
-    public RunMode Mode => runMode;
+    /// <summary>which kind of run this scene plays, picked on load</summary>
+    public RunMode Mode => RunModeSelection.Selected;
 
     /// <summary>
     /// if the run is over and the restart input delay has passed, so a
@@ -173,11 +173,6 @@ public class GameController: MonoBehaviour {
     }
 
     // Inspector Fields  #######################################################
-    [SerializeField]
-    [Tooltip("Full: the normal run with the boss fight; Endless: starts "
-        + "after the boss, no boss fight, hazards keep ramping")]
-    private RunMode runMode = RunMode.Full;
-
     [SerializeField]
     [Min(0f)]
     [Tooltip("unscaled seconds the lose screen ignores restart input")]

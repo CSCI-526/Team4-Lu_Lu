@@ -38,28 +38,27 @@ A system gets its own document when it spans several scripts and carries rules a
 | --- | --- |
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
-| `FullPlayScene` | the normal run; its root is 10 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `CobraKingFight`, `GameController`, `UI`, `Analytics`, `ControlStyleManager`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
-| `EndlessScene` | a copy of `FullPlayScene` with `GameController.runMode` set to `Endless` |
+| `GameplayScene` | both run modes (see Run mode below); its root is 10 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `Entities`, `CobraKingFight`, `GameController`, `UI`, `Analytics`, `ControlStyleManager`) plus two plain objects, `Envs` and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
 graph LR
   Title[TitleScene] -->|Space, click, tap| Select[LevelSelectScene]
-  Select -->|Normal Play| Full[FullPlayScene]
-  Select -->|Endless Mode, unlocked| Endless[EndlessScene]
+  Select -->|Normal Play| Play[GameplayScene, Full]
+  Select -->|Endless Mode, unlocked| Play2[GameplayScene, Endless]
   Select -->|Back, Esc| Title
-  Full -->|R restarts| Full
-  Endless -->|R restarts| Endless
-  Full -->|Exit| Select
-  Endless -->|Exit| Select
+  Play -->|R restarts| Play
+  Play2 -->|R restarts| Play2
+  Play -->|Exit| Select
+  Play2 -->|Exit| Select
 ```
 
 Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`MenuEventSystem`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `StartPress` (Space, left click, a touch, gamepad start) serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
 
-Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, from the `runMode` field) tells a gameplay scene how to behave. In `Endless` the boss fight is skipped (`CobraKingFightController` starts in its done state, gold armor worn), `RampedDifficultyManager` reads the post boss curve from the starting zone exit on and has no boss zone, and `HeightMarkerSystem` draws no boss marker.
+Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the boss fight is skipped (`CobraKingFightController` starts in its done state, gold armor worn), `RampedDifficultyManager` reads the post boss curve from the starting zone exit on and has no boss zone, and `HeightMarkerSystem` draws no boss marker.
 
 Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Unlock Endless` and `Monkobra/Reset Progress` flip it for testing.
 
-Personal copies of `FullPlayScene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
+Personal copies of `GameplayScene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
 The folder layout and a script-by-script index are in [CONTEXT.md](../CONTEXT.md#repository-layout).
 
@@ -196,11 +195,11 @@ The tree is a stack of static and dynamic trunk segments under a `TreeTop`, whic
 - Extent: `TreeManager` (singleton `I`) holds `MinY` and `MaxY`, 0 and 100 by default, from the finite tree; nothing reads them any more; `FallingCobraSpawner` takes each segment's pivot as the trunk axis
 - Climb Height: heights that drive difficulty are measured above the monkey's start y by `RampedDifficultyManager.GetClimbedYDistance`: branch density, banana chance, web chance, falling cobra chance, the score, and the trunk height markers. Nothing shifts the world origin; if something ever does, it only has to move `PlayerGameStartYPosition` along
 - Segments: each `TreeSegmentController` places branches on itself in `Start` and in every `Restart` ([Mobs](mob-doc.md#placement)), then raises the static `BranchesGenerated`, which `SpiderWebSpawner` answers with webs ([Mobs](mob-doc.md#placement-1)) and `FallingCobraSpawner` with falling cobras ([Mobs](mob-doc.md#spawning))
-- Pool: `DynamicTreeSegmentPool` sits on an empty object, finds the `Player`-tagged object once, and instantiates `segmentCount` copies of `segmentPrefab` end to end, the first (lowest) one created at the world height `firstSegmentY`. It keeps them in a FIFO: only when the stack top is less than `lookAheadU` above the player, and the lowest segment lies wholly under the player, that lowest one is moved over the stack top by `TreeSegmentController.Restart`, which clears its branches and webs and rolls branches again; the webs follow through `BranchesGenerated`, the pool never calls the spawner. Its `mockTree` field names an editor-only stand-in, `Envs/Tree` in `FullPlayScene`, that is deactivated at runtime, so nothing that must run may sit under it
+- Pool: `DynamicTreeSegmentPool` sits on an empty object, finds the `Player`-tagged object once, and instantiates `segmentCount` copies of `segmentPrefab` end to end, the first (lowest) one created at the world height `firstSegmentY`. It keeps them in a FIFO: only when the stack top is less than `lookAheadU` above the player, and the lowest segment lies wholly under the player, that lowest one is moved over the stack top by `TreeSegmentController.Restart`, which clears its branches and webs and rolls branches again; the webs follow through `BranchesGenerated`, the pool never calls the spawner. Its `mockTree` field names an editor-only stand-in, `Envs/Tree` in `GameplayScene`, that is deactivated at runtime, so nothing that must run may sit under it
 
 ## Stamina
 
-`StaminaBarController` is a singleton `Slider` that reads `PlayerBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `LowStaminaMoveAttempted`, which `MonkeyController` triggers through `NotifyMoveAttempt` while an input is held and stamina is below the `lowStaminaFraction` field of `StaminaBarController` (10% by default, 20% on the `FullPlayScene` instance) of the maximum. That threshold is feedback only and sits outside `PlayerBalanceConfig`; only an empty bar changes movement.
+`StaminaBarController` is a singleton `Slider` that reads `PlayerBalanceConfig`. `StaminaBarAnimator` on the same GameObject punches the bar on `FruitConsumed` and shakes it on `LowStaminaMoveAttempted`, which `MonkeyController` triggers through `NotifyMoveAttempt` while an input is held and stamina is below the `lowStaminaFraction` field of `StaminaBarController` (10% by default, 20% on the `GameplayScene` instance) of the maximum. That threshold is feedback only and sits outside `PlayerBalanceConfig`; only an empty bar changes movement.
 
 - Movement Drain: `DrainByMovement` per physics step, upward distance costs more than sideways; it is the only drain, nothing lowers the bar on a timer or while the monkey stands still
 - Restore: `AddStaminaByFruit` adds the per-banana amount, capped at the maximum, when the grabbed fruit's flight lands, so the bar rises and punches together ([Grab System](grab-doc.md#fruit-fly))
@@ -319,7 +318,7 @@ Every center message is a `PopUp` variant; the rules, the parts, and how to add 
 
 Menu buttons swap sprites by state (Transition: Sprite Swap) over the [UI Style](ui-style-doc.md#buttons) gold sets: Highlighted and Selected show a lighter face in a cream ring, Pressed the face sunk onto its shadow, Disabled the sand Locked face. `MenuButtonHover` makes a hover select, so mouse and keys share the one highlight, and `MenuButtonPop` grows the selected button, sinks the pressed one's label or glyph, and shows a lock while it is not interactable. The level selection uses the wide `MenuButton`; the pause button, the pause screen's Resume, Restart and Exit, and the lose screen's Restart and Exit use the square `IconButton` with a glyph, with the key icons (Esc, R) as keycaps in a `ControlStyleSwitch` for Keyboard only.
 
-The tutorial in `FullPlayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. A dark Background wash dims the game behind the tutorial to show that the run has not started; its words are Baloo 2 and its keys keycaps, per the [UI Style](ui-style-doc.md#hud), and `ScreensManager` shows and hides the whole panel.
+The tutorial in `GameplayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. A dark Background wash dims the game behind the tutorial to show that the run has not started; its words are Baloo 2 and its keys keycaps, per the [UI Style](ui-style-doc.md#hud), and `ScreensManager` shows and hides the whole panel.
 
 
 ## Conventions

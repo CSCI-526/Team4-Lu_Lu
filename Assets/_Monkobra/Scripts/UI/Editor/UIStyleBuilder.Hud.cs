@@ -551,9 +551,9 @@ public static partial class UIStyleBuilder {
     }
 
     // scenes  -----------------------------------------------------------------
-    // FullPlayScene and EndlessScene held their own font on HUD texts (the
+    // the gameplay scenes held their own font on HUD texts (the
     // old score font); dropping those overrides lets the prefabs' Baloo 2
-    // through, in both scenes alike
+    // through
     private static void RevertSceneFontOverrides() {
         string open = SceneManager.GetActiveScene().path;
         foreach (string scenePath in GAMEPLAY_SCENES) {
@@ -688,8 +688,7 @@ public static partial class UIStyleBuilder {
         "Assets/_Monkobra/Prefabs/PopUp/_PopUpFruitBase.prefab",
     };
     private static readonly string[] GAMEPLAY_SCENES = {
-        "Assets/_Monkobra/Scenes/FullPlayScene.unity",
-        "Assets/_Monkobra/Scenes/EndlessScene.unity",
+        "Assets/_Monkobra/Scenes/GameplayScene.unity",
     };
     private static readonly string[] FONT_PROPERTIES = {
         "m_fontAsset", "m_sharedMaterial", "m_hasFontAssetChanged",
