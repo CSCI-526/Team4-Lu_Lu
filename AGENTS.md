@@ -17,6 +17,7 @@ Read these `docs/` files when their topic arises:
 - [Technical Design Document](docs/monkobra-tdd.md): how the game is built, and the script conventions to follow
 - [Mobs](docs/mob-doc.md): the cobra, falling cobra, branches, and spider webs
 - [Grab System](docs/grab-doc.md): detection zones, arm reach, and the release check
+- [Monkey Model](docs/monkey-model-doc.md): the skinned Mr. Mo model, its procedural climb, arm IK, look back, and outline, all visual only
 - [PopUps](docs/pop-up-doc.md): the center messages, their one shared look, priority and queue, and how to add one
 - [Balance Design](docs/balance-doc.md): why difficulty follows height, how hazards are rolled per segment, and why balance lives in one asset
 - [Gameplay Loop](docs/gameplay-loop-doc.md): the complete run loop, from climbing and hazards to the grab and the win or lose end
@@ -113,6 +114,7 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - Update [README.md](README.md) when controls or setup steps change
 - Update the [Game Design Document](docs/monkobra-gdd.md) when design intent shifts, ie pillars, the core twist, resources, or win and lose rules; read it before changing how a mechanic is meant to feel
 - Update [Mobs](docs/mob-doc.md) when a cobra, branch, or web changes how it spawns, moves, or reacts to a touch, and the [Grab System](docs/grab-doc.md) when detection, reach, or release rules change
+- Update [Monkey Model](docs/monkey-model-doc.md) when the model, its climb cycle, arm IK, look back, tail, or outline changes
 - Update [Input](docs/input-doc.md) when a key, an action binding, or a control style rule changes, and the Controls table of the [README](README.md) with it
 - Update [Build](docs/build-doc.md) when the export steps, folder, or required Player Settings change
 - Update [UI Style](docs/ui-style-doc.md) when the palette, the fonts, the type scale, or a shared UI component changes
