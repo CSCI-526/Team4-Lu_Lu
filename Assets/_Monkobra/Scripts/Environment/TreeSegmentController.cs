@@ -213,7 +213,8 @@ public class TreeSegmentController: MonoBehaviour {
                     placedPositions,
                     transform.InverseTransformPoint(
                         new Vector3(0f, guaranteedY, 0f)
-                    ).y
+                    ).y,
+                    GetMonkeyYaw()
                 );
             }
         }
@@ -265,6 +266,26 @@ public class TreeSegmentController: MonoBehaviour {
             BranchKind.Pineapple => branchPineapplePrefab,
             _ => null
         };
+    }
+
+    // the monkey's angle in deg around the trunk, in the segment's local
+    // frame as a branch's yaw reads it; NaN w/o a monkey or when it stands on
+    // the axis, so the branch yaw stays random
+    private float GetMonkeyYaw() {
+        if (
+            RampedDifficultyManager.I == null
+            || RampedDifficultyManager.I.PlayerTransform == null
+        ) {
+            return float.NaN;
+        }
+
+        Vector3 local = transform.InverseTransformPoint(
+            RampedDifficultyManager.I.PlayerTransform.position
+        );
+        if (local.x * local.x + local.z * local.z <= Mathf.Epsilon) {
+            return float.NaN;
+        }
+        return Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
     }
 
     // world y of the kind's guaranteed branch, NaN when it has none
