@@ -3,7 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// Runtime animated input icon and instruction of the boss HUD. Follows a
-/// world point on a screen-space Canvas; the icon is a <see cref="HintIconSlot"/>
+/// world point on a screen-space Canvas; the icon is a <see
+/// cref="HintIconSlot"/>
 /// that shows the keyboard or the touch prefab of the style in use.
 /// </summary>
 // Follow this frame's camera pose after CinemachineBrain (order 100).
@@ -29,7 +30,8 @@ public class KeyPromptWidget: MonoBehaviour {
         RectTransform rect = CreateRect(objectName, parent);
         KeyPromptWidget prompt =
             rect.gameObject.AddComponent<KeyPromptWidget>();
-        prompt.Build(rect, parent, library, keyboardController, touchController);
+        prompt.Build(rect, parent, library, keyboardController,
+            touchController);
         rect.gameObject.SetActive(false);
         return prompt;
     }
@@ -153,7 +155,8 @@ public class KeyPromptWidget: MonoBehaviour {
         Camera canvasCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay
             ? null
             : canvas.worldCamera;
-        if (screen.z <= 0f || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
+        if (screen.z <= 0f
+            || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
             parentRect, screen, canvasCamera, out Vector2 local
         )) {
             visibility.alpha = 0f;

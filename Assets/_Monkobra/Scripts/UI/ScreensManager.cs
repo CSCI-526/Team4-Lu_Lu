@@ -7,7 +7,8 @@ public class ScreensManager: MonoBehaviour {
     }
 
     // Public Methods  #########################################################
-    /// <summary>Shows the screen of the given state, hides the others.</summary>
+    /// <summary>Shows the screen of the given state, hides the
+    /// others.</summary>
     public void ShowScreenFor(GameState state) {
         SetScreens(
             tutorialActive: state == GameState.Tutorial,

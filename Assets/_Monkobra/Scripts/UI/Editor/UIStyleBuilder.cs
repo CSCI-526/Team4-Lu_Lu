@@ -402,7 +402,8 @@ public static partial class UIStyleBuilder {
     private static void StyleHint(string path) {
         GameObject root = PrefabUtility.LoadPrefabContents(path);
         try {
-            HorizontalLayoutGroup row = root.GetComponent<HorizontalLayoutGroup>();
+            HorizontalLayoutGroup row =
+                root.GetComponent<HorizontalLayoutGroup>();
             if (row != null) {
                 row.spacing = HINT_ROW_GAP;
             }
@@ -410,7 +411,8 @@ public static partial class UIStyleBuilder {
             // W and S side by side, in line with the words
             Transform keys = root.transform.Find("Keys_WS");
             if (keys != null) {
-                VerticalLayoutGroup stack = keys.GetComponent<VerticalLayoutGroup>();
+                VerticalLayoutGroup stack =
+                    keys.GetComponent<VerticalLayoutGroup>();
                 if (stack != null) {
                     Object.DestroyImmediate(stack);
                 }
@@ -420,7 +422,8 @@ public static partial class UIStyleBuilder {
                 pair.spacing = KEY_PAIR_GAP;
                 pair.childAlignment = TextAnchor.MiddleCenter;
                 pair.childControlWidth = pair.childControlHeight = false;
-                pair.childForceExpandWidth = pair.childForceExpandHeight = false;
+                pair.childForceExpandWidth = pair.childForceExpandHeight =
+                    false;
                 float keyWidth = 0f;
                 foreach (RectTransform key in keys) {
                     keyWidth += key.sizeDelta.x;
@@ -543,9 +546,11 @@ public static partial class UIStyleBuilder {
         return rect;
     }
 
-    private static RectTransform FindOrCreate(string childName, Transform parent) {
+    private static RectTransform FindOrCreate(string childName,
+        Transform parent) {
         Transform found = parent.Find(childName);
-        return found != null ? (RectTransform)found : NewChild(childName, parent);
+        return found != null ? (RectTransform)found
+            : NewChild(childName, parent);
     }
 
     // constants  ##############################################################
@@ -560,7 +565,8 @@ public static partial class UIStyleBuilder {
     private const string TITLE_MATERIAL =
         FONTS + "Baloo2-ExtraBold SDF - Title.mat";
     private const string FALLBACK_SDF =
-        "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset";
+        "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans "
+            + "SDF.asset";
     private const int SAMPLING_SIZE = 48;
     private const int ATLAS_PADDING = 8;
     private const int ATLAS_SIZE = 1024;

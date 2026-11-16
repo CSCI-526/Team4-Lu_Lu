@@ -86,18 +86,21 @@ public static partial class UIStyleBuilder {
     // top-right cluster  ------------------------------------------------------
     private static void StyleCoconutAndFreeze() {
         EditPrefab(COCONUT_HUD, root => {
-            TMP_Text count = root.transform.Find("Count")?.GetComponent<TMP_Text>();
+            TMP_Text count =
+                root.transform.Find("Count")?.GetComponent<TMP_Text>();
             if (count != null) {
                 StyleText(count, SemiBold, COUNT_SIZE, UIStyle.Cream);
             }
-            TMP_Text hint = root.transform.Find("UseHint")?.GetComponent<TMP_Text>();
+            TMP_Text hint =
+                root.transform.Find("UseHint")?.GetComponent<TMP_Text>();
             if (hint != null) {
                 StyleText(hint, SemiBold, SMALL_SIZE, UIStyle.Cream);
             }
         });
         // the countdown's colors come from FreezeTimerWidget
         EditPrefab(FREEZE_TIMER, root => {
-            TMP_Text timer = root.transform.Find("Timer")?.GetComponent<TMP_Text>();
+            TMP_Text timer =
+                root.transform.Find("Timer")?.GetComponent<TMP_Text>();
             if (timer != null) {
                 Restyle(timer, SemiBold);
             }
@@ -120,22 +123,26 @@ public static partial class UIStyleBuilder {
             float faceLeft = -size.x / 2f + MARGIN_LEFT;
             float faceY = FaceCenter().y;
 
-            RectTransform label = (RectTransform)pause.transform.Find("PauseKeyLabel");
+            RectTransform label =
+                (RectTransform)pause.transform.Find("PauseKeyLabel");
             float labelLeft = faceLeft - HINT_GAP;
             if (label != null) {
                 TMP_Text text = label.GetComponent<TMP_Text>();
                 StyleText(text, SemiBold, HUD_LABEL_SIZE, UIStyle.Cream);
                 text.alignment = TextAlignmentOptions.Right;
                 text.textWrappingMode = TextWrappingModes.NoWrap;
-                float width = Mathf.Ceil(text.GetPreferredValues(text.text).x) + 2f;
+                float width =
+                    Mathf.Ceil(text.GetPreferredValues(text.text).x) + 2f;
                 label.anchorMin = label.anchorMax = new Vector2(0.5f, 0.5f);
                 label.pivot = new Vector2(1f, 0.5f);
                 label.sizeDelta = new Vector2(width, KEY_HINT_SIZE);
-                label.anchoredPosition = new Vector2(faceLeft - HINT_GAP, faceY);
+                label.anchoredPosition =
+                    new Vector2(faceLeft - HINT_GAP, faceY);
                 labelLeft = faceLeft - HINT_GAP - width;
             }
             hintLeft = labelLeft;
-            RectTransform key = (RectTransform)pause.transform.Find("PauseKeyIcon");
+            RectTransform key =
+                (RectTransform)pause.transform.Find("PauseKeyIcon");
             if (key != null) {
                 MakeKeycap(key.GetComponent<Image>());
                 key.anchorMin = key.anchorMax = new Vector2(0.5f, 0.5f);
@@ -201,7 +208,8 @@ public static partial class UIStyleBuilder {
             }
             Vector3 upright = new Vector3(1f, 1f / BAR_STRETCH, 1f);
 
-            Transform monkey = root.transform.Find("Sliding Area/Handle/MonkeyIcon");
+            Transform monkey =
+                root.transform.Find("Sliding Area/Handle/MonkeyIcon");
             if (monkey != null) {
                 monkey.localScale = upright;
                 DestroyChildren(monkey);
@@ -236,7 +244,8 @@ public static partial class UIStyleBuilder {
                 beads.raycastTarget = false;
 
                 RectTransform headRect = NewChild("Head", marker);
-                headRect.anchorMin = headRect.anchorMax = new Vector2(0.5f, 0.5f);
+                headRect.anchorMin = headRect.anchorMax =
+                    new Vector2(0.5f, 0.5f);
                 headRect.sizeDelta = COBRA_ICON;
                 head = Picture(headRect.gameObject, "CobraHead", COBRA_ICON);
             }
@@ -244,7 +253,8 @@ public static partial class UIStyleBuilder {
             Transform readout = root.transform.Find("DistanceReadout");
             if (readout != null) {
                 readout.localScale = upright;
-                Image plate = readout.Find("DistanceLabel")?.GetComponent<Image>();
+                Image plate =
+                    readout.Find("DistanceLabel")?.GetComponent<Image>();
                 if (plate != null) {
                     plate.color = UIStyle.Brown;
                     AddOutline(plate.gameObject, UIStyle.Gold, 1.5f);
@@ -256,7 +266,8 @@ public static partial class UIStyleBuilder {
                 }
                 Transform bracket = readout.Find("DistanceBracket");
                 if (bracket != null) {
-                    foreach (Image tick in bracket.GetComponentsInChildren<Image>(true)) {
+                    foreach (Image tick in
+                        bracket.GetComponentsInChildren<Image>(true)) {
                         tick.color = WithAlpha(UIStyle.Cream, 0.85f);
                     }
                 }
@@ -289,16 +300,19 @@ public static partial class UIStyleBuilder {
     // energy, score  ----------------------------------------------------------
     private static void StyleStaminaBar() {
         EditPrefab(STAMINA_BAR, root => {
-            Image track = root.transform.Find("Background")?.GetComponent<Image>();
+            Image track =
+                root.transform.Find("Background")?.GetComponent<Image>();
             if (track != null) {
                 track.color = WithAlpha(UIStyle.Panel, 0.85f);
                 AddOutline(track.gameObject, UIStyle.Brown, 2f);
             }
-            Image fill = root.transform.Find("Fill Area/Fill")?.GetComponent<Image>();
+            Image fill =
+                root.transform.Find("Fill Area/Fill")?.GetComponent<Image>();
             if (fill != null) {
                 fill.color = UIStyle.Gold;
             }
-            TMP_Text label = root.transform.Find("EnergyLabel")?.GetComponent<TMP_Text>();
+            TMP_Text label =
+                root.transform.Find("EnergyLabel")?.GetComponent<TMP_Text>();
             if (label != null) {
                 StyleText(label, SemiBold, HUD_LABEL_SIZE, UIStyle.Cream);
             }
@@ -320,9 +334,12 @@ public static partial class UIStyleBuilder {
             }
         });
         EditPrefab(SCORE_HEIGHT, root => {
-            RectTransform score = (RectTransform)root.transform.Find("ScoreHUD");
+            RectTransform score =
+                (RectTransform)root.transform.Find("ScoreHUD");
             if (score == null) {
-                Debug.LogError("UIStyleBuilder:\tno ScoreHUD in " + SCORE_HEIGHT);
+                Debug.LogError(
+                    "UIStyleBuilder:\tno ScoreHUD in " + SCORE_HEIGHT
+                );
                 return;
             }
             RectTransform plate = FindOrCreate("ScorePlate", root.transform);
@@ -337,12 +354,14 @@ public static partial class UIStyleBuilder {
             caption.offsetMax = new Vector2(-PLATE_PADDING, 0f);
             TMP_Text words = GetOrAdd<TextMeshProUGUI>(caption.gameObject);
             words.text = "Score";
-            StyleText(words, SemiBold, HUD_LABEL_SIZE, WithAlpha(UIStyle.Cream, 0.85f));
+            StyleText(words, SemiBold, HUD_LABEL_SIZE,
+                WithAlpha(UIStyle.Cream, 0.85f));
             words.horizontalAlignment = HorizontalAlignmentOptions.Left;
             words.verticalAlignment = VerticalAlignmentOptions.Capline;
             words.textWrappingMode = TextWrappingModes.NoWrap;
             words.raycastTarget = false;
-            float captionWidth = Mathf.Ceil(words.GetPreferredValues("Score").x);
+            float captionWidth =
+                Mathf.Ceil(words.GetPreferredValues("Score").x);
 
             PlaceTopLeft(score);
             TMP_Text text = score.GetComponent<TMP_Text>();
@@ -356,12 +375,14 @@ public static partial class UIStyleBuilder {
             text.verticalAlignment = VerticalAlignmentOptions.Capline;
             text.textWrappingMode = TextWrappingModes.NoWrap;
             text.margin = new Vector4(
-                PLATE_PADDING + captionWidth + CAPTION_GAP, 0f, PLATE_PADDING, 0f
+                PLATE_PADDING + captionWidth + CAPTION_GAP, 0f, PLATE_PADDING,
+                    0f
             );
         });
         // the bonus colors come per reward kind from ScoreBonusItem
         EditPrefab(SCORE_BONUS_ITEM, root => {
-            foreach (TMP_Text part in root.GetComponentsInChildren<TMP_Text>(true)) {
+            foreach (TMP_Text part in
+                root.GetComponentsInChildren<TMP_Text>(true)) {
                 Restyle(part, ExtraBold, number);
             }
         });
@@ -409,13 +430,15 @@ public static partial class UIStyleBuilder {
             return found;
         }
         Material made = new Material(ExtraBold.material) {
-            name = System.IO.Path.GetFileNameWithoutExtension(HUD_NUMBER_MATERIAL),
+            name =
+                System.IO.Path.GetFileNameWithoutExtension(HUD_NUMBER_MATERIAL),
             shader = Shader.Find("TextMeshPro/Distance Field"),
         };
         made.SetColor(ShaderUtilities.ID_OutlineColor, UIStyle.Brown);
         made.SetFloat(ShaderUtilities.ID_OutlineWidth, HUD_OUTLINE);
         made.EnableKeyword(ShaderUtilities.Keyword_Underlay);
-        made.SetColor(ShaderUtilities.ID_UnderlayColor, WithAlpha(UIStyle.Background, 0.6f));
+        made.SetColor(ShaderUtilities.ID_UnderlayColor,
+            WithAlpha(UIStyle.Background, 0.6f));
         made.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, HUD_SHADOW.x);
         made.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, HUD_SHADOW.y);
         made.SetFloat(ShaderUtilities.ID_UnderlayDilate, HUD_OUTLINE);
@@ -430,12 +453,14 @@ public static partial class UIStyleBuilder {
     private static void StylePopUps() {
         foreach (string popUp in POP_UP_BASES) {
             EditPrefab(popUp, root => {
-                Image plate = root.transform.Find("Background")?.GetComponent<Image>();
+                Image plate =
+                    root.transform.Find("Background")?.GetComponent<Image>();
                 if (plate != null) {
                     MakePlate(plate, POP_UP_ALPHA);
                 }
                 foreach (string part in new[] { "Text", "Tail" }) {
-                    TMP_Text text = root.transform.Find(part)?.GetComponent<TMP_Text>();
+                    TMP_Text text =
+                        root.transform.Find(part)?.GetComponent<TMP_Text>();
                     if (text != null) {
                         Restyle(text, SemiBold);
                         text.color = UIStyle.Cream;
@@ -485,13 +510,15 @@ public static partial class UIStyleBuilder {
                     isCaption ? UIStyle.Cream : WithAlpha(UIStyle.Cream, 0.85f)
                 );
             }
-            TMP_Text press = root.transform.Find("Press/Label")?.GetComponent<TMP_Text>();
+            TMP_Text press =
+                root.transform.Find("Press/Label")?.GetComponent<TMP_Text>();
             if (press != null) {
                 StyleText(press, SemiBold, PRESS_SIZE, UIStyle.Cream);
             }
             Transform keys = root.transform.Find("KeyboardControls");
             if (keys != null) {
-                foreach (Image icon in keys.GetComponentsInChildren<Image>(true)) {
+                foreach (Image icon in
+                    keys.GetComponentsInChildren<Image>(true)) {
                     if (icon.name.StartsWith("Icon") && icon.sprite != null
                         && icon.sprite.name.EndsWith("_outline")) {
                         MakeKeycap(icon);
@@ -501,7 +528,8 @@ public static partial class UIStyleBuilder {
         });
     }
 
-    private static void ToTmp(Text legacy, TMP_FontAsset font, float size, Color color) {
+    private static void ToTmp(Text legacy, TMP_FontAsset font, float size,
+        Color color) {
         GameObject go = legacy.gameObject;
         string words = legacy.text;
         TextAnchor anchor = legacy.alignment;
@@ -534,12 +562,14 @@ public static partial class UIStyleBuilder {
     // web escape bar, hack key list, trunk height labels  ---------------------
     private static void StyleSmallHud() {
         EditPrefab(SPIDER_WEB_PROMPT, root => {
-            Image track = root.transform.Find("ProgressBar")?.GetComponent<Image>();
+            Image track =
+                root.transform.Find("ProgressBar")?.GetComponent<Image>();
             if (track != null) {
                 track.color = WithAlpha(UIStyle.Panel, 0.9f);
                 AddOutline(track.gameObject, UIStyle.Brown, 1.5f);
             }
-            Image fill = root.transform.Find("ProgressBar/Fill")?.GetComponent<Image>();
+            Image fill =
+                root.transform.Find("ProgressBar/Fill")?.GetComponent<Image>();
             if (fill != null) {
                 fill.color = UIStyle.Gold;
             }
@@ -547,11 +577,13 @@ public static partial class UIStyleBuilder {
         EditPrefab(HACK_HELP, root => {
             TMP_Text list = root.GetComponent<TMP_Text>();
             if (list != null) {
-                StyleText(list, SemiBold, HACK_LIST_SIZE, WithAlpha(UIStyle.Cream, 0.85f));
+                StyleText(list, SemiBold, HACK_LIST_SIZE,
+                    WithAlpha(UIStyle.Cream, 0.85f));
             }
         });
         EditPrefab(HEIGHT_MARKERS, root => {
-            HeightMarkerSystem markers = root.GetComponent<HeightMarkerSystem>();
+            HeightMarkerSystem markers =
+                root.GetComponent<HeightMarkerSystem>();
             if (markers != null) {
                 SerializedObject so = new SerializedObject(markers);
                 so.FindProperty("font").objectReferenceValue = SemiBold;
@@ -567,7 +599,8 @@ public static partial class UIStyleBuilder {
     private static void RevertSceneFontOverrides() {
         string open = SceneManager.GetActiveScene().path;
         foreach (string scenePath in GAMEPLAY_SCENES) {
-            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            Scene scene =
+                EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             int reverted = 0;
             foreach (TMP_Text text in Object.FindObjectsByType<TMP_Text>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None
@@ -600,7 +633,8 @@ public static partial class UIStyleBuilder {
     }
 
     // helpers  ----------------------------------------------------------------
-    private static void EditPrefab(string path, System.Action<GameObject> edit) {
+    private static void EditPrefab(string path,
+        System.Action<GameObject> edit) {
         GameObject root = PrefabUtility.LoadPrefabContents(path);
         try {
             edit(root);
@@ -615,7 +649,8 @@ public static partial class UIStyleBuilder {
     private static void EditGameplayScenes(System.Func<bool> edit) {
         string open = SceneManager.GetActiveScene().path;
         foreach (string scenePath in GAMEPLAY_SCENES) {
-            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            Scene scene =
+                EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             if (edit()) {
                 EditorSceneManager.SaveScene(scene);
             }
@@ -693,7 +728,8 @@ public static partial class UIStyleBuilder {
     private static readonly Vector2 COBRA_ICON = new Vector2(34f, 33f);
     private const float BEAD_SIZE = 14f;
 
-    private const string TITLE_SPRITES = "Assets/_Monkobra/Sprites/TitleScreen/";
+    private const string TITLE_SPRITES =
+        "Assets/_Monkobra/Sprites/TitleScreen/";
     private const string INPUT_ICONS = "Assets/_Monkobra/Prefabs/InputIcons/";
     private const string KEY_ICON = INPUT_ICONS + "InputIcon_Key.prefab";
     private const string TOUCH_ICON = INPUT_ICONS + "InputIcon_Touch.prefab";
@@ -705,15 +741,20 @@ public static partial class UIStyleBuilder {
     };
     private const string PREFABS = "Assets/_Monkobra/Prefabs/";
     private const string UI_PREFABS = PREFABS + "UI/";
-    private const string PAUSE_BUTTON = PREFABS + "PauseScreen/PauseButton.prefab";
-    private const string COCONUT_HUD = PREFABS + "ItemCoconut/CoconutHUD.prefab";
-    private const string FREEZE_TIMER = PREFABS + "ItemCoconut/FreezeTimerHUD.prefab";
+    private const string PAUSE_BUTTON =
+        PREFABS + "PauseScreen/PauseButton.prefab";
+    private const string COCONUT_HUD =
+        PREFABS + "ItemCoconut/CoconutHUD.prefab";
+    private const string FREEZE_TIMER =
+        PREFABS + "ItemCoconut/FreezeTimerHUD.prefab";
     private const string PROGRESS_BAR = UI_PREFABS + "ProgressBar.prefab";
     private const string STAMINA_BAR = PREFABS + "Stamina/StaminaBar.prefab";
     private const string SCORE_HUD = PREFABS + "Scoring/ScoreHUD.prefab";
-    private const string SCORE_BONUS_ITEM = PREFABS + "Scoring/ScoreBonusItem.prefab";
+    private const string SCORE_BONUS_ITEM =
+        PREFABS + "Scoring/ScoreBonusItem.prefab";
     private const string SCORE_HEIGHT = PREFABS + "Scoring/ScoreHeight.prefab";
-    private const string SPIDER_WEB_PROMPT = PREFABS + "MobSpiderWeb/SpiderWebPrompt.prefab";
+    private const string SPIDER_WEB_PROMPT =
+        PREFABS + "MobSpiderWeb/SpiderWebPrompt.prefab";
     private const string HACK_HELP = UI_PREFABS + "HackShortcutHelp.prefab";
     private const string HEIGHT_MARKERS =
         "Assets/_Monkobra/Prefabs/Environment/HeightMarkerSystem.prefab";

@@ -7,7 +7,8 @@ using UnityEngine.UI;
 /// The popup entity: a text on a plate, shown over the screen, then
 /// dismissed. It owns no text or timing of its own: <see cref="Show"/> takes
 /// a <see cref="PopUpDefinition"/> and dresses itself with it, so one entity
-/// serves every popup of its <see cref="PopUpKind"/>. <see cref="PopUpManager"/>
+/// serves every popup of its <see cref="PopUpKind"/>. <see
+/// cref="PopUpManager"/>
 /// is its only owner and calls <see cref="Show"/>, <see cref="Hide"/> and
 /// <see cref="Stop"/>.
 /// <para>
@@ -141,7 +142,8 @@ public class MessagePopUp: MonoBehaviour {
         float dt = Time.deltaTime;
         if (isHiding) {
             hideElapsedS += dt;
-            if (definition.FadeOutS <= 0f || hideElapsedS >= definition.FadeOutS) {
+            if (definition.FadeOutS <= 0f
+                || hideElapsedS >= definition.FadeOutS) {
                 Finish();
                 return;
             }
