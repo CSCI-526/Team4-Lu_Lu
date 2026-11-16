@@ -46,7 +46,15 @@ public class FreezeTimerWidget: MonoBehaviour {
     [Tooltip("blinks per s near the end")]
     private float endingBlinkHz = 4f;
 
+    // Private Members  ########################################################
+    private int shownS = -1;
+
     // MonoBehaviour Lifecycle  ################################################
+    private void OnEnable() {
+        // a new freeze starts: force the first text write
+        shownS = -1;
+    }
+
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
         if (timerLabel == null) {
@@ -84,8 +92,12 @@ public class FreezeTimerWidget: MonoBehaviour {
         }
 
         if (timerLabel != null) {
-            timerLabel.text =
-                string.Format(timerFormat, Mathf.CeilToInt(remainingS));
+            int wholeS = Mathf.CeilToInt(remainingS);
+            if (wholeS != shownS) {
+                // text changes once a second; skip the rebuild otherwise
+                shownS = wholeS;
+                timerLabel.text = string.Format(timerFormat, wholeS);
+            }
             timerLabel.color = color;
         }
         if (timerBar != null) {

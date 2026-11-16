@@ -83,6 +83,7 @@ public class TutorialTouchCutout: MonoBehaviour {
             overlay.enabled = false;
         }
         stick = null;
+        stickRect = null;
     }
 
     private void OnDisable() {
@@ -112,7 +113,10 @@ public class TutorialTouchCutout: MonoBehaviour {
 
     // sizes the 4 strips round the stick's rect, in this area's own space
     private void Layout() {
-        stick.GetComponent<RectTransform>().GetWorldCorners(corners);
+        if (stickRect == null) {
+            stickRect = stick.GetComponent<RectTransform>();
+        }
+        stickRect.GetWorldCorners(corners);
         Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
         Vector2 max = new Vector2(float.MinValue, float.MinValue);
         for (int i = 0; i < corners.Length; i++) {
@@ -176,4 +180,5 @@ public class TutorialTouchCutout: MonoBehaviour {
     // cached references  ------------------------------------------------------
     private RectTransform area;
     private OnScreenStick stick;
+    private RectTransform stickRect;
 }

@@ -10,6 +10,8 @@ public sealed class CobraMotorCoil {
     private static readonly int BASE_COLOR_ID =
         Shader.PropertyToID("_BaseColor");
     private static readonly int COLOR_ID = Shader.PropertyToID("_Color");
+    private Bounds referenceHeadBounds;
+    private bool hasHeadBounds;
 
     public CobraMotorCoil(CobraMotorRig rig) {
         this.rig = rig;
@@ -320,9 +322,14 @@ public sealed class CobraMotorCoil {
         Quaternion headRotation = rig.cartoonHeadRotation;
         Vector3 headPosition = rig.segmentPositions[0];
         if (tuning.CartoonAppearance.referenceHead != null) {
-            Bounds headBounds =
-                tuning.CartoonAppearance.referenceHead
-                    .GetComponent<MeshFilter>().sharedMesh.bounds;
+            if (!hasHeadBounds) {
+                // reference head never changes; read its mesh once
+                referenceHeadBounds =
+                    tuning.CartoonAppearance.referenceHead
+                        .GetComponent<MeshFilter>().sharedMesh.bounds;
+                hasHeadBounds = true;
+            }
+            Bounds headBounds = referenceHeadBounds;
             float headSize =
                 tuning.MaxThicknessU * tuning.CartoonAppearance.headScale;
             float innerProjection = 0f;
