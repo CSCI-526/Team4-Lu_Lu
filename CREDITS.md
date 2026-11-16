@@ -20,6 +20,7 @@ Third-party assets used in Monkobra.
 
 | Asset | Source | Author | License |
 | --- | --- | --- | --- |
+| `Assets/Mr. Mo Base Character/` (`MrMo_A` model, texture, the monkey the player sees; drawn with `Materials/Player/MonkeyMrMo_A.mat`) | Mr. Mo Police and Thief pack, base character (Unity Asset Store) | Omabuarts | [Standard Unity Asset Store EULA](https://unity.com/legal/as-terms) |
 | `Assets/PolyOne/Free Fruits/` (banana, coconut, pineapple, and the watermelon `SM_Fruits_Watermelon_1` shown as the boss fight's fruit) | [Free Pack - Fruits](https://assetstore.unity.com/packages/3d/vegetation/plants/free-pack-fruits-368828) | PolyOne Studio | [Standard Unity Asset Store EULA](https://unity.com/legal/as-terms) (Extension Asset) |
 
 ## Fonts
