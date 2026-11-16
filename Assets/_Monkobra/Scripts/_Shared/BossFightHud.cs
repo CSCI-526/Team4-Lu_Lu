@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static BossFightHudRig;
 
 /// <summary>
 /// Screen-space UI of the boss fight, built at runtime on the root Canvas
@@ -11,14 +12,37 @@ using UnityEngine.UI;
 /// Every piece is a plain uGUI Image or TMP label, no sprite needed.
 /// </summary>
 public class BossFightHud: MonoBehaviour {
-    // Public Methods  #########################################################
+    public const float CALL_OUT_S = BossFightHudRig.CALL_OUT_S;
+    // Inspector Fields  #######################################################
+    [SerializeField]
+    private BossFightHudTuning tuning = new();
+
+    // Private Members  ########################################################
+    private BossFightHudRig rig;
+    private BossFightHudBuilder builder;
+    private BossFightHudMotion motion;
+
+    // MonoBehaviour Lifecycle  ################################################
+    private void Awake() {
+        rig = new BossFightHudRig(this, tuning);
+        builder =
+            new BossFightHudBuilder(rig, () => WatchAdClicked?.Invoke(),
+                () => GiveUpClicked?.Invoke(),
+                    () => CoursePageClicked?.Invoke(),
+                        () => ContinueClicked?.Invoke(),
+                            () => SkipAdClicked?.Invoke());
+        motion = new BossFightHudMotion(rig);
+        rig.Builder = builder;
+        rig.Motion = motion;
+    }
+
     /// <summary>Builds the UI and shows the health bar, full.</summary>
     public void Show(string bossName) {
-        if (!TryBuild()) {
+        if (!builder.TryBuild()) {
             return;
         }
-        rootRect.gameObject.SetActive(true);
-        nameLabel.text = bossName;
+        rig.rootRect.gameObject.SetActive(true);
+        rig.nameLabel.text = bossName;
         SetHealth(1f);
     }
 
@@ -27,20 +51,20 @@ public class BossFightHud: MonoBehaviour {
     /// beaten, so its armor badge, "Saved!" & flash still show.
     /// </summary>
     public void BuildQuiet() {
-        if (!TryBuild()) {
+        if (!builder.TryBuild()) {
             return;
         }
-        rootRect.gameObject.SetActive(true);
+        rig.rootRect.gameObject.SetActive(true);
         HideBossBar();
     }
 
     /// <summary>Sets the health bar to <paramref name="fraction"/> 0~1.
     /// </summary>
     public void SetHealth(float fraction) {
-        if (healthFill == null) {
+        if (rig.healthFill == null) {
             return;
         }
-        healthFill.anchorMax = new Vector2(Mathf.Clamp01(fraction), 1f);
+        rig.healthFill.anchorMax = new Vector2(Mathf.Clamp01(fraction), 1f);
     }
 
     /// <summary>Flashes the whole screen white, fading out.</summary>
@@ -51,21 +75,21 @@ public class BossFightHud: MonoBehaviour {
     /// <summary>Flashes the whole screen in <paramref name="color"/>.
     /// </summary>
     public void Flash(Color color) {
-        flashColor = color;
-        flashLeftS = flashS;
+        rig.flashColor = color;
+        rig.flashLeftS = tuning.FlashS;
     }
 
     /// <summary>Shows <paramref name="line"/> in a bubble over the head.
     /// </summary>
     public void Say(string line) {
-        if (speechLabel == null) {
+        if (rig.speechLabel == null) {
             return;
         }
-        speechLabel.text = line;
-        speechLeftS = speechShowS;
+        rig.speechLabel.text = line;
+        rig.speechLeftS = tuning.SpeechShowS;
         // the bubble fits its line
-        speechRect.sizeDelta = new Vector2(
-            Mathf.Max(200f, speechLabel.GetPreferredValues(line).x + 48f),
+        rig.speechRect.sizeDelta = new Vector2(
+            Mathf.Max(200f, rig.speechLabel.GetPreferredValues(line).x + 48f),
             56f
         );
     }
@@ -76,39 +100,43 @@ public class BossFightHud: MonoBehaviour {
     /// call out or <see cref="ClearCallOut"/>.
     /// </summary>
     public void CallOut(string line, Vector3 worldPosition, Color color) {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return;
         }
         ClearCallOut();
-        callOutRect = CreateRect("CallOut", rootRect);
-        AddImage(callOutRect, Tint(UIStyle.Panel, 0.85f));
-        callOutLabel = CreateLabel("Line", callOutRect, line, 34f, color);
-        callOutLabel.fontStyle = FontStyles.Bold;
-        Stretch(callOutLabel.rectTransform);
-        callOutRect.sizeDelta = new Vector2(
-            Mathf.Max(260f, callOutLabel.GetPreferredValues(line).x + 56f),
+        rig.callOutRect =
+            BossFightHudBuilder.CreateRect("CallOut", rig.rootRect);
+        BossFightHudBuilder.AddImage(rig.callOutRect,
+            BossFightHudBuilder.Tint(UIStyle.Panel, 0.85f));
+        rig.callOutLabel =
+            BossFightHudBuilder.CreateLabel("Line", rig.callOutRect, line, 34f,
+                color);
+        rig.callOutLabel.fontStyle = FontStyles.Bold;
+        BossFightHudBuilder.Stretch(rig.callOutLabel.rectTransform);
+        rig.callOutRect.sizeDelta = new Vector2(
+            Mathf.Max(260f, rig.callOutLabel.GetPreferredValues(line).x + 56f),
             64f
         );
-        callOutWorld = worldPosition;
-        callOutAgeS = 0f;
+        rig.callOutWorld = worldPosition;
+        rig.callOutAgeS = 0f;
     }
 
     /// <summary>Pops a rising damage number at a world point.</summary>
     public void PopDamage(string text, Vector3 worldPosition) {
-        PopText(text, worldPosition, damageColor);
+        PopText(text, worldPosition, tuning.DamageColor);
     }
 
     /// <summary>Pops a rising word at a world point, eg "Blocked!".
     /// </summary>
     public void PopText(string text, Vector3 worldPosition, Color color) {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return;
         }
-        TextMeshProUGUI label = CreateLabel(
-            "Pop", rootRect, text, 46f, color
+        TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
+            "Pop", rig.rootRect, text, 46f, color
         );
         label.rectTransform.sizeDelta = new Vector2(160f, 60f);
-        pops.Add(new Pop {
+        rig.pops.Add(new BossFightHudPop {
             label = label,
             worldPosition = worldPosition,
             ageS = 0f
@@ -120,24 +148,28 @@ public class BossFightHud: MonoBehaviour {
     /// score and how to play again.
     /// </summary>
     public void ShowVictory(long score) {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return;
         }
         SetPrompt(false, Vector3.zero);
-        if (speechRect != null) {
-            speechLeftS = 0f;
-            speechRect.gameObject.SetActive(false);
+        if (rig.speechRect != null) {
+            rig.speechLeftS = 0f;
+            rig.speechRect.gameObject.SetActive(false);
         }
 
-        RectTransform panel = CreateRect("Victory", rootRect);
-        Stretch(panel);
-        AddImage(panel, Tint(UIStyle.Background, 0.8f));
-        AddCenterLabel(panel, "Victory!", 90f, damageColor, 140f);
-        AddCenterLabel(
+        RectTransform panel =
+            BossFightHudBuilder.CreateRect("Victory", rig.rootRect);
+        BossFightHudBuilder.Stretch(panel);
+        BossFightHudBuilder.AddImage(panel,
+            BossFightHudBuilder.Tint(UIStyle.Background, 0.8f));
+        BossFightHudBuilder.AddCenterLabel(panel, "Victory!", 90f,
+            tuning.DamageColor, 140f);
+        BossFightHudBuilder.AddCenterLabel(
             panel, "You defeated the Cobra King!", 36f, UIStyle.Cream, 50f
         );
-        AddCenterLabel(panel, "Final Score: " + score, 36f, UIStyle.Cream, -10f);
-        AddCenterLabel(
+        BossFightHudBuilder.AddCenterLabel(panel, "Final Score: " + score, 36f,
+            UIStyle.Cream, -10f);
+        BossFightHudBuilder.AddCenterLabel(
             panel, "Press Space to Play Again", 32f, UIStyle.Cream, -110f,
             ""
         );
@@ -145,19 +177,20 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Shows a big banner in the screen center.</summary>
     public void ShowBanner(string text) {
-        ShowBanner(text, damageColor);
+        ShowBanner(text, tuning.DamageColor);
     }
 
     /// <summary>Shows a big banner in <paramref name="color"/>.</summary>
     public void ShowBanner(string text, Color color) {
-        if (bannerLabel == null) {
+        if (rig.bannerLabel == null) {
             return;
         }
-        bannerLabel.text = text;
-        bannerLabel.color = color;
-        bannerLabel.rectTransform.anchoredPosition = bannerCenterPosition;
-        bannerLabel.gameObject.SetActive(true);
-        bannerHideTime = -1f;
+        rig.bannerLabel.text = text;
+        rig.bannerLabel.color = color;
+        rig.bannerLabel.rectTransform.anchoredPosition =
+            rig.bannerCenterPosition;
+        rig.bannerLabel.gameObject.SetActive(true);
+        rig.bannerHideTime = -1f;
     }
 
     /// <summary>
@@ -172,17 +205,17 @@ public class BossFightHud: MonoBehaviour {
         ShowBanner("<size=70%>" + text + "</size>\n<size=40%><color=#FFF2D2>"
             + subtitle + "</color></size>", color);
         // low on screen, clear of the key prompt & the action mid-screen
-        bannerLabel.rectTransform.anchoredPosition = bannerLowPosition;
-        bannerHideTime = seconds > 0f ? Time.unscaledTime + seconds : -1f;
+        rig.bannerLabel.rectTransform.anchoredPosition = rig.bannerLowPosition;
+        rig.bannerHideTime = seconds > 0f ? Time.unscaledTime + seconds : -1f;
     }
 
     /// <summary>Hides the big banner.</summary>
     public void HideBanner() {
-        if (bannerLabel == null) {
+        if (rig.bannerLabel == null) {
             return;
         }
-        bannerHideTime = -1f;
-        bannerLabel.gameObject.SetActive(false);
+        rig.bannerHideTime = -1f;
+        rig.bannerLabel.gameObject.SetActive(false);
     }
 
     /// <summary>Raised when the revive offer's Watch Ad button is clicked.
@@ -206,28 +239,29 @@ public class BossFightHud: MonoBehaviour {
     /// reward line, a small detail line & a Continue (Space) button.
     /// </summary>
     public void ShowRewardPanel(string title, string line, string detail) {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return;
         }
-        if (rewardPanel == null) {
-            rewardPanel = CreateRewardPanel();
+        if (rig.rewardPanel == null) {
+            rig.rewardPanel = builder.CreateRewardPanel();
         }
-        rewardTitle.text = title;
-        rewardLine.text = line;
-        rewardDetail.text = detail;
-        rewardPanel.SetActive(true);
-        rewardAgeS = 0f;
+        rig.rewardTitle.text = title;
+        rig.rewardLine.text = line;
+        rig.rewardDetail.text = detail;
+        rig.rewardPanel.SetActive(true);
+        rig.rewardAgeS = 0f;
     }
 
     /// <returns>if the win's panel has played in far enough to be closed, so
     /// a Space still mashed from the fight never skips it</returns>
-    public bool IsRewardReady => rewardPanel != null && rewardPanel.activeSelf
-        && rewardAgeS >= REWARD_READY_S;
+    public bool IsRewardReady => rig.rewardPanel != null
+        && rig.rewardPanel.activeSelf
+        && rig.rewardAgeS >= REWARD_READY_S;
 
     /// <summary>Hides the win's reward panel.</summary>
     public void HideRewardPanel() {
-        if (rewardPanel != null) {
-            rewardPanel.SetActive(false);
+        if (rig.rewardPanel != null) {
+            rig.rewardPanel.SetActive(false);
         }
     }
 
@@ -236,8 +270,9 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Shows or hides the ad's Skip button.</summary>
     public void SetAdSkippable(bool canSkip) {
-        if (adSkipButton != null && adSkipButton.activeSelf != canSkip) {
-            adSkipButton.SetActive(canSkip);
+        if (rig.adSkipButton != null
+            && rig.adSkipButton.activeSelf != canSkip) {
+            rig.adSkipButton.SetActive(canSkip);
         }
     }
 
@@ -246,25 +281,25 @@ public class BossFightHud: MonoBehaviour {
     /// monkey keeps the Golden Armor it won; it pops in when shown.
     /// </summary>
     public void ShowArmorBadge(bool isShown) {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return;
         }
-        if (armorBadge == null) {
-            armorBadge = CreateArmorBadge();
+        if (rig.armorBadge == null) {
+            rig.armorBadge = builder.CreateArmorBadge();
         }
-        armorBadge.gameObject.SetActive(isShown);
-        armorBadgePopS = isShown ? ARMOR_BADGE_POP_S : 0f;
-        armorBadge.localScale = Vector3.one;
+        rig.armorBadge.gameObject.SetActive(isShown);
+        rig.armorBadgePopS = isShown ? ARMOR_BADGE_POP_S : 0f;
+        rig.armorBadge.localScale = Vector3.one;
     }
 
     /// <summary>Hides the king's name & health bar, eg once it is beaten.
     /// </summary>
     public void HideBossBar() {
-        if (healthFill != null && healthFill.parent != null) {
-            healthFill.parent.gameObject.SetActive(false);
+        if (rig.healthFill != null && rig.healthFill.parent != null) {
+            rig.healthFill.parent.gameObject.SetActive(false);
         }
-        if (nameLabel != null) {
-            nameLabel.gameObject.SetActive(false);
+        if (rig.nameLabel != null) {
+            rig.nameLabel.gameObject.SetActive(false);
         }
     }
 
@@ -276,18 +311,19 @@ public class BossFightHud: MonoBehaviour {
     public void SetChoiceTags(
         bool isShown, Vector3 easyWorld, Vector3 normalWorld
     ) {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return;
         }
-        if (easyTag == null) {
-            easyTag = CreateTag("EasyTag", "EASY",
+        if (rig.easyTag == null) {
+            rig.easyTag = builder.CreateTag("EasyTag", "EASY",
                 new Color(0.55f, 0.95f, 0.55f));
-            normalTag = CreateTag("NormalTag", "NORMAL", UIStyle.Gold);
+            rig.normalTag =
+                builder.CreateTag("NormalTag", "NORMAL", UIStyle.Gold);
         }
-        easyTag.gameObject.SetActive(isShown);
-        normalTag.gameObject.SetActive(isShown);
-        easyTagWorld = easyWorld;
-        normalTagWorld = normalWorld;
+        rig.easyTag.gameObject.SetActive(isShown);
+        rig.normalTag.gameObject.SetActive(isShown);
+        rig.easyTagWorld = easyWorld;
+        rig.normalTagWorld = normalWorld;
     }
 
     /// <summary>
@@ -295,37 +331,37 @@ public class BossFightHud: MonoBehaviour {
     /// countdown and Watch Ad / Give Up buttons.
     /// </summary>
     public void ShowReviveOffer() {
-        if (!BuildRevive()) {
+        if (!builder.BuildRevive()) {
             return;
         }
-        revivePanel.SetActive(true);
-        adPanel.SetActive(false);
+        rig.revivePanel.SetActive(true);
+        rig.adPanel.SetActive(false);
     }
 
     /// <summary>Sets the offer's countdown to <paramref name="seconds"/>.
     /// </summary>
     public void SetReviveCountdown(int seconds) {
-        if (reviveCountLabel != null) {
-            reviveCountLabel.text = seconds.ToString();
+        if (rig.reviveCountLabel != null) {
+            rig.reviveCountLabel.text = seconds.ToString();
         }
     }
 
     /// <summary>Swaps the offer for the full-screen mock ad.</summary>
     public void ShowAd() {
-        if (!BuildRevive()) {
+        if (!builder.BuildRevive()) {
             return;
         }
-        revivePanel.SetActive(false);
-        adPanel.SetActive(true);
+        rig.revivePanel.SetActive(false);
+        rig.adPanel.SetActive(true);
     }
 
     /// <summary>Hides the revive offer and the ad.</summary>
     public void HideRevive() {
-        if (revivePanel != null) {
-            revivePanel.SetActive(false);
+        if (rig.revivePanel != null) {
+            rig.revivePanel.SetActive(false);
         }
-        if (adPanel != null) {
-            adPanel.SetActive(false);
+        if (rig.adPanel != null) {
+            rig.adPanel.SetActive(false);
         }
     }
 
@@ -334,8 +370,9 @@ public class BossFightHud: MonoBehaviour {
     /// it when <paramref name="isShown"/> is false.
     /// </summary>
     public void SetPrompt(bool isShown, Vector3 worldPosition) {
-        if (keyPrompt != null) {
-            keyPrompt.SetPrompt(isShown, worldPosition, promptOffset);
+        if (rig.keyPrompt != null) {
+            rig.keyPrompt.SetPrompt(isShown, worldPosition,
+                tuning.PromptOffset);
         }
     }
 
@@ -346,29 +383,32 @@ public class BossFightHud: MonoBehaviour {
     /// </summary>
     /// <returns>the warning's id for <see cref="UpdateWarning"/></returns>
     public int AddWarning(Vector3 worldPosition, string word) {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return -1;
         }
-        RectTransform sign = CreateRect("Warning", rootRect);
+        RectTransform sign =
+            BossFightHudBuilder.CreateRect("Warning", rig.rootRect);
         sign.sizeDelta = new Vector2(70f, 70f);
 
         // a red diamond with a white border & a big "!"
-        RectTransform border = CreateRect("Border", sign);
-        Stretch(border);
+        RectTransform border = BossFightHudBuilder.CreateRect("Border", sign);
+        BossFightHudBuilder.Stretch(border);
         border.localRotation = Quaternion.Euler(0f, 0f, 45f);
         border.sizeDelta = Vector2.zero;
-        AddImage(border, Color.white);
-        RectTransform face = CreateRect("Face", border);
-        Stretch(face);
+        BossFightHudBuilder.AddImage(border, Color.white);
+        RectTransform face = BossFightHudBuilder.CreateRect("Face", border);
+        BossFightHudBuilder.Stretch(face);
         face.offsetMin = new Vector2(5f, 5f);
         face.offsetMax = new Vector2(-5f, -5f);
-        AddImage(face, warningColor);
-        TextMeshProUGUI mark = CreateLabel("Mark", sign, "!", 56f, Color.white);
-        Stretch(mark.rectTransform);
+        BossFightHudBuilder.AddImage(face, tuning.WarningColor);
+        TextMeshProUGUI mark =
+            BossFightHudBuilder.CreateLabel("Mark", sign, "!", 56f,
+                Color.white);
+        BossFightHudBuilder.Stretch(mark.rectTransform);
         mark.fontStyle = FontStyles.Bold;
 
-        TextMeshProUGUI label = CreateLabel(
-            "Word", sign, word, 30f, warningColor
+        TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
+            "Word", sign, word, 30f, tuning.WarningColor
         );
         label.fontStyle = FontStyles.Bold;
         label.outlineWidth = 0.25f;
@@ -379,762 +419,94 @@ public class BossFightHud: MonoBehaviour {
         labelRect.anchoredPosition = new Vector2(0f, -14f);
         labelRect.sizeDelta = new Vector2(240f, 40f);
 
-        warnings.Add(new Warning {
-            id = nextWarningId,
+        rig.warnings.Add(new BossFightHudWarning {
+            id = rig.nextWarningId,
             sign = sign,
             worldPosition = worldPosition,
             progress = 0f
         });
-        return nextWarningId++;
+        return rig.nextWarningId++;
     }
 
     /// <summary>Moves warning <paramref name="id"/> & sets its progress 0~1.
     /// </summary>
     public void UpdateWarning(int id, Vector3 worldPosition, float progress) {
-        int index = warnings.FindIndex(w => w.id == id);
+        int index = rig.warnings.FindIndex(w => w.id == id);
         if (index < 0) {
             return;
         }
-        Warning warning = warnings[index];
+        BossFightHudWarning warning = rig.warnings[index];
         warning.worldPosition = worldPosition;
         warning.progress = Mathf.Clamp01(progress);
-        warnings[index] = warning;
+        rig.warnings[index] = warning;
     }
 
     /// <summary>Removes the warning <paramref name="id"/>.</summary>
     public void RemoveWarning(int id) {
-        int index = warnings.FindIndex(w => w.id == id);
+        int index = rig.warnings.FindIndex(w => w.id == id);
         if (index < 0) {
             return;
         }
-        if (warnings[index].sign != null) {
-            Destroy(warnings[index].sign.gameObject);
+        if (rig.warnings[index].sign != null) {
+            Destroy(rig.warnings[index].sign.gameObject);
         }
-        warnings.RemoveAt(index);
+        rig.warnings.RemoveAt(index);
     }
 
     /// <summary>Removes every attack warning.</summary>
     public void ClearWarnings() {
-        foreach (Warning warning in warnings) {
+        foreach (BossFightHudWarning warning in rig.warnings) {
             if (warning.sign != null) {
                 Destroy(warning.sign.gameObject);
             }
         }
-        warnings.Clear();
+        rig.warnings.Clear();
     }
 
     /// <summary>World point the speech bubble follows, eg the king's head.
     /// </summary>
     public Vector3 SpeechAnchor {
-        set => speechWorldPosition = value;
+        set => rig.speechWorldPosition = value;
     }
 
-    // Inspector Fields  #######################################################
-    [SerializeField]
-    [Tooltip("how long the entry flash takes to fade; s")]
-    private float flashS = 0.8f;
-
-    [SerializeField]
-    [Tooltip("how long a speech line stays up; s")]
-    private float speechShowS = 2.2f;
-
-    [SerializeField]
-    [Tooltip("bubble offset over the head, in canvas units")]
-    private Vector2 speechOffset = new Vector2(0f, 90f);
-
-    [SerializeField]
-    [Tooltip("prompt offset over the banana, in canvas units")]
-    private Vector2 promptOffset = new Vector2(0f, 80f);
-
-    [SerializeField]
-    [Tooltip("the keycap and finger entities the prompt shows")]
-    private HintIconLibrary hintIconLibrary;
-
-    [SerializeField]
-    [Tooltip("animates the prompt keycap while a keyboard is in use (Space "
-        + "hold)")]
-    private RuntimeAnimatorController promptKeyboardController;
-
-    [SerializeField]
-    [Tooltip("animates the prompt finger while touch is in use (hold)")]
-    private RuntimeAnimatorController promptTouchController;
-
-
-    [SerializeField]
-    private Color healthColor = new Color(0.85f, 0.15f, 0.15f);
-
-    [SerializeField]
-    private Color damageColor = new Color(1f, 0.85f, 0.2f);
-
-    [SerializeField]
-    private Color warningColor = new Color(0.95f, 0.15f, 0.15f);
-
-    [SerializeField]
-    [Tooltip("warning sign offset over its zone, in canvas units")]
-    private Vector2 warningOffset = new Vector2(0f, 70f);
-
-    // MonoBehaviour Lifecycle  ################################################
     private void Update() {
-        if (rootRect == null) {
+        if (rig.rootRect == null) {
             return;
         }
 
-        UpdateFlash();
-        UpdateAd();
-        UpdateArmorBadge();
-        UpdateRewardPanel();
-        if (bannerHideTime > 0f && Time.unscaledTime >= bannerHideTime) {
-            bannerHideTime = -1f;
-            bannerLabel.gameObject.SetActive(false);
+        motion.UpdateFlash();
+        motion.UpdateAd();
+        motion.UpdateArmorBadge();
+        motion.UpdateRewardPanel();
+        if (rig.bannerHideTime > 0f
+            && Time.unscaledTime >= rig.bannerHideTime) {
+            rig.bannerHideTime = -1f;
+            rig.bannerLabel.gameObject.SetActive(false);
         }
-        if (speechRect != null) {
-            speechLeftS -= Time.deltaTime;
-            bool isSpeaking = speechLeftS > 0f;
-            speechRect.gameObject.SetActive(isSpeaking);
+        if (rig.speechRect != null) {
+            rig.speechLeftS -= Time.deltaTime;
+            bool isSpeaking = rig.speechLeftS > 0f;
+            rig.speechRect.gameObject.SetActive(isSpeaking);
             if (isSpeaking) {
-                PlaceSpeech();
+                motion.PlaceSpeech();
             }
         }
-        if (easyTag != null && easyTag.gameObject.activeSelf) {
-            Place(easyTag, easyTagWorld, tagOffset);
-            Place(normalTag, normalTagWorld, tagOffset);
+        if (rig.easyTag != null && rig.easyTag.gameObject.activeSelf) {
+            motion.Place(rig.easyTag, rig.easyTagWorld, rig.tagOffset);
+            motion.Place(rig.normalTag, rig.normalTagWorld, rig.tagOffset);
         }
-        UpdatePops();
-        UpdateWarnings();
-        UpdateCallOut();
-    }
-
-    // at the head a beat, gliding up to under the health bar, held, faded
-    private void UpdateCallOut() {
-        if (callOutRect == null) {
-            return;
-        }
-        callOutAgeS += Time.unscaledDeltaTime;
-        PlaceOnScreen(callOutRect, callOutWorld, speechOffset);
-        Vector2 from = callOutRect.anchoredPosition;
-        Vector2 half = canvasRect != null ? canvasRect.rect.size * 0.5f
-            : Vector2.zero;
-        Vector2 docked = new Vector2(0f,
-            half.y - 96f - callOutRect.rect.height * 0.5f);
-        float glide = Mathf.Clamp01((callOutAgeS - CALL_AT_HEAD_S)
-            / CALL_GLIDE_S);
-        glide = glide * glide * (3f - 2f * glide);
-        callOutRect.anchoredPosition = Vector2.Lerp(from, docked, glide);
-        // a pop as it shows
-        float pop = Mathf.Clamp01(callOutAgeS / 0.15f);
-        callOutRect.localScale = Vector3.one * Mathf.Lerp(1.3f, 1f, pop);
+        motion.UpdatePops();
+        motion.UpdateWarnings();
+        motion.UpdateCallOut();
     }
 
     /// <summary>Takes the docked call out away.</summary>
     public void ClearCallOut() {
-        if (callOutRect != null) {
-            Destroy(callOutRect.gameObject);
+        if (rig.callOutRect != null) {
+            Destroy(rig.callOutRect.gameObject);
         }
-        callOutRect = null;
-        callOutLabel = null;
+        rig.callOutRect = null;
+        rig.callOutLabel = null;
     }
 
-    // signs beat faster & grow as the hit nears
-    private void UpdateWarnings() {
-        foreach (Warning warning in warnings) {
-            if (warning.sign == null) {
-                continue;
-            }
-            Place(warning.sign, warning.worldPosition, warningOffset);
-            float beatHz = Mathf.Lerp(2f, 9f, warning.progress);
-            float beat = 0.5f + 0.5f * Mathf.Sin(Time.time * beatHz * 2f * Mathf.PI);
-            float scale = Mathf.Lerp(0.9f, 1.3f, warning.progress)
-                * (1f + 0.12f * beat);
-            warning.sign.localScale = Vector3.one * scale;
-        }
-    }
-
-    // private methods  ########################################################
-    private bool TryBuild() {
-        if (rootRect != null) {
-            return true;
-        }
-        Canvas canvas = FindRootCanvas();
-        if (canvas == null) {
-            Debug.LogError("BossFightHud:\tno root Canvas found", this);
-            return false;
-        }
-        canvasRect = (RectTransform)canvas.transform;
-        canvasCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay
-            ? null
-            : canvas.worldCamera;
-
-        rootRect = CreateRect("BossFightHud", canvasRect);
-        Stretch(rootRect);
-        // under the screens, so pause, tutorial & lose panels cover it
-        Transform screens = FindChildNamed(canvasRect, "Screen");
-        if (screens != null) {
-            rootRect.SetSiblingIndex(screens.GetSiblingIndex());
-        }
-
-        // name & health bar, top center
-        RectTransform bar = CreateRect("HealthBar", rootRect);
-        bar.anchorMin = bar.anchorMax = new Vector2(0.5f, 1f);
-        bar.pivot = new Vector2(0.5f, 1f);
-        bar.anchoredPosition = new Vector2(0f, -54f);
-        bar.sizeDelta = new Vector2(440f, 22f);
-        AddImage(bar, Tint(UIStyle.Panel, 0.85f));
-        healthFill = CreateRect("Fill", bar);
-        Stretch(healthFill);
-        healthFill.offsetMin = new Vector2(3f, 3f);
-        healthFill.offsetMax = new Vector2(-3f, -3f);
-        healthFill.anchorMax = new Vector2(1f, 1f);
-        AddImage(healthFill, healthColor);
-        nameLabel = CreateLabel("Name", rootRect, "", 28f, UIStyle.Cream);
-        RectTransform nameRect = nameLabel.rectTransform;
-        nameRect.anchorMin = nameRect.anchorMax = new Vector2(0.5f, 1f);
-        nameRect.pivot = new Vector2(0.5f, 1f);
-        nameRect.anchoredPosition = new Vector2(0f, -16f);
-        nameRect.sizeDelta = new Vector2(440f, 36f);
-
-        // speech bubble
-        speechRect = CreateRect("Speech", rootRect);
-        speechRect.sizeDelta = new Vector2(360f, 56f);
-        AddImage(speechRect, Tint(UIStyle.Panel, 0.85f));
-        speechLabel = CreateLabel("Line", speechRect, "", 28f, UIStyle.Cream);
-        Stretch(speechLabel.rectTransform);
-        speechRect.gameObject.SetActive(false);
-
-        // animated hold-and-release icon, one per control style
-        keyPrompt = KeyPromptWidget.Create(
-            rootRect, hintIconLibrary, promptKeyboardController,
-            promptTouchController
-        );
-
-        // banner, screen center
-        bannerLabel = CreateLabel(
-            "Banner", rootRect, "", 80f, UIStyle.Gold
-        );
-        bannerLabel.rectTransform.sizeDelta = new Vector2(1100f, 240f);
-        bannerLabel.rectTransform.anchoredPosition = new Vector2(0f, 120f);
-        bannerLabel.gameObject.SetActive(false);
-
-        // entry flash, on top of the rest of the hud
-        RectTransform flash = CreateRect("Flash", rootRect);
-        Stretch(flash);
-        flashImage = AddImage(flash, new Color(1f, 1f, 1f, 0f));
-        return true;
-    }
-
-    private void UpdateFlash() {
-        if (flashImage == null) {
-            return;
-        }
-        if (flashLeftS > 0f) {
-            flashLeftS -= Time.unscaledDeltaTime;
-        }
-        float alpha = flashS > 0f ? Mathf.Clamp01(flashLeftS / flashS) : 0f;
-        flashImage.color = new Color(
-            flashColor.r, flashColor.g, flashColor.b, alpha
-        );
-        flashImage.enabled = alpha > 0f;
-    }
-
-    /// <summary>Real s a call out takes from its head to its dock.</summary>
-    public const float CALL_OUT_S = CALL_AT_HEAD_S + CALL_GLIDE_S;
-
-    // a call out's beats, real s
-    private const float CALL_AT_HEAD_S = 0.9f;
-    private const float CALL_GLIDE_S = 0.6f;
-    private RectTransform callOutRect;
-    private TextMeshProUGUI callOutLabel;
-    private Vector3 callOutWorld;
-    private float callOutAgeS;
-
-    private void UpdatePops() {
-        for (int i = pops.Count - 1; i >= 0; i--) {
-            Pop pop = pops[i];
-            pop.ageS += Time.deltaTime;
-            float t = pop.ageS / POP_S;
-            if (t >= 1f || pop.label == null) {
-                if (pop.label != null) {
-                    Destroy(pop.label.gameObject);
-                }
-                pops.RemoveAt(i);
-                continue;
-            }
-            Place(
-                pop.label.rectTransform,
-                pop.worldPosition,
-                new Vector2(0f, 40f + t * 80f)
-            );
-            pop.label.alpha = 1f - t * t;
-            pops[i] = pop;
-        }
-    }
-
-    // keeps a UI rect over a world point, hidden behind the camera
-    private void Place(RectTransform target, Vector3 world, Vector2 offset) {
-        Camera cam = Camera.main;
-        if (cam == null || canvasRect == null) {
-            return;
-        }
-        Vector3 screen = cam.WorldToScreenPoint(world);
-        if (screen.z < 0f) {
-            target.anchoredPosition = new Vector2(0f, -10000f);
-            return;
-        }
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRect, screen, canvasCamera, out Vector2 local
-        );
-        target.anchorMin = target.anchorMax = new Vector2(0.5f, 0.5f);
-        target.anchoredPosition = local + offset;
-    }
-
-    // like Place, but kept inside the screen: a head off screen or behind
-    // the camera still shows its line, pinned to the nearest edge
-    // over the king's head while it is well in view; otherwise, eg the
-    // camera turned away or the head off screen, docked under the health bar
-    // with the king's name, so a line is never missed
-    private void PlaceSpeech() {
-        Camera cam = Camera.main;
-        Vector3 view = cam != null
-            ? cam.WorldToViewportPoint(speechWorldPosition)
-            : Vector3.back;
-        bool isHeadInView = view.z > 0f
-            && view.x > 0.1f && view.x < 0.9f
-            && view.y > 0.12f && view.y < 0.75f;
-        if (isHeadInView) {
-            PlaceOnScreen(speechRect, speechWorldPosition, speechOffset);
-            return;
-        }
-        speechRect.anchorMin = speechRect.anchorMax = new Vector2(0.5f, 1f);
-        speechRect.pivot = new Vector2(0.5f, 1f);
-        speechRect.anchoredPosition = new Vector2(0f, -96f);
-    }
-
-    private void PlaceOnScreen(
-        RectTransform target,
-        Vector3 world,
-        Vector2 offset
-    ) {
-        Camera cam = Camera.main;
-        if (cam == null || canvasRect == null) {
-            return;
-        }
-        Vector2 half = canvasRect.rect.size * 0.5f;
-        Vector2 box = target.rect.size * 0.5f + new Vector2(16f, 16f);
-        Vector2 local;
-        Vector3 screen = cam.WorldToScreenPoint(world);
-        if (screen.z < 0f) {
-            // behind the camera: the top of the screen, where the king is
-            local = new Vector2(0f, half.y);
-        } else {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect, screen, canvasCamera, out local
-            );
-            local += offset;
-        }
-        // stay clear of the name & health bar at the top
-        float top = half.y - box.y - 90f;
-        local.x = Mathf.Clamp(local.x, -half.x + box.x, half.x - box.x);
-        local.y = Mathf.Clamp(local.y, -half.y + box.y, top);
-        target.anchorMin = target.anchorMax = new Vector2(0.5f, 0.5f);
-        target.pivot = new Vector2(0.5f, 0.5f);
-        target.anchoredPosition = local;
-    }
-
-    private static Canvas FindRootCanvas() {
-        foreach (Canvas canvas in FindObjectsByType<Canvas>(
-            FindObjectsSortMode.None
-        )) {
-            if (canvas.isRootCanvas
-                && canvas.renderMode != RenderMode.WorldSpace) {
-                return canvas;
-            }
-        }
-        return null;
-    }
-
-    private static Transform FindChildNamed(Transform parent, string part) {
-        foreach (Transform child in parent) {
-            if (child.name.Contains(part)) {
-                return child;
-            }
-        }
-        return null;
-    }
-
-    // the revive offer card & the mock ad, built on first use
-    private bool BuildRevive() {
-        if (revivePanel != null) {
-            return true;
-        }
-        if (rootRect == null) {
-            return false;
-        }
-        Color gold = new Color(1f, 0.82f, 0.2f);
-
-        RectTransform offer = CreateRect("ReviveOffer", rootRect);
-        Stretch(offer);
-        AddImage(offer, Tint(UIStyle.Background, 0.75f));
-        RectTransform card = CreateRect("Card", offer);
-        card.sizeDelta = new Vector2(580f, 340f);
-        AddImage(card, Tint(UIStyle.Panel, 0.96f));
-        TextMeshProUGUI reviveTitle =
-            CreateLabel("Title", card, "Revive?", 60f, UIStyle.Gold);
-        reviveTitle.fontStyle = FontStyles.Bold;
-        PlaceLabel(reviveTitle, new Vector2(0f, 110f), new Vector2(540f, 70f));
-        PlaceLabel(CreateLabel(
-                "Line", card, "Watch a short ad to keep fighting!", 26f,
-                UIStyle.Cream
-            ), new Vector2(0f, 50f), new Vector2(540f, 40f));
-        reviveCountLabel = CreateLabel("Count", card, "", 48f, UIStyle.Gold);
-        PlaceLabel(reviveCountLabel, new Vector2(0f, -10f),
-            new Vector2(200f, 60f));
-        CreateButton("WatchAd", card, "Watch Ad  [Space]",
-            UIStyle.Gold, new Vector2(-135f, -105f),
-            () => WatchAdClicked?.Invoke(), "Watch Ad", UIStyle.Brown);
-        CreateButton("GiveUp", card, "Give Up  [R]",
-            UIStyle.Divider, new Vector2(135f, -105f),
-            () => GiveUpClicked?.Invoke(), "Give Up");
-        revivePanel = offer.gameObject;
-        revivePanel.SetActive(false);
-
-        // the "ad" plugs the course this game is made in: cardinal &
-        // gold, bobbing shapes, a Course Page button and a timer
-        Color cardinal = new Color(0.6f, 0.05f, 0.08f);
-        RectTransform ad = CreateRect("MockAd", rootRect);
-        Stretch(ad);
-        AddImage(ad, cardinal);
-        Color[] shapeColors = {
-            gold, new Color(1f, 1f, 1f, 0.75f), new Color(1f, 0.6f, 0.2f),
-        };
-        for (int i = 0; i < 8; i++) {
-            RectTransform shape = CreateRect("Shape" + i, ad);
-            float size = 40f + 25f * (i % 3);
-            shape.sizeDelta = new Vector2(size, size);
-            shape.anchoredPosition = new Vector2(
-                -520f + i * 150f, i % 2 == 0 ? 250f : -250f
-            );
-            AddImage(shape, shapeColors[i % shapeColors.Length]);
-            adShapes.Add(shape);
-        }
-        TextMeshProUGUI title = CreateLabel(
-            "Title", ad, "Like this game? Make your own!", 64f, gold
-        );
-        PlaceLabel(title, new Vector2(0f, 110f), new Vector2(1150f, 90f));
-        adTitle = title.rectTransform;
-        PlaceLabel(CreateLabel(
-                "Course", ad, "USC CSCI 526", 52f, Color.white
-            ), new Vector2(0f, 30f), new Vector2(1000f, 70f));
-        PlaceLabel(CreateLabel(
-                "Name", ad, "Advanced Mobile Devices and Game Consoles", 30f,
-                Color.white
-            ), new Vector2(0f, -25f), new Vector2(1100f, 44f));
-        PlaceLabel(CreateLabel(
-                "Pitch", ad,
-                "Team up and ship a game in one semester, like Monkobra!",
-                26f, new Color(1f, 0.92f, 0.7f)
-            ), new Vector2(0f, -70f), new Vector2(1100f, 40f));
-        CreateButton("CoursePage", ad, "Course Page", gold * 0.85f,
-            new Vector2(0f, -150f), () => CoursePageClicked?.Invoke(),
-            "Course Page");
-        RectTransform tag = CreateRect("AdTag", ad);
-        tag.anchorMin = tag.anchorMax = tag.pivot = new Vector2(0f, 1f);
-        tag.anchoredPosition = new Vector2(24f, -24f);
-        tag.sizeDelta = new Vector2(70f, 40f);
-        AddImage(tag, new Color(0f, 0f, 0f, 0.6f));
-        TextMeshProUGUI tagLabel = CreateLabel("Label", tag, "AD", 24f,
-            Color.white);
-        Stretch(tagLabel.rectTransform);
-        adSkipButton = CreateButton("Skip", ad, "Skip  [Space]",
-            new Color(0f, 0f, 0f, 0.55f), Vector2.zero,
-            () => SkipAdClicked?.Invoke(), "Skip");
-        RectTransform skip = (RectTransform)adSkipButton.transform;
-        skip.anchorMin = skip.anchorMax = skip.pivot = new Vector2(1f, 1f);
-        skip.anchoredPosition = new Vector2(-24f, -24f);
-        adSkipButton.SetActive(false);
-        adPanel = ad.gameObject;
-        adPanel.SetActive(false);
-        return true;
-    }
-
-    // the ad's title throbs and its shapes bob & spin; time stands still
-    // under it, so this runs on unscaled time
-    private void UpdateAd() {
-        if (adPanel == null || !adPanel.activeSelf) {
-            return;
-        }
-        float t = Time.unscaledTime;
-        adTitle.localScale = Vector3.one * (1f + 0.06f * Mathf.Sin(t * 6f));
-        for (int i = 0; i < adShapes.Count; i++) {
-            adShapes[i].localRotation = Quaternion.Euler(
-                0f, 0f, t * (40f + i * 12f) * (i % 2 == 0 ? 1f : -1f)
-            );
-            adShapes[i].localScale = Vector3.one
-                * (1f + 0.15f * Mathf.Sin(t * 3f + i));
-        }
-    }
-
-    // the win's pause: dimmed screen, title, lines & a beating Continue
-    private GameObject CreateRewardPanel() {
-        Color gold = UIStyle.Gold;
-        RectTransform panel = CreateRect("RewardPanel", rootRect);
-        Stretch(panel);
-        AddImage(panel, Tint(UIStyle.Background, 0.75f));
-        RectTransform diamond = CreateRect("Diamond", panel);
-        diamond.anchoredPosition = new Vector2(0f, 190f);
-        diamond.sizeDelta = new Vector2(56f, 56f);
-        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        AddImage(diamond, gold);
-        rewardTitle = CreateLabel("Title", panel, "", 84f, gold);
-        rewardTitle.fontStyle = FontStyles.Bold;
-        PlaceLabel(rewardTitle, new Vector2(0f, 100f), new Vector2(1100f, 100f));
-        rewardLine = CreateLabel("Line", panel, "", 42f, UIStyle.Cream);
-        PlaceLabel(rewardLine, new Vector2(0f, 20f), new Vector2(1100f, 60f));
-        rewardDetail = CreateLabel(
-            "Detail", panel, "", 30f, Tint(UIStyle.Cream, 0.85f)
-        );
-        PlaceLabel(rewardDetail, new Vector2(0f, -30f), new Vector2(1100f, 44f));
-        GameObject button = CreateButton(
-            "Continue", panel, "Continue  [Space]",
-            gold, new Vector2(0f, -120f),
-            () => ContinueClicked?.Invoke(), "Continue", UIStyle.Brown
-        );
-        rewardButton = (RectTransform)button.transform;
-        panel.gameObject.SetActive(false);
-        return panel.gameObject;
-    }
-
-    // the Continue button beats gently; time stands still, so unscaled
-    private void UpdateRewardPanel() {
-        if (rewardPanel == null || !rewardPanel.activeSelf) {
-            return;
-        }
-        rewardAgeS += Time.unscaledDeltaTime;
-        float beat = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f);
-        rewardButton.localScale = Vector3.one * (1f + 0.06f * beat);
-    }
-
-    // a dark plate w/ a gold diamond & GOLDEN ARMOR
-    private RectTransform CreateArmorBadge() {
-        Color gold = UIStyle.Gold;
-        RectTransform badge = CreateRect("ArmorBadge", rootRect);
-        badge.anchorMin = badge.anchorMax = badge.pivot = new Vector2(1f, 0f);
-        // left of the progress bar along the right edge
-        badge.anchoredPosition = new Vector2(-70f, 24f);
-        badge.sizeDelta = new Vector2(250f, 54f);
-        AddImage(badge, Tint(UIStyle.Panel, 0.85f));
-        RectTransform diamond = CreateRect("Diamond", badge);
-        diamond.anchorMin = diamond.anchorMax = new Vector2(0f, 0.5f);
-        diamond.anchoredPosition = new Vector2(30f, 0f);
-        diamond.sizeDelta = new Vector2(26f, 26f);
-        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        AddImage(diamond, gold);
-        TextMeshProUGUI label = CreateLabel(
-            "Label", badge, "GOLDEN ARMOR", 24f, gold
-        );
-        RectTransform labelRect = label.rectTransform;
-        labelRect.anchorMin = new Vector2(0f, 0f);
-        labelRect.anchorMax = new Vector2(1f, 1f);
-        labelRect.offsetMin = new Vector2(52f, 0f);
-        labelRect.offsetMax = new Vector2(-8f, 0f);
-        badge.gameObject.SetActive(false);
-        return badge;
-    }
-
-    // the badge pops in big & settles; unscaled, so a pause never stalls it
-    private void UpdateArmorBadge() {
-        if (armorBadge == null || armorBadgePopS <= 0f) {
-            return;
-        }
-        armorBadgePopS = Mathf.Max(0f, armorBadgePopS - Time.unscaledDeltaTime);
-        float left = armorBadgePopS / ARMOR_BADGE_POP_S;
-        armorBadge.localScale = Vector3.one * (1f + 0.8f * left * left);
-    }
-
-    // a dark plate w/ a colored word, placed over a world point
-    private RectTransform CreateTag(string tagName, string text, Color color) {
-        RectTransform tag = CreateRect(tagName, rootRect);
-        tag.sizeDelta = new Vector2(130f, 40f);
-        AddImage(tag, Tint(UIStyle.Panel, 0.85f));
-        TextMeshProUGUI label = CreateLabel("Label", tag, text, 26f, color);
-        Stretch(label.rectTransform);
-        tag.gameObject.SetActive(false);
-        return tag;
-    }
-
-    private static void PlaceLabel(
-        TextMeshProUGUI label, Vector2 position, Vector2 size
-    ) {
-        label.rectTransform.anchoredPosition = position;
-        label.rectTransform.sizeDelta = size;
-    }
-
-    private static GameObject CreateButton(
-        string buttonName,
-        Transform parent,
-        string text,
-        Color color,
-        Vector2 position,
-        System.Action onClick,
-        string touchText = null,
-        Color? labelColor = null
-    ) {
-        RectTransform rect = CreateRect(buttonName, parent);
-        rect.sizeDelta = new Vector2(240f, 60f);
-        rect.anchoredPosition = position;
-        Image image = AddImage(rect, color);
-        image.raycastTarget = true;
-        Button button = rect.gameObject.AddComponent<Button>();
-        button.targetGraphic = image;
-        button.onClick.AddListener(() => {
-            // not left selected, or Space / Enter would press it again
-            UnityEngine.EventSystems.EventSystem events =
-                UnityEngine.EventSystems.EventSystem.current;
-            if (events != null) {
-                events.SetSelectedGameObject(null);
-            }
-            onClick();
-        });
-        TextMeshProUGUI label = CreateLabel("Label", rect, text, 24f,
-            labelColor ?? UIStyle.Cream);
-        Stretch(label.rectTransform);
-        AddStyleText(label, text, touchText);
-        return rect.gameObject;
-    }
-
-    // the key hint of a label is dropped in touch mode, where the label is a
-    // tappable button or a prompt with no key to name
-    private static void AddStyleText(
-        TextMeshProUGUI label,
-        string keyboardText,
-        string touchText
-    ) {
-        if (touchText == null) {
-            return;
-        }
-        label.gameObject.AddComponent<ControlStyleLabel>()
-            .Configure(keyboardText, touchText);
-    }
-
-    private static RectTransform CreateRect(string rectName, Transform parent) {
-        var go = new GameObject(rectName, typeof(RectTransform));
-        go.layer = 5; // UI
-        var rect = (RectTransform)go.transform;
-        rect.SetParent(parent, false);
-        return rect;
-    }
-
-    private static void AddCenterLabel(
-        RectTransform parent,
-        string text,
-        float size,
-        Color color,
-        float y,
-        string touchText = null
-    ) {
-        TextMeshProUGUI label = CreateLabel("Line", parent, text, size, color);
-        AddStyleText(label, text, touchText);
-        label.rectTransform.anchorMin = label.rectTransform.anchorMax =
-            new Vector2(0.5f, 0.5f);
-        label.rectTransform.sizeDelta = new Vector2(1000f, size * 1.4f);
-        label.rectTransform.anchoredPosition = new Vector2(0f, y);
-    }
-
-    private static void Stretch(RectTransform rect) {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-    }
-
-    // a palette color at another alpha
-    private static Color Tint(Color color, float alpha) {
-        color.a = alpha;
-        return color;
-    }
-
-    private static Image AddImage(RectTransform rect, Color color) {
-        Image image = rect.gameObject.AddComponent<Image>();
-        image.color = color;
-        image.raycastTarget = false;
-        return image;
-    }
-
-    private static TextMeshProUGUI CreateLabel(
-        string labelName,
-        Transform parent,
-        string text,
-        float size,
-        Color color
-    ) {
-        RectTransform rect = CreateRect(labelName, parent);
-        TextMeshProUGUI label = rect.gameObject.AddComponent<TextMeshProUGUI>();
-        label.text = text;
-        label.fontSize = size;
-        label.color = color;
-        label.alignment = TextAlignmentOptions.Center;
-        label.raycastTarget = false;
-        label.textWrappingMode = TextWrappingModes.NoWrap;
-        return label;
-    }
-
-    // private members  ########################################################
-    private const float POP_S = 0.9f; // damage number lifetime; s
-
-    private struct Pop {
-        public TextMeshProUGUI label;
-        public Vector3 worldPosition;
-        public float ageS;
-    }
-
-    private struct Warning {
-        public int id;
-        public RectTransform sign;
-        public Vector3 worldPosition;
-        public float progress; // 0 when shown, 1 at the hit
-    }
-
-    private readonly List<Pop> pops = new List<Pop>();
-    private readonly List<Warning> warnings = new List<Warning>();
-    private int nextWarningId;
-    private float flashLeftS;
-    private Color flashColor = Color.white;
-    private float speechLeftS;
-    private Vector3 speechWorldPosition;
-
-    // cached references  ------------------------------------------------------
-    private RectTransform canvasRect;
-    private Camera canvasCamera; // null for an overlay canvas
-    private RectTransform rootRect;
-    private RectTransform healthFill;
-    private TextMeshProUGUI nameLabel;
-    private RectTransform speechRect;
-    private TextMeshProUGUI speechLabel;
-    private KeyPromptWidget keyPrompt;
-    private TextMeshProUGUI bannerLabel;
-    private GameObject revivePanel;
-    private TextMeshProUGUI reviveCountLabel;
-    private GameObject adPanel;
-    private RectTransform adTitle;
-    private readonly List<RectTransform> adShapes = new List<RectTransform>();
-    private GameObject adSkipButton;
-    private RectTransform armorBadge;
-    private GameObject rewardPanel;
-    // real s the win panel is up b4 it can be closed, so a Space still
-    // mashed from the fight never skips it
-    private const float REWARD_READY_S = 0.5f;
-    private float rewardAgeS;
-    private TextMeshProUGUI rewardTitle;
-    private TextMeshProUGUI rewardLine;
-    private TextMeshProUGUI rewardDetail;
-    private RectTransform rewardButton;
-    private float armorBadgePopS; // pop-in time left; unscaled s
-    private const float ARMOR_BADGE_POP_S = 0.45f;
-    private RectTransform easyTag;
-    private RectTransform normalTag;
-    private Vector3 easyTagWorld;
-    private Vector3 normalTagWorld;
-    private readonly Vector2 tagOffset = new Vector2(0f, 55f);
-    private readonly Vector2 bannerCenterPosition = new Vector2(0f, 120f);
-    private readonly Vector2 bannerLowPosition = new Vector2(0f, -150f);
-    private float bannerHideTime = -1f; // unscaled time a timed banner goes
-    private Image flashImage;
 }

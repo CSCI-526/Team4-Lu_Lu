@@ -80,17 +80,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc9a4d968c9e47f69d801679aa79e668, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightHud
-  flashS: 0.8
-  speechShowS: 2.2
-  speechOffset: {x: 0, y: 90}
-  promptOffset: {x: 0, y: 80}
-  hintIconLibrary: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
-  promptKeyboardController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
-  promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
-  healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
-  damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
-  warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
-  warningOffset: {x: 0, y: 70}
+  tuning:
+    flashS: 0.8
+    speechShowS: 2.2
+    speechOffset: {x: 0, y: 90}
+    promptOffset: {x: 0, y: 80}
+    hintIconLibrary: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
+    promptKeyboardController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
+    promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
+    healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
+    damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+    warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
+    warningOffset: {x: 0, y: 70}
 --- !u!114 &6839907984743945785
 MonoBehaviour:
   m_ObjectHideFlags: 0
