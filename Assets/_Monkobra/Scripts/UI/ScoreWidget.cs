@@ -10,7 +10,7 @@ public class ScoreWidget: MonoBehaviour {
     private ScoreManager scoreManager;
 
     [SerializeField]
-    [Tooltip("text before the number; empty for the bare HUD score, and the badaboom font holds digits, comma, plus only")]
+    [Tooltip("text before the number; empty for the bare HUD score, whose plate already says Score")]
     private string prefix = "";
 
     // MonoBehaviour Lifecycle  ################################################

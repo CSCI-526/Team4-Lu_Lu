@@ -8,8 +8,9 @@ using UnityEngine;
 /// Copies the title art into every WebGL build, under
 /// <c>TemplateData/TitleScreen/</c>, where the FitWindow loading page reads
 /// it. The page draws the same picture as the TitleScreen prefab, so it takes
-/// the very sprites of <c>Sprites/TitleScreen/</c> and the title font, kept in
-/// one place instead of a second copy inside the template.
+/// the very sprites of <c>Sprites/TitleScreen/</c> and the UI font (Baloo 2
+/// SemiBold, Latin set), kept in one place instead of a second copy inside
+/// the template.
 /// </summary>
 public class WebGLLoaderArt: IPostprocessBuildWithReport {
     // public members  #########################################################
@@ -41,6 +42,6 @@ public class WebGLLoaderArt: IPostprocessBuildWithReport {
     // constants  ##############################################################
     private const string SPRITE_FOLDER = "Assets/_Monkobra/Sprites/TitleScreen";
     private const string FONT =
-        "Assets/_Monkobra/Fonts/UI/MonkobraTutorial-SemiBold.ttf";
+        "Assets/_Monkobra/Fonts/baloo2/Baloo2-SemiBold.ttf";
     private const string TARGET_FOLDER = "TemplateData/TitleScreen";
 }

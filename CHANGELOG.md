@@ -28,6 +28,7 @@ todo vertical version
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
 - title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
 - team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
+- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the one UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
 
 ### Changed
 
@@ -35,12 +36,28 @@ todo vertical version
 
 - pause & lose screens: Exit goes back to the level selection, not the title
 - Made with Unity splash screen off
+- level selection in the UI style: the loading page's vines, a logo-style title, gold buttons, the unlock hint under Endless Mode instead of over it, W and S side by side in the key hint
+- title start prompt & the loading page's "Loading" in Baloo 2, so the hand-over keeps one font
+- in-game HUD in the UI style: a smaller gold pause button, its Esc hint and the coconut counter laid out from the top-right corner so they never overlap; the progress bar wears the loading page's monkey and cobra heads, the cobra's neck its green segments; Baloo 2 energy, popups & tutorial; the score on a see-through plate with a "Score" caption, level with the pause button; popups on the same see-through plate, so the monkey's arm shows behind a grab hint; Space key icons as keycaps
+- hack key list (F1–F12) hidden at start, F9 shows or hides it
+- pause & lose screens in the UI style: square gold buttons with their words beside them and their keys on keycaps, logo-style titles; the lose screen's run card & leaderboard as matching plates with the key hint row under both; the boss fight's reward panel, revive card & badges in the UI palette
 
 ### Deprecated
 
 ### Removed
 
+##### Yuqing Lu
+
+- the old UI fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite: Baloo 2 is now the only font
+
 ### Fixed
+
+##### Yuqing Lu
+
+- lose screen: the Download Analytic button is big enough for its words, and the key hint row fits at 4:3, now under both panels
+- lose screen: the Restart and Exit buttons have their words back
+- progress bar faces no longer squashed: their counter-stretch now matches the bar's
+- progress bar: the cobra stays inside the bar as it reaches the monkey, and its body fills the bar from the bottom instead of hanging out below
 
 ### Security
 

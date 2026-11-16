@@ -14,7 +14,7 @@ Every short message shown over the screen during a run: the coconut prompts, the
 | `PopUp/PopUpWorldLink` | on `_PopUpFruitBase`: draws the `Line` from the popup bottom center to a world target set by its owner, hidden when there is none or it is behind the camera |
 | `Prefabs/PopUp/<Subject>_<Variant>` | one variant of the base per popup, saved inactive; `Banana_First`, `Pineapple_First`, and `Coconut_Grab` vary `_PopUpFruitBase` and set their own icon sprite |
 | `Prefabs/PopUp/_PopUps` | root prefab nesting every variant, carrying `PopUpManager`, a direct child of `_UI` drawn under `Screens` |
-| `Sprites/PopUp/PopUpBackground` | the rounded plate sprite, its 9-slice border set in the import settings |
+| `Sprites/UI/Plate_Fill`, `Plate_Rim` | the UI style's plate and its rim, 9-sliced in the import settings |
 
 The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget`, `ProgressBarWidget` (the surge and chase warnings), `LowStaminaWidget`, and `SpiderWebWidget`, and `FruitGrabPrompt` (the `BananaFirst`, `PineappleFirst`, and `CoconutGrab` hints, each held while a fruit of its kind is in reach, or within a wide radius even on the far side of the tree, until one is grabbed in the run, and shown again at the next such fruit; the coconut and pineapple outrank the banana) each call `PopUpManager.I.Show` or `Hide` with a `PopUpId`. `FruitGrabPrompt` also finds the variant with `PopUpManager.I.GetPopUp` and hands the reach target to its `PopUpWorldLink` each frame, so the line follows the fruit.
 
@@ -23,7 +23,7 @@ The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget
 Everything a designer tunes sits on the variant prefab, not in a script or an asset: open it in `Prefabs/PopUp/` and edit
 
 - Text: the `message` field of `MessagePopUp`, with a `{0}` slot for a value the caller passes
-- Look: the color and font size of the `Text` object, the color and alpha of the `Background` object
+- Look: the [UI Style](ui-style-doc.md#plate) plate on the `Background` object (Panel at alpha 0.55, so the monkey's arm shows through, and a Gold `Rim` child), Baloo 2 on the `Text` object; a variant sets its own text color and size: Cream for plain text, a signal color (warning red, frozen blue) where it means something
 - Position: the anchors and anchored position of the root `RectTransform`; the plate grows with the text
 - Timing: show time (0 stays until hidden), fade-in, fade-out, and pulse rate
 - Rules: priority, run-only, once-per-scene

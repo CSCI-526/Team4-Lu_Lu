@@ -16,6 +16,12 @@ public class ProgressBarWidget: MonoBehaviour {
     [Tooltip("marker moved along the bar")]
     private RectTransform cobraMarker;
 
+    [SerializeField]
+    [Tooltip("the cobra's segments, a top-pivot child of the marker, "
+        + "stretched from the head down to the bar's bottom end; empty "
+        + "when the marker has no body")]
+    private RectTransform cobraBody;
+
     [Header("Window")]
     [SerializeField]
     [Tooltip("world-y span of the full bar, player pinned at top; u")]
@@ -41,12 +47,23 @@ public class ProgressBarWidget: MonoBehaviour {
     [Tooltip("UI-space clearance; slide the snake left when faces get close")]
     private float markerClearance = 48f;
 
+    [SerializeField]
+    [Tooltip("slide the snake left when the faces get close; off, it stays "
+        + "in the bar and its head tucks under the monkey's")]
+    private bool isMarkerSideStepped = true;
+
     [Header("Procedural UI Shapes")]
     [SerializeField]
-    [Tooltip("circle and ellipse Images; share one circle generated at startup")]
+    [Tooltip("circle and ellipse Images; share one circle generated at "
+        + "startup; empty when the faces are sprites")]
     private Image[] circleImages;
 
     [Header("Catch-Up Cue")]
+    [SerializeField]
+    [Tooltip("graphic that flashes while the cobra catches up, eg its head; "
+        + "the marker's own graphic when empty")]
+    private Graphic markerFlash;
+
     [SerializeField]
     [Tooltip("appended w/ stack count from 2nd stacked mistake on")]
     private string catchUpStackFormat = " x{0}";
@@ -123,7 +140,9 @@ public class ProgressBarWidget: MonoBehaviour {
         }
 
         if (cobraMarker != null) {
-            markerGraphic = cobraMarker.GetComponent<Graphic>();
+            markerGraphic = markerFlash != null
+                ? markerFlash
+                : cobraMarker.GetComponent<Graphic>();
             if (markerGraphic != null) {
                 markerBaseColor = markerGraphic.color;
             }
@@ -205,12 +224,9 @@ public class ProgressBarWidget: MonoBehaviour {
     // private methods  ########################################################
     // Every face circle/ellipse uses this one antialiased white sprite,
     // tinted by its Image. No built-in sprite IDs or imported artwork needed.
+    // none when the faces are sprites (the UI style's heads)
     private void CreateCircleGraphics() {
         if (circleImages == null || circleImages.Length == 0) {
-            Debug.LogWarning(
-                "ProgressBarWidget:\tassign circleImages from the matching prefab",
-                this
-            );
             return;
         }
 
@@ -294,31 +310,58 @@ public class ProgressBarWidget: MonoBehaviour {
         float gap = Mathf.Max(0f, player.position.y - cobraHead.position.y);
         float cobraProgress = 1f - Mathf.Clamp01(gap / windowSizeY);
 
-        Vector2 anchor = new Vector2(0.5f, 0.5f);
-
-        switch (progressBar.direction) {
-            case Scrollbar.Direction.LeftToRight:
-                anchor.x = cobraProgress;
-                break;
-
-            case Scrollbar.Direction.RightToLeft:
-                anchor.x = 1f - cobraProgress;
-                break;
-
-            case Scrollbar.Direction.BottomToTop:
-                anchor.y = cobraProgress;
-                break;
-
-            case Scrollbar.Direction.TopToBottom:
-                anchor.y = 1f - cobraProgress;
-                break;
-        }
-
+        Vector2 anchor = AnchorAt(cobraProgress);
         cobraMarker.anchorMin = anchor;
         cobraMarker.anchorMax = anchor;
         cobraMarker.anchoredPosition = Vector2.zero;
 
+        UpdateCobraBody();
         UpdateDistanceReadout(gap);
+    }
+
+    // the marker's anchor at a point along the bar, 0 its bottom end
+    private Vector2 AnchorAt(float progress) {
+        Vector2 anchor = new Vector2(0.5f, 0.5f);
+
+        switch (progressBar.direction) {
+            case Scrollbar.Direction.LeftToRight:
+                anchor.x = progress;
+                break;
+
+            case Scrollbar.Direction.RightToLeft:
+                anchor.x = 1f - progress;
+                break;
+
+            case Scrollbar.Direction.BottomToTop:
+                anchor.y = progress;
+                break;
+
+            case Scrollbar.Direction.TopToBottom:
+                anchor.y = 1f - progress;
+                break;
+        }
+        return anchor;
+    }
+
+    // the segments reach from under the head to the bar's bottom end, so the
+    // cobra rises from the bottom and never hangs out of the bar
+    private void UpdateCobraBody() {
+        RectTransform area = cobraMarker.parent as RectTransform;
+        if (cobraBody == null || area == null) {
+            return;
+        }
+        Rect rect = area.rect;
+        Vector2 end = AnchorAt(0f);
+        Vector3 bottom = area.TransformPoint(new Vector3(
+            Mathf.Lerp(rect.xMin, rect.xMax, end.x),
+            Mathf.Lerp(rect.yMin, rect.yMax, end.y),
+            0f
+        ));
+        float bottomY = cobraBody.parent.InverseTransformPoint(bottom).y;
+        cobraBody.sizeDelta = new Vector2(
+            cobraBody.sizeDelta.x,
+            Mathf.Max(0f, cobraBody.localPosition.y - bottomY)
+        );
     }
 
     // The bar clamps the cobra marker at its bottom, but the number always
@@ -348,7 +391,9 @@ public class ProgressBarWidget: MonoBehaviour {
             cobraMarker.TransformPoint(cobraMarker.rect.center)
         );
         float markerGap = Mathf.Abs(monkeyPoint.y - cobraPoint.y);
-        float sideStep = Mathf.Max(0f, markerClearance - markerGap);
+        float sideStep = isMarkerSideStepped
+            ? Mathf.Max(0f, markerClearance - markerGap)
+            : 0f;
         cobraMarker.position -= distanceRoot.TransformVector(
             new Vector3(sideStep, 0f, 0f)
         );
