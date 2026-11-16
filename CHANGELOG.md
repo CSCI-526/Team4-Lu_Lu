@@ -10,7 +10,6 @@ Todo wenhai 2nd boss fight
 Todo erik lighting
 Todo erik skybox
 Todo erik sfx
-Todo belle: replace falling cobra & great cobra
 Bug endless mode need to start w/ full heath & no starting zone
 todo vertical version
 -->
