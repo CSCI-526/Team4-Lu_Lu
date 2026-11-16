@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 6130482957716204518}
   - component: {fileID: 2864019573318265417}
   - component: {fileID: 5193847261048372615}
+  - component: {fileID: 5193847261048372616}
   m_Layer: 0
   m_Name: _Monkey
   m_TagString: Player
@@ -332,6 +333,20 @@ MonoBehaviour:
   modelRoot: {fileID: 4718293056271423019}
   leftHand: {fileID: 6577900442668971580}
   rightHand: {fileID: 3804027484360009448}
+--- !u!114 &5193847261048372616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602697259893314259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b7d91e4c5a24f08b6e1d20a94c7f853, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MonkeyOutline
+  modelRoot: {fileID: 4718293056271423019}
+  outlineMat: {fileID: 2100000, guid: 8c3e5a17d2b94f60a1d7e94b2c06f358, type: 2}
 --- !u!1 &2917627373943038392
 GameObject:
   m_ObjectHideFlags: 0
