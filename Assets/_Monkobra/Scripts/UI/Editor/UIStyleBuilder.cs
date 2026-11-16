@@ -601,7 +601,7 @@ public static partial class UIStyleBuilder {
     private const string LEVEL_SELECT =
         "Assets/_Monkobra/Prefabs/LevelSelectScreen/LevelSelectScreen.prefab";
     private const string HINT_KEYBOARD =
-        "Assets/_Monkobra/Prefabs/LevelSelectScreen/LevelSelectHint_Keyboard.prefab";
+        "Assets/_Monkobra/Prefabs/UI/MenuHint_Keyboard.prefab";
     private const string HINT_TOUCH =
-        "Assets/_Monkobra/Prefabs/LevelSelectScreen/LevelSelectHint_Touch.prefab";
+        "Assets/_Monkobra/Prefabs/UI/MenuHint_Touch.prefab";
 }

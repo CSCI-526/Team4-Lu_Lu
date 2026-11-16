@@ -35,7 +35,7 @@ Mobs and the monkey find each other with triggers and tags, never with direct re
 
 ## Branch
 
-A branch is one of 4 kinds, each its own prefab and a variant of `Prefabs/Environment/BranchWithFruit`: `BranchEmpty`, `BranchBanana`, `BranchCoconut` and `BranchPineapple`. Each holds a `Branch`-tagged collider and the fruit of its kind, if any (`BranchKind`).
+A branch is one of 4 kinds, each its own prefab and a variant of `Prefabs/Environment/_BranchBase`: `Branch_Empty`, `Branch_Banana`, `Branch_Coconut` and `Branch_Pineapple`. Each holds a `Branch`-tagged collider and the fruit of its kind, if any (`BranchKind`).
 
 ### Hit Penalty
 
@@ -195,7 +195,7 @@ Every warning sign is a red diamond with a white "!" and a word, built by `BossF
 
 ### Fruit
 
-- Banana Branches: `bananaCount` real `BranchWithFruit` prefabs, always bearing, on the segments' branch ring (`branchRadiusU`) round the trunk, plus `bananasPerThird` more at random spots each time the king loses a third of its health; tagged `Branch` as ever, so they knock the monkey down like any branch. Every arena fruit, the tree's own plain bananas included, shows the watermelon mesh (`watermelonMesh`, `watermelonScale`, `watermelonOffset`) in place of the banana model, so the grab and the throw are unchanged and the thrown copy is a watermelon. A taken banana grows back after `bananaRespawnS`, shortened by `bananaRespawnScaleByThird` later in the fight
+- Banana Branches: `bananaCount` real `Branch_Banana` prefabs, always bearing, on the segments' branch ring (`branchRadiusU`) round the trunk, plus `bananasPerThird` more at random spots each time the king loses a third of its health; tagged `Branch` as ever, so they knock the monkey down like any branch. Every arena fruit, the tree's own plain bananas included, shows the watermelon mesh (`watermelonMesh`, `watermelonScale`, `watermelonOffset`) in place of the banana model, so the grab and the throw are unchanged and the thrown copy is a watermelon. A taken banana grows back after `bananaRespawnS`, shortened by `bananaRespawnScaleByThird` later in the fight
 - Throw: in the arena every grabbed banana, the arena's or the tree's own, still restores stamina and is also thrown: `ArmController` hands it to `CobraKingFightController.TryThrow`, which flies a larger copy (`thrownBananaScale`) in an arc (`throwArcU`, `throwTimeS`) onto the crown, spinning and dropping a trail of green dots, and bursts it into green cubes on impact
 - Golden Banana: the same banana branch, its banana tinted gold with a thick gold outline (a copy of `goldenOutlineMaterial`, `goldenOutlineWidthScale` times its width, so it follows the banana model's scale); it first shows up `goldenFirstDelayS` after the first hit on the king, then `goldenIntervalS` after each visit, beside the monkey (`goldenSideDeg` round the trunk, `goldenAboveMonkeyU` above it, under the ceiling) with a "Golden watermelon!" word, and vanishes after `goldenShowS`; grabbed, it refills stamina and raises a shield, gold armor on the monkey (a back plate, two shoulder pads and a helmet), that turns the next fatal hit into a knock-down ("Saved!"); none shows up while the shield is on
 - Golden Hint: each time the golden watermelon shows up, besides its word over it, a banner low on screen says "Golden watermelon!" / "Grab it for a Golden Armor" (`goldenHintTitle`, `goldenHintLine`, `goldenHintS`). A taken arena watermelon grows back after `bananaRespawnS` (9 s), scaled by `bananaRespawnScaleByThird` in the later thirds, unchanged; the arena branches' own fruit never grows back

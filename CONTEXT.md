@@ -46,7 +46,7 @@ monkobra/
 │   │   ├── Scenes/    TitleScene, LevelSelectScene, GameplayScene; the gameplay scene is root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   one folder per module (see Script Index), `SceneFlow/Editor/`
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file), WebGL/TitleScreenLoader.jslib (tells the loading page the title is drawn)
-│   │   ├── Prefabs/   per module; `UI/` holds the `MenuButton` and `IconButton` prefabs of the [UI Style](docs/ui-style-doc.md); `PopUp/` holds `PopUpManager`, `_PopUpBase`, `PopUp_Fruit` (every popup is data in `Settings/PopUp/PopUpCatalog`, not a prefab); `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
+│   │   ├── Prefabs/   per module; `UI/` holds the `MenuButton` and `IconButton` prefabs of the [UI Style](docs/ui-style-doc.md) and the `MenuHint_Keyboard`, `MenuHint_Touch` hints shared by the level select, pause, and lose screens; `PopUp/` holds `PopUpManager`, `_PopUpBase`, `PopUp_Fruit` (every popup is data in `Settings/PopUp/PopUpCatalog`, not a prefab); `World/` holds light, volume, event system, `EventSystem_Menu`, `MenuCamera`
 │   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Sprites/UI/` the button frames and glyphs, `Sprites/InputIcons/` the key icons and their `*_keycap` fills; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
 │   │   ├── Fonts/     `Baloo2/` the UI font (Baloo 2 SemiBold & ExtraBold, Latin set, their TMP assets & Title material); older fonts still in use until every screen is restyled
 │   │   └── Settings/  `_Shared/` (URP assets, volume profiles) plus one folder per module, assets directly inside
@@ -61,7 +61,7 @@ monkobra/
 
 ## Scene Hierarchy
 
-Three scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `GameplayScene` (both run modes, picked on load). The two menu scenes are shells of `MenuCamera`, `MenuEventSystem`, their screen prefab (`TitleScreen` or `LevelSelectScreen`), `Analytics` and `ControlStyleManager`; the menus read the `InputSystem_Actions` UI map through their own event system, so the gameplay `EventSystem` stays unchanged. Endless Mode is the same scene started through `SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Endless)`, so nothing is kept in step by hand.
+Three scenes, in build order: `TitleScene` (startup), `LevelSelectScene`, `GameplayScene` (both run modes, picked on load). The two menu scenes are shells of `MenuCamera`, `EventSystem_Menu`, their screen prefab (`TitleScreen` or `LevelSelectScreen`), `Analytics` and `ControlStyleManager`; the menus read the `InputSystem_Actions` UI map through their own event system, so the gameplay `EventSystem` stays unchanged. Endless Mode is the same scene started through `SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Endless)`, so nothing is kept in step by hand.
 
 `GameplayScene`'s root is 9 prefab instances, so teammates edit different files, plus 4 plain scene objects: `UI` (the `Canvas`), `Envs`, `Entities`, and a Cinemachine `Target Group`. `UI`, `Envs` and `Entities` nest one prefab per unit and have no prefab of their own, so adding or removing one of their children edits `GameplayScene.unity` itself. `Entities` is the monkey's orbit center: `MonkeyController` and `CameraAnchor` read `transform.parent.position` of `_Monkey`, so `Entities` stays at the tree axis and keeps `_Monkey` and `GreatCobra` as children.
 

@@ -353,7 +353,7 @@ GameObject:
   - component: {fileID: 2922262912236010432}
   - component: {fileID: 8590656666692874066}
   m_Layer: 0
-  m_Name: BranchWithFruit
+  m_Name: _BranchBase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
