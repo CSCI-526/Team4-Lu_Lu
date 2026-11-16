@@ -45,6 +45,10 @@ todo vertical version
 
 ### Fixed
 
+##### Yuqing Lu
+
+- lose screen: the Download Analytic button is big enough for its words, and the key hint row fits the run card at 4:3
+
 ### Security
 
 [unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.3...dev
