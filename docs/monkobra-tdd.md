@@ -160,7 +160,7 @@ Game balance numbers live in 3 assets plus the score config, split by what they 
 | 〃 | Fruit Popup | `fruitPopUpDetectRadiusU` | `FruitGrabPrompt` |
 | 〃 | Coconut | `cobraFreezeDurationS`, `coconutThrowSpeedU`, `coconutThrowDistanceU` | `CoconutManager` |
 | `WorldBalanceConfig` | Ramped Difficulty | `preBossRampCurve`, `postBossRampCurve` | `RampedDifficultyManager` |
-| 〃 | Branch | `startingZoneBranchClearRadiusU`, `startingZoneBananaBranchChance`, and per kind (empty, banana, coconut, pineapple) `<kind>BranchAttemptCount` & `<kind>BranchProbabilityCurve`, plus `coconutGuaranteedHeightU` & `pineappleGuaranteedHeightU` | `TreeSegmentController` |
+| 〃 | Branch | `startingZoneBranchClearRadiusU`, `startingZoneBananaBranchChance`, and per kind (empty, banana, coconut, pineapple) `<kind>BranchAttemptCount` & `<kind>BranchProbabilityCurve`, plus `coconutGuaranteedHeightU`, `pineappleGuaranteedHeightU` & `guaranteedBranchYawSpreadDeg` (how far a guaranteed branch may sit from the monkey's angle) | `TreeSegmentController` |
 | 〃 | Rough Bark | `roughBarkSpeedMultiplier`, `roughBarkBlendS`, `roughBarkAttemptCount`, `roughBarkSpawnProbabilityCurve` | `RoughBarkSpawner`, `MonkeyController` |
 | 〃 | Spider Web | `webAttemptCount`, `webSpawnProbabilityCurve` | `SpiderWebSpawner` |
 | 〃 | Boss Fight | `bossZoneStartU`, `bossTriggerHeightU`, `bossZoneEndU`, `bossMaxHealth`, `bossBananaDamage` | `BossFightController`, `RampedDifficultyManager` |

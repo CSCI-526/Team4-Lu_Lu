@@ -4,16 +4,12 @@
 Todo asset rf
 Todo prefab rf
 
-Fixme pan replace monkey model
 Todo pan BGM
 Todo pan branch & bark model/texture
 Todo erik lighting
 Todo erik skybox
 Todo erik sfx
-Todo belle: replace falling cobra & great cobra
-Fixme 1st pineapple/banana should appears on top of player
 Bug endless mode need to start w/ full heath & no starting zone
-Fixme polishing UI
 todo vertical version
 -->
 
@@ -21,6 +17,10 @@ todo vertical version
 ## [Unreleased]
 
 ### Added
+
+##### Erik
+
+- Monkey outline: the skinned monkey wears a white, always-on outline (`MonkeyOutline`, `Monkey_Outline` material), the grabbable fruit look
 
 ##### Yuqing Lu
 
@@ -50,6 +50,10 @@ todo vertical version
 - the old UI fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite: Baloo 2 is now the only font
 
 ### Fixed
+
+##### Erik
+
+- the first coconut & pineapple (the guaranteed ones) grow on the monkey's side of the trunk, within a configurable angle (`guaranteedBranchYawSpreadDeg` in `WorldBalanceConfig`), never on the far side
 
 ##### Yuqing Lu
 

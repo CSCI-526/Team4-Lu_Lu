@@ -137,6 +137,8 @@ For a quick test use the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns 
 
 The listener sits on the object holding the fruit's collider and outlines the meshes under it, or under its `meshRoot` when set, as on the `Pineapple` prefab, whose `PineappleCollider` and `PineappleModel` are siblings. `FruitOutline` measures its width in the mesh's own units, so a scaled model thickens it: the pineapple has its own `PineappleReachable` and `PineappleGrabbable` materials for that reason.
 
+The monkey wears the same outline always on, in white: `MonkeyOutline` adds the `Monkey_Outline` material to the skinned model's renderers at start. Its width is in the model's own units, so tune it on the material.
+
 ## Fruit Supply
 
 Fruit comes from branches, not its own spawner: each branch is one of 4 kinds (empty, banana, coconut, pineapple), a prefab variant per kind, so a branch bears 1 fruit or none. `TreeSegmentController` rolls each kind from its own curve and instantiates its prefab; `BranchController.Setup` then keeps the stem, scales it between 0.5x and 2x, and turns the fruit randomly. A banana is the banana child; a pineapple or coconut is its `fruitPrefab` spawned on the stem with the banana child switched off; an empty branch disables both banana and stem. Branch density and kind mix by height are in [Mobs](mob-doc.md#placement).
@@ -147,7 +149,6 @@ The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snap
 
 ## Known Gaps
 
-- `ArmController` carries a fixme to split it into several systems
 - A miss costs no stamina, only exposure
 - Scenes without a `ScoreManager` restore stamina on a grab but score nothing, see [Score](monkobra-tdd.md#score)
 - A double-tap near fruit briefly reaches, like any short press, before the coconut is spent

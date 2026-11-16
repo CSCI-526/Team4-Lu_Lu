@@ -33,6 +33,11 @@ public class WorldBalanceConfig: ScriptableObject {
     public float StartingZoneBananaBranchChance =>
         startingZoneBananaBranchChance;
 
+    /// <returns>how far, in degrees either way, a guaranteed coconut or
+    /// pineapple branch may sit from the monkey's angle around the trunk when
+    /// its segment rolls; 0 grows it exactly there; deg</returns>
+    public float GuaranteedBranchYawSpreadDeg => guaranteedBranchYawSpreadDeg;
+
     /// <param name="kind">which of the 4 branch kinds</param>
     /// <returns>attempts rolled per segment for that kind, the most one
     /// segment can hold of it</returns>
@@ -164,6 +169,16 @@ public class WorldBalanceConfig: ScriptableObject {
             + "branch curve there, and no other kind grows there"
     )]
     private float startingZoneBananaBranchChance = 0.4f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "a guaranteed coconut or pineapple branch grows within this many "
+            + "degrees, either way, of the monkey's angle around the trunk "
+            + "when its segment rolls, so the first of each is on the "
+            + "monkey's side; 0 grows it exactly above the monkey; deg"
+    )]
+    private float guaranteedBranchYawSpreadDeg = 15f;
 
     [Header("Branch: Empty")]
     [SerializeField]
@@ -334,6 +349,10 @@ public class WorldBalanceConfig: ScriptableObject {
 
     // Editor Validation  ######################################################
     private void OnValidate() {
+        guaranteedBranchYawSpreadDeg = Mathf.Max(
+            0f,
+            guaranteedBranchYawSpreadDeg
+        );
         emptyBranchAttemptCount = Mathf.Max(0, emptyBranchAttemptCount);
         bananaBranchAttemptCount = Mathf.Max(0, bananaBranchAttemptCount);
         coconutBranchAttemptCount = Mathf.Max(0, coconutBranchAttemptCount);
