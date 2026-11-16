@@ -77,7 +77,8 @@ All of it is built by Editor menus, never by editing prefab YAML:
 2. `Monkobra > UI Style > 2. Build Button Prefabs`: `MenuButton` and `IconButton`
 3. `Monkobra > UI Style > 3. Style Level Select`: the level selection and its key hint rows
 4. `Monkobra > UI Style > 4. Style HUD`: the input icons, the HUD prefabs, the popups, the tutorial, and the font overrides of both gameplay scenes
-5. `Monkobra > Build Title Screen`: the title picture, whose start prompt words take the loading page's font
+5. `Monkobra > UI Style > 5. Style Pause and Lose Screens`: the pause screen, the lose screen, and the leaderboard
+6. `Monkobra > Build Title Screen`: the title picture, whose start prompt words take the loading page's font
 
 `Build All` runs steps 1 to 3. To change the character set, cut the fonts again from the Google Fonts variable `Baloo2[wght].ttf` with fontTools (instance at weight 600 and 800, then subset), delete the two SDF assets, and run step 1.
 
@@ -91,4 +92,11 @@ All of it is built by Editor menus, never by editing prefab YAML:
 - Tutorial: a dark Background wash, Baloo 2 words, keycaps
 - Hack key list (F1–F12): hidden when a scene starts, F9 shows or hides it
 
-Done so far: the level selection, the title's start prompt, and the in-game HUD. The pause, lose, and win screens follow.
+## Run Screens
+
+- Pause: a Background wash over the frozen game, "Paused" as a screen title, and a column of square `IconButton`s (Resume, Restart, Exit, with the `Icon_Resume`, `Icon_Restart`, `Icon_Exit` glyphs), faces 20 apart; each button's words sit 14 right of its face in ExtraBold Cream, its key (Esc, R), keyboard only, on a keycap 10 left of it; the column is placed so its widest row is centered (`UIStyleBuilder.StyleIconColumn`)
+- Lose: a near-opaque Background wash; the run card and the leaderboard are [plates](#plate) of one height (520), centered, and the key hint row sits at its true size under both, so nothing crowds the card at 4:3; on the card, "Game Over!" in the Title look, the final score in Gold with the HudNumber material, the rest in Cream, every line shrinking to fit its width; Restart and Exit are the same icon column as the pause screen; the dev-only Download Analytic button is a small `MenuButton` in the top-right safe margin
+- Leaderboard: a plate whose gold rim replaces the old gold top line, a Cream title, Divider rules, Cream rows on faint Cream stripes, the player's row in Gold on a Gold stripe, drawn Bold, ie ExtraBold
+- Boss fight panels, built in code by `BossFightHud`: the win's reward panel, the revive card, the badge, tags, the health bar plate and the speech bubble take `UIStyle` colors (Background wash, Panel plates, Gold titles drawn Bold, Cream words, a Gold button with a Brown label for the main choice); the mock course ad keeps its own course colors, and the signal colors (health red, warning red, the EASY green) stay
+
+The old fonts and `Sprites/PopUp/PopUpBackground` are deleted last, in their own change, once every screen is checked.

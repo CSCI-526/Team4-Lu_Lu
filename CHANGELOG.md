@@ -40,6 +40,7 @@ todo vertical version
 - title start prompt & the loading page's "Loading" in Baloo 2, so the hand-over keeps one font
 - in-game HUD in the UI style: a smaller gold pause button, its Esc hint and the coconut counter laid out from the top-right corner so they never overlap; the progress bar wears the loading page's monkey and cobra heads, the cobra's neck its green segments; Baloo 2 energy, popups & tutorial; the score on a see-through plate with a "Score" caption, level with the pause button; popups on the same see-through plate, so the monkey's arm shows behind a grab hint; Space key icons as keycaps
 - hack key list (F1–F12) hidden at start, F9 shows or hides it
+- pause & lose screens in the UI style: square gold buttons with their words beside them and their keys on keycaps, logo-style titles; the lose screen's run card & leaderboard as matching plates with the key hint row under both; the boss fight's reward panel, revive card & badges in the UI palette
 
 ### Deprecated
 
@@ -49,7 +50,8 @@ todo vertical version
 
 ##### Yuqing Lu
 
-- lose screen: the Download Analytic button is big enough for its words, and the key hint row fits the run card at 4:3
+- lose screen: the Download Analytic button is big enough for its words, and the key hint row fits at 4:3, now under both panels
+- lose screen: the Restart and Exit buttons have their words back
 - progress bar faces no longer squashed: their counter-stretch now matches the bar's
 - progress bar: the cobra stays inside the bar as it reaches the monkey, and its body fills the bar from the bottom instead of hanging out below
 
