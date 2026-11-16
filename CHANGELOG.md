@@ -28,6 +28,7 @@ todo vertical version
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
 - title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
 - team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
+- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the one UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
 
 ### Changed
 

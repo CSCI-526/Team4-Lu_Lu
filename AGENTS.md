@@ -22,6 +22,7 @@ Read these `docs/` files when their topic arises:
 - [Gameplay Loop](docs/gameplay-loop-doc.md): the complete run loop, from climbing and hazards to the grab and the win or lose end
 - [Input](docs/input-doc.md): the keyboard and touch control schemes, each action's Preferred and Support inputs
 - [Analytics](docs/analytics-doc.md): session reports, every recorded metric, and the tuning asset
+- [UI Style](docs/ui-style-doc.md): the logo-style palette, the Baloo 2 type scale, buttons, key icons, and the menus that apply them
 - [Build](docs/build-doc.md): the WebGL export, the three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) and their settings
 - [Work with Git](docs/work-with-git.md): the teammate git flow via GitHub Desktop (Chinese), the human twin of the Git Workflow below
 
@@ -63,6 +64,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 - Dev/hack keys live only in `HackShortcutConfig` (a new `HackAction` plus an asset entry), read with `GetKey` and gated by `HackShortcutConfig.IsActive` (true in every build); never hard-code a dev key; hints and dev-only UI (e.g. `HackShortcutPanel`, `LoseScreenDownloadWidget`) hide themselves unless `HackShortcutConfig.AreHintsShown` (development build or Editor)
 - Analytics events: a new run event is an `AnalyticsMetric` entry, a row in `AnalyticsMetrics`, and one `RecordEvent` call from a subscription in `AnalyticsManager`; never a new list in `RunData` or a hand-written section in the writer, see [Analytics](docs/analytics-doc.md#adding-a-metric)
 - Camera: gameplay cameras track `CameraAnchor`, never the monkey body, so strafing never spins the view; every camera value lives in `CameraConfig` and an event shot (coconut, cobra alert, leap) is a `ShotKind` asked of `CameraRigManager`, never a camera enabled by hand; a camera script only polls a shared input action, never enables or disables it, see [Technical Design Document](docs/monkobra-tdd.md#camera)
+- UI style: every text uses the Baloo 2 font assets at a size from the type scale, every button the `MenuButton` or `IconButton` look, every key icon a keycap, all per [UI Style](docs/ui-style-doc.md); apply it through the `Monkobra > UI Style` menus (or `UIStyleBuilder` from a new menu), never by hand in prefab YAML, and add no other font
 - Hints: a hint shows an animated icon (`HintIconSlot`) and teaches the Preferred input of the control style in use only, never a Support key or key text; an icon Animator uses Unscaled Time, so it plays while time is frozen; menu buttons are Sprite Swap with the blue, green, red, grey sets, see [Input](docs/input-doc.md#hints-and-buttons)
 
 ## Testing Instructions
@@ -113,5 +115,6 @@ Teammates follow the human version in [Work with Git](docs/work-with-git.md) via
 - Update [Mobs](docs/mob-doc.md) when a cobra, branch, or web changes how it spawns, moves, or reacts to a touch, and the [Grab System](docs/grab-doc.md) when detection, reach, or release rules change
 - Update [Input](docs/input-doc.md) when a key, an action binding, or a control style rule changes, and the Controls table of the [README](README.md) with it
 - Update [Build](docs/build-doc.md) when the export steps, folder, or required Player Settings change
+- Update [UI Style](docs/ui-style-doc.md) when the palette, the fonts, the type scale, or a shared UI component changes
 - Update the [Technical Design Document](docs/monkobra-tdd.md) when the architecture, run lifecycle, tuning assets, input bindings, hack shortcuts, or conventions change
 - Update this file when commands or conventions change

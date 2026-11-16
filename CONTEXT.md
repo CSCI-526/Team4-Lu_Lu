@@ -38,7 +38,7 @@ monkobra/
 ├── CONTEXT.md         this file
 ├── CHANGELOG.md       version history, plus open triage tags in a comment
 ├── DEVLOG.md          weekly development journal, screenshots in devlog-assets/
-├── docs/              design, technical, mob, grab, balance, gameplay loop, analytics, build, and git documents
+├── docs/              design, technical, mob, grab, balance, gameplay loop, analytics, build, UI style, and git documents
 ├── devlog-assets/     images embedded by DEVLOG.md
 ├── builds/            local build output of all three builds, ignored by git
 ├── Assets/
@@ -46,8 +46,9 @@ monkobra/
 │   │   ├── Scenes/    TitleScene, LevelSelectScene, FullPlayScene, EndlessScene; the gameplay scenes are root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)
 │   │   ├── Scripts/   one folder per module (see Script Index), `SceneFlow/Editor/`
 │   │   ├── Plugins/   WebGL/Download.jslib (browser download of a text file), WebGL/TitleScreenLoader.jslib (tells the loading page the title is drawn)
-│   │   ├── Prefabs/   per module; `PopUp/` holds `_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup; `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
-│   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
+│   │   ├── Prefabs/   per module; `UI/` holds the `MenuButton` and `IconButton` prefabs of the [UI Style](docs/ui-style-doc.md); `PopUp/` holds `_PopUps`, `_PopUpBase`, `_PopUpFruitBase`, one variant per popup; `World/` holds light, volume, event system, `MenuEventSystem`, `MenuCamera`
+│   │   ├── Materials/, Sprites/, Shaders/, Inputs/   per module; `Sprites/UI/` the button frames and glyphs, `Sprites/InputIcons/` the key icons and their `*_keycap` fills; `Inputs/InputSystem_Actions`, `Shaders/Environment/FruitOutline` (inverted-hull Shader Graph)
+│   │   ├── Fonts/     `baloo2/` the UI font (Baloo 2 SemiBold & ExtraBold, Latin set, their TMP assets & Title material); older fonts still in use until every screen is restyled
 │   │   └── Settings/  `_Shared/` (URP assets, volume profiles) plus one folder per module, assets directly inside
 │   ├── WebGLTemplates/ FitWindow/index.html, the 16:9 fit-to-window WebGL page and its loading page (USC Games and Peel Five logos, then the cobra eats dots on real download progress), whose last frame is the `TitleScreen` picture
 │   ├── Settings/      Build Profiles/ (GithubPages, ItchIO), Unity-managed
@@ -199,10 +200,11 @@ All under `Assets/_Monkobra/Scripts/`. Each row names the owner of the detail.
 | `Analytics/AnalyticsManager` | singleton on the `Analytics` prefab, kept across scene loads (`DontDestroyOnLoad`, a later duplicate destroys itself): one session and file per launch, runs tagged with the scene's `RunMode`; a load closes an open run as `Interrupted`; observes the game, fills `SessionData` & the open `RunData`, saves one markdown session file to `persistentDataPath/Analytics/` on run events, a timer, and quit or pause; samples height & stamina; dev keys from `HackShortcutConfig`: restart session, mock save, download report (`DownloadReport`) | [TDD](docs/monkobra-tdd.md#analytics) |
 | `SceneFlow/SceneNames`, `SceneFlow/RunMode` | the scene name constants and `Load(name)`, the one way to load a scene (resets time scale & audio pause, raises `Loading` first); `RunMode` is `Full` or `Endless` | [TDD](docs/monkobra-tdd.md#scenes) |
 | `SceneFlow/ProgressStore`, `SceneFlow/Editor/ProgressMenu` | PlayerPrefs flag that unlocks Endless once the Cobra King is beaten (`MarkBossBeaten` from `BossFightController.Defeat`); Editor menu `Monkobra/Unlock Endless`, `Monkobra/Reset Progress` | [TDD](docs/monkobra-tdd.md#scenes) |
-| `TitleScreen/Editor/TitleScreenLayoutBuilder` | Editor menu `Monkobra/Build Title Screen`: builds the `TitleScreen` prefab picture (vines, logo, branch, grown cobra, monkey, and moves the start prompt to where the page writes "Loading") from the 1280×720 table shared with the loading page's `LAYOUT` | [Build](docs/build-doc.md#loading-page) |
+| `TitleScreen/Editor/TitleScreenLayoutBuilder` | Editor menu `Monkobra/Build Title Screen`: builds the `TitleScreen` prefab picture (vines, logo, branch, grown cobra, monkey, and moves the start prompt to where the page writes "Loading", its words in that label's Baloo 2) from the 1280×720 table shared with the loading page's `LAYOUT`; `BuildVines` hangs the same vines on other menus | [Build](docs/build-doc.md#loading-page) |
 | `TitleScreen/TitleScreen` | Space, a click or a tap opens the level selection (the `UI/StartPress` action), after an input delay; prompt pulses on unscaled time; after its first frame tells the WebGL loading page (`TitleScreenLoader.jslib`) to fade out, as the prefab picture is the page's last frame | [TDD](docs/monkobra-tdd.md#scenes) |
 | `LevelSelectScreen/LevelSelectScreen` | Normal Play, Endless Mode (greyed out until unlocked), Back; Esc is Back | [TDD](docs/monkobra-tdd.md#scenes) |
 | `UI/MenuButtonHover`, `UI/MenuSelectionKeeper` | menu helpers: hover selects a button so mouse and keys share one highlight; the keeper reselects the last button after a click on empty space | [TDD](docs/monkobra-tdd.md#scenes) |
+| `UI/UIStyle`, `UI/MenuButtonPop`, `UI/Editor/UIStyleBuilder` | the logo-style UI: `UIStyle` holds the palette; `MenuButtonPop` gives a styled button its feel (selected grows, pressed sinks onto the shadow, locked shows a lock), on unscaled time; `UIStyleBuilder` is the `Monkobra > UI Style` menus that build the Baloo 2 font assets & Title material, set the TMP default font, build the `MenuButton` & `IconButton` prefabs, and restyle screens in place | [UI Style](docs/ui-style-doc.md) |
 | `ControlStyle/ControlStyle`, `ControlStyle/ControlStyleManager` | enum `Keyboard` or `Touch`, and the singleton on the `ControlStyleManager` prefab, kept across scene loads: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches; static `Current`, `IsTouch` and `StyleChanged` need no instance | [TDD](docs/monkobra-tdd.md#input) |
 | `Bootstrap/PersistentBootstrap` | static, runs `BeforeSceneLoad`: creates `Analytics` and `ControlStyleManager` from `Resources/` when their `I` is null, so any scene, a personal dev scene included, plays with both | [TDD](docs/monkobra-tdd.md#control-style) |
 | `ControlStyle/ControlStyleLabel`, `ControlStyle/ControlStyleSwitch` | follow `StyleChanged`: one text under a keyboard and a touch wording, and the owner that shows a keyboard group or a touch group of objects | [TDD](docs/monkobra-tdd.md#input) |

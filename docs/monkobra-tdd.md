@@ -11,6 +11,7 @@ How Monkobra is built: the engine and packages, the run lifecycle, the systems t
 | [Mobs](mob-doc.md) | cobra, falling cobra, branches, spider webs, and what each does when the monkey touches it |
 | [Grab System](grab-doc.md) | detection zones, arm reach, release check, camera swap, outline feedback |
 | [Build](build-doc.md) | the WebGL export, the three builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) and their settings |
+| [UI Style](ui-style-doc.md) | the logo-style look of every screen: palette, Baloo 2 type scale, buttons, key icons, and the menus that apply them |
 | [AGENTS.md](../AGENTS.md) | rules for agents |
 | [CONTEXT.md](../CONTEXT.md) | descriptive system map and known gaps |
 | [PopUps](pop-up-doc.md) | the center messages: one plate-and-text look, priority and queue, gating, how to add one |
