@@ -28,6 +28,11 @@ public class ArmController: MonoBehaviour {
     /// <returns>if the arm is reaching for fruit, else climbing</returns>
     public bool IsReaching => isReaching;
 
+    /// <returns>the arm's stretched cube, shoulder to hand (length along its
+    /// local z, toward the shoulder), eg to dress it; null if unassigned
+    /// </returns>
+    public Transform ArmVisual => armVisual;
+
     /// <returns>if the hand touches anything right now</returns>
     public bool IsHandTouching {
         get {
@@ -614,6 +619,12 @@ public class ArmController: MonoBehaviour {
         }
 
         FruitGrabbed?.Invoke(fruit);
+
+        // in the Spider King fight a grab rips a silk knot or lures it away
+        SpiderFightController spiderFight = SpiderFightController.I;
+        if (spiderFight != null && spiderFight.TryGrab(fruit, fruitCentre)) {
+            return;
+        }
 
         // in the boss fight a grabbed banana is also thrown at the boss
         BossFightController bossFight = BossFightController.I;

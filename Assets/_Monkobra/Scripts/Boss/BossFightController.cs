@@ -106,6 +106,87 @@ public class BossFightController: MonoBehaviour {
     /// <returns>true if the catch was handled here, so the sensor must not
     /// end the run: absorbed by the armor, or in the fight turned into a
     /// boss fight loss that offers a revive</returns>
+    /// <returns>scale on each web escape press in the arena, also used by the
+    /// Spider King's, so both shake a web off in as many presses</returns>
+    public float WebEscapeGainScale => webEscapeGainScale;
+
+    /// <returns>if the Cobra King is beaten (or skipped) & the climb is on
+    /// past it, eg so the Spider King may start</returns>
+    public bool IsDone => phase == Phase.Done;
+
+    /// <summary>if the fight has not begun yet</summary>
+    public bool IsWaiting => phase == Phase.Waiting;
+
+    /// <returns>if the monkey still wears the gold armor won from the Cobra
+    /// King, not yet spent on the climb after</returns>
+    public bool HasArmor => hasShield
+        && (phase == Phase.Done || phase == Phase.Waiting);
+
+    /// <summary>
+    /// Puts the gold armor on the monkey w/ the win's swirl, its badge
+    /// showing as it lands, eg at the Spider King fight's start or from its
+    /// golden melon; also before this fight (the Spider King test fight),
+    /// where it is only worn & spent, never starts this fight.
+    /// </summary>
+    /// <returns>if the armor was put on, false if already worn</returns>
+    public bool GiveArmor() {
+        bool isIdle = phase == Phase.Done || phase == Phase.Waiting;
+        if (!isIdle || hasShield) {
+            return false;
+        }
+        if (monkey == null) {
+            MonkeyController found = FindFirstObjectByType<MonkeyController>();
+            if (found == null || found.transform.parent == null) {
+                return false;
+            }
+            monkey = found.transform;
+            monkeyController = found;
+            trunkCenter = monkey.parent.position;
+        }
+        if (armor == null) {
+            BuildShieldRing();
+        }
+        hasShield = true;
+        armorRewardTimeS = 0f;
+        hasArmorLanded = false;
+        return true;
+    }
+
+    /// <summary>
+    /// Spends the kept gold armor on a fatal hit somewhere else, eg in the
+    /// Spider King fight: the badge goes & "Saved!" pops at the monkey.
+    /// </summary>
+    /// <returns>if there was armor to spend</returns>
+    public bool TrySpendArmor() {
+        if (!HasArmor || monkey == null) {
+            return false;
+        }
+        hasShield = false;
+        ArmorAbsorbed?.Invoke();
+        hud.ShowArmorBadge(false);
+        hud.PopText("Saved!", monkey.position, goldenColor);
+        hud.Flash(goldenColor);
+        // the armor shatters off at once, never left hanging where it was
+        if (armor != null) {
+            foreach (Transform piece in armor) {
+                BurstAt(piece.position, goldenColor);
+                piece.gameObject.SetActive(false);
+            }
+        }
+        armorRewardTimeS = -1f;
+        return true;
+    }
+
+    /// <summary>
+    /// Test hook for the spider jump hack key: a fight not begun yet is
+    /// skipped as if beaten, in the armor, like the endless start.
+    /// </summary>
+    public void SkipForTest() {
+        if (phase == Phase.Waiting) {
+            StartAsDone();
+        }
+    }
+
     public bool TryAbsorbCobraCatch() {
         if (monkey == null) {
             return false;
@@ -160,8 +241,15 @@ public class BossFightController: MonoBehaviour {
             }
             return true;
         }
-        // the kept reward armor on the climb after: the cobra is thrown far
-        // down & frozen, more than a coconut does
+        // the kept reward armor on the climb after: it shatters off w/ a gold
+        // burst, & the cobra is thrown far down & frozen, more than a
+        // coconut does
+        if (armor != null) {
+            foreach (Transform piece in armor) {
+                BurstAt(piece.position, goldenColor);
+                piece.gameObject.SetActive(false);
+            }
+        }
         if (greatCobra != null) {
             greatCobra.KnockBack(armorKnockBackU);
             greatCobra.TryFreeze(armorCobraFreezeS);
@@ -252,6 +340,11 @@ public class BossFightController: MonoBehaviour {
     [SerializeField]
     [Tooltip("balance numbers: trigger height, king health, banana damage")]
     private WorldBalanceConfig worldBalanceConfig;
+
+    [Tooltip("the second boss, spawned at start if no scene has one, so "
+        + "every scene w/ this fight also gets the Spider King")]
+    [SerializeField]
+    private SpiderFightController spiderFightPrefab;
 
     [SerializeField]
     [Tooltip("confirms the revive offer, the ad skip & the reward panel, the "
@@ -924,6 +1017,13 @@ public class BossFightController: MonoBehaviour {
         }
         I = this;
 
+        bool hasSpiderFight = FindFirstObjectByType<SpiderFightController>(
+            FindObjectsInactive.Include
+        ) != null;
+        if (spiderFightPrefab != null && !hasSpiderFight) {
+            Instantiate(spiderFightPrefab);
+        }
+
         if (confirmAction == null || giveUpAction == null) {
             Debug.LogWarning(
                 "BossFightController:\tmust assign Inspector Fields: "
@@ -991,6 +1091,12 @@ public class BossFightController: MonoBehaviour {
             return;
         }
         if (phase == Phase.Waiting) {
+            // armor lent to the Spider King test fight b4 this one; the
+            // ring update also hides it once spent
+            if (monkey != null && armor != null) {
+                UpdateShieldRing();
+                UpdateSparks();
+            }
             if (game.State == GameState.Playing && HasReachedTrigger()) {
                 BeginFight();
             }
@@ -1003,7 +1109,11 @@ public class BossFightController: MonoBehaviour {
         if (phase == Phase.Done) {
             UpdateShieldRing();
             UpdateSparks();
-            UpdateCameraFocus();
+            // the Spider King fight frames the camera itself
+            SpiderFightController spiderFight = SpiderFightController.I;
+            if (spiderFight == null || !spiderFight.IsFraming) {
+                UpdateCameraFocus();
+            }
             UpdateChaseWarning();
             return;
         }
@@ -1074,7 +1184,9 @@ public class BossFightController: MonoBehaviour {
         BuildShieldRing();
         hasShield = true;
         phase = Phase.Done;
-        hud.ShowArmorBadge(true);
+        // never shown as a fight, so its UI is built here: "Saved!" & the
+        // flash of a save need it
+        hud.BuildQuiet();
         // no chase call: the cobra is already after the monkey
         hasWarnedChase = true;
         if (Debug.isDebugBuild) {
@@ -2380,7 +2492,6 @@ public class BossFightController: MonoBehaviour {
         SpawnChoices();
         SpawnWebs(webCount);
         SpawnLowWebs();
-        hud.Flash(goldenColor);
         hud.ShowBannerFor(armorIntroTitle, ChoiceLine, goldenColor, 0f);
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -2575,8 +2686,6 @@ public class BossFightController: MonoBehaviour {
         if (!hasArmorLanded && t >= ARMOR_LAND_SHARE) {
             hasArmorLanded = true;
             BurstAt(monkey.position + Vector3.up * 0.4f, goldenColor);
-            hud.Flash(goldenColor);
-            hud.ShowArmorBadge(true);
         }
         if (t >= 1f) {
             armorRewardTimeS = -1f;
@@ -2797,7 +2906,9 @@ public class BossFightController: MonoBehaviour {
         if (game.IsPaused) {
             return;
         }
-        if (WasPressed(confirmAction)) {
+        // only once the win has played in, so a Space mashed in the fight
+        // never skips it
+        if (hud.IsRewardReady && WasPressed(confirmAction)) {
             ContinueAfterReward();
         }
     }

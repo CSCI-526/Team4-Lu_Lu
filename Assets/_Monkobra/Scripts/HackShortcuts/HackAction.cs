@@ -42,4 +42,8 @@ public enum HackAction {
     /// <summary>shows or hides the on-screen list of hack keys
     /// (<see cref="HackShortcutPanel"/>), hidden when a scene starts</summary>
     ToggleHints,
+
+    /// <summary>teleports the monkey to just below the Spider King's
+    /// trigger height, the Cobra King counted as beaten</summary>
+    SpiderJump,
 }

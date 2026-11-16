@@ -267,6 +267,17 @@ public class HeightMarkerSystem: MonoBehaviour {
         // once the fight has begun its marker is gone, the real king is there
         bool isBossMarkerDone = bossFight != null && bossFight.IsInArena;
         bool isFigureShown = false;
+        // the second boss, the Spider King, marked the same way at its own
+        // height
+        SpiderFightController spiderFight = SpiderFightController.I;
+        int spiderHeightU = spiderFight != null
+            && spiderFight.isActiveAndEnabled && !isEndless
+            && spiderFight.TriggerHeightU > 0f
+            ? Mathf.FloorToInt(spiderFight.TriggerHeightU / interval) * interval
+            : int.MinValue;
+        bool isSpiderMarkerDone = spiderFight != null
+            && spiderFight.IsMarkerDone;
+        bool isSpiderFigureShown = false;
         SyncReachedMarker(difficulty, interval);
         float climbedU = difficulty.CurrentPlayerClimbedYDistance;
         int lowest = Mathf.Max(
@@ -299,14 +310,16 @@ public class HeightMarkerSystem: MonoBehaviour {
             Vector3 anchor = isRight ? rightAnchor : leftAnchor;
             int marker = lowest + Mod(i / SIDE_COUNT - lowest, pairCount);
             int heightU = marker * interval;
-            bool isBoss = heightU == bossHeightU;
+            bool isSpider = heightU == spiderHeightU;
+            bool isBoss = heightU == bossHeightU || isSpider;
             // one trigger per pair, put at the marker's exact height on
             // the trunk axis; its label anchor is where the plates go
             HeightMarkerTrigger trigger = triggers[i / SIDE_COUNT];
             if (isRight) {
                 PlaceTrigger(trigger, difficulty, heightU, marker <= highest);
             }
-            if (marker > highest || (isBoss && isBossMarkerDone)) {
+            bool isDone = isSpider ? isSpiderMarkerDone : isBossMarkerDone;
+            if (marker > highest || (isBoss && isDone)) {
                 Hide(label);
                 continue;
             }
@@ -347,7 +360,10 @@ public class HeightMarkerSystem: MonoBehaviour {
                 );
                 label.transform.localScale *= bossScale * (1f + 0.06f * beat);
                 // one king look-alike, on the right-hand plate
-                if (isRight) {
+                if (isRight && isSpider) {
+                    isSpiderFigureShown = PlaceFigure(ref spiderFigure,
+                        spiderFight.BuildMarkerFigure, label, plates[i]);
+                } else if (isRight) {
                     isFigureShown =
                         PlaceBossFigure(bossFight, label, plates[i]);
                 }
@@ -355,6 +371,9 @@ public class HeightMarkerSystem: MonoBehaviour {
         }
         if (!isFigureShown && bossFigure != null) {
             bossFigure.gameObject.SetActive(false);
+        }
+        if (!isSpiderFigureShown && spiderFigure != null) {
+            spiderFigure.gameObject.SetActive(false);
         }
     }
 
@@ -364,19 +383,37 @@ public class HeightMarkerSystem: MonoBehaviour {
     private bool PlaceBossFigure(
         BossFightController bossFight, TextMeshPro label, SpriteRenderer plate
     ) {
-        if (bossFigure == null) {
-            bossFigure = bossFight.BuildMarkerFigure();
-            if (bossFigure == null) {
+        return PlaceFigure(ref bossFigure, bossFight.BuildMarkerFigure, label,
+            plate);
+    }
+
+    // a boss look-alike holding the plate: the cobra coiled round it, the
+    // spider gripping it (BossMarkerFigure), fitted to the plate each frame
+    private static bool PlaceFigure(
+        ref Transform figure, System.Func<Transform> build, TextMeshPro label,
+        SpriteRenderer plate
+    ) {
+        if (figure == null) {
+            figure = build();
+            if (figure == null) {
                 return false;
             }
         }
-        if (bossFigure.parent != label.transform) {
-            bossFigure.SetParent(label.transform, false);
+        if (figure.parent != label.transform) {
+            figure.SetParent(label.transform, false);
         }
-        bossFigure.localPosition = plate.transform.localPosition
-            + Vector3.up * plate.size.y * 0.5f;
-        if (!bossFigure.gameObject.activeSelf) {
-            bossFigure.gameObject.SetActive(true);
+        figure.localPosition = Vector3.zero;
+        figure.localRotation = Quaternion.identity;
+        figure.localScale = Vector3.one;
+        BossMarkerFigure holder = figure.GetComponent<BossMarkerFigure>();
+        if (holder != null) {
+            holder.Fit(plate.transform.localPosition, plate.size);
+        } else {
+            figure.localPosition = plate.transform.localPosition
+                + Vector3.up * plate.size.y * 0.5f;
+        }
+        if (!figure.gameObject.activeSelf) {
+            figure.gameObject.SetActive(true);
         }
         return true;
     }
@@ -438,6 +475,7 @@ public class HeightMarkerSystem: MonoBehaviour {
     // one pass trigger per label pair, see HeightMarkerTrigger
     private readonly List<HeightMarkerTrigger> triggers = new();
     private Transform bossFigure; // the king look-alike on the boss marker
+    private Transform spiderFigure; // the Spider King's, on its marker
     // climbed height each label shows, int.MinValue while it shows none; u
     private readonly List<int> shownHeightsU = new();
     private bool isStyleDirty; // if a look field changed since last applied

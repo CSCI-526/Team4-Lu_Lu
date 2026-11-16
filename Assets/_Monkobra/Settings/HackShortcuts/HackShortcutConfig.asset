@@ -49,3 +49,6 @@ MonoBehaviour:
   - action: 11
     key: 102
     description: show or hide this list
+  - action: 12
+    key: 49
+    description: jump to spider king

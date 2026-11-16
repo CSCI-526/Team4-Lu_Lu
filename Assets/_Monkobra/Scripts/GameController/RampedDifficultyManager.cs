@@ -47,18 +47,43 @@ public class RampedDifficultyManager: MonoBehaviour {
         return y < RampBaseYPosition;
     }
 
+    /// <summary>
+    /// Keeps a world height range bare like the boss zone till
+    /// <see cref="ClearExtraBossZone"/>, eg a boss arena outside the zone.
+    /// </summary>
+    public void SetExtraBossZone(float bottomY, float topY) {
+        extraBossZoneBottomY = Mathf.Min(bottomY, topY);
+        extraBossZoneTopY = Mathf.Max(bottomY, topY);
+        hasExtraBossZone = true;
+    }
+
+    /// <summary>Ends the range set by <see cref="SetExtraBossZone"/>.
+    /// </summary>
+    public void ClearExtraBossZone() {
+        hasExtraBossZone = false;
+    }
+
     /// <param name="y">any y position; world u</param>
     /// <returns>if <paramref name="y"/> lies in the boss zone, from its start
     /// to its end in climbed height, where only the boss fight generates
     /// anything</returns>
     public bool IsInBossZoneY(float y) {
+        // a fight's own arena, eg the Spider King's test fight near the start
+        if (hasExtraBossZone && y >= extraBossZoneBottomY
+            && y <= extraBossZoneTopY) {
+            return true;
+        }
         // the endless tree has no boss zone, so no hazard-free gap
         if (worldBalanceConfig == null || IsEndless) {
             return false;
         }
         float climbedY = GetClimbedYDistance(y);
-        return climbedY >= worldBalanceConfig.BossZoneStartU
+        bool isInCobraZone = climbedY >= worldBalanceConfig.BossZoneStartU
             && climbedY <= worldBalanceConfig.BossZoneEndU;
+        // the Spider King's zone higher up is kept just as clear
+        bool isInSpiderZone = climbedY >= worldBalanceConfig.SpiderZoneStartU
+            && climbedY <= worldBalanceConfig.SpiderZoneEndU;
+        return isInCobraZone || isInSpiderZone;
     }
 
     /// <summary>
@@ -203,4 +228,9 @@ public class RampedDifficultyManager: MonoBehaviour {
             worldBalanceConfig.PostBossRampCurve.Evaluate(climbedY - zoneEndU)
         );
     }
+
+    // a bare range set by a boss fight, in world y
+    private bool hasExtraBossZone;
+    private float extraBossZoneBottomY;
+    private float extraBossZoneTopY;
 }

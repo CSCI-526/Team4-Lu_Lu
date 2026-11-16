@@ -130,6 +130,13 @@ public class BossKingBody: MonoBehaviour {
     /// </summary>
     /// <returns>the figure's root, w/o a parent</returns>
     public Transform BuildFigure(float scale) {
+        return BossMarkerFigure.Create(BossMarkerFigure.Kind.Cobra,
+            bodyMaterial, bodyColor, crownColor, Color.white);
+    }
+
+    // the old flat look-alike lying on the plate, before the king coiled
+    // round it (BossMarkerFigure)
+    private Transform BuildLyingFigure(float scale) {
         if (colorBlock == null) {
             colorBlock = new MaterialPropertyBlock();
         }
