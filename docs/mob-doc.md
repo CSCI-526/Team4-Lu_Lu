@@ -106,6 +106,8 @@ While the monkey moves across rough bark (`MonkeyController.RoughBarkSpeedScale`
 
 A hazard from above, spawned in `GameplayScene` as the monkey climbs the endless tree.
 
+Code: `FallingCobraController` is the Coordinator (state machine and lifecycle); the work is split by role into `FallingCobraHeadMesh`, `FallingCobraBranchCoil`, `FallingCobraTracking`, and `FallingCobraEyes`, which share the state in `FallingCobraRig` and read every Inspector value from `FallingCobraTuning`, the `tuning` object on the `FallingCobra` prefab.
+
 ### Spawning
 
 `FallingCobraSpawner` sits on the active `DynamicTreeSegmentPool` object in `GameplayScene`, never under the pool's mock tree, which the pool deactivates at runtime (it logs a warning if one is left there). Like the web spawner it listens to `TreeSegmentController.BranchesGenerated`, so each roll of a segment's branches gets exactly one roll of falling cobras. Only the first enabled spawner listens.
