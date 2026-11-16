@@ -39,8 +39,8 @@ graph TD
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | shows the fruit its `BranchKind` names: a pineapple, a coconut, a banana, or none |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
-| `UI/StaminaBarController` | `AddStaminaByFruit` restores stamina when a grab's flight lands |
-| `UI/FruitFlyEffect` | flies a grabbed fruit's sprite to its target, then calls back |
+| `Stamina/StaminaBarController` | `AddStaminaByFruit` restores stamina when a grab's flight lands |
+| `FruitFly/FruitFlyEffect` | flies a grabbed fruit's sprite to its target, then calls back |
 | `Environment/FruitFlyOnGrab` | on a fruit: which target and sprite its flight uses |
 | `ItemPineapple/LeapOnGrab` | marks a fruit whose grab starts a leap |
 | `ItemPineapple/PineappleLeapController` | on the monkey root: runs the leap |

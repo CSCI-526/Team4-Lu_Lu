@@ -339,6 +339,6 @@ public static partial class UIStyleBuilder {
         "Assets/_Monkobra/Prefabs/PauseScreen/PauseScreen.prefab";
     private const string LOSE_SCREEN =
         "Assets/_Monkobra/Prefabs/LoseScreen/LoseScreen.prefab";
-    private const string LEADERBOARD = UI_PREFABS + "Leaderboard.prefab";
-    private const string LEADERBOARD_ROW = UI_PREFABS + "LeaderboardRow.prefab";
+    private const string LEADERBOARD = PREFABS + "LoseScreen/Leaderboard.prefab";
+    private const string LEADERBOARD_ROW = PREFABS + "LoseScreen/LeaderboardRow.prefab";
 }

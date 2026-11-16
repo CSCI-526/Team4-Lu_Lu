@@ -284,20 +284,20 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 
 | Element | Script | Shows |
 | --- | --- | --- |
-| Stamina Bar | `UI/StaminaBarController` | current stamina, under an `Energy` label |
-| Fruit Fly | `UI/FruitFlyEffect` | a grabbed fruit's sprite flying to the bar, the coconut counter, or the monkey ([Grab System](grab-doc.md#fruit-fly)) |
-| Coconut | `UI/CoconutWidget`, `UI/FreezeTimerWidget`, `UI/CoconutMessageWidget` | count and double-tap hint; freeze countdown & bar; coconut messages through `PopUpManager`, all driven by `CoconutManager` ([Grab System](grab-doc.md#coconut)) |
+| Stamina Bar | `Stamina/StaminaBarController` | current stamina, under an `Energy` label |
+| Fruit Fly | `FruitFly/FruitFlyEffect` | a grabbed fruit's sprite flying to the bar, the coconut counter, or the monkey ([Grab System](grab-doc.md#fruit-fly)) |
+| Coconut | `ItemCoconut/CoconutWidget`, `ItemCoconut/FreezeTimerWidget`, `ItemCoconut/CoconutMessageWidget` | count and double-tap hint; freeze countdown & bar; coconut messages through `PopUpManager`, all driven by `CoconutManager` ([Grab System](grab-doc.md#coconut)) |
 | Climb Progress | `UI/ProgressBarWidget` | a window `windowSizeY` tall below the monkey, with a marker for how near the cobra's head is and the gap in world units labelled `m`; the monkey and cobra wear the loading page's heads, the cobra's neck its green segments, which `cobraBody` stretches down to the bar's bottom end, and `markerFlash` (the head) flashes while it surges; with `isMarkerSideStepped` off the cobra stays in the bar as it nears the monkey |
-| Score | `UI/ScoreWidget` | total score, on the HUD (on a plate with a "Score" caption, `ScoreHeight` prefab) and the lose panel |
+| Score | `Scoring/ScoreWidget` | total score, on the HUD (on a plate with a "Score" caption, `ScoreHeight` prefab) and the lose panel |
 | Height Markers | `Environment/HeightMarkerSystem` | climbed height every `intervalU` beside the trunk, in world space rather than on the HUD canvas, see below |
 | Screens | `UI/ScreensManager` | tutorial and lose panels |
-| Lose Stats | `UI/LoseScreen` | final height (highest point climbed), final score, and bananas collected, filled each time the lose panel is enabled |
-| Web Prompt | `UI/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
-| Low Stamina Prompt | `UI/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
+| Lose Stats | `LoseScreen/LoseScreen` | final height (highest point climbed), final score, and bananas collected, filled each time the lose panel is enabled |
+| Web Prompt | `MobSpiderWeb/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
+| Low Stamina Prompt | `Stamina/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
 | PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
-| Pause Button | `UI/PauseButton` | square `IconButton` top right of `InGameHUD` inside the 24 safe margin (Sprite Swap, `IconButton_*`, the `Icon_Pause` glyph), with its Esc key hint and the coconut counter laid out leftward from it ([UI Style](ui-style-doc.md#hud)), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
+| Pause Button | `PauseScreen/PauseButton` | square `IconButton` top right of `InGameHUD` inside the 24 safe margin (Sprite Swap, `IconButton_*`, the `Icon_Pause` glyph), with its Esc key hint and the coconut counter laid out leftward from it ([UI Style](ui-style-doc.md#hud)), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
 | Touch Controls | `UI/TouchControlsPanel` | the joystick and full-screen action zone of the `TouchControls` prefab, shown only in Touch mode ([Input](#input)) |
-| Pause Screen | `UI/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit `IconButton`s as 3-column rows (keycap, button, text label; the keycaps show in Keyboard style only, [UI Style](ui-style-doc.md#run-screens)) while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
+| Pause Screen | `PauseScreen/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit `IconButton`s as 3-column rows (keycap, button, text label; the keycaps show in Keyboard style only, [UI Style](ui-style-doc.md#run-screens)) while `GameController.IsPaused`; on the always-active `PauseScreen` root under `_Screens`, it toggles its `Panel` child on `PauseChanged` |
 
 The HUD canvas `_UI` nests `InGameHUD`, a full-stretch prefab holding `ProgressBar`, `StaminaBar`, `ScoreHeight`, the pause hint, `CoconutHUD`, `CoconutMessage` (the host of `CoconutMessageWidget`), and `FruitFlyLayer` (drawn last, above the bars); the `FreezeTimerHUD` prefab, the prompts and `Screens` stay direct children of `_UI`, drawn above it, with the `_PopUps` root just before `Screens`. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
 
@@ -331,7 +331,7 @@ The tutorial in `FullPlayScene` holds one group per control style under `Tutoria
 - Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig`, score values in `ScoreConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives
-- Style: `Player/`, `GameController/`, `Analytics/`, `MobGreatCobra/`, `MobFallingCobra/`, `UI/StaminaBarController`, `UI/ScreensManager`, and most of `Environment/` follow the house Unity style. `Scoring/`, `UI/ProgressBarWidget`, and `MobSpiderWeb/SpiderWebBuilder` are still in the template style, some with Chinese comments
+- Style: `Player/`, `GameController/`, `Analytics/`, `MobGreatCobra/`, `MobFallingCobra/`, `Stamina/StaminaBarController`, `UI/ScreensManager`, and most of `Environment/` follow the house Unity style. `Scoring/`, `UI/ProgressBarWidget`, and `MobSpiderWeb/SpiderWebBuilder` are still in the template style, some with Chinese comments
 
 ## Build and Deploy
 

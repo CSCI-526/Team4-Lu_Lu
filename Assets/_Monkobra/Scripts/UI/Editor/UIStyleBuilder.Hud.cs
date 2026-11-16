@@ -666,16 +666,17 @@ public static partial class UIStyleBuilder {
     private static readonly string[] TAP_ICONS = {
         "TouchTap", "TouchTap_Double", "TouchTap_Hold", "TouchTap_Rapid",
     };
-    private const string UI_PREFABS = "Assets/_Monkobra/Prefabs/UI/";
+    private const string PREFABS = "Assets/_Monkobra/Prefabs/";
+    private const string UI_PREFABS = PREFABS + "UI/";
     private const string IN_GAME_HUD = UI_PREFABS + "InGameHUD.prefab";
-    private const string COCONUT_HUD = UI_PREFABS + "CoconutHUD.prefab";
-    private const string FREEZE_TIMER = UI_PREFABS + "FreezeTimerHUD.prefab";
+    private const string COCONUT_HUD = PREFABS + "ItemCoconut/CoconutHUD.prefab";
+    private const string FREEZE_TIMER = PREFABS + "ItemCoconut/FreezeTimerHUD.prefab";
     private const string PROGRESS_BAR = UI_PREFABS + "ProgressBar.prefab";
-    private const string STAMINA_BAR = UI_PREFABS + "StaminaBar.prefab";
-    private const string SCORE_HUD = UI_PREFABS + "ScoreHUD.prefab";
-    private const string SCORE_BONUS_ITEM = UI_PREFABS + "ScoreBonusItem.prefab";
-    private const string SCORE_HEIGHT = UI_PREFABS + "ScoreHeight.prefab";
-    private const string SPIDER_WEB_PROMPT = UI_PREFABS + "SpiderWebPrompt.prefab";
+    private const string STAMINA_BAR = PREFABS + "Stamina/StaminaBar.prefab";
+    private const string SCORE_HUD = PREFABS + "Scoring/ScoreHUD.prefab";
+    private const string SCORE_BONUS_ITEM = PREFABS + "Scoring/ScoreBonusItem.prefab";
+    private const string SCORE_HEIGHT = PREFABS + "Scoring/ScoreHeight.prefab";
+    private const string SPIDER_WEB_PROMPT = PREFABS + "MobSpiderWeb/SpiderWebPrompt.prefab";
     private const string HACK_HELP = UI_PREFABS + "HackShortcutHelp.prefab";
     private const string HEIGHT_MARKERS =
         "Assets/_Monkobra/Prefabs/Environment/HeightMarkerSystem.prefab";
