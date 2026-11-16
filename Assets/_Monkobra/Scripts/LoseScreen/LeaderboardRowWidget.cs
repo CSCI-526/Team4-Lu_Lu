@@ -50,6 +50,7 @@ public class LeaderboardRowWidget: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
         if (rankLabel == null || nameLabel == null || scoreLabel == null
             || background == null) {
             Debug.LogError(

@@ -20,6 +20,7 @@ public class FruitGrabPrompt: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Start() {
+        // Inspector Assignment Guard  -----------------------------------------
         if (playerBalanceConfig == null) {
             Debug.LogError(
                 "FruitGrabPrompt:	must assign Inspector Field: "

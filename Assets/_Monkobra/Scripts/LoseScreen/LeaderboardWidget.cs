@@ -59,6 +59,7 @@ public class LeaderboardWidget: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
         if (rows == null || rows.Length == 0 || playerRankLabel == null) {
             Debug.LogError(
                 "LeaderboardWidget:\tmust assign rows and playerRankLabel",
