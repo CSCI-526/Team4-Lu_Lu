@@ -75,7 +75,7 @@ The chasing cobra is code-built geometry on one root: `CobraMotor` poses the bod
 
 In the starting zone game state the cobra stays active and keeps orbiting, but its height is fixed: it does not climb until the state becomes Playing.
 
-The cobra's shape, orbit, coil, and slow-down values are fields on `CobraMotor`, set on the `GreatCobra` prefab.
+The cobra's shape, orbit, coil, and slow-down values are in the `tuning` object on `CobraMotor`, set on the `GreatCobra` prefab; `CobraMotor` is the Coordinator, and the work is split by role into `CobraMotorChase`, `CobraMotorSurge`, `CobraMotorGuard`, `CobraMotorHiss`, and `CobraMotorCoil`, which share the state in `CobraMotorRig`.
 
 The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)) is above the cobra's base speed, so it can outrun the cobra, but only by spending stamina.
 
