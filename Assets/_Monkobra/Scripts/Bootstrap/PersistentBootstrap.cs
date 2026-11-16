@@ -11,7 +11,7 @@ using UnityEngine;
 /// </para>
 /// </summary>
 public static class PersistentBootstrap {
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void CreatePersistentObjects() {
         EnsureExists("Analytics", AnalyticsManager.I != null);

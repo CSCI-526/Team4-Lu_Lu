@@ -167,7 +167,8 @@ public class ArmController: MonoBehaviour {
 
         body = GetComponent<Rigidbody>();
         if (body == null) {
-            Debug.LogError("ArmController:\tfail to get Component: Rigidbody", this);
+            Debug.LogError(
+                "ArmController:\tfail to get Component: Rigidbody", this);
         }
 
         joint = GetComponent<ConfigurableJoint>();
@@ -178,8 +179,8 @@ public class ArmController: MonoBehaviour {
             );
         } else if (joint.connectedBody == null) {
             Debug.LogWarning(
-                "ArmController:\tmust assign ConfigurableJoint field: Connected "
-                    + "Body, the arm has nothing to hang off",
+                "ArmController:\tmust assign ConfigurableJoint field: "
+                    + "Connected Body, the arm has nothing to hang off",
                 this
             );
         }
@@ -237,22 +238,22 @@ public class ArmController: MonoBehaviour {
         // a target against a zero spring does nothing, arm floats free
         if (AimSpring <= 0f) {
             Debug.LogWarning(
-                "ArmController:\tConfigurableJoint has no angular drive spring, "
-                    + "the arm will not follow its aim target",
+                "ArmController:\tConfigurableJoint has no angular drive "
+                    + "spring, the arm will not follow its aim target",
                 this
             );
         }
         if (joint.zDrive.positionSpring <= 0f) {
             Debug.LogWarning(
-                "ArmController:\tConfigurableJoint Z Drive has no spring, the arm "
-                    + "will not telescope on reach",
+                "ArmController:\tConfigurableJoint Z Drive has no spring, "
+                    + "the arm will not telescope on reach",
                 this
             );
         }
         if (joint.linearLimit.limit <= 0f) {
             Debug.LogWarning(
-                "ArmController:\tConfigurableJoint Linear Limit is 0, the arm has "
-                    + "no room to reach",
+                "ArmController:\tConfigurableJoint Linear Limit is 0, the "
+                    + "arm has no room to reach",
                 this
             );
         }
@@ -266,7 +267,8 @@ public class ArmController: MonoBehaviour {
             );
             if (handRadiusU >= restLengthU) {
                 Debug.LogWarning(
-                    $"ArmController:\thand is {handRadiusU}u across but the joint "
+                    $"ArmController:\thand is {handRadiusU}u across but the "
+                        + "joint "
                         + $"anchor puts the shoulder only {restLengthU}u away, "
                         + "so the arm draws entirely inside its own hand, move "
                         + "the anchor to the shoulder or shrink the hand",
@@ -277,7 +279,8 @@ public class ArmController: MonoBehaviour {
 
         if (Debug.isDebugBuild) {
             Debug.Log(
-                $"ArmController:\tready, {(isRightArm ? "right" : "left")} arm, "
+                $"ArmController:\tready, "
+                    + $"{(isRightArm ? "right" : "left")} arm, "
                     + $"rest length {restLengthU}u, max reach "
                     + $"{joint.linearLimit.limit}u",
                 this
@@ -404,11 +407,11 @@ public class ArmController: MonoBehaviour {
         EndReach();
     }
 
-    // Constants  ##############################################################
+    // constants  ##############################################################
     private const float INPUT_DEADZONE = 0.1f;
     private const float INPUT_DEADZONE_SQR = INPUT_DEADZONE * INPUT_DEADZONE;
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private bool isReaching;
     private Collider reachFruit; // fruit the reach aims at
     private Collider reportedFruit; // fruit this arm reported as grabbable
@@ -476,13 +479,13 @@ public class ArmController: MonoBehaviour {
         }
     }
 
-    // Cached References  ------------------------------------------------------
+    // cached references  ------------------------------------------------------
     private Rigidbody body;
     private ConfigurableJoint joint;
     private MonkeyController monkeyRoot;
     private PineappleLeapController leapController;
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     // arm brushing the torso would shove the body and report the monkey as a
     // hand contact, so drop collisions between them
     private void IgnoreBodyCollisions() {
@@ -610,12 +613,16 @@ public class ArmController: MonoBehaviour {
         UpwardFruitSensor fruitDetection = UpwardFruitSensor.I;
         if (fruitDetection != null) {
             if (pickup != null) {
-                foreach (Collider part in pickup.GetComponentsInChildren<Collider>(true)) {
+                foreach (
+                    Collider part
+                    in pickup.GetComponentsInChildren<Collider>(true)
+                ) {
                     fruitDetection.RemoveFruit(part);
                 }
             } else {
                 fruitDetection.RemoveFruit(fruit);
-            }//一个水果即使有多个碰撞体，摘掉后也会一起从检测列表移除，避免留下已经不存在的目标
+            }
+            // a fruit w/ several colliders leaves the detection list whole
         }
 
         FruitGrabbed?.Invoke(fruit);
@@ -665,7 +672,9 @@ public class ArmController: MonoBehaviour {
             staminaBar.AddStaminaByFruit();
         } else {
             Debug.LogError(
-                "ArmController:\tfail to get singleton: StaminaBarController", this);
+                "ArmController:\tfail to get singleton: "
+                    + "StaminaBarController",
+                this);
         }
     }
 
@@ -742,7 +751,9 @@ public class ArmController: MonoBehaviour {
     // hand over hand: sweep about the joint's primary axis, arm keeps its
     // rest length and the hand rides the end
     private void DriveClimb() {
-        float surfaceScale = monkeyRoot != null ? monkeyRoot.RoughBarkSpeedScale : 1f;
+        float surfaceScale = monkeyRoot != null
+            ? monkeyRoot.RoughBarkSpeedScale
+            : 1f;
         Vector2 directionalInput =
             MoveAction != null
                 ? MoveAction.action.ReadValue<Vector2>()
@@ -769,7 +780,8 @@ public class ArmController: MonoBehaviour {
         // stroke range midpoint is the neutral pitch, half its span the swing
         float phaseRad = cyclePhase * Mathf.PI * 2f;
         float midDeg = (armConfig.MaxAngleDeg + armConfig.MinAngleDeg) * 0.5f;
-        float halfRangeDeg = (armConfig.MaxAngleDeg - armConfig.MinAngleDeg) * 0.5f;
+        float halfRangeDeg =
+            (armConfig.MaxAngleDeg - armConfig.MinAngleDeg) * 0.5f;
         float swingDeg = midDeg + halfRangeDeg * Mathf.Sin(phaseRad);
 
         // targetRotation is in the joint's own frame: Axis right, Secondary

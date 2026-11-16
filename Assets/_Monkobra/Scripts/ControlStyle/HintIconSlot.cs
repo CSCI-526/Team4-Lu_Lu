@@ -33,10 +33,10 @@ public class HintIconSlot: MonoBehaviour {
             return null;
         }
 
-        var go = new GameObject("HintIcon", typeof(RectTransform));
+        GameObject go = new GameObject("HintIcon", typeof(RectTransform));
         go.layer = 5; // UI
         go.SetActive(false);
-        var rect = (RectTransform)go.transform;
+        RectTransform rect = (RectTransform)go.transform;
         rect.SetParent(parent, false);
 
         HintIconSlot slot = go.AddComponent<HintIconSlot>();
@@ -154,15 +154,17 @@ public class HintIconSlot: MonoBehaviour {
     // a holder per style, so the style flip is a SetActive and the icon's
     // Animator restarts from its first key each time it shows
     private GameObject Spawn(
-        string holderName, GameObject entity, RuntimeAnimatorController controller
+        string holderName,
+        GameObject entity,
+        RuntimeAnimatorController controller
     ) {
         if (entity == null || controller == null) {
             return null;
         }
 
-        var holder = new GameObject(holderName, typeof(RectTransform));
+        GameObject holder = new GameObject(holderName, typeof(RectTransform));
         holder.layer = 5; // UI
-        var holderRect = (RectTransform)holder.transform;
+        RectTransform holderRect = (RectTransform)holder.transform;
         holderRect.SetParent(transform, false);
         holderRect.anchorMin = holderRect.anchorMax = new Vector2(0.5f, 0.5f);
         holderRect.sizeDelta = Vector2.zero;
@@ -176,7 +178,7 @@ public class HintIconSlot: MonoBehaviour {
         }
         icon.SetActive(true);
 
-        var iconRect = icon.transform as RectTransform;
+        RectTransform iconRect = icon.transform as RectTransform;
         float fit = 1f;
         if (iconRect != null && iconRect.sizeDelta.y > fitHeight) {
             fit = fitHeight / iconRect.sizeDelta.y;

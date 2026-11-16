@@ -68,6 +68,21 @@ public class HackShortcutConfig: ScriptableObject {
         return Key.None;
     }
 
+    /// <summary>
+    /// Reads the dev key of an action, so no gameplay script touches the
+    /// keyboard device itself.
+    /// </summary>
+    /// <returns>if the key of the action went down this frame; never while
+    /// <see cref="IsActive"/> is off, w/o a keyboard, or w/o a key</returns>
+    public bool WasPressedThisFrame(HackAction action) {
+        Keyboard keyboard = Keyboard.current;
+        Key key = GetKey(action);
+        return IsActive
+            && keyboard != null
+            && key != Key.None
+            && keyboard[key].wasPressedThisFrame;
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("one entry per hack action, each key used once")]

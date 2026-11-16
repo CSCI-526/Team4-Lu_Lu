@@ -27,6 +27,6 @@ public static class ProgressStore {
         PlayerPrefs.Save();
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private const string BOSS_BEATEN_KEY = "Monkobra.BossBeatenOnce";
 }

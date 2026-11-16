@@ -12,8 +12,9 @@ public static class SceneNames {
     public const string LEVEL_SELECT = "LevelSelectScene";
     public const string GAMEPLAY = "GameplayScene";
 
-    /// <summary>raised just before any load through <see cref="Load(string)"/>, while
-    /// the outgoing scene is still intact</summary>
+    /// <summary>raised just before any load through
+    /// <see cref="Load(string)"/>, while the outgoing scene is still intact
+    /// </summary>
     public static event Action Loading;
 
     /// <summary>

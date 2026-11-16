@@ -352,13 +352,7 @@ public class GameController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key noClipKey = hackShortcuts.GetKey(HackAction.NoClip);
-        if (
-            keyboard == null
-            || noClipKey == Key.None
-            || !keyboard[noClipKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.NoClip)) {
             return;
         }
 
