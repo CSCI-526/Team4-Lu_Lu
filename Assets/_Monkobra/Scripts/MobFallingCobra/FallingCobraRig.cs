@@ -144,30 +144,21 @@ public sealed class FallingCobraRig {
     public CartoonCobraVisual cartoonVisual;
     public Vector3[] fairSpine;
     public Vector3[] relaxedNeck;
-    // private members  ########################################################
     public FallingCobraState state = FallingCobraState.Dormant;
-    public bool isInitialized;
-    // if the spawner armed this cobra
-    public float fallSpeedU;
-    // from config; u/s
-    public float horizontalSpeedU;
-    // from config; u/s along the ring
-    public float reachWakeDistanceU;
-    // from config; wake range mid-grab; u
-    public Vector2 axisXZ;
-    // tree axis, world xz
-    public float ringRadiusU;
-    // horizontal distance to the axis; u
+    public bool isInitialized;  // if the spawner armed this cobra
+    public float fallSpeedU;  // from config; u/s
+    public float horizontalSpeedU;  // from config; u/s along the ring
+    public float reachWakeDistanceU;  // from config; wake range mid-grab; u
+    public Vector2 axisXZ;  // tree axis, world xz
+    public float ringRadiusU;  // horizontal distance to the axis; u
     public float warningStartTime;
     public float fallStartTime;
     public float fallenU;
-    // cached references  ------------------------------------------------------
     public Rigidbody body;
     public CapsuleCollider hitCollider;
     public Transform player;
-    public ArmController[] playerArms;
-    // the monkey's arms, read for a reach
-    public HitBranchSensor playerSensor;
+    public ArmController[] playerArms;  // the monkey's arms, read for a reach
+    public HitBranchSensor playerSensor;  // applies the drop
 
     public FallingCobraRig(Transform host, FallingCobraTuning tuning) {
         this.host = host;
@@ -262,9 +253,7 @@ public sealed class FallingCobraRig {
     public Quaternion SourceEyeBasis()=>
         Quaternion.LookRotation(SourceEyeForward(), SourceEyeUp());
 
- // applies the drop
 
-    // private methods  ########################################################
     // Notice the monkey from above or below; a falling attack still never
     // climbs.
     public Vector3 ThreatPosition => spinePoseReady

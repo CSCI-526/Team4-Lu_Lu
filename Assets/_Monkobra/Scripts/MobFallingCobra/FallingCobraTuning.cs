@@ -135,7 +135,6 @@ public sealed class FallingCobraTuning {
     }
 
     // Inspector Fields  #######################################################
-    // Inspector Fields  #######################################################
     [Header("Trigger")]
     [SerializeField]
     [Tooltip("3D distance to the monkey below which the cobra wakes; u")]
