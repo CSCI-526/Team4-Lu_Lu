@@ -4,7 +4,7 @@ using UnityEngine;
 /// Builds the Spider King from Unity primitives & poses it flat on the
 /// trunk, its back facing out & its head up the trunk: a dark body w/ a red
 /// mark, a small gold crown, eight legs & eight eyes that glow red as an
-/// attack winds up. Owned & moved by <see cref="SpiderFightController"/>.
+/// attack winds up. Owned & moved by <see cref="SpiderKingFightController"/>.
 /// </summary>
 [DisallowMultipleComponent]
 public class SpiderKingBody: MonoBehaviour {

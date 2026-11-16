@@ -7,7 +7,7 @@ public class ScoreHeightBossHider: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     // Start, not OnEnable: the boss controller's singleton is set in Awake
     private void Start() {
-        boss = BossFightController.I;
+        boss = CobraKingFightController.I;
         if (boss == null) {
             return;
         }
@@ -23,7 +23,7 @@ public class ScoreHeightBossHider: MonoBehaviour {
     }
 
     // private members  ########################################################
-    private BossFightController boss;
+    private CobraKingFightController boss;
 
     // private methods  ########################################################
     private void OnFightStarted() {

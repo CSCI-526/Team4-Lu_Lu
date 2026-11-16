@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8455061723049586734}
   - component: {fileID: 1546172834150697845}
   m_Layer: 0
-  m_Name: SpiderFight
+  m_Name: SpiderKingFight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

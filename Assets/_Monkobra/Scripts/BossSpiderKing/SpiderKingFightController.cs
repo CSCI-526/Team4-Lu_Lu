@@ -27,9 +27,9 @@ using UnityEngine.Rendering;
 /// </summary>
 [RequireComponent(typeof(SpiderKingBody))]
 [RequireComponent(typeof(BossFightHud))]
-public class SpiderFightController: MonoBehaviour {
+public class SpiderKingFightController: MonoBehaviour {
     // Public Members  #########################################################
-    public static SpiderFightController I {
+    public static SpiderKingFightController I {
         get; private set;
     }
 
@@ -694,7 +694,7 @@ public class SpiderFightController: MonoBehaviour {
         if (worldBalanceConfig == null || webPrefab == null
             || bananaBranchPrefab == null) {
             Debug.LogError(
-                "SpiderFightController:\tmust assign Inspector Fields: "
+                "SpiderKingFightController:\tmust assign Inspector Fields: "
                     + "worldBalanceConfig, webPrefab, bananaBranchPrefab",
                 this
             );
@@ -703,7 +703,7 @@ public class SpiderFightController: MonoBehaviour {
         }
         if (I != null && I != this) {
             Debug.LogWarning(
-                "SpiderFightController:\tduplicate instance destroyed",
+                "SpiderKingFightController:\tduplicate instance destroyed",
                 this
             );
             Destroy(gameObject);
@@ -712,7 +712,7 @@ public class SpiderFightController: MonoBehaviour {
         I = this;
         if (confirmAction == null || giveUpAction == null) {
             Debug.LogWarning(
-                "SpiderFightController:\tmust assign Inspector Fields: "
+                "SpiderKingFightController:\tmust assign Inspector Fields: "
                     + "confirmAction, giveUpAction",
                 this
             );
@@ -728,7 +728,7 @@ public class SpiderFightController: MonoBehaviour {
         colorBlock = new MaterialPropertyBlock();
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "SpiderFightController:\tready, test at start " + isTestAtStart,
+                "SpiderKingFightController:\tready, test at start " + isTestAtStart,
                 this
             );
         }
@@ -832,7 +832,7 @@ public class SpiderFightController: MonoBehaviour {
         if (isTestAtStart) {
             return ramp.CurrentPlayerClimbedYDistance >= testStartHeightU;
         }
-        BossFightController cobraKing = BossFightController.I;
+        CobraKingFightController cobraKing = CobraKingFightController.I;
         if (game.State != GameState.Playing
             || (cobraKing != null && !cobraKing.IsDone)) {
             return false;
@@ -875,7 +875,7 @@ public class SpiderFightController: MonoBehaviour {
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(
-                "SpiderFightController:\tno MonkeyController under a trunk "
+                "SpiderKingFightController:\tno MonkeyController under a trunk "
                     + "root found",
                 this
             );
@@ -903,7 +903,7 @@ public class SpiderFightController: MonoBehaviour {
         // a web breaks in as many presses as in the Cobra King's arena
         struggle = FindFirstObjectByType<SpiderWebStruggle>();
         if (struggle != null) {
-            BossFightController cobraArena = BossFightController.I;
+            CobraKingFightController cobraArena = CobraKingFightController.I;
             struggle.EscapeGainScale = cobraArena != null
                 ? cobraArena.WebEscapeGainScale
                 : 2f;
@@ -913,7 +913,7 @@ public class SpiderFightController: MonoBehaviour {
         tail = FindChild(monkey, "Tail");
         if (tail == null) {
             Debug.LogWarning(
-                "SpiderFightController:\tno Tail under the monkey, the parry "
+                "SpiderKingFightController:\tno Tail under the monkey, the parry "
                     + "swings nothing",
                 this
             );
@@ -948,7 +948,7 @@ public class SpiderFightController: MonoBehaviour {
         hud.Say("My web, my rules!");
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "SpiderFightController:\tspider fight begins at y " + entryY,
+                "SpiderKingFightController:\tspider fight begins at y " + entryY,
                 this
             );
         }
@@ -1567,14 +1567,14 @@ public class SpiderFightController: MonoBehaviour {
     }
 
     private static void GiveArmor() {
-        BossFightController cobraKing = BossFightController.I;
+        CobraKingFightController cobraKing = CobraKingFightController.I;
         if (cobraKing != null) {
             cobraKing.GiveArmor();
         }
     }
 
     private static bool HasArmor() {
-        BossFightController cobraKing = BossFightController.I;
+        CobraKingFightController cobraKing = CobraKingFightController.I;
         return cobraKing != null && cobraKing.HasArmor;
     }
 
@@ -3624,7 +3624,7 @@ public class SpiderFightController: MonoBehaviour {
 
     // the Cobra King's leftover armor, if worn; frees the monkey too
     private bool TrySpendArmor() {
-        BossFightController cobraKing = BossFightController.I;
+        CobraKingFightController cobraKing = CobraKingFightController.I;
         if (cobraKing == null || !cobraKing.TrySpendArmor()) {
             return false;
         }
@@ -3852,7 +3852,7 @@ public class SpiderFightController: MonoBehaviour {
         Burst(body.Position, silkColor, 20);
         hud.Say("My beautiful web...");
         if (Debug.isDebugBuild) {
-            Debug.Log("SpiderFightController:\tSpider King defeated", this);
+            Debug.Log("SpiderKingFightController:\tSpider King defeated", this);
         }
     }
 
@@ -4079,7 +4079,7 @@ public class SpiderFightController: MonoBehaviour {
         FightEnded?.Invoke();
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "SpiderFightController:\twon, silk gloves given, climb on",
+                "SpiderKingFightController:\twon, silk gloves given, climb on",
                 this
             );
         }

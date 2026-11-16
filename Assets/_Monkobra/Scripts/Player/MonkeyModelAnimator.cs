@@ -906,7 +906,7 @@ public class MonkeyModelAnimator: MonoBehaviour {
         if (web != null && web.IsTrapped) {
             return false;
         }
-        BossFightController boss = BossFightController.I;
+        CobraKingFightController boss = CobraKingFightController.I;
         if (boss != null && boss.IsInArena) {
             return false;
         }

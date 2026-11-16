@@ -31,10 +31,10 @@ using UnityEngine.InputSystem;
 /// is won (<see cref="GameController.WinGame"/>).
 /// </para>
 /// </summary>
-[RequireComponent(typeof(BossKingBody), typeof(BossFightHud))]
-public class BossFightController: MonoBehaviour {
+[RequireComponent(typeof(CobraKingBody), typeof(BossFightHud))]
+public class CobraKingFightController: MonoBehaviour {
     // Public Members  #########################################################
-    public static BossFightController I {
+    public static CobraKingFightController I {
         get; private set;
     }
 
@@ -344,7 +344,7 @@ public class BossFightController: MonoBehaviour {
     [Tooltip("the second boss, spawned at start if no scene has one, so "
         + "every scene w/ this fight also gets the Spider King")]
     [SerializeField]
-    private SpiderFightController spiderFightPrefab;
+    private SpiderKingFightController spiderFightPrefab;
 
     [SerializeField]
     [Tooltip("confirms the revive offer, the ad skip & the reward panel, the "
@@ -989,7 +989,7 @@ public class BossFightController: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (worldBalanceConfig == null) {
             Debug.LogError(
-                "BossFightController:\tmust assign Inspector Field: "
+                "CobraKingFightController:\tmust assign Inspector Field: "
                     + "worldBalanceConfig",
                 this
             );
@@ -999,7 +999,7 @@ public class BossFightController: MonoBehaviour {
 
         if (bananaBranchPrefab == null) {
             Debug.LogError(
-                "BossFightController:\tmust assign Inspector Field: "
+                "CobraKingFightController:\tmust assign Inspector Field: "
                     + "bananaBranchPrefab",
                 this
             );
@@ -1009,7 +1009,7 @@ public class BossFightController: MonoBehaviour {
 
         if (I != null && I != this) {
             Debug.LogWarning(
-                "BossFightController:\tduplicate instance destroyed",
+                "CobraKingFightController:\tduplicate instance destroyed",
                 this
             );
             Destroy(gameObject);
@@ -1017,7 +1017,7 @@ public class BossFightController: MonoBehaviour {
         }
         I = this;
 
-        bool hasSpiderFight = FindFirstObjectByType<SpiderFightController>(
+        bool hasSpiderFight = FindFirstObjectByType<SpiderKingFightController>(
             FindObjectsInactive.Include
         ) != null;
         if (spiderFightPrefab != null && !hasSpiderFight) {
@@ -1026,13 +1026,13 @@ public class BossFightController: MonoBehaviour {
 
         if (confirmAction == null || giveUpAction == null) {
             Debug.LogWarning(
-                "BossFightController:\tmust assign Inspector Fields: "
+                "CobraKingFightController:\tmust assign Inspector Fields: "
                     + "confirmAction, giveUpAction",
                 this
             );
         }
 
-        body = GetComponent<BossKingBody>();
+        body = GetComponent<CobraKingBody>();
         body.MonkeyTouched += OnKingTouched;
         hud = GetComponent<BossFightHud>();
         hud.WatchAdClicked += WatchAd;
@@ -1110,7 +1110,7 @@ public class BossFightController: MonoBehaviour {
             UpdateShieldRing();
             UpdateSparks();
             // the Spider King fight frames the camera itself
-            SpiderFightController spiderFight = SpiderFightController.I;
+            SpiderKingFightController spiderFight = SpiderKingFightController.I;
             if (spiderFight == null || !spiderFight.IsFraming) {
                 UpdateCameraFocus();
             }
@@ -1166,7 +1166,7 @@ public class BossFightController: MonoBehaviour {
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(
-                "BossFightController:\tno MonkeyController under a trunk "
+                "CobraKingFightController:\tno MonkeyController under a trunk "
                     + "root found",
                 this
             );
@@ -1190,7 +1190,7 @@ public class BossFightController: MonoBehaviour {
         // no chase call: the cobra is already after the monkey
         hasWarnedChase = true;
         if (Debug.isDebugBuild) {
-            Debug.Log("BossFightController:\tendless start in armor", this);
+            Debug.Log("CobraKingFightController:\tendless start in armor", this);
         }
     }
 
@@ -1200,7 +1200,7 @@ public class BossFightController: MonoBehaviour {
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(
-                "BossFightController:\tno MonkeyController under a trunk "
+                "CobraKingFightController:\tno MonkeyController under a trunk "
                     + "root found",
                 this
             );
@@ -1257,7 +1257,7 @@ public class BossFightController: MonoBehaviour {
         hud.ShowBannerFor(armorIntroTitle, armorIntroLine, goldenColor, 0f);
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "BossFightController:\tboss fight begins at y " + entryY,
+                "CobraKingFightController:\tboss fight begins at y " + entryY,
                 this
             );
         }
@@ -1349,7 +1349,7 @@ public class BossFightController: MonoBehaviour {
             + worldBalanceConfig.BossZoneStartU;
         if (entryY - guardDepthU < zoneStartY) {
             Debug.LogWarning(
-                "BossFightController:\tthe guard cobra hangs below the boss "
+                "CobraKingFightController:\tthe guard cobra hangs below the boss "
                 + "zone start, ordinary hazards may reach the arena; move "
                 + "the trigger up or shorten guardDepthU",
                 this
@@ -1411,7 +1411,7 @@ public class BossFightController: MonoBehaviour {
         );
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "BossFightController:\t" + (isEasy ? "easy" : "normal")
+                "CobraKingFightController:\t" + (isEasy ? "easy" : "normal")
                     + " mode, king health " + maxHealth,
                 this
             );
@@ -2495,7 +2495,7 @@ public class BossFightController: MonoBehaviour {
         hud.ShowBannerFor(armorIntroTitle, ChoiceLine, goldenColor, 0f);
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "BossFightController:\trevived after the ad, fight restarts",
+                "CobraKingFightController:\trevived after the ad, fight restarts",
                 this
             );
         }
@@ -2840,7 +2840,7 @@ public class BossFightController: MonoBehaviour {
         }
         victoryTimeS = 0f;
         if (Debug.isDebugBuild) {
-            Debug.Log("BossFightController:\tCobra King defeated", this);
+            Debug.Log("CobraKingFightController:\tCobra King defeated", this);
         }
     }
 
@@ -2954,7 +2954,7 @@ public class BossFightController: MonoBehaviour {
         }
         if (Debug.isDebugBuild) {
             Debug.Log(
-                "BossFightController:\twon, armor given, the climb goes on",
+                "CobraKingFightController:\twon, armor given, the climb goes on",
                 this
             );
         }
@@ -3537,7 +3537,7 @@ public class BossFightController: MonoBehaviour {
     private bool isRewardPanelShown; // the win's pause panel is up
 
     // cached references  ------------------------------------------------------
-    private BossKingBody body;
+    private CobraKingBody body;
     private BossFightHud hud;
     private Transform monkey;
     private MonkeyController monkeyController;

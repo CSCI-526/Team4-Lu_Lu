@@ -216,7 +216,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 348057024056890766, guid: e29382ef13704a5aaadc84ebf4e171bb, type: 3}
       propertyPath: m_Name
-      value: BossFight
+      value: CobraKingFight
       objectReference: {fileID: 0}
     - target: {fileID: 1152987100825347162, guid: e29382ef13704a5aaadc84ebf4e171bb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1540,7 +1540,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5182736450918273641, guid: 2d5aed9d3ca84b378f8afd2c696c0b5f, type: 3}
       propertyPath: m_Name
-      value: SpiderFight
+      value: SpiderKingFight
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

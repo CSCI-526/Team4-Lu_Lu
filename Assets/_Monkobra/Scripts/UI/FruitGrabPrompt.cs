@@ -179,7 +179,7 @@ public class FruitGrabPrompt: MonoBehaviour {
     }
 
     private static bool IsBossArena() {
-        BossFightController boss = BossFightController.I;
+        CobraKingFightController boss = CobraKingFightController.I;
         return boss != null && boss.isActiveAndEnabled && boss.IsInArena;
     }
 

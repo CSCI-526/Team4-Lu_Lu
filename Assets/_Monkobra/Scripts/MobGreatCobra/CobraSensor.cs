@@ -42,13 +42,13 @@ public class CobraSensor: MonoBehaviour {
         }
 
         // in the Spider King fight the catch is its loss or armor save
-        SpiderFightController spiderFight = SpiderFightController.I;
+        SpiderKingFightController spiderFight = SpiderKingFightController.I;
         if (spiderFight != null && spiderFight.TryAbsorbCobraCatch()) {
             return;
         }
 
         // the boss fight's gold armor takes the bite once
-        BossFightController bossFight = BossFightController.I;
+        CobraKingFightController bossFight = CobraKingFightController.I;
         if (bossFight != null && bossFight.TryAbsorbCobraCatch()) {
             return;
         }

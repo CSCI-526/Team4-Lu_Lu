@@ -11,11 +11,11 @@ using UnityEngine;
 /// its crown.
 /// <para>
 /// Every bead and the head are triggers reporting to a
-/// <see cref="BossKingContact"/> on the root, which raises
+/// <see cref="CobraKingContact"/> on the root, which raises
 /// <see cref="MonkeyTouched"/>; touching the king is not fatal by itself.
 /// </para>
 /// </summary>
-public class BossKingBody: MonoBehaviour {
+public class CobraKingBody: MonoBehaviour {
     // Public Members  #########################################################
     /// <summary>Raised while any part of the monkey touches the king.
     /// </summary>
@@ -71,7 +71,7 @@ public class BossKingBody: MonoBehaviour {
         Rigidbody body = root.gameObject.AddComponent<Rigidbody>();
         body.isKinematic = true;
         body.useGravity = false;
-        BossKingContact contact = root.gameObject.AddComponent<BossKingContact>();
+        CobraKingContact contact = root.gameObject.AddComponent<CobraKingContact>();
         contact.Touched += () => MonkeyTouched?.Invoke();
 
         BuildCoil();
@@ -364,7 +364,7 @@ public class BossKingBody: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (bodyMaterial == null) {
             Debug.LogWarning(
-                "BossKingBody:\tmust assign Inspector Field: bodyMaterial",
+                "CobraKingBody:\tmust assign Inspector Field: bodyMaterial",
                 this
             );
         }

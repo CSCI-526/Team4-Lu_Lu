@@ -216,7 +216,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 348057024056890766, guid: e29382ef13704a5aaadc84ebf4e171bb, type: 3}
       propertyPath: m_Name
-      value: BossFight
+      value: CobraKingFight
       objectReference: {fileID: 0}
     - target: {fileID: 1152987100825347162, guid: e29382ef13704a5aaadc84ebf4e171bb, type: 3}
       propertyPath: m_LocalPosition.x

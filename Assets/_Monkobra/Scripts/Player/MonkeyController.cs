@@ -572,11 +572,11 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
         // not in the middle of a boss fight
-        BossFightController cobraKing = BossFightController.I;
+        CobraKingFightController cobraKing = CobraKingFightController.I;
         if (cobraKing != null && !cobraKing.IsDone && !cobraKing.IsWaiting) {
             return;
         }
-        SpiderFightController spiderKing = SpiderFightController.I;
+        SpiderKingFightController spiderKing = SpiderKingFightController.I;
         if (spiderKing != null && spiderKing.IsFraming) {
             return;
         }
