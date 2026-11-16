@@ -67,22 +67,16 @@ public class HackShortcutPanel: MonoBehaviour {
         if (!HackShortcutConfig.IsActive) {
             return;
         }
-        Keyboard keyboard = Keyboard.current;
-        Key toggleKey = hackShortcuts.GetKey(HackAction.ToggleHints);
-        if (
-            keyboard == null
-            || toggleKey == Key.None
-            || !keyboard[toggleKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.ToggleHints)) {
             return;
         }
         label.enabled = !label.enabled;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private TMP_Text label;
 
-    // Private Helpers  ########################################################
+    // private methods  ########################################################
     // one "key: description" line per entry
     private string BuildHelpText() {
         StringBuilder sb = new StringBuilder();

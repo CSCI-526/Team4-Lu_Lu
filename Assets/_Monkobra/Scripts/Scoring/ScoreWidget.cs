@@ -10,7 +10,8 @@ public class ScoreWidget: MonoBehaviour {
     private ScoreManager scoreManager;
 
     [SerializeField]
-    [Tooltip("text before the number; empty for the bare HUD score, whose plate already says Score")]
+    [Tooltip("text before the number; empty for the bare HUD score, whose "
+        + "plate already says Score")]
     private string prefix = "";
 
     // MonoBehaviour Lifecycle  ################################################
@@ -43,6 +44,7 @@ public class ScoreWidget: MonoBehaviour {
 
     // private methods  ########################################################
     private void Refresh(long score) {
-        label.text = prefix + score.ToString("N0", CultureInfo.InvariantCulture);
+        label.text = prefix
+            + score.ToString("N0", CultureInfo.InvariantCulture);
     }
 }

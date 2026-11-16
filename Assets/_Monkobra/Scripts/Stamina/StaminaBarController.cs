@@ -13,8 +13,9 @@ public class StaminaBarController: MonoBehaviour {
     public float CurrentStamina => currentStamina;
     public bool HasStamina => currentStamina > 0f;
 
-    /// <returns>if the dev max stamina mode keeps the bar at max, toggled by the
-    /// <see cref="HackAction.MaxStamina"/> key in a development build</returns>
+    /// <returns>if the dev max stamina mode keeps the bar at max, toggled
+    /// by the <see cref="HackAction.MaxStamina"/> key in a development build
+    /// </returns>
     public bool IsMaxStamina {
         get; private set;
     }
@@ -91,7 +92,8 @@ public class StaminaBarController: MonoBehaviour {
 
         float amount =
             Mathf.Max(0f, climbedU) * playerBalanceConfig.StaminaUpwardDrainPerU
-            + Mathf.Max(0f, orbitedU) * playerBalanceConfig.StaminaSidewayDrainPerU;
+            + Mathf.Max(0f, orbitedU)
+                * playerBalanceConfig.StaminaSidewayDrainPerU;
         if (amount <= 0f) {
             return;
         }
@@ -172,13 +174,7 @@ public class StaminaBarController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key maxStaminaKey = hackShortcuts.GetKey(HackAction.MaxStamina);
-        if (
-            keyboard == null
-            || maxStaminaKey == Key.None
-            || !keyboard[maxStaminaKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.MaxStamina)) {
             return;
         }
 

@@ -373,7 +373,8 @@ public class WorldBalanceConfig: ScriptableObject {
         bossBananaDamage = Mathf.Max(1, bossBananaDamage);
         // the spider zone sits above the cobra's, ordered the same way
         spiderZoneStartU = Mathf.Max(bossZoneEndU, spiderZoneStartU);
-        spiderTriggerHeightU = Mathf.Max(spiderZoneStartU, spiderTriggerHeightU);
+        spiderTriggerHeightU = Mathf.Max(
+            spiderZoneStartU, spiderTriggerHeightU);
         spiderZoneEndU = Mathf.Max(spiderTriggerHeightU, spiderZoneEndU);
         spiderJumpHeightU = Mathf.Clamp(
             spiderJumpHeightU, bossZoneEndU, spiderTriggerHeightU

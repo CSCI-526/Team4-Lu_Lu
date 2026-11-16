@@ -381,7 +381,9 @@ public class HeightMarkerSystem: MonoBehaviour {
     // top of the boss marker's plate; labels are pooled, so it follows
     // whichever label shows that marker
     private bool PlaceBossFigure(
-        CobraKingFightController bossFight, TextMeshPro label, SpriteRenderer plate
+        CobraKingFightController bossFight,
+        TextMeshPro label,
+        SpriteRenderer plate
     ) {
         return PlaceFigure(ref bossFigure, bossFight.BuildMarkerFigure, label,
             plate);

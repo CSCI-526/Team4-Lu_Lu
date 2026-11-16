@@ -36,7 +36,8 @@ public enum HackAction {
     /// <summary>closes the analytics session and opens a new file</summary>
     RestartSession,
 
-    /// <summary>saves a mock analytics session file, for layout checks</summary>
+    /// <summary>saves a mock analytics session file, for layout checks
+    /// </summary>
     MockSession,
 
     /// <summary>shows or hides the on-screen list of hack keys

@@ -417,7 +417,8 @@ public class CoconutManager: MonoBehaviour {
         if (cobra == null) {
             return;
         }
-        bool isFrozenNow = cobra.TryFreeze(playerBalanceConfig.CobraFreezeDurationS);
+        bool isFrozenNow =
+            cobra.TryFreeze(playerBalanceConfig.CobraFreezeDurationS);
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CoconutManager:\tcoconut landed, "

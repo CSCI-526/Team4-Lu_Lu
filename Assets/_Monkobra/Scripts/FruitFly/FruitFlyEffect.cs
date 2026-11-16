@@ -226,7 +226,7 @@ public class FruitFlyEffect: MonoBehaviour {
         }
     }
 
-    // Private Types  ##########################################################
+    // Nested Types  ###########################################################
     private class Flight {
         public Image Image;
         public Vector2 StartScreen;

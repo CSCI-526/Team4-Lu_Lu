@@ -25,7 +25,8 @@ public class ScoreBonusWidget: MonoBehaviour {
     private Vector2 startPosition = new Vector2(0f, -20f);
 
     [SerializeField]
-    [Tooltip("min UI units b/t 2 popups; an older popup is pushed up to keep it")]
+    [Tooltip("min UI units b/t 2 popups; an older popup is pushed up to "
+        + "keep it")]
     private float stackSpacing = 44f;
 
     // MonoBehaviour Lifecycle  ################################################
