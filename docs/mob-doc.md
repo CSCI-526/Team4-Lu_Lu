@@ -106,7 +106,7 @@ While the monkey moves across rough bark (`MonkeyController.RoughBarkSpeedScale`
 
 A hazard from above, spawned in `GameplayScene` as the monkey climbs the endless tree.
 
-Code: `FallingCobraController` is the Coordinator (state machine and lifecycle); the work is split by role into `FallingCobraHeadMesh`, `FallingCobraBranchCoil`, `FallingCobraTracking`, and `FallingCobraEyes`, which share the state in `FallingCobraRig` and read every Inspector value from `FallingCobraTuning`, the `tuning` object on the `FallingCobra` prefab.
+Code: `FallingCobraController` is the Coordinator (state machine and lifecycle); the work is split by role into `FallingCobraHeadMesh`, `FallingCobraBranchCoil`, `FallingCobraTracking`, `FallingCobraSwimTrail`, `FallingCobraSpine`, and `FallingCobraEyes`, which share the state in `FallingCobraRig` and read every Inspector value from `FallingCobraTuning`, the `tuning` object on the `FallingCobra` prefab.
 
 ### Spawning
 

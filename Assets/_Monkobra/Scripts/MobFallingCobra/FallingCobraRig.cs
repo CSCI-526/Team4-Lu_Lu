@@ -39,6 +39,8 @@ public sealed class FallingCobraRig {
     public FallingCobraBranchCoil BranchCoil;
     public FallingCobraTracking Tracking;
     public FallingCobraEyes Eyes;
+    public FallingCobraSwimTrail Trail;
+    public FallingCobraSpine Spine;
     public BoxCollider supportBranch;
     public bool perchBound;
     public Vector3 branchCenter;
