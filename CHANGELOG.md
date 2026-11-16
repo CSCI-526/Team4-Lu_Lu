@@ -36,6 +36,7 @@ todo vertical version
 
 - pause & lose screens: Exit goes back to the level selection, not the title
 - Made with Unity splash screen off
+- level selection in the UI style: the loading page's vines, a logo-style title, gold buttons, the unlock hint under Endless Mode instead of over it, W and S side by side in the key hint
 
 ### Deprecated
 
