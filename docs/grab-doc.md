@@ -149,7 +149,6 @@ The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snap
 
 ## Known Gaps
 
-- `ArmController` carries a fixme to split it into several systems
 - A miss costs no stamina, only exposure
 - Scenes without a `ScoreManager` restore stamina on a grab but score nothing, see [Score](monkobra-tdd.md#score)
 - A double-tap near fruit briefly reaches, like any short press, before the coconut is spent
