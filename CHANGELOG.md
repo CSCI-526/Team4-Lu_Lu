@@ -52,6 +52,10 @@ todo vertical version
 
 ### Fixed
 
+##### Erik
+
+- the first coconut & pineapple (the guaranteed ones) grow on the monkey's side of the trunk, within a configurable angle (`guaranteedBranchYawSpreadDeg` in `WorldBalanceConfig`), never on the far side
+
 ##### Yuqing Lu
 
 - lose screen: the Download Analytic button is big enough for its words, and the key hint row fits at 4:3, now under both panels
