@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO split by role (head mesh, swim trail, branch coil, state machine) and
+// conform to the MonoBehaviour layout, Movement 11.2 of the structure Suite
 /// <summary>
 /// A cobra hanging dormant on the tree that drops on the monkey. Spawned as a
 /// child of a tree segment by <see cref="FallingCobraSpawner"/>, which hands

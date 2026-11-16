@@ -29,7 +29,8 @@ public class SpiderWebStruggle: MonoBehaviour {
     /// </summary>
     public event Action<bool> Trapped;
 
-    /// <summary>Raised whenever escape progress changes, with it, 0~1.</summary>
+    /// <summary>Raised whenever escape progress changes, with it,
+    /// 0~1.</summary>
     public event Action<float> ProgressChanged;
 
     /// <summary>Raised once the monkey breaks free.</summary>
@@ -286,7 +287,8 @@ public class SpiderWebStruggle: MonoBehaviour {
         Escaped?.Invoke();
     }
 
-    // disabling a held action cancels it: ArmController ends its reach, grabbing
+    // disabling a held action cancels it: ArmController ends its reach,
+    // grabbing
     // only if the hand already overlaps the fruit as on any release, and
     // CameraClimbFraming drops its grab shift
     private void SuspendInteract() {

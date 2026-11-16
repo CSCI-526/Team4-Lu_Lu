@@ -33,11 +33,13 @@ public class SpiderWebBuilder: MonoBehaviour {
             float t = Mathf.Lerp(0.2f, 0.95f, (float)r / (ringCount - 1));
             Vector3[] p = new Vector3[spokeCount];
             for (int i = 0; i < spokeCount; i++)
-                p[i] = Dir(ang[i]) * len[i] * t * Random.Range(1f - jitter * 0.3f, 1f + jitter * 0.3f);
+                p[i] = Dir(ang[i]) * len[i] * t
+                    * Random.Range(1f - jitter * 0.3f, 1f + jitter * 0.3f);
 
             for (int i = 0; i < spokeCount; i++) {
                 Vector3 a = p[i], b = p[(i + 1) % spokeCount];
-                Vector3 mid = (a + b) * 0.5f * (1f - sag); // 中点向圆心收，形成下垂弧度
+                // the midpoint pulls toward the center, a sagging arc
+                Vector3 mid = (a + b) * 0.5f * (1f - sag);
                 MakeStrand(a, mid, $"Ring{r}_{i}a");
                 MakeStrand(mid, b, $"Ring{r}_{i}b");
             }
@@ -49,10 +51,12 @@ public class SpiderWebBuilder: MonoBehaviour {
         hub.name = "Hub";
         hub.transform.SetParent(transform, false);
         hub.transform.localScale = Vector3.one * thickness * 4f;
-        if (webMaterial) hub.GetComponent<Renderer>().sharedMaterial = webMaterial;
+        if (webMaterial) hub.GetComponent<Renderer>().sharedMaterial =
+            webMaterial;
 
 #if UNITY_EDITOR
-        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
+            gameObject.scene);
 #endif
     }
 
@@ -71,7 +75,8 @@ public class SpiderWebBuilder: MonoBehaviour {
         Vector3 d = b - a;
         go.transform.localPosition = (a + b) * 0.5f;
         go.transform.localRotation = Quaternion.FromToRotation(Vector3.up, d);
-        go.transform.localScale = new Vector3(thickness, d.magnitude, thickness);
+        go.transform.localScale = new Vector3(thickness, d.magnitude,
+            thickness);
         Renderer rend = go.GetComponent<Renderer>();
         rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         if (webMaterial) rend.sharedMaterial = webMaterial;

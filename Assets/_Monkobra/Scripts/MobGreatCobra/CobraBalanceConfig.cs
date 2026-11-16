@@ -27,7 +27,8 @@ public class CobraBalanceConfig: ScriptableObject {
     /// monkey; u/s</returns>
     public float FallingCobraHorizontalSpeedU => fallingCobraHorizontalSpeedU;
 
-    /// <returns>3D range in which an alerted falling cobra may launch; u</returns>
+    /// <returns>3D range in which an alerted falling cobra may launch;
+    /// u</returns>
     public float FallingCobraAttackDistanceU => fallingCobraAttackDistanceU;
 
     /// <returns>while the monkey reaches for a banana, a dormant falling
@@ -139,7 +140,8 @@ public class CobraBalanceConfig: ScriptableObject {
     private float fallingCobraReachWakeDistanceU = 20f;
 
     [SerializeField, Min(.1f)]
-    [Tooltip("An alerted cobra stays perched until the monkey enters this 3D range; u")]
+    [Tooltip("An alerted cobra stays perched until the monkey enters this 3D "
+        + "range; u")]
     private float fallingCobraAttackDistanceU = 6f;
 
     [SerializeField]
@@ -238,7 +240,8 @@ public class CobraBalanceConfig: ScriptableObject {
 
     // Editor Validation  ######################################################
     private void OnValidate() {
-        fallingCobraAttackDistanceU = Mathf.Max(.1f, fallingCobraAttackDistanceU);
+        fallingCobraAttackDistanceU = Mathf.Max(.1f,
+            fallingCobraAttackDistanceU);
         fallingCobraAttemptCount = Mathf.Max(0, fallingCobraAttemptCount);
         fallingCobraFallSpeedU = Mathf.Max(0f, fallingCobraFallSpeedU);
         fallingCobraHorizontalSpeedU = Mathf.Max(

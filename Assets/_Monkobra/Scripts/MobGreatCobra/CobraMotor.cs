@@ -73,7 +73,8 @@ public class CobraMotor: MonoBehaviour {
     /// Stops the chase for the boss fight: the head is set at
     /// <paramref name="headWorldY"/> and held there for good, below the
     /// arena, still circling the trunk, while surges are ignored. Now & then
-    /// its neck lifts in a smooth curve and the head springs up as a threat, fatal
+    /// its neck lifts in a smooth curve and the head springs up as a threat,
+    /// fatal
     /// only to a monkey lingering that low; the coil never climbs.
     /// </summary>
     public void StartGuard(float headWorldY) {
@@ -320,9 +321,11 @@ public class CobraMotor: MonoBehaviour {
     private float ChaseHeadRaiseBlend() {
         if (isGuarding) return 1f;
         if (player == null || pathCenter == null) return 0f;
-        float distance = Vector3.Distance(player.position, GetPathPosition(headAngle,headHeight));
+        float distance = Vector3.Distance(player.position,
+            GetPathPosition(headAngle,headHeight));
         return Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(headRaiseStartDistanceU,
-            Mathf.Min(headRaiseFullDistanceU,headRaiseStartDistanceU-.01f),distance));
+            Mathf.Min(headRaiseFullDistanceU,headRaiseStartDistanceU-.01f),
+                distance));
     }
 
     [Header("Close Chase Hiss")]
@@ -344,7 +347,8 @@ public class CobraMotor: MonoBehaviour {
         if (proximityHiss == null) return;
         hissBodyShapes=new CapsuleCollider[bodySegments.Length];
         for(int i=0;i<bodySegments.Length;i++) {
-            if(bodySegments[i]!=null)bodySegments[i].TryGetComponent(out hissBodyShapes[i]);
+            if(bodySegments[i]!=null)
+                bodySegments[i].TryGetComponent(out hissBodyShapes[i]);
         }
         var voice=new GameObject("GreatCobraHiss");
         voice.transform.SetParent(transform,false);
@@ -358,7 +362,8 @@ public class CobraMotor: MonoBehaviour {
         proximityHissSource.dopplerLevel=0f;
         proximityHissSource.rolloffMode=AudioRolloffMode.Linear;
         proximityHissSource.minDistance=hissMinDistanceU;
-        proximityHissSource.maxDistance=Mathf.Max(hissMinDistanceU,hissMaxDistanceU);
+        proximityHissSource.maxDistance=
+            Mathf.Max(hissMinDistanceU,hissMaxDistanceU);
         var alert=new GameObject("GreatCobraChaseAlertHiss");
         alert.transform.SetParent(transform,false);
         chaseAlertHissSource=alert.AddComponent<AudioSource>();
@@ -367,45 +372,66 @@ public class CobraMotor: MonoBehaviour {
         chaseAlertHissSource.loop=false;
         chaseAlertHissSource.volume=chaseAlertHissVolume;
         chaseAlertHissSource.pitch=hissPitch;
-        // The introduction shot must be audible while the monkey is still far above the cobra.
+        // The introduction shot must be audible while the monkey is still far
+        // above the cobra.
         chaseAlertHissSource.spatialBlend=0f;
     }
 
     public void PlayChaseAlertHiss() {
-        if(chaseAlertHissSource==null || !isActiveAndEnabled || isGuarding || isFrozen)return;
+        if(chaseAlertHissSource==null || !isActiveAndEnabled || isGuarding
+            || isFrozen)return;
         StopProximityHiss();
         chaseAlertHissSource.Play();
-        nextProximityHissTime=Time.time+Mathf.Max(hissIntervalS,proximityHiss.length/Mathf.Max(.1f,hissPitch));
+        nextProximityHissTime=
+            Time.time
+                +Mathf.Max(hissIntervalS,
+                    proximityHiss.length/Mathf.Max(.1f,hissPitch));
     }
 
     private void UpdateProximityHiss(Vector3 headPosition) {
         if (proximityHissSource == null) return;
-        if(chaseAlertHissSource!=null && (isFrozen || isGuarding || (GameController.I!=null && !GameController.I.IsRunLive)))chaseAlertHissSource.Stop();
-        bool alertPlaying=chaseAlertHissSource!=null && chaseAlertHissSource.isPlaying;
+        if(chaseAlertHissSource!=null
+            && (isFrozen || isGuarding
+                || (GameController.I!=null
+                    && !GameController.I.IsRunLive)))
+            chaseAlertHissSource.Stop();
+        bool alertPlaying=chaseAlertHissSource!=null
+            && chaseAlertHissSource.isPlaying;
         Vector3 nearest=headPosition;
-        float distanceSquared=player!=null?(player.position-nearest).sqrMagnitude:float.PositiveInfinity;
-        if(player!=null && hissBodyShapes!=null)foreach(var shape in hissBodyShapes) {
-            if(shape==null || !shape.enabled || !shape.gameObject.activeInHierarchy)continue;
+        float distanceSquared=player!=null
+            ?(player.position-nearest).sqrMagnitude:float.PositiveInfinity;
+        if(player!=null
+            && hissBodyShapes!=null)foreach(var shape in hissBodyShapes) {
+            if(shape==null || !shape.enabled
+                || !shape.gameObject.activeInHierarchy)continue;
             Vector3 point=shape.ClosestPoint(player.position);
             float candidate=(point-player.position).sqrMagnitude;
-            if(candidate<distanceSquared){distanceSquared=candidate;nearest=point;}
+            if(candidate<distanceSquared){distanceSquared=candidate;nearest=
+                point;}
         }
         proximityHissSource.transform.position=nearest;
-        bool near=player != null && !isFrozen && !isGuarding && Time.timeScale>0f
+        bool near=player != null && !isFrozen && !isGuarding
+            && Time.timeScale>0f
             && (GameController.I == null || GameController.I.IsRunLive)
-            && distanceSquared<=Mathf.Pow(hissStartDistanceU+(wasInHissRange?hissExitPaddingU:0f),2f);
+            && distanceSquared<=Mathf.Pow(hissStartDistanceU
+                +(wasInHissRange?hissExitPaddingU:0f),2f);
         if (!near) { StopProximityHiss(); return; }
         if (!wasInHissRange && !alertPlaying) nextProximityHissTime=Time.time;
         wasInHissRange=true;
-        if (!alertPlaying && Time.time>=nextProximityHissTime && !proximityHissSource.isPlaying) {
+        if (!alertPlaying && Time.time>=nextProximityHissTime
+            && !proximityHissSource.isPlaying) {
             proximityHissSource.Play();
-            nextProximityHissTime=Time.time+Mathf.Max(hissIntervalS,proximityHiss.length/Mathf.Max(.1f,hissPitch));
+            nextProximityHissTime=
+                Time.time
+                    +Mathf.Max(hissIntervalS,
+                        proximityHiss.length/Mathf.Max(.1f,hissPitch));
         }
     }
 
     private void StopProximityHiss() {
         wasInHissRange=false;
-        if (proximityHissSource!=null && proximityHissSource.isPlaying) proximityHissSource.Stop();
+        if (proximityHissSource!=null
+            && proximityHissSource.isPlaying) proximityHissSource.Stop();
     }
 
     private void OnDisable() {
@@ -947,7 +973,8 @@ public class CobraMotor: MonoBehaviour {
 
         if (cartoonAppearance.enabled && bodySegments[0] != null
             && bodySegments[0].TryGetComponent(out Renderer source)) {
-            cartoonVisual = new CartoonCobraVisual(transform, source.sharedMaterial, cartoonAppearance);
+            cartoonVisual = new CartoonCobraVisual(transform,
+                source.sharedMaterial, cartoonAppearance);
             cartoonVisual.BuildHead(bodySegments[0], maxThicknessU);
             cartoonRadii = new float[bodySegments.Length];
             cartoonOutward = new Vector3[bodySegments.Length];
@@ -958,7 +985,8 @@ public class CobraMotor: MonoBehaviour {
                 float t = i / (float)LastIndex;
                 cartoonRadii[i] = maxThicknessU * 0.5f
                     * Mathf.Max(0.05f, thicknessProfile.Evaluate(t))
-                    * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.8f, 1f, t)));
+                    * (1f - Mathf.SmoothStep(0f, 1f,
+                        Mathf.InverseLerp(0.8f, 1f, t)));
             }
         } else if (eyeSizeU > 0f && bodySegments[0] != null) {
             AddEyes(bodySegments[0], colorBlock);
@@ -1059,7 +1087,9 @@ public class CobraMotor: MonoBehaviour {
             float bodyDistance = i * arcStep;
             float neckFraction = Mathf.Clamp01(bodyDistance / neckLengthU);
 
-            float lift = neckLiftU * ChaseHeadRaiseBlend() * (1f - neckFraction) * (1f - neckFraction);
+            float lift =
+                neckLiftU * ChaseHeadRaiseBlend() * (1f - neckFraction)
+                    * (1f - neckFraction);
             float wave = waveAmplitudeU * neckFraction * Mathf.Sin(
                 wavePhase - bodyDistance / waveLengthU * 2f * Mathf.PI
             );
@@ -1113,41 +1143,54 @@ public class CobraMotor: MonoBehaviour {
         }
         Vector3 travelDirection = segmentPositions[0] - segmentPositions[1];
         if (!isGuarding) travelDirection.y = 0f;
-        travelDirection = Vector3.ProjectOnPlane(travelDirection, cartoonOutward[0]).normalized;
-        if (travelDirection.sqrMagnitude < 0.001f) travelDirection = Vector3.Cross(cartoonOutward[0], Vector3.up) * Direction;
+        travelDirection = Vector3.ProjectOnPlane(travelDirection,
+            cartoonOutward[0]).normalized;
+        if (travelDirection.sqrMagnitude < 0.001f) travelDirection =
+            Vector3.Cross(cartoonOutward[0], Vector3.up) * Direction;
         Vector3 neckDirection = travelDirection;
         if (!isGuarding && player != null) {
             Vector3 toPlayer = player.position - segmentPositions[0];
-            Vector3 towardPlayer = Vector3.ProjectOnPlane(toPlayer, cartoonOutward[0]);
+            Vector3 towardPlayer = Vector3.ProjectOnPlane(toPlayer,
+                cartoonOutward[0]);
             if (towardPlayer.sqrMagnitude > 0.001f) {
-                neckDirection = Vector3.Slerp(travelDirection,towardPlayer.normalized,ChaseHeadRaiseBlend()).normalized;
+                neckDirection =
+                    Vector3.Slerp(travelDirection,towardPlayer.normalized,
+                        ChaseHeadRaiseBlend()).normalized;
             }
         }
-        Quaternion desiredHeadRotation = Quaternion.LookRotation(cartoonOutward[0], neckDirection);
+        Quaternion desiredHeadRotation =
+            Quaternion.LookRotation(cartoonOutward[0], neckDirection);
         if (!cartoonHeadRotationInitialized) {
             cartoonHeadRotation = desiredHeadRotation;
             cartoonHeadRotationInitialized = true;
         } else if (!isFrozen) {
-            Quaternion followedRotation = Quaternion.Slerp(cartoonHeadRotation, desiredHeadRotation,
+            Quaternion followedRotation = Quaternion.Slerp(cartoonHeadRotation,
+                desiredHeadRotation,
                 1f - Mathf.Exp(-headFollowSharpness * Time.deltaTime));
-            cartoonHeadRotation = Quaternion.RotateTowards(cartoonHeadRotation, followedRotation,
+            cartoonHeadRotation = Quaternion.RotateTowards(cartoonHeadRotation,
+                followedRotation,
                 headTurnSpeedDegrees * Time.deltaTime);
         }
         Quaternion headRotation = cartoonHeadRotation;
         Vector3 headPosition = segmentPositions[0];
         if (cartoonAppearance.referenceHead != null) {
-            Bounds headBounds = cartoonAppearance.referenceHead.GetComponent<MeshFilter>().sharedMesh.bounds;
+            Bounds headBounds =
+                cartoonAppearance.referenceHead.GetComponent<MeshFilter>()
+                    .sharedMesh.bounds;
             float headSize = maxThicknessU * cartoonAppearance.headScale;
             float innerProjection = 0f;
             for (int corner = 0; corner < 8; corner++) {
-                Vector3 point = headBounds.center + Vector3.Scale(headBounds.extents,
+                Vector3 point =
+                    headBounds.center + Vector3.Scale(headBounds.extents,
                     new Vector3((corner & 1) == 0 ? -1f : 1f,
                         (corner & 2) == 0 ? -1f : 1f,
                         (corner & 4) == 0 ? -1f : 1f));
                 innerProjection = Mathf.Min(innerProjection,
-                    Vector3.Dot(headRotation * (point * headSize), cartoonOutward[0]));
+                    Vector3.Dot(headRotation * (point * headSize),
+                        cartoonOutward[0]));
             }
-            // Keep the inward-facing muzzle clear of the trunk while the neck stays upright.
+            // Keep the inward-facing muzzle clear of the trunk while the neck
+            // stays upright.
             headPosition += cartoonOutward[0]
                 * Mathf.Max(0f, -innerProjection - maxThicknessU * 0.5f);
         } else {
@@ -1156,7 +1199,8 @@ public class CobraMotor: MonoBehaviour {
         }
         cartoonVisual.PoseHead(headPosition, headRotation);
         UpdateProximityHiss(headPosition);
-        cartoonVisual.UpdateBody(segmentPositions, cartoonRadii, cartoonOutward, bellyInward: true);
+        cartoonVisual.UpdateBody(segmentPositions, cartoonRadii, cartoonOutward,
+            bellyInward: true);
     }
 
     private Vector3 GetPathPosition(float angleDegrees, float height) {
