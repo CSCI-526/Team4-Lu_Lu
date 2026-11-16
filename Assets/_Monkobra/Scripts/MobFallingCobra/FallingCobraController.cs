@@ -299,9 +299,26 @@ public class FallingCobraController: MonoBehaviour {
             || rig.state == FallingCobraState.Done || !rig.perchBound) {
             return;
         }
+        if (IsDormantAndFarFromMonkey()) {
+            return;
+        }
         branchCoil.RefreshBranchFrame();
         AlignReferenceToTree();
         spine.Update();
+    }
+
+    // a perched cobra far beyond its tracking range holds its last pose, so
+    // skip the spine rebuild; the margin lets any head turn finish first
+    private bool IsDormantAndFarFromMonkey() {
+        if (rig.state != FallingCobraState.Dormant || !rig.spinePoseReady
+            || rig.player == null) {
+            return false;
+        }
+        float rangeU = Mathf.Max(tuning.HeadTrackingRangeU,
+            tuning.TriggerDistanceU, rig.reachWakeDistanceU);
+        float gateU = (rangeU + tuning.HeadTrackingExitPaddingU) * 2f;
+        return (rig.player.position - transform.position).sqrMagnitude
+            > gateU * gateU;
     }
 
     private void Start() {
