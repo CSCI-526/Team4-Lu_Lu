@@ -38,6 +38,7 @@ todo vertical version
 - Made with Unity splash screen off
 - level selection in the UI style: the loading page's vines, a logo-style title, gold buttons, the unlock hint under Endless Mode instead of over it, W and S side by side in the key hint
 - title start prompt & the loading page's "Loading" in Baloo 2, so the hand-over keeps one font
+- in-game HUD in the UI style: a smaller gold pause button, its Esc hint and the coconut counter laid out from the top-right corner so they never overlap; the progress bar wears the loading page's monkey and cobra heads, the cobra's neck its green segments; Baloo 2 energy, popups & tutorial; the score on a see-through plate with a "Score" caption, level with the pause button; popups on the same see-through plate, so the monkey's arm shows behind a grab hint; Space key icons as keycaps
 - hack key list (F1–F12) hidden at start, F9 shows or hides it
 
 ### Deprecated
@@ -49,6 +50,8 @@ todo vertical version
 ##### Yuqing Lu
 
 - lose screen: the Download Analytic button is big enough for its words, and the key hint row fits the run card at 4:3
+- progress bar faces no longer squashed: their counter-stretch now matches the bar's
+- progress bar: the cobra stays inside the bar as it reaches the monkey, and its body fills the bar from the bottom instead of hanging out below
 
 ### Security
 

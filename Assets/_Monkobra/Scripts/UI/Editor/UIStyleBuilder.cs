@@ -14,7 +14,7 @@ using UnityEngine.UI;
 /// reference and scene override survives. Each step can run again; a step
 /// keeps what it already made.
 /// </summary>
-public static class UIStyleBuilder {
+public static partial class UIStyleBuilder {
     // public members  #########################################################
     internal static TMP_FontAsset SemiBold => Load<TMP_FontAsset>(SEMIBOLD_SDF);
     internal static TMP_FontAsset ExtraBold =>
@@ -261,7 +261,9 @@ public static class UIStyleBuilder {
     }
 
     // a square button in place: sprites, size, glyph, feel
-    internal static void StyleIconButton(Button button) {
+    internal static void StyleIconButton(
+        Button button, string glyphSprite = "Icon_Resume"
+    ) {
         RectTransform rect = (RectTransform)button.transform;
         rect.sizeDelta = new Vector2(
             ICON_FACE + MARGIN_LEFT + MARGIN_RIGHT,
@@ -271,9 +273,7 @@ public static class UIStyleBuilder {
 
         RectTransform glyph = FindOrCreate("Glyph", button.transform);
         Image glyphImage = GetOrAdd<Image>(glyph.gameObject);
-        if (glyphImage.sprite == null) {
-            glyphImage.sprite = Load<Sprite>(SPRITES + "Icon_Resume.png");
-        }
+        glyphImage.sprite = Load<Sprite>(SPRITES + glyphSprite + ".png");
         glyphImage.color = UIStyle.Brown;
         glyphImage.raycastTarget = false;
         glyph.anchorMin = glyph.anchorMax = new Vector2(0.5f, 0.5f);
@@ -485,10 +485,7 @@ public static class UIStyleBuilder {
 
         icon.sprite = keycap;
         icon.color = UIStyle.Brown;
-        Shadow shadow = GetOrAdd<Shadow>(icon.gameObject);
-        shadow.effectColor = UIStyle.Shadow;
-        shadow.effectDistance = KEYCAP_SHADOW;
-        shadow.useGraphicAlpha = true;
+        AddShadow(icon.gameObject, UIStyle.Shadow, KEYCAP_SHADOW);
     }
 
     // helpers  ----------------------------------------------------------------
@@ -509,6 +506,33 @@ public static class UIStyleBuilder {
     private static T GetOrAdd<T>(GameObject go) where T : Component {
         T found = go.GetComponent<T>();
         return found != null ? found : go.AddComponent<T>();
+    }
+
+    // Outline is a Shadow, so each is found by its exact type, never the
+    // other's
+    private static T GetOrAddExact<T>(GameObject go) where T : Shadow {
+        foreach (T found in go.GetComponents<T>()) {
+            if (found.GetType() == typeof(T)) {
+                return found;
+            }
+        }
+        return go.AddComponent<T>();
+    }
+
+    // the logo's brown shadow, down-right, under a graphic
+    internal static void AddShadow(GameObject go, Color color, Vector2 offset) {
+        Shadow shadow = GetOrAddExact<Shadow>(go);
+        shadow.effectColor = color;
+        shadow.effectDistance = offset;
+        shadow.useGraphicAlpha = true;
+    }
+
+    // a thin rim around a graphic, eg a plate's border
+    internal static void AddOutline(GameObject go, Color color, float width) {
+        Outline outline = GetOrAddExact<Outline>(go);
+        outline.effectColor = color;
+        outline.effectDistance = new Vector2(width, -width);
+        outline.useGraphicAlpha = true;
     }
 
     private static RectTransform NewChild(string childName, Transform parent) {
