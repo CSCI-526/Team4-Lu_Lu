@@ -51,46 +51,43 @@ todo todo vertical version
 
 ##### Erik
 
-- Monkey outline: the skinned monkey wears a white, always-on outline (`MonkeyOutline`, `Monkey_Outline` material), the grabbable fruit look
-- hack layer: F12 (development build only) turns the hack key list & every other hack key on or off, off at start; a release build keeps the keys live & F12 dead
-- analytics records the Spider King: `SpiderFight`, `SpiderRevive` & `SpiderWin` metrics (new `SpiderKingFightController.Revived` event); the mock session plays a timed spider fight after a won Cobra King one
-- Spider King parry lesson shows the animated double tap icon (keycap or finger by control style) under "Now!", replacing the "Tap SPACE 2 times" text (`BossFightHud.ShowDoubleTapHint`)
-- accent fonts back after the Baloo 2 unification: BadaBoom on the score numbers (HUD, bonus popups, lose screen), Chewy on the level-select labels & Download Analytic, Life Is Goofy on the Endless unlock hint, which sits again on the button's right shoulder, in 2 lines; each in the screens it had before, Baloo 2 stays the TMP default
+- white always-on outline on the skinned monkey, matching grabbable fruit
+- hack layer: F12 (development build only) toggles hack keys & key list, off at start; release builds keep keys live
+- analytics records the Spider King fight: start, revive & win; mock session plays a spider fight after a won Cobra King one
+- Spider King parry lesson shows the animated double tap icon, replacing the "Tap SPACE 2 times" text
+- accent fonts back over the Baloo 2 default: BadaBoom on scores, Chewy on level-select & Download Analytic labels, Life Is Goofy on the Endless unlock hint
 
 ##### Yuqing Lu
 
-- WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
-- title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
-- team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
-- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
+- WebGL loading page: cobra eats a row of dots along a branch on real download progress, monkey hopping ahead; ends on the title picture & fades into the game
+- team logo screen before loading: USC Games & Peel Five; click, key or same-tab reload skips it
+- title screen redrawn: logo, grown cobra & monkey on a branch, vines
+- UI style from the logo (`docs/ui-style-doc.md`): Baloo 2 font, palette, logo-style `MenuButton` & `IconButton` prefabs, keycap key icons, applied by `Monkobra > UI Style` menus
 
 ### Changed
 
 ##### Erik
 
-- project layout follows the u3d skills: `Models/` → `Meshes/`, SFX under `Audio/SFX/`, `Fonts/Baloo2/`, module-owned UI scripts & prefabs re-homed into their module folders, `Boss/` split into `BossCobraKing/` & `BossSpiderKing/` (classes renamed `CobraKing*`, `SpiderKing*`)
-- 1 gameplay scene: `GameplayScene` takes the run mode from `RunModeSelection.Selected`, `EndlessScene` gone; Normal Play & Endless Mode load the same scene
-- prefab rule, 1 prefab = 1 entity: group prefabs `Entities`, `_UI`, `_Screens`, `InGameHUD`, `LowStaminaPrompt` dissolved into the scene; `PauseButton`, `FruitFlyLayer`, `CoconutMessage` own prefabs
-- 11 popup variants → 1 `PopUpCatalog` read by `PopUpManager`; 9 input icons → 2 (`InputIcon_Key`, `InputIcon_Touch`) + `HintIconLibrary`; branch prefabs `_BranchBase` & `Branch_X`; `EventSystem_Menu` is a variant of `EventSystem`
-- cobra meshes thinned by the merged `simplify-snake-mesh` branch, same look
-- script conventions applied project-wide: sections, Inspector Assignment Guard, 80 columns, typed locals, English comments; hack keys read through `HackShortcutConfig`, not `Keyboard.current`
-- god classes split by role around a shared rig & `[Serializable]` tuning object, behavior unchanged, prefab values kept: falling cobra, great cobra motor, Cobra King fight, boss HUD, Spider King fight
-- hot paths: cobra head bounds, freeze timer text & tutorial stick rect cached; dormant falling cobras skip the spine rebuild far from the monkey
-- ramped difficulty in 3 stages, 1 per boss: 0~1 starting zone exit to the Cobra King, 1~2 b/t the 2 bosses (new `midBossRampCurve`), 2~ after the Spider King (`postBossRampCurve` starts at 2); Endless opens at 2; every hazard & cobra curve re-keyed to 0~3: old 1~2 -> 2~3, a new 1~2 dips a little then rises back to the old value at 1
-- PC render pipeline: opaque texture off, nothing read it
-- Spider King fight area moved down 50 u: zone 975~1050, trigger 1000 (was 1050), seen waiting from 945 u, so its height marker reads 1000 m
-- hack keys regrouped: F1~F3 cheats, 1 & 2 jump to the Cobra King / Spider King fight (the spider jump was 9), 3~6 spawns, F8~F10 analytics, F12 the switch (was F9); F4~F7 & F11 stay free
-- analytics titles tell the bosses apart: "Boss Fight Start" & "Boss Revive" → "Cobra Fight Start" & "Cobra Revive" (enum names unchanged)
+- project layout follows the u3d skills: renamed & re-homed folders, `Boss/` split into `BossCobraKing/` & `BossSpiderKing/` (classes renamed `CobraKing*`, `SpiderKing*`)
+- 1 gameplay scene: run mode passed on load, `EndlessScene` gone
+- 1 prefab = 1 entity: group prefabs dissolved into the scene; 11 popup variants → 1 `PopUpCatalog`; 9 input icons → 2 + `HintIconLibrary`; branch prefabs share `_BranchBase`
+- cobra meshes thinned, same look
+- script conventions applied project-wide; hack keys read through `HackShortcutConfig`
+- god classes split by role, behavior unchanged: falling cobra, great cobra motor, Cobra King fight, boss HUD, Spider King fight
+- hot paths cached; dormant falling cobras skip work far from the monkey
+- ramped difficulty in 3 stages, 1 per boss; Endless opens at the final stage; hazard & cobra curves re-keyed to 0~3
+- Spider King fight area moved down 50 u: trigger 1000, height marker 1000 m
+- hack keys regrouped: F1~F3 cheats, 1 & 2 boss jumps, 3~6 spawns, F8~F10 analytics, F12 switch (was F9)
+- analytics titles tell bosses apart: "Cobra Fight Start" & "Cobra Revive"
+- PC render pipeline: opaque texture off
 
 ##### Yuqing Lu
 
-- pause & lose screens: Exit goes back to the level selection, not the title
+- pause & lose screens: Exit returns to level selection, not title
 - Made with Unity splash screen off
-- level selection in the UI style: the loading page's vines, a logo-style title, gold buttons, the unlock hint under Endless Mode instead of over it, W and S side by side in the key hint
-- title start prompt & the loading page's "Loading" in Baloo 2, so the hand-over keeps one font
-- in-game HUD in the UI style: a smaller gold pause button, its Esc hint and the coconut counter laid out from the top-right corner so they never overlap; the progress bar wears the loading page's monkey and cobra heads, the cobra's neck its green segments; Baloo 2 energy, popups & tutorial; the score on a see-through plate with a "Score" caption, level with the pause button; popups on the same see-through plate, so the monkey's arm shows behind a grab hint; Space key icons as keycaps
-- hack key list (F1–F12) hidden at start, F9 shows or hides it
-- pause & lose screens in the UI style: square gold buttons with their words beside them and their keys on keycaps, logo-style titles; the lose screen's run card & leaderboard as matching plates with the key hint row under both; the boss fight's reward panel, revive card & badges in the UI palette
+- level selection, in-game HUD, pause & lose screens, boss reward panel & revive card in the UI style
+- title start prompt & loading page "Loading" in Baloo 2, keeping 1 font through the hand-over
+- hack key list hidden at start, F9 shows or hides it
 
 ### Removed
 
@@ -100,22 +97,20 @@ todo todo vertical version
 
 ##### Yuqing Lu
 
-- the tutorial's Noto Sans TC subset font and the old popup plate sprite: Baloo 2 is the UI font, with 3 accent fonts back (see Added)
+- tutorial Noto Sans TC subset font & old popup plate sprite, replaced by Baloo 2
 
 ### Fixed
 
 ##### Erik
 
-- the first coconut & pineapple (the guaranteed ones) grow on the monkey's side of the trunk, within a configurable angle (`guaranteedBranchYawSpreadDeg` in `WorldBalanceConfig`), never on the far side
-- spider web catches only inside a round zone fitted to the drawn web (`catchRadiusU`, was a larger square box), & only on the monkey's root capsule: tail & hands never trigger it
-- no falling cobra hangs without a branch after the Cobra King fight: the nest clear removes falling cobras with their branches, and a dormant cobra switches itself off once its branch is gone
+- guaranteed first coconut & pineapple grow on the monkey's side of the trunk, never the far side
+- spider web catches only the monkey's root capsule inside a round zone fitted to the web, no longer tail & hands
+- no falling cobra hangs without a branch after the Cobra King fight
 
 ##### Yuqing Lu
 
-- lose screen: the Download Analytic button is big enough for its words, and the key hint row fits at 4:3, now under both panels
-- lose screen: the Restart and Exit buttons have their words back
-- progress bar faces no longer squashed: their counter-stretch now matches the bar's
-- progress bar: the cobra stays inside the bar as it reaches the monkey, and its body fills the bar from the bottom instead of hanging out below
+- lose screen: Download Analytic button fits its words, key hint row fits at 4:3, Restart & Exit words back
+- progress bar: faces no longer squashed, cobra stays inside the bar & fills it from the bottom
 
 [1.0.0-beta.4]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.3...v1.0.0-beta.4
 
