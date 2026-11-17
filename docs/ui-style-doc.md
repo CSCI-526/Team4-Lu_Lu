@@ -22,7 +22,7 @@ The code twin is `UIStyle` (`Scripts/UI/UIStyle.cs`). Gameplay signals keep thei
 
 ## Type
 
-One family, Baloo 2 (OFL, `Fonts/Baloo2/`), in two weights; weight and size make the levels.
+One family, Baloo 2 (OFL, `Fonts/Baloo2/`), in two weights; weight and size make the levels. Three accent fonts sit on fixed text only: BadaBoom (`Fonts/badaboom/`) on the score numbers (HUD score, bonus popups, lose screen final score; digits, comma and plus only), Chewy (`Fonts/chewy/`) on the level-select labels and Download Analytic, Life Is Goofy (`Fonts/life-is-goofy/`) on the Endless unlock hint. The `UIStyleBuilder` HUD and screen builders set Baloo 2 on those objects again when rerun, so re-point them after a rerun.
 
 - Files: `Baloo2-SemiBold.ttf` and `Baloo2-ExtraBold.ttf`, static instances of the variable font cut to the Latin set (Basic Latin, Latin-1, common punctuation), 37 KB each, so a WebGL build stays small
 - TMP: `Baloo2-SemiBold SDF` and `Baloo2-ExtraBold SDF`, static 1024 atlases of the same set; SemiBold is the TMP default, so text made in code without a font gets it, and a Bold style on SemiBold text draws the real ExtraBold; LiberationSans is the fallback for any glyph outside the set
@@ -99,4 +99,4 @@ All of it is built by Editor menus, never by editing prefab YAML:
 - Leaderboard: a plate whose gold rim replaces the old gold top line, a Cream title, Divider rules, Cream rows on faint Cream stripes, the player's row in Gold on a Gold stripe, drawn Bold, ie ExtraBold
 - Boss fight panels, built in code by `BossFightHud`: the win's reward panel, the revive card, the badge, tags, the health bar plate and the speech bubble take `UIStyle` colors (Background wash, Panel plates, Gold titles drawn Bold, Cream words, a Gold button with a Brown label for the main choice); the mock course ad keeps its own course colors, and the signal colors (health red, warning red, the EASY green) stay
 
-Every screen is in the style; the old fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite are gone, so Baloo 2 is the one UI font, with LiberationSans left only as TMP's fallback for a glyph outside the set.
+Every screen is in the style; the tutorial's Noto Sans TC subset and the old popup plate sprite are gone, so Baloo 2 is the UI font, with BadaBoom, Chewy and Life Is Goofy back as accents on the text listed under Type, and LiberationSans left only as TMP's fallback for a glyph outside the set.
