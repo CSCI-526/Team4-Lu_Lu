@@ -52,6 +52,7 @@ todo vertical version
 - hack keys regrouped: F1~F3 cheats, 1 & 2 jump to the Cobra King / Spider King fight (the spider jump was 9), 3~6 spawns, F8~F10 analytics, F12 the switch for the hack layer (was F9); F4~F7 & F11 free
 - analytics records the Spider King: `SpiderFight` (fight start), `SpiderRevive` and `SpiderWin` metrics, from new `SpiderKingFightController.Revived` and the existing `FightStarted` / `FightEnded` events
 - analytics report titles tell the bosses apart: "Boss Fight Start" → "Cobra Fight Start", "Boss Revive" → "Cobra Revive" (enum names unchanged), "Armor Save" stays as either fight spends the same armor
+- mock analytics session plays a timed Spider King fight after a won Cobra King fight (spider zone 975~1050 hazard free, start, revives & win rows)
 
 ##### Yuqing Lu
 

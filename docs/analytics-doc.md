@@ -157,7 +157,7 @@ The lose screen also carries a Download Analytics button at the top right (`Lose
 `MockAnalyticsGenerator` plays a tester through a whole session instead of drawing random numbers, so the charts show the curves a real playtest would.
 
 - Per Run: a small simulation of the real game, ie the monkey climbs on the climb speed curve, stamina drains and refills, hazards and fruit are rolled per trunk segment from the difficulty ramp and each chance curve, and the great cobra chases on its base and distance speed curves with its surge and exit boost
-- Ending: a run ends where a real one would, when the cobra catches a monkey that lost too much time to branches, webs, and grabs; a run past the boss zone trigger plays out a timed boss fight, with armor saves, revives, and an occasional win
+- Ending: a run ends where a real one would, when the cobra catches a monkey that lost too much time to branches, webs, and grabs; a run past the boss zone trigger plays out a timed Cobra King fight, with armor saves, revives, and an occasional win, and a run that won it plays out a timed Spider King fight at its trigger the same way (a little harder, with its own start, revive and win rows)
 - Skill: each run has a skill value from 0 to 1 that sets how often the monkey walks into hazards, grabs fruit, and uses coconuts; it climbs over the session along a learning curve, with the odd distracted run
 - Modes: Endless runs appear only once the tester has beaten the king, in this session or an earlier one
 - Metrics: every event metric of the report is generated, and scores follow the real scoring rule
