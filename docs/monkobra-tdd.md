@@ -127,7 +127,7 @@ A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB file
 
 ## Hack Shortcuts
 
-Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.asset`, an instance of the `HackShortcutConfig` ScriptableObject: a list of entries, each a `HackAction`, a key, and a one-line description. Consumers look a key up with `GetKey(HackAction)` and skip it unless `HackShortcutConfig.IsActive`, which is true in every build, so the keys work in a release build too. Hints and dev-only UI follow `HackShortcutConfig.AreHintsShown` instead, ie a development build or the Editor.
+Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.asset`, an instance of the `HackShortcutConfig` ScriptableObject: a list of entries, each a `HackAction`, a key, and a one-line description. Consumers look a key up with `GetKey(HackAction)` and skip it unless `HackShortcutConfig.IsActive`, which is true in a release build, so the keys work there as always, and in a development build or the Editor only once the hack layer is on. Hints and dev-only UI follow `HackShortcutConfig.AreHintsShown` instead, ie a development build or the Editor.
 
 | Key | Action | Read by |
 | --- | --- | --- |
@@ -145,7 +145,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F12 | save a mock analytics session file | `AnalyticsManager` |
 | F9 | show or hide this list on screen (hidden when a scene starts) | `HackShortcutPanel` |
 
-`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and F9 (`ToggleHints`) shows or hides it. A new hack key is a new `HackAction` plus an entry in the asset.
+`HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and `ToggleHints` turns the hack layer on or off: one shared static state (`HackShortcutConfig.TryToggleLayer`, off at every play start) that shows the list and lets every other hack key run, so a tester never triggers one by accident. `ToggleHints` reads only when `AreHintsShown`, so it never works in a release build, where the other keys stay live. The state holds across scenes, but only the gameplay scene's panel can flip it. A new hack key is a new `HackAction` plus an entry in the asset.
 
 ## Game Balance
 
