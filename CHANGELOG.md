@@ -1,16 +1,20 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme difficulty system updated, game balance
 Bug web spider trigger weird
 Todo upd weekly devlog
 
+bug endless mode need to start w/ full heath & no starting zone
 todo pan branch & bark model/texture
 todo erik lighting
 todo erik skybox
 todo erik sfx
-bug endless mode need to start w/ full heath & no starting zone
-todo vertical version
+todo add 3x fruit
+fixme mpv tutorial for boss fight
+fixme during boss fight, make energy bar gone, better ways to indicate 1 kill
+
+
+todo todo vertical version
 -->
 
 
