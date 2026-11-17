@@ -23,32 +23,32 @@ MonoBehaviour:
     key: 96
     description: speed x3
   - action: 3
-    key: 97
+    key: 41
     description: jump to boss zone start
+  - action: 12
+    key: 42
+    description: jump to spider king
   - action: 4
-    key: 98
+    key: 43
     description: spawn pineapple
   - action: 5
-    key: 99
+    key: 44
     description: spawn coconut
   - action: 6
-    key: 100
+    key: 45
     description: spawn falling snake
   - action: 7
-    key: 101
+    key: 46
     description: spawn spider web
   - action: 8
-    key: 103
+    key: 101
     description: download report
   - action: 9
-    key: 104
+    key: 102
     description: new session
   - action: 10
-    key: 105
+    key: 103
     description: mock session
   - action: 11
-    key: 102
-    description: show or hide this list
-  - action: 12
-    key: 49
-    description: jump to spider king
+    key: 105
+    description: hack keys on/off, with this list

@@ -180,8 +180,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Play
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 65b5bdcd825294da98fa40991f71bb29, type: 2}
-  m_sharedMaterial: {fileID: 1827838268005869018, guid: 65b5bdcd825294da98fa40991f71bb29, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}
+  m_sharedMaterial: {fileID: 5833252848989689727, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -438,7 +438,6 @@ RectTransform:
   m_Children:
   - {fileID: 3066135211428894783}
   - {fileID: 2733948681823606551}
-  - {fileID: 8634738326003325858}
   - {fileID: 3355804628101498808}
   m_Father: {fileID: 3794263684141131974}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -504,12 +503,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3813333064401612947}
+  m_Father: {fileID: 3794263684141131974}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 276, y: 3}
-  m_SizeDelta: {x: 441, y: 40}
+  m_SizeDelta: {x: 800, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5404066144448298888
 CanvasRenderer:
@@ -539,10 +538,12 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Defeat Cobra King to Unlock
+  m_text: 'Defeat Cobra King
+
+    to Unlock'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8bd45de4359a545b288301c4c6a5af86, type: 2}
-  m_sharedMaterial: {fileID: -6701114750560727797, guid: 8bd45de4359a545b288301c4c6a5af86, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 27024e3977d151147ab029094431f758, type: 2}
+  m_sharedMaterial: {fileID: -7043696235737493947, guid: 27024e3977d151147ab029094431f758, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -566,8 +567,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 22
-  m_fontSizeBase: 22
+  m_fontSize: 55
+  m_fontSizeBase: 55
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 0
@@ -857,8 +858,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Back
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 65b5bdcd825294da98fa40991f71bb29, type: 2}
-  m_sharedMaterial: {fileID: 1827838268005869018, guid: 65b5bdcd825294da98fa40991f71bb29, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}
+  m_sharedMaterial: {fileID: 5833252848989689727, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1595,6 +1596,7 @@ RectTransform:
   - {fileID: 3872125663462447545}
   - {fileID: 2326012848774153839}
   - {fileID: 3813333064401612947}
+  - {fileID: 8634738326003325858}
   m_Father: {fileID: 5099418077696838559}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1782,8 +1784,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Endless Mode
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 65b5bdcd825294da98fa40991f71bb29, type: 2}
-  m_sharedMaterial: {fileID: 1827838268005869018, guid: 65b5bdcd825294da98fa40991f71bb29, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}
+  m_sharedMaterial: {fileID: 5833252848989689727, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

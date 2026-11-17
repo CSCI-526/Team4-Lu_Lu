@@ -15,6 +15,8 @@ public sealed class BossFightHudBuilder {
     private readonly System.Action onCoursePageClicked;
     private readonly System.Action onContinueClicked;
     private readonly System.Action onSkipAdClicked;
+    // the double tap icon's height; canvas units
+    private const float DOUBLE_TAP_ICON_SIZE = 96f;
 
     public BossFightHudBuilder(BossFightHudRig rig,
         System.Action onWatchAdClicked, System.Action onGiveUpClicked,
@@ -96,6 +98,21 @@ public sealed class BossFightHudBuilder {
         rig.bannerLabel.rectTransform.sizeDelta = new Vector2(1100f, 240f);
         rig.bannerLabel.rectTransform.anchoredPosition = new Vector2(0f, 120f);
         rig.bannerLabel.gameObject.SetActive(false);
+
+        // animated double tap icon under the low banner, shown by a lesson
+        rig.doubleTapIcon = HintIconSlot.Create(
+            rig.rootRect, tuning.HintIconLibrary,
+            tuning.DoubleKeyboardController, tuning.DoubleTouchController,
+            DOUBLE_TAP_ICON_SIZE
+        );
+        if (rig.doubleTapIcon != null) {
+            rig.doubleTapIcon.anchorMin = rig.doubleTapIcon.anchorMax =
+                new Vector2(0.5f, 0.5f);
+            rig.doubleTapIcon.sizeDelta = new Vector2(
+                DOUBLE_TAP_ICON_SIZE, DOUBLE_TAP_ICON_SIZE);
+            rig.doubleTapIcon.anchoredPosition = rig.doubleTapIconPosition;
+            rig.doubleTapIcon.gameObject.SetActive(false);
+        }
 
         // entry flash, on top of the rest of the hud
         RectTransform flash = CreateRect("Flash", rig.rootRect);

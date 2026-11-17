@@ -1,9 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme put back other fonts
-Todo add jump to 2nd boss fight
-Todo 2nd boss fight double click
 Bug web spider trigger weird
 Todo upd weekly devlog
 
@@ -23,13 +20,17 @@ todo vertical version
 ##### Erik
 
 - Monkey outline: the skinned monkey wears a white, always-on outline (`MonkeyOutline`, `Monkey_Outline` material), the grabbable fruit look
+- hack layer: F12 (development build only) turns the hack key list & every other hack key on or off, off at start; a release build keeps the keys live & F12 dead
+- analytics records the Spider King: `SpiderFight`, `SpiderRevive` & `SpiderWin` metrics (new `SpiderKingFightController.Revived` event); the mock session plays a timed spider fight after a won Cobra King one
+- Spider King parry lesson shows the animated double tap icon (keycap or finger by control style) under "Now!", replacing the "Tap SPACE 2 times" text (`BossFightHud.ShowDoubleTapHint`)
+- accent fonts back after the Baloo 2 unification: BadaBoom on the score numbers (HUD, bonus popups, lose screen), Chewy on the level-select labels & Download Analytic, Life Is Goofy on the Endless unlock hint, which sits again on the button's right shoulder, in 2 lines; each in the screens it had before, Baloo 2 stays the TMP default
 
 ##### Yuqing Lu
 
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
 - title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
 - team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
-- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the one UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
+- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
 
 ### Changed
 
@@ -45,6 +46,9 @@ todo vertical version
 - hot paths: cobra head bounds, freeze timer text & tutorial stick rect cached; dormant falling cobras skip the spine rebuild far from the monkey
 - ramped difficulty in 3 stages, 1 per boss: 0~1 starting zone exit to the Cobra King, 1~2 b/t the 2 bosses (new `midBossRampCurve`), 2~ after the Spider King (`postBossRampCurve` starts at 2); Endless opens at 2; every hazard & cobra curve re-keyed to 0~3: old 1~2 -> 2~3, a new 1~2 dips a little then rises back to the old value at 1
 - PC render pipeline: opaque texture off, nothing read it
+- Spider King fight area moved down 50 u: zone 975~1050, trigger 1000 (was 1050), seen waiting from 945 u, so its height marker reads 1000 m
+- hack keys regrouped: F1~F3 cheats, 1 & 2 jump to the Cobra King / Spider King fight (the spider jump was 9), 3~6 spawns, F8~F10 analytics, F12 the switch (was F9); F4~F7 & F11 stay free
+- analytics titles tell the bosses apart: "Boss Fight Start" & "Boss Revive" → "Cobra Fight Start" & "Cobra Revive" (enum names unchanged)
 
 ##### Yuqing Lu
 
@@ -66,7 +70,7 @@ todo vertical version
 
 ##### Yuqing Lu
 
-- the old UI fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite: Baloo 2 is now the only font
+- the tutorial's Noto Sans TC subset font and the old popup plate sprite: Baloo 2 is the UI font, with 3 accent fonts back (see Added)
 
 ### Fixed
 
