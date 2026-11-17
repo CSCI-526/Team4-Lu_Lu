@@ -2,8 +2,6 @@
 
 <!--
 Fixme put back other fonts
-Todo add jump to 2nd boss fight
-Todo 2nd boss fight double click
 Fixme difficulty system updated, game balance
 Bug web spider trigger weird
 Todo upd weekly devlog
