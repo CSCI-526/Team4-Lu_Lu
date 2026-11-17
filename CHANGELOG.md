@@ -1,8 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug web spider trigger weird
-Todo upd weekly devlog
+todo upd weekly devlog
 
 bug endless mode need to start w/ full heath & no starting zone
 todo pan branch & bark model/texture
