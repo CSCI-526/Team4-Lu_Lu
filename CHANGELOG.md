@@ -21,6 +21,34 @@ todo todo vertical version
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.4...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.0.0-beta.4] - 2026-11-17
+
+### Added
+
 ##### Erik
 
 - Monkey outline: the skinned monkey wears a white, always-on outline (`MonkeyOutline`, `Monkey_Outline` material), the grabbable fruit look
@@ -64,8 +92,6 @@ todo todo vertical version
 - hack key list (F1–F12) hidden at start, F9 shows or hides it
 - pause & lose screens in the UI style: square gold buttons with their words beside them and their keys on keycaps, logo-style titles; the lose screen's run card & leaderboard as matching plates with the key hint row under both; the boss fight's reward panel, revive card & badges in the UI palette
 
-### Deprecated
-
 ### Removed
 
 ##### Erik
@@ -91,9 +117,7 @@ todo todo vertical version
 - progress bar faces no longer squashed: their counter-stretch now matches the bar's
 - progress bar: the cobra stays inside the bar as it reaches the monkey, and its body fills the bar from the bottom instead of hanging out below
 
-### Security
-
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.3...dev
+[1.0.0-beta.4]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.3...v1.0.0-beta.4
 
 
 
