@@ -17,7 +17,7 @@ graph LR
   Coconut[CoconutManager] -->|Collected, Used| AM
   Hit[HitBranchDetection] -->|BranchHit| AM
   Web[SpiderWebTrap] -->|Encountered| AM
-  More[Leap, Pause, Boss Fight, ~] -->|events| AM
+  More[Leap, Pause, Cobra Fight, Spider Fight, ~] -->|events| AM
   AM --> Data[SessionData and RunData]
   Data --> Writer[AnalyticsMarkdownWriter]
   Writer --> SF[AnalyticsSessionFile]
@@ -103,9 +103,12 @@ Each event list is a table of its time since the run start; banana, coconut, and
 - Cobra Freeze: times the great cobra froze, from a coconut or the gold armor
 - Height Marker: new height markers the monkey reached, stamped when it scores (`ScoreManager.RewardAdded`); a drop and a second touch of a lower marker is not counted
 - Pause: times the run was paused, a resume is not counted
-- Boss Fight Start: times the monkey entered the boss arena
-- Armor Save: times the gold armor took a great cobra catch
-- Boss Revive: times a revive restarted the boss fight
+- Cobra Fight Start: times the monkey entered the Cobra King's arena
+- Armor Save: times the gold armor took a great cobra catch, in either fight or on the climb after (the Spider King fight spends the same armor)
+- Cobra Revive: times a revive restarted the Cobra King fight
+- Spider Fight Start: times the monkey entered the Spider King's arena (`SpiderKingFightController.FightStarted`)
+- Spider Revive: times a revive restarted the Spider King fight (`SpiderKingFightController.Revived`)
+- Spider Win: times the Spider King was beaten, stamped when the reward is taken (`SpiderKingFightController.FightEnded`)
 
 A metric that never happened still shows its heading with a count of 0.
 
@@ -143,9 +146,9 @@ The keys work in every build, their hints show only in a development build or th
 
 | Action | Default Key | Effect |
 | --- | --- | --- |
-| `RestartSession` | F11 | closes the session and opens a new file, run numbering restarts |
-| `DownloadReport` | F10 | downloads the report in the browser, saves the file elsewhere |
-| `MockSession` | F12 | saves a mock session file |
+| `RestartSession` | F9 | closes the session and opens a new file, run numbering restarts |
+| `DownloadReport` | F8 | downloads the report in the browser, saves the file elsewhere |
+| `MockSession` | F10 | saves a mock session file |
 
 The lose screen also carries a Download Analytics button at the top right (`LoseScreenDownloadWidget`) that does what `DownloadReport` does. It is for development builds and the Editor only: outside one the button turns itself off.
 
@@ -154,7 +157,7 @@ The lose screen also carries a Download Analytics button at the top right (`Lose
 `MockAnalyticsGenerator` plays a tester through a whole session instead of drawing random numbers, so the charts show the curves a real playtest would.
 
 - Per Run: a small simulation of the real game, ie the monkey climbs on the climb speed curve, stamina drains and refills, hazards and fruit are rolled per trunk segment from the difficulty ramp and each chance curve, and the great cobra chases on its base and distance speed curves with its surge and exit boost
-- Ending: a run ends where a real one would, when the cobra catches a monkey that lost too much time to branches, webs, and grabs; a run past the boss zone trigger plays out a timed boss fight, with armor saves, revives, and an occasional win
+- Ending: a run ends where a real one would, when the cobra catches a monkey that lost too much time to branches, webs, and grabs; a run past the boss zone trigger plays out a timed Cobra King fight, with armor saves, revives, and an occasional win, and a run that won it plays out a timed Spider King fight at its trigger the same way (a little harder, with its own start, revive and win rows)
 - Skill: each run has a skill value from 0 to 1 that sets how often the monkey walks into hazards, grabs fruit, and uses coconuts; it climbs over the session along a learning curve, with the odd distracted run
 - Modes: Endless runs appear only once the tester has beaten the king, in this session or an earlier one
 - Metrics: every event metric of the report is generated, and scores follow the real scoring rule

@@ -63,6 +63,7 @@ public sealed class BossFightHudRig {
     public TextMeshProUGUI speechLabel;
     public KeyPromptWidget keyPrompt;
     public TextMeshProUGUI bannerLabel;
+    public RectTransform doubleTapIcon;
     public GameObject revivePanel;
     public TextMeshProUGUI reviveCountLabel;
     public GameObject adPanel;
@@ -85,6 +86,8 @@ public sealed class BossFightHudRig {
     public readonly Vector2 tagOffset = new Vector2(0f, 55f);
     public readonly Vector2 bannerCenterPosition = new Vector2(0f, 120f);
     public readonly Vector2 bannerLowPosition = new Vector2(0f, -150f);
+    // under the low banner's two lines
+    public readonly Vector2 doubleTapIconPosition = new Vector2(0f, -250f);
     public float bannerHideTime = -1f;
     // unscaled time a timed banner goes
     public Image flashImage;

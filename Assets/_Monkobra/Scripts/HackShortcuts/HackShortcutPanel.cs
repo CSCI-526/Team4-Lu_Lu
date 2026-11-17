@@ -7,9 +7,10 @@ using UnityEngine.InputSystem;
 /// Fills the TMP text it sits on with one line per hack key, ie
 /// <c>F8: download the analytics session report</c>, so a tester can see what
 /// each dev key does. The list starts hidden, so it never covers the HUD in a
-/// playtest, and the <see cref="HackAction.ToggleHints"/> key (F9) shows or
-/// hides it. Outside a development build the hints are off, so it switches
-/// its own object off; the keys still work.
+/// playtest, and the <see cref="HackAction.ToggleHints"/> key turns the whole
+/// hack layer on or off, the list w/ it: while it is off no other hack key
+/// runs. Outside a development build the hints are off, so it switches its
+/// own object off; the keys always work there.
 /// <para>
 /// Put it on the TMP text object itself. The text is written once, in
 /// <c>Awake</c>.
@@ -21,11 +22,6 @@ public class HackShortcutPanel: MonoBehaviour {
     [SerializeField]
     [Tooltip("dev/hack keys listed, in the order of its entries")]
     private HackShortcutConfig hackShortcuts;
-
-    [SerializeField]
-    [Tooltip("if the list shows when a scene starts; the ToggleHints key "
-        + "shows or hides it either way")]
-    private bool isShownAtStart;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -56,21 +52,19 @@ public class HackShortcutPanel: MonoBehaviour {
         }
 
         label.text = BuildHelpText();
-        label.enabled = isShownAtStart; // the object stays on, to hear F9
+        // the object stays on, to hear the toggle key; the list shows iff
+        // the hack layer is on
+        label.enabled = HackShortcutConfig.IsActive;
         if (Debug.isDebugBuild) {
             Debug.Log("HackShortcutPanel:\thelp text ready");
         }
     }
 
-    // the toggle key shows or hides the list
+    // the toggle key flips the hack layer; the list follows it
     private void Update() {
-        if (!HackShortcutConfig.IsActive) {
-            return;
+        if (hackShortcuts.TryToggleLayer()) {
+            label.enabled = HackShortcutConfig.IsActive;
         }
-        if (!hackShortcuts.WasPressedThisFrame(HackAction.ToggleHints)) {
-            return;
-        }
-        label.enabled = !label.enabled;
     }
 
     // private members  ########################################################

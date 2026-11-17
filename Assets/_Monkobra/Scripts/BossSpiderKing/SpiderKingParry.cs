@@ -489,9 +489,9 @@ public sealed class SpiderKingParry {
         rig.isTeachFrozen = true;
         rig.frozenShot = shot;
         rig.lastTapTime = -10f;
-        rig.Teaching.Teach("Now!", "Tap SPACE 2 times to bounce it back",
-            UIStyle.Gold,
-            0f);
+        // the animated double tap icon teaches the gesture, no words
+        rig.Teaching.Teach("Now!", "", UIStyle.Gold, 0f);
+        rig.hud.ShowDoubleTapHint();
     }
 
     // a hit stop, a gold flash & sparks; the ball turns gold & flies back

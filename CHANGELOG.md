@@ -1,8 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-Todo add jump to 2nd boss fight
-Todo 2nd boss fight double click
 Fixme difficulty system updated, game balance
 Bug web spider trigger weird
 Todo upd weekly devlog
@@ -23,6 +21,9 @@ todo vertical version
 ##### Erik
 
 - Monkey outline: the skinned monkey wears a white, always-on outline (`MonkeyOutline`, `Monkey_Outline` material), the grabbable fruit look
+- hack layer: F12 (development build only) turns the hack key list & every other hack key on or off, off at start; a release build keeps the keys live & F12 dead
+- analytics records the Spider King: `SpiderFight`, `SpiderRevive` & `SpiderWin` metrics (new `SpiderKingFightController.Revived` event); the mock session plays a timed spider fight after a won Cobra King one
+- Spider King parry lesson shows the animated double tap icon (keycap or finger by control style) under "Now!", replacing the "Tap SPACE 2 times" text (`BossFightHud.ShowDoubleTapHint`)
 - accent fonts back after the Baloo 2 unification: BadaBoom on the score numbers (HUD, bonus popups, lose screen), Chewy on the level-select labels & Download Analytic, Life Is Goofy on the Endless unlock hint, which sits again on the button's right shoulder, in 2 lines; each in the screens it had before, Baloo 2 stays the TMP default
 
 ##### Yuqing Lu
@@ -45,6 +46,9 @@ todo vertical version
 - god classes split by role around a shared rig & `[Serializable]` tuning object, behavior unchanged, prefab values kept: falling cobra, great cobra motor, Cobra King fight, boss HUD, Spider King fight
 - hot paths: cobra head bounds, freeze timer text & tutorial stick rect cached; dormant falling cobras skip the spine rebuild far from the monkey
 - PC render pipeline: opaque texture off, nothing read it
+- Spider King fight area moved down 50 u: zone 975~1050, trigger 1000 (was 1050), seen waiting from 945 u, so its height marker reads 1000 m
+- hack keys regrouped: F1~F3 cheats, 1 & 2 jump to the Cobra King / Spider King fight (the spider jump was 9), 3~6 spawns, F8~F10 analytics, F12 the switch (was F9); F4~F7 & F11 stay free
+- analytics titles tell the bosses apart: "Boss Fight Start" & "Boss Revive" → "Cobra Fight Start" & "Cobra Revive" (enum names unchanged)
 
 ##### Yuqing Lu
 

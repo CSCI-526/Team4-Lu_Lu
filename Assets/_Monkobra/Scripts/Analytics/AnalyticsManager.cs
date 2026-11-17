@@ -218,7 +218,7 @@ public class AnalyticsManager: MonoBehaviour {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneNames.Loading -= OnSceneLoading;
         SpiderWebTrap.Encountered -= OnWebEncountered;
-        Observe(null, null, null, null, null, null);
+        Observe(null, null, null, null, null, null, null);
         I = null;
     }
 
@@ -330,6 +330,19 @@ public class AnalyticsManager: MonoBehaviour {
         RecordEvent(AnalyticsMetric.BossRevive);
     }
 
+    private void OnSpiderFightStarted() {
+        RecordEvent(AnalyticsMetric.SpiderFight);
+    }
+
+    private void OnSpiderRevived() {
+        RecordEvent(AnalyticsMetric.SpiderRevive);
+    }
+
+    // the spider's FightEnded is raised once its reward is taken, ie a win
+    private void OnSpiderWon() {
+        RecordEvent(AnalyticsMetric.SpiderWin);
+    }
+
     // private members  ########################################################
     private readonly AnalyticsSessionFile file = new AnalyticsSessionFile();
     private AnalyticsHackKeys hackKeys;
@@ -346,6 +359,7 @@ public class AnalyticsManager: MonoBehaviour {
     private CoconutManager observedCoconuts;
     private MonkeyController observedMonkey;
     private CobraKingFightController observedBoss;
+    private SpiderKingFightController observedSpider;
 
     // private methods  ########################################################
     // observes the subjects of <scene> only: right after a load the old
@@ -357,7 +371,8 @@ public class AnalyticsManager: MonoBehaviour {
             InScene(FindFirstObjectByType<HitBranchSensor>(), scene),
             InScene(CoconutManager.I, scene),
             InScene(FindFirstObjectByType<MonkeyController>(), scene),
-            InScene(CobraKingFightController.I, scene)
+            InScene(CobraKingFightController.I, scene),
+            InScene(SpiderKingFightController.I, scene)
         );
     }
 
@@ -373,7 +388,8 @@ public class AnalyticsManager: MonoBehaviour {
         HitBranchSensor branch,
         CoconutManager coconuts,
         MonkeyController monkey,
-        CobraKingFightController boss
+        CobraKingFightController boss,
+        SpiderKingFightController spider
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;
@@ -387,6 +403,11 @@ public class AnalyticsManager: MonoBehaviour {
             observedBoss.FightStarted -= OnBossFightStarted;
             observedBoss.ArmorAbsorbed -= OnBossArmorAbsorbed;
             observedBoss.Revived -= OnBossRevived;
+        }
+        if (observedSpider != null) {
+            observedSpider.FightStarted -= OnSpiderFightStarted;
+            observedSpider.Revived -= OnSpiderRevived;
+            observedSpider.FightEnded -= OnSpiderWon;
         }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
@@ -407,6 +428,7 @@ public class AnalyticsManager: MonoBehaviour {
         observedCoconuts = coconuts;
         observedMonkey = monkey;
         observedBoss = boss;
+        observedSpider = spider;
 
         if (observedGame != null) {
             observedGame.StateChanged += OnGameStateChanged;
@@ -420,6 +442,11 @@ public class AnalyticsManager: MonoBehaviour {
             observedBoss.FightStarted += OnBossFightStarted;
             observedBoss.ArmorAbsorbed += OnBossArmorAbsorbed;
             observedBoss.Revived += OnBossRevived;
+        }
+        if (observedSpider != null) {
+            observedSpider.FightStarted += OnSpiderFightStarted;
+            observedSpider.Revived += OnSpiderRevived;
+            observedSpider.FightEnded += OnSpiderWon;
         }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;

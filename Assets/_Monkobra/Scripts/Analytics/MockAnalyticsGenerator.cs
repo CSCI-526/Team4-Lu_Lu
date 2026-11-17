@@ -166,6 +166,10 @@ public static class MockAnalyticsGenerator {
     private const float BOSS_START_U = 500f;
     private const float BOSS_TRIGGER_U = 525f;
     private const float BOSS_END_U = 550f;
+    // the Spider King's zone, trigger & end, as in WorldBalanceConfig
+    private const float SPIDER_START_U = 975f;
+    private const float SPIDER_TRIGGER_U = 1000f;
+    private const float SPIDER_END_U = 1050f;
     private const float PINEAPPLE_GUARANTEED_U = 150f;
     private const float COCONUT_GUARANTEED_U = 250f;
     private const float POST_BOSS_RAMP_PER_U = 0.002f;
@@ -308,8 +312,9 @@ public static class MockAnalyticsGenerator {
                 t += STEP_S;
                 float ramp = GetRamp(height);
                 bool isInBossZone = !isEndless
-                    && height >= BOSS_START_U
-                    && height <= BOSS_END_U;
+                    && ((height >= BOSS_START_U && height <= BOSS_END_U)
+                        || (height >= SPIDER_START_U
+                            && height <= SPIDER_END_U));
 
                 MoveCobra(ramp);
                 float climbedU = MoveMonkey();
@@ -347,7 +352,20 @@ public static class MockAnalyticsGenerator {
                     && height >= BOSS_TRIGGER_U
                 ) {
                     isBossDone = true;
-                    if (!FightBoss()) {
+                    if (!FightBoss(false)) {
+                        break;
+                    }
+                }
+                // the Spider King waits above the Cobra King, only for a
+                // monkey that beat it
+                if (
+                    !isEndless
+                    && plan.IsBossWon
+                    && !isSpiderDone
+                    && height >= SPIDER_TRIGGER_U
+                ) {
+                    isSpiderDone = true;
+                    if (!FightBoss(true)) {
                         break;
                     }
                 }
@@ -377,6 +395,9 @@ public static class MockAnalyticsGenerator {
         private bool isInZone = true;
         private bool hasArmor;
         private bool isBossDone;
+        private bool isSpiderDone;
+        // where the fight being played hangs: its trigger height
+        private float fightU = BOSS_TRIGGER_U;
         private Busy busy = Busy.None;
         private float busyUntil;
         private float dropLeftU;
@@ -722,11 +743,21 @@ public static class MockAnalyticsGenerator {
         }
 
         // the boss fight is not climbed, so it is a few timed attempts,
-        // each lost or won by skill; a win lets the run go on above the zone
+        // each lost or won by skill; a win lets the run go on above the zone;
+        // the Spider King's fight is a little harder & has its own metrics
+        // isSpider: whether it is the Spider King's fight, not the Cobra's
         // return: if the monkey won the fight and the run goes on
-        private bool FightBoss() {
-            plan.Get(AnalyticsMetric.BossFight)
-                .Add(new Moment(t, height, stamina));
+        private bool FightBoss(bool isSpider) {
+            fightU = isSpider ? SPIDER_TRIGGER_U : BOSS_TRIGGER_U;
+            AnalyticsMetric reviveMetric = isSpider
+                ? AnalyticsMetric.SpiderRevive
+                : AnalyticsMetric.BossRevive;
+            AddFightEvent(
+                isSpider
+                    ? AnalyticsMetric.SpiderFight
+                    : AnalyticsMetric.BossFight,
+                t
+            );
             int revives = 0;
             while (true) {
                 bool isLong = rng.NextDouble()
@@ -738,7 +769,8 @@ public static class MockAnalyticsGenerator {
                 AddFightTrack(startT, startT + attemptS);
 
                 float winChance = 0.03f
-                    + 0.45f * Mathf.Max(0f, skill - 0.5f);
+                    + (isSpider ? 0.38f : 0.45f)
+                        * Mathf.Max(0f, skill - 0.5f);
                 if (rng.NextDouble() < winChance) {
                     if (rng.NextDouble() < 0.5) {
                         AddFightEvent(
@@ -746,11 +778,17 @@ public static class MockAnalyticsGenerator {
                             startT + attemptS * Range(rng, 0.3f, 0.8f)
                         );
                     }
-                    plan.IsBossWon = true;
-                    height = BOSS_END_U + 1f;
+                    if (isSpider) {
+                        // its reward is the silk gloves, no new armor
+                        AddFightEvent(
+                            AnalyticsMetric.SpiderWin, startT + attemptS);
+                    } else {
+                        plan.IsBossWon = true;
+                        hasArmor = true;
+                    }
+                    height = (isSpider ? SPIDER_END_U : BOSS_END_U) + 1f;
                     stamina = MAX_STAMINA;
                     cobraY = height - WIN_COBRA_DROP_U;
-                    hasArmor = true;
                     busy = Busy.None;
                     Freeze(0f);
                     plan.Track.Add(new Moment(t, height, stamina));
@@ -769,7 +807,7 @@ public static class MockAnalyticsGenerator {
                 );
                 if (revives < 2 && rng.NextDouble() < 0.55) {
                     t += 8f;
-                    AddFightEvent(AnalyticsMetric.BossRevive, t);
+                    AddFightEvent(reviveMetric, t);
                     t += 14f;
                     plan.Track.Add(new Moment(t, height, stamina));
                     revives++;
@@ -780,7 +818,7 @@ public static class MockAnalyticsGenerator {
         }
 
         private void AddFightEvent(AnalyticsMetric metric, float at) {
-            plan.Get(metric).Add(new Moment(at, BOSS_TRIGGER_U, stamina));
+            plan.Get(metric).Add(new Moment(at, fightU, stamina));
         }
 
         // the monkey hangs just under the king's reach, bananas keep it fed
@@ -788,7 +826,7 @@ public static class MockAnalyticsGenerator {
             float at = from;
             while (at + SAMPLE_INTERVAL_S < to) {
                 at += SAMPLE_INTERVAL_S;
-                height = BOSS_TRIGGER_U + Range(rng, -12f, 3f);
+                height = fightU + Range(rng, -12f, 3f);
                 stamina = Mathf.Clamp(
                     stamina + Range(rng, -14f, 12f),
                     20f,

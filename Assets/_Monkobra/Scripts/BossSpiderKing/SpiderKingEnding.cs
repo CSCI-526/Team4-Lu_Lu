@@ -10,11 +10,14 @@ public sealed class SpiderKingEnding {
     // Private Members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
+    private readonly System.Action onRevived;
     private readonly System.Action onFightEnded;
 
-    public SpiderKingEnding(SpiderKingRig rig, System.Action onFightEnded) {
+    public SpiderKingEnding(SpiderKingRig rig, System.Action onRevived,
+        System.Action onFightEnded) {
         this.rig = rig;
         tuning = rig.tuning;
+        this.onRevived = onRevived;
         this.onFightEnded = onFightEnded;
     }
 
@@ -192,6 +195,7 @@ public sealed class SpiderKingEnding {
         rig.monkey.rotation = rig.entryRotation;
         ReturnToStart();
         rig.hud.Say("Back for more?");
+        onRevived?.Invoke();
     }
 
     public void ReturnToStart() {

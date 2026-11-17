@@ -328,20 +328,20 @@ public class WorldBalanceConfig: ScriptableObject {
         "climbed height where the Spider King's zone begins: only its fight "
             + "generates anything from here to its zone end; u"
     )]
-    private float spiderZoneStartU = 1025f;
+    private float spiderZoneStartU = 975f;
 
     [SerializeField]
     [Tooltip("climbed height at which the Spider King fight begins; u")]
-    private float spiderTriggerHeightU = 1050f;
+    private float spiderTriggerHeightU = 1000f;
 
     [SerializeField]
     [Tooltip("climbed height where the Spider King's zone ends; u")]
-    private float spiderZoneEndU = 1100f;
+    private float spiderZoneEndU = 1050f;
 
     [SerializeField]
     [Tooltip("climbed height from which the Spider King is seen waiting "
         + "above its trigger height; u")]
-    private float spiderJumpHeightU = 1000f;
+    private float spiderJumpHeightU = 950f;
 
     [SerializeField]
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]

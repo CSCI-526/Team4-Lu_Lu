@@ -60,6 +60,9 @@ public class SpiderKingFightController: MonoBehaviour {
     /// <summary>raised when the fight begins</summary>
     public event System.Action FightStarted;
 
+    /// <summary>raised when a revive restarts the fight</summary>
+    public event System.Action Revived;
+
     /// <summary>raised when the reward is taken & the climb goes on</summary>
     public event System.Action FightEnded;
 
@@ -175,7 +178,8 @@ public class SpiderKingFightController: MonoBehaviour {
         parry = new SpiderKingParry(rig);
         teaching = new SpiderKingTeaching(rig);
         damage = new SpiderKingDamage(rig);
-        ending = new SpiderKingEnding(rig, () => FightEnded?.Invoke());
+        ending = new SpiderKingEnding(rig, () => Revived?.Invoke(),
+            () => FightEnded?.Invoke());
         feedback = new SpiderKingFeedback(rig);
         rig.Arena = arena;
         rig.Melons = melons;
