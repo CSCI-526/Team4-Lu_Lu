@@ -1,10 +1,10 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme put back other fonts
 Todo add jump to 2nd boss fight
 Todo 2nd boss fight double click
 Fixme difficulty system updated, game balance
+Bug web spider trigger weird
 Todo upd weekly devlog
 
 todo pan branch & bark model/texture
@@ -23,13 +23,14 @@ todo vertical version
 ##### Erik
 
 - Monkey outline: the skinned monkey wears a white, always-on outline (`MonkeyOutline`, `Monkey_Outline` material), the grabbable fruit look
+- accent fonts back after the Baloo 2 unification: BadaBoom on the score numbers (HUD, bonus popups, lose screen), Chewy on the level-select labels & Download Analytic, Life Is Goofy on the Endless unlock hint, which sits again on the button's right shoulder, in 2 lines; each in the screens it had before, Baloo 2 stays the TMP default
 
 ##### Yuqing Lu
 
 - WebGL loading page: the cobra eats a row of dots along a branch on the real download progress (1.3 s at least, so a cached load still shows it) while the monkey hops ahead; it ends on the title picture & fades out once Unity draws, so the hand-over is unseen
 - title screen redrawn: Monkobra logo, the grown cobra & the monkey on a branch, vines; the start prompt sits where the loading page writes "Loading"
 - team logo screen before the WebGL loading page: USC Games & Peel Five side by side; they fade out to the background, then the loading page fades in; a click or key skips them, a reload in the same tab skips them too
-- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the one UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
+- UI style from the logo (docs/ui-style-doc.md): Baloo 2 as the UI font (Latin set, now the TMP default), the palette, logo-style `MenuButton` & `IconButton` prefabs (selected grows inside a cream ring, pressed sinks, locked shows a lock), key icons as dark brown keycaps, all applied by the `Monkobra > UI Style` menus
 
 ### Changed
 
@@ -65,7 +66,7 @@ todo vertical version
 
 ##### Yuqing Lu
 
-- the old UI fonts (Chewy, BadaBoom, Life Is Goofy, the tutorial's Noto Sans TC subset) and the old popup plate sprite: Baloo 2 is now the only font
+- the tutorial's Noto Sans TC subset font and the old popup plate sprite: Baloo 2 is the UI font, with 3 accent fonts back (see Added)
 
 ### Fixed
 
