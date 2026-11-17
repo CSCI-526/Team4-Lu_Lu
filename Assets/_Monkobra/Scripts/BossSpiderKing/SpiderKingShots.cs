@@ -99,9 +99,8 @@ public sealed class SpiderKingShots {
                 rig.isTeachFrozen = true;
                 rig.frozenCrescent = crescent;
                 rig.lastTapTime = -10f;
-                rig.Teaching.Teach("Now!",
-                    "Tap SPACE 2 times to bounce it back",
-                    UIStyle.Gold, 0f);
+                rig.Teaching.Teach("Now!", "", UIStyle.Gold, 0f);
+                rig.hud.ShowDoubleTapHint();
             }
             if (IsHitByCrescent(crescent, lastDistanceU)
                 && Time.time >= rig.saveGraceEndTime) {

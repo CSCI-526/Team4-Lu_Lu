@@ -284,7 +284,7 @@ A double tap of Space (`doubleTapS`), only while a web bullet or a slash is char
 
 ### Lessons
 
-At the start the spider only fires web bullets (slowed, `teachSlowScale`) and nothing of it can hurt the monkey (only the guard below can) till the first one is batted back: as it turns gold time stops (a monkey stuck in a web is freed first, `FreeForLesson`, so the double tap is the parry, never a struggle) w/ "Now! Tap SPACE 2 times to bounce it back" till the double tap, which always parries it; the clash's one "Nice!", and the fight is on. The first slash later stops time the same way once. Both are taught once a run (`hasTaughtWeb`, `hasTaughtSlash`); a revive before the first parry starts that lesson again.
+At the start the spider only fires web bullets (slowed, `teachSlowScale`) and nothing of it can hurt the monkey (only the guard below can) till the first one is batted back: as it turns gold time stops (a monkey stuck in a web is freed first, `FreeForLesson`, so the double tap is the parry, never a struggle) w/ "Now!" over the animated double tap icon (`BossFightHud.ShowDoubleTapHint`, the keycap or the finger by control style, no words) till the double tap, which always parries it; the clash's one "Nice!", and the fight is on. The first slash later stops time the same way once. Both are taught once a run (`hasTaughtWeb`, `hasTaughtSlash`); a revive before the first parry starts that lesson again.
 
 ### Mode Choice
 
