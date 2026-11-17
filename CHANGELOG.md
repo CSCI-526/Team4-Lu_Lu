@@ -1,9 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-TODO asset rf
-TODO prefab rf
-
 Todo pan BGM
 Todo pan branch & bark model/texture
 Todo erik lighting
