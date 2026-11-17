@@ -166,6 +166,8 @@ public static class MockAnalyticsGenerator {
     private const float BOSS_START_U = 500f;
     private const float BOSS_TRIGGER_U = 525f;
     private const float BOSS_END_U = 550f;
+    private const float SPIDER_START_U = 1025f;
+    private const float SPIDER_END_U = 1100f;
     private const float PINEAPPLE_GUARANTEED_U = 150f;
     private const float COCONUT_GUARANTEED_U = 250f;
     private const float POST_BOSS_RAMP_PER_U = 0.002f;
@@ -399,7 +401,7 @@ public static class MockAnalyticsGenerator {
                 return 0f;
             }
             if (isEndless) {
-                return 1f + POST_BOSS_RAMP_PER_U * (y - ZONE_EXIT_U);
+                return 2f + POST_BOSS_RAMP_PER_U * (y - ZONE_EXIT_U);
             }
             if (y < BOSS_START_U) {
                 return (y - ZONE_EXIT_U) / (BOSS_START_U - ZONE_EXIT_U);
@@ -407,8 +409,15 @@ public static class MockAnalyticsGenerator {
             if (y <= BOSS_END_U) {
                 return 1f;
             }
+            if (y < SPIDER_START_U) {
+                return 1f
+                    + (y - BOSS_END_U) / (SPIDER_START_U - BOSS_END_U);
+            }
+            if (y <= SPIDER_END_U) {
+                return 2f;
+            }
 
-            return 1f + POST_BOSS_RAMP_PER_U * (y - BOSS_END_U);
+            return 2f + POST_BOSS_RAMP_PER_U * (y - SPIDER_END_U);
         }
 
         private float GetRecovery() {

@@ -1,8 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Maps player height to a ramped difficulty value: 0~1 from the starting
-/// zone exit to the boss fight, above 1 after it.
+/// Maps player height to a ramped difficulty value in 3 stages: 0~1 from the
+/// starting zone exit to the Cobra King fight, 1~2 between the 2 boss
+/// fights, above 2 after the Spider King fight.
 /// </summary>
 // run first so other LateUpdate readers see this frame's height
 [DefaultExecutionOrder(-100)]
@@ -88,13 +89,15 @@ public class RampedDifficultyManager: MonoBehaviour {
 
     /// <summary>
     /// Maps a height to the ramped difficulty: 0 up to the starting zone exit,
-    /// the pre boss curve from there to the boss zone start (0~1), a flat 1
-    /// inside the boss zone, the post boss curve from the zone end (1 up).
-    /// Zone heights are climbed heights, measured from the player's start y.
+    /// the pre boss curve from there to the Cobra King zone start (0~1), a
+    /// flat 1 inside that zone, the mid boss curve from its end to the Spider
+    /// King zone start (1~2), a flat 2 inside that zone, the post boss curve
+    /// from its end (2 up). Zone heights are climbed heights, measured from
+    /// the player's start y.
     /// </summary>
     /// <param name="y">any y position; world u</param>
-    /// <returns>ramped difficulty, never below 0; above 1 past the boss
-    /// zone</returns>
+    /// <returns>ramped difficulty, never below 0; 1~2 between the 2 boss
+    /// zones, above 2 past the Spider King zone</returns>
     public float GetRampedValueFromYPosition(float y) {
         if (worldBalanceConfig == null) {
             return 0f;
@@ -102,16 +105,16 @@ public class RampedDifficultyManager: MonoBehaviour {
         float climbedY = GetClimbedYDistance(y);
         float exitClimbedY = GetClimbedYDistance(RampBaseYPosition);
         if (IsEndless) {
-            // endless opens at the post boss level at the exit and keeps
-            // ramping from there
-            return climbedY < exitClimbedY ? 0f : GetPostBossValue(
-                climbedY - exitClimbedY + worldBalanceConfig.BossZoneEndU
+            // endless opens at the post Spider King level at the exit and
+            // keeps ramping from there
+            return climbedY < exitClimbedY ? 0f : GetPostSpiderValue(
+                climbedY - exitClimbedY + worldBalanceConfig.SpiderZoneEndU
             );
         }
         float zoneStartU = worldBalanceConfig.BossZoneStartU;
         if (climbedY < exitClimbedY || zoneStartU <= exitClimbedY) {
             // a zone start at or under the exit leaves no pre boss stretch
-            return climbedY < zoneStartU ? 0f : GetPostBossValue(climbedY);
+            return climbedY < zoneStartU ? 0f : GetBossStagesValue(climbedY);
         }
         if (climbedY < zoneStartU) {
             float progress =
@@ -121,7 +124,7 @@ public class RampedDifficultyManager: MonoBehaviour {
                 worldBalanceConfig.PreBossRampCurve.Evaluate(progress)
             );
         }
-        return GetPostBossValue(climbedY);
+        return GetBossStagesValue(climbedY);
     }
 
     // Inspector Fields  #######################################################
@@ -217,14 +220,33 @@ public class RampedDifficultyManager: MonoBehaviour {
     private bool IsEndless =>
         GameController.I != null && GameController.I.Mode == RunMode.Endless;
 
-    // 1 through the boss zone, the post boss curve past its end
-    private float GetPostBossValue(float climbedY) {
-        float zoneEndU = worldBalanceConfig.BossZoneEndU;
-        if (climbedY <= zoneEndU) {
+    // from the Cobra King zone start on: 1 through its zone, the mid boss
+    // curve to the Spider King zone start, then the post Spider King value
+    private float GetBossStagesValue(float climbedY) {
+        float cobraEndU = worldBalanceConfig.BossZoneEndU;
+        float spiderStartU = worldBalanceConfig.SpiderZoneStartU;
+        if (climbedY <= cobraEndU) {
             return 1f;
         }
+        if (climbedY < spiderStartU) {
+            float progress =
+                (climbedY - cobraEndU) / (spiderStartU - cobraEndU);
+            return Mathf.Max(
+                1f,
+                worldBalanceConfig.MidBossRampCurve.Evaluate(progress)
+            );
+        }
+        return GetPostSpiderValue(climbedY);
+    }
+
+    // 2 through the Spider King zone, the post boss curve past its end
+    private float GetPostSpiderValue(float climbedY) {
+        float zoneEndU = worldBalanceConfig.SpiderZoneEndU;
+        if (climbedY <= zoneEndU) {
+            return 2f;
+        }
         return Mathf.Max(
-            1f,
+            2f,
             worldBalanceConfig.PostBossRampCurve.Evaluate(climbedY - zoneEndU)
         );
     }
