@@ -45,6 +45,7 @@ todo vertical version
 - god classes split by role around a shared rig & `[Serializable]` tuning object, behavior unchanged, prefab values kept: falling cobra, great cobra motor, Cobra King fight, boss HUD, Spider King fight
 - hot paths: cobra head bounds, freeze timer text & tutorial stick rect cached; dormant falling cobras skip the spine rebuild far from the monkey
 - PC render pipeline: opaque texture off, nothing read it
+- Spider King fight area moved down 50 u: zone 975~1050, trigger 1000 (was 1050), seen waiting from 945 u, so its height marker reads 1000 m
 
 ##### Yuqing Lu
 
