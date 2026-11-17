@@ -232,10 +232,11 @@ public static class MockAnalyticsGenerator {
         0.8f
     };
     private static readonly float[] FALLING_COBRA_CURVE = {
-        0f, 0f, 0.394f, 0f, 0.47f, 0.14f, 0.65f, 0.07f, 1f, 0.2f, 2f, 0.35f
+        0f, 0f, 0.394f, 0f, 0.47f, 0.14f, 0.65f, 0.07f, 1f, 0.2f, 1.25f, 0.18f,
+        2f, 0.2f, 3f, 0.35f
     };
     private static readonly float[] COBRA_BASE_CURVE = {
-        0f, 0.5667f, 0.5f, 0.65f, 1f, 1f, 2f, 1.5f
+        0f, 0.5667f, 0.5f, 0.65f, 1f, 1f, 1.25f, 0.9f, 2f, 1f, 3f, 1.5f
     };
     private static readonly float[] COBRA_DISTANCE_CURVE = {
         0f, 0.3f, 10f, 0.4f, 20f, 0.8f, 54.09f, 0.85f, 60f, 1f, 62.706f,

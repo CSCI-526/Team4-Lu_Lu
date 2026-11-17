@@ -15,7 +15,7 @@ public class CobraBalanceConfig: ScriptableObject {
     /// <returns>falling cobra creation attempts rolled per segment</returns>
     public int FallingCobraAttemptCount => fallingCobraAttemptCount;
 
-    /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that one attempt
+    /// <returns>x: ramped difficulty 0~3; y: chance 0~1 that one attempt
     /// creates a falling cobra</returns>
     public AnimationCurve FallingCobraSpawnProbabilityCurve =>
         fallingCobraSpawnProbabilityCurve;
@@ -51,7 +51,7 @@ public class CobraBalanceConfig: ScriptableObject {
     /// </returns>
     public int FallingCobraMaxHits => fallingCobraMaxHits;
 
-    /// <returns>x: ramped difficulty 0~1; y: multiplier 0~2 of the monkey's
+    /// <returns>x: ramped difficulty 0~3; y: multiplier 0~2 of the monkey's
     /// top climb speed, 1 = that speed; the great cobra's base climb speed
     /// outside a surge</returns>
     public AnimationCurve CobraBaseSpeedCurve => cobraBaseSpeedCurve;
@@ -116,7 +116,7 @@ public class CobraBalanceConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~1; y: chance 0~1 that one attempt "
+        "x: ramped difficulty 0~3; y: chance 0~1 that one attempt "
             + "creates a falling cobra"
     )]
     private AnimationCurve fallingCobraSpawnProbabilityCurve =
@@ -166,7 +166,7 @@ public class CobraBalanceConfig: ScriptableObject {
     [Header("Great Cobra")]
     [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~1; y: multiplier 0~2 of the monkey's top "
+        "x: ramped difficulty 0~3; y: multiplier 0~2 of the monkey's top "
             + "climb speed, 1 = that speed; mux the distance curve; surge & "
             + "exit boost add on top"
     )]
