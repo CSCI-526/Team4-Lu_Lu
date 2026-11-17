@@ -1,19 +1,28 @@
 # Monkobra CHANGELOG
 
 <!--
-todo upd weekly devlog
+Todo yuqing starting story as its own scene
 
-bug endless mode need to start w/ full heath & no starting zone
-todo pan branch & bark model/texture
-todo erik lighting
-todo erik skybox
-todo erik sfx
-todo add 3x fruit
-fixme mpv tutorial for boss fight
-fixme during boss fight, make energy bar gone, better ways to indicate 1 kill
+Todo belle leaderboard
 
+Todo pan branch & bark model/texture
+Todo pan skybox
+Todo pan sfx
 
-todo todo vertical version
+Bug wenhai endless mode w/ boss fight rampping difficult
+Fixme wenhai during boss fight
+
+Bug erik boss make energy bar gone, better ways to indicate 1 kill
+Todo erik lighting
+Fixme erik mpv tutorial for boss fight
+Fixme erik b/t boss fight, better randomization
+Fixme erik size of the rough bark need to improve
+
+Todo upd weekly devlog
+
+todo todo vertical version adpation
+todo todo chinese version
+todo todo add 3x fruit
 -->
 
 
