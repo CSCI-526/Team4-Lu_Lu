@@ -1,7 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-Todo pan BGM
 Todo pan branch & bark model/texture
 Todo erik lighting
 Todo erik skybox
