@@ -16,6 +16,7 @@ public static class PersistentBootstrap {
     private static void CreatePersistentObjects() {
         EnsureExists("Analytics", AnalyticsManager.I != null);
         EnsureExists("ControlStyleManager", ControlStyleManager.I != null);
+        EnsureExists("MusicManager", MusicManager.I != null);
     }
 
     // creates the prefab named in Resources unless its object already exists
