@@ -21,7 +21,10 @@ public enum AnalyticsMetric {
     Pause,
     BossFight,
     BossArmorSaved,
-    BossRevive
+    BossRevive,
+    SpiderFight,
+    SpiderRevive,
+    SpiderWin
 }
 
 /// <summary>
@@ -73,7 +76,10 @@ public static class AnalyticsMetrics {
             { AnalyticsMetric.Pause, new Info("Pause", true) },
             { AnalyticsMetric.BossFight, new Info("Boss Fight Start", true) },
             { AnalyticsMetric.BossArmorSaved, new Info("Armor Save", true) },
-            { AnalyticsMetric.BossRevive, new Info("Boss Revive", true) }
+            { AnalyticsMetric.BossRevive, new Info("Boss Revive", true) },
+            { AnalyticsMetric.SpiderFight, new Info("Spider Fight Start", true) },
+            { AnalyticsMetric.SpiderRevive, new Info("Spider Revive", true) },
+            { AnalyticsMetric.SpiderWin, new Info("Spider Win", true) }
         };
 
     private static readonly AnalyticsMetric[] all =

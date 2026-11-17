@@ -17,7 +17,7 @@ graph LR
   Coconut[CoconutManager] -->|Collected, Used| AM
   Hit[HitBranchDetection] -->|BranchHit| AM
   Web[SpiderWebTrap] -->|Encountered| AM
-  More[Leap, Pause, Boss Fight, ~] -->|events| AM
+  More[Leap, Pause, Boss Fight, Spider Fight, ~] -->|events| AM
   AM --> Data[SessionData and RunData]
   Data --> Writer[AnalyticsMarkdownWriter]
   Writer --> SF[AnalyticsSessionFile]
@@ -106,6 +106,9 @@ Each event list is a table of its time since the run start; banana, coconut, and
 - Boss Fight Start: times the monkey entered the boss arena
 - Armor Save: times the gold armor took a great cobra catch
 - Boss Revive: times a revive restarted the boss fight
+- Spider Fight Start: times the monkey entered the Spider King's arena (`SpiderKingFightController.FightStarted`)
+- Spider Revive: times a revive restarted the Spider King fight (`SpiderKingFightController.Revived`)
+- Spider Win: times the Spider King was beaten, stamped when the reward is taken (`SpiderKingFightController.FightEnded`)
 
 A metric that never happened still shows its heading with a count of 0.
 

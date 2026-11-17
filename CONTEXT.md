@@ -135,6 +135,7 @@ graph LR
   Game -->|LeapChanged, PauseChanged| Analytics
   Coconuts -->|Frozen| Analytics
   Boss[CobraKingFightController] -->|FightStarted, ArmorAbsorbed, Revived| Analytics
+  Spider[SpiderKingFightController] -->|FightStarted, Revived, FightEnded| Analytics
 ```
 
 ## Script Index
