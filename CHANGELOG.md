@@ -31,6 +31,18 @@ todo vertical version
 
 ### Changed
 
+##### Erik
+
+- project layout follows the u3d skills: `Models/` → `Meshes/`, SFX under `Audio/SFX/`, `Fonts/Baloo2/`, module-owned UI scripts & prefabs re-homed into their module folders, `Boss/` split into `BossCobraKing/` & `BossSpiderKing/` (classes renamed `CobraKing*`, `SpiderKing*`)
+- 1 gameplay scene: `GameplayScene` takes the run mode from `RunModeSelection.Selected`, `EndlessScene` gone; Normal Play & Endless Mode load the same scene
+- prefab rule, 1 prefab = 1 entity: group prefabs `Entities`, `_UI`, `_Screens`, `InGameHUD`, `LowStaminaPrompt` dissolved into the scene; `PauseButton`, `FruitFlyLayer`, `CoconutMessage` own prefabs
+- 11 popup variants → 1 `PopUpCatalog` read by `PopUpManager`; 9 input icons → 2 (`InputIcon_Key`, `InputIcon_Touch`) + `HintIconLibrary`; branch prefabs `_BranchBase` & `Branch_X`; `EventSystem_Menu` is a variant of `EventSystem`
+- cobra meshes thinned by the merged `simplify-snake-mesh` branch, same look
+- script conventions applied project-wide: sections, Inspector Assignment Guard, 80 columns, typed locals, English comments; hack keys read through `HackShortcutConfig`, not `Keyboard.current`
+- god classes split by role around a shared rig & `[Serializable]` tuning object, behavior unchanged, prefab values kept: falling cobra, great cobra motor, Cobra King fight, boss HUD, Spider King fight
+- hot paths: cobra head bounds, freeze timer text & tutorial stick rect cached; dormant falling cobras skip the spine rebuild far from the monkey
+- PC render pipeline: opaque texture off, nothing read it
+
 ##### Yuqing Lu
 
 - pause & lose screens: Exit goes back to the level selection, not the title
@@ -44,6 +56,10 @@ todo vertical version
 ### Deprecated
 
 ### Removed
+
+##### Erik
+
+- dead assets: `_Banana.mat`, `SlipperyTutorialBand.asset`, `FreeGUI-Button.png`, `RoughBark_Albedo/_Normal.png`, empty `Assets/Resources/`
 
 ##### Yuqing Lu
 
