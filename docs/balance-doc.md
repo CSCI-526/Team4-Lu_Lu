@@ -11,7 +11,7 @@ Why difficulty works the way it does: one height-driven ramp, a shared roll mode
 
 ## Difficulty Follows Height
 
-Difficulty is not a timer and not the score. It is a single value from 0 to 1, derived only from how far the monkey is above where it started.
+Difficulty is not a timer and not the score. It is a single value in 3 stages, 0~1 before the Cobra King, 1~2 between the 2 bosses, 2 and up after the Spider King, derived only from how far the monkey is above where it started.
 
 ```mermaid
 graph LR
@@ -26,7 +26,7 @@ graph LR
 ```
 
 - Why Height: height is what the player is trying to maximize, so tying difficulty to it makes the tension track progress; a timer would punish slow play instead of rewarding fast play
-- Why A Shared Scale: difficulty is 0 at the starting zone exit and 1 at the boss zone start, so every hazard curve shares one x axis and its first appearance is a point on that axis, found from its height; reshaping when difficulty arrives never touches the hazard curves. Inside the boss zone difficulty holds at 1; after the zone end the ramp keeps rising above 1, and a curve past 1 shapes the post-boss run
+- Why A Shared Scale: difficulty is 0 at the starting zone exit, 1 at the Cobra King zone start and 2 at the Spider King zone start, so every hazard curve shares one x axis and its first appearance is a point on that axis, found from its height; reshaping when difficulty arrives never touches the hazard curves. Inside the Cobra King zone difficulty holds at 1 and inside the Spider King zone at 2; a curve's 1~2 part shapes the stretch between the bosses, and its part past 2 the run after the Spider King
 - Two Baselines: every climb height (score, trunk height markers, the boss zone) is measured above the monkey's start y (`GetClimbedYDistance`), while the ramp itself starts at 0 at the y of the starting zone exit trigger (`RampBaseYPosition`), so the protected start is not counted as climbing difficulty. Both are owned by `RampedDifficultyManager`, and nothing else reads raw world y for balance, so shifting the world only means moving those baselines
 - Floored: the service floors the ramp at 0 and leaves the top open, so past the curve's end difficulty stays at its last value; a hazard curve holds its last value past its own last key the same way
 - Highest Not Current: score and the lose panel read the highest height reached, so falling and re-climbing is neither rewarded nor double counted
@@ -35,7 +35,7 @@ graph LR
 
 Pace and density are separated on purpose:
 
-- The 2 ramp curves answer when: how much climbed height it takes to reach each level of difficulty, `preBossRampCurve` up to the boss zone and `postBossRampCurve` after it
+- The 3 ramp curves answer when: how much climbed height it takes to reach each level of difficulty, `preBossRampCurve` up to the Cobra King zone, `midBossRampCurve` between the 2 zones and `postBossRampCurve` after the Spider King zone
 - A hazard's own curve answers how much: the chance of that hazard at each level of difficulty
 
 Changing the ramp slides every hazard earlier or later together. Changing a hazard's curve reshapes only that hazard. This is why a hazard curve is not allowed to know about heights.
@@ -61,10 +61,10 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 The boss fight owns a stretch of the trunk, set by 3 heights in `WorldBalanceConfig`: where the zone starts, where the fight triggers inside it, and where the zone ends.
 
 - Bare Trunk: nothing but the fight is generated inside the zone, branches of every kind, webs, falling cobras and rough bark each skipping any spot that falls in it, judged by the spot's own height so a segment straddling an edge still fills its outside part
-- Flat Difficulty: the ramp reaches its top value, 1, at the zone start and holds it through the zone, then climbs above 1 after the zone end on its own curve
+- Flat Difficulty: the ramp reaches 1 at the Cobra King zone start and holds it through the zone, climbs to 2 by the Spider King zone start, holds 2 through that zone, then climbs above 2 after its end on its own curve
 - Why: the fight builds its arena at runtime and needs a clear, fair stage; keeping the stage clear by generation is simpler than sweeping hazards away when the fight begins
 - Marker Meters: the 3 heights are climbed heights, the same meters the trunk height markers show
-- Endless Mode: no boss zone and no flat stretch; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at the post boss level and keeps climbing; climbed heights, score and markers stay real
+- Endless Mode: no boss zone and no flat stretch; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at 2, the level after the Spider King, and keeps climbing; climbed heights, score and markers stay real
 
 ## Balance Lives In Three Assets
 
@@ -87,7 +87,7 @@ Because bananas also cost focus to grab ([Grab System](grab-doc.md)), raising ba
 
 ## Tuning Guide
 
-- Pace: reshape the ramp curves, the only place height maps to difficulty; move the 3 boss zone heights to shift where the ramp tops out
+- Pace: reshape the ramp curves, the only place height maps to difficulty; move the boss zone heights to shift where each stage begins
 - Density Ceiling: change a hazard's attempt count
 - Density Shape: change a hazard's probability curve
 - Kind Mix: change a branch kind's attempt count for its ceiling or its curve for its shape; the 4 curves are independent, so raising one never lowers another
