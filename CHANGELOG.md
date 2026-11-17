@@ -23,7 +23,7 @@ todo vertical version
 ##### Erik
 
 - Monkey outline: the skinned monkey wears a white, always-on outline (`MonkeyOutline`, `Monkey_Outline` material), the grabbable fruit look
-- accent fonts back after the Baloo 2 unification: BadaBoom on the score numbers (HUD, bonus popups, lose screen), Chewy on the level-select labels & Download Analytic, Life Is Goofy on the Endless unlock hint; each in the screens it had before, Baloo 2 stays the TMP default
+- accent fonts back after the Baloo 2 unification: BadaBoom on the score numbers (HUD, bonus popups, lose screen), Chewy on the level-select labels & Download Analytic, Life Is Goofy on the Endless unlock hint, which sits again on the button's right shoulder, in 2 lines; each in the screens it had before, Baloo 2 stays the TMP default
 
 ##### Yuqing Lu
 
