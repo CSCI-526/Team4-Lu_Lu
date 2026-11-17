@@ -4,7 +4,6 @@
 Fixme put back other fonts
 Todo add jump to 2nd boss fight
 Todo 2nd boss fight double click
-Fixme difficulty system updated, game balance
 Bug web spider trigger weird
 Todo upd weekly devlog
 
@@ -44,6 +43,7 @@ todo vertical version
 - script conventions applied project-wide: sections, Inspector Assignment Guard, 80 columns, typed locals, English comments; hack keys read through `HackShortcutConfig`, not `Keyboard.current`
 - god classes split by role around a shared rig & `[Serializable]` tuning object, behavior unchanged, prefab values kept: falling cobra, great cobra motor, Cobra King fight, boss HUD, Spider King fight
 - hot paths: cobra head bounds, freeze timer text & tutorial stick rect cached; dormant falling cobras skip the spine rebuild far from the monkey
+- ramped difficulty in 3 stages, 1 per boss: 0~1 starting zone exit to the Cobra King, 1~2 b/t the 2 bosses (new `midBossRampCurve`), 2~ after the Spider King (`postBossRampCurve` starts at 2); Endless opens at 2; every hazard & cobra curve re-keyed to 0~3: old 1~2 -> 2~3, a new 1~2 dips a little then rises back to the old value at 1
 - PC render pipeline: opaque texture off, nothing read it
 
 ##### Yuqing Lu
