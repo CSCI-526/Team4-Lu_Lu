@@ -9,7 +9,7 @@ Everything in the level that can hurt, hold, or hinder the monkey: the cobra, th
 | Cobra | any solid part of the monkey meets any segment | `GameController.LoseGame()` fires | ✔️ |
 | Falling Cobra | any part of the monkey (branch sensor, body, tail, hand) meets its hit capsule | camera shake, stun, drop (same as a branch) | ❌ |
 | Branch | the monkey's branch sensor meets a `Branch`-tagged collider | camera shake, stun, drop | ❌ |
-| Spider Web | the monkey's solid body meets the web's trigger | body frozen, grab disabled, until the escape bar fills | ❌ |
+| Spider Web | the monkey's root body capsule touches the web's round catch zone | body frozen, grab disabled, until the escape bar fills | ❌ |
 
 Stamina is never charged for a mob hit. The cost of a branch, falling cobra, or web is lost height and lost time, which the cobra turns into lost distance.
 
@@ -30,7 +30,7 @@ Mobs and the monkey find each other with triggers and tags, never with direct re
 
 - Branch Sensor: `HitBranchSensor` is a trigger on the monkey prefab, reaching past the body, and reports any collider tagged `Branch`
 - Cobra Contact: `CobraSensor` counts the monkey's body and tail (any non-trigger collider under the `Player`-tagged root) and its hands (anything under an `ArmController`), and ignores the monkey's trigger volumes, which reach far past the body
-- Web Contact: `SpiderWebTrap` counts only a non-trigger collider whose Rigidbody carries `SpiderWebStruggle`, so a hand brushing a web is ignored
+- Web Contact: `SpiderWebTrap` counts only the non-trigger root capsule, the collider on the same object as `SpiderWebStruggle`, so the tail capsules and a hand (anything under an `ArmController`) brushing a web are ignored. The box trigger is only the broad phase: the body's nearest point must also lie within `catchRadiusU` (1.8 u, the drawn web) of the hub in the face plane, so the box corners past the strands never catch
 - Tags: `Branch` marks branches and the falling cobra's hit capsule, and `Player` marks the monkey root, see the [conventions](monkobra-tdd.md#conventions)
 
 ## Branch

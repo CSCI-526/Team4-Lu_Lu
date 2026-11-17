@@ -82,6 +82,7 @@ todo todo vertical version
 ##### Erik
 
 - the first coconut & pineapple (the guaranteed ones) grow on the monkey's side of the trunk, within a configurable angle (`guaranteedBranchYawSpreadDeg` in `WorldBalanceConfig`), never on the far side
+- spider web catches only inside a round zone fitted to the drawn web (`catchRadiusU`, was a larger square box), & only on the monkey's root capsule: tail & hands never trigger it
 - no falling cobra hangs without a branch after the Cobra King fight: the nest clear removes falling cobras with their branches, and a dormant cobra switches itself off once its branch is gone
 
 ##### Yuqing Lu
