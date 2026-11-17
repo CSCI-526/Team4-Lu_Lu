@@ -20,7 +20,8 @@ public class LoseScreen: MonoBehaviour {
     private TMP_Text finalHeightText;
 
     [SerializeField]
-    [Tooltip("final score number only; its label is a separate text")]
+    [Tooltip("final score number only, in the badaboom font; its label is a "
+        + "separate text")]
     private TMP_Text finalScoreText;
 
     [SerializeField]
