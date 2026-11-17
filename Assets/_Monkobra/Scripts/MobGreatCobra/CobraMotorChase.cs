@@ -44,7 +44,7 @@ public sealed class CobraMotorChase {
 
     /// <returns>climb speed outside a surge: the monkey's top climb speed
     /// times the config's base speed curve at the monkey's ramped difficulty
-    /// (0~2), so the chase tightens as the climb goes on, times the distance
+    /// (0~3), so the chase tightens as the climb goes on, times the distance
     /// curve, so a far-behind cobra runs faster; else the inspector's climb
     /// speed; u/s</returns>
     public float BaseClimbSpeed() {
