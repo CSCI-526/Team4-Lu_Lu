@@ -81,6 +81,7 @@ todo todo vertical version
 ##### Erik
 
 - the first coconut & pineapple (the guaranteed ones) grow on the monkey's side of the trunk, within a configurable angle (`guaranteedBranchYawSpreadDeg` in `WorldBalanceConfig`), never on the far side
+- no falling cobra hangs without a branch after the Cobra King fight: the nest clear removes falling cobras with their branches, and a dormant cobra switches itself off once its branch is gone
 
 ##### Yuqing Lu
 
