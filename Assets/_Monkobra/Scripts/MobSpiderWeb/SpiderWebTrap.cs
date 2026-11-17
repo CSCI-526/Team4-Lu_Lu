@@ -133,9 +133,10 @@ public class SpiderWebTrap: MonoBehaviour {
     private BoxCollider trigger;
 
     // private methods  ########################################################
-    // only the monkey's solid body counts: its trigger volumes (fruit zones,
-    // branch sensor) reach metres past it, and an arm has its own Rigidbody
-    // without a struggle, so a hand brushing the web is ignored as well
+    // only the monkey's root body capsule counts: its trigger volumes (fruit
+    // zones, branch sensor) reach metres past it, its tail capsules swing
+    // out, and an arm has its own Rigidbody without a struggle, so a tail or
+    // a hand brushing the web is ignored
     private void TryCatch(Collider other) {
         if (other.isTrigger) {
             return;
@@ -150,6 +151,15 @@ public class SpiderWebTrap: MonoBehaviour {
         if (
             otherBody == null
             || !otherBody.TryGetComponent(out SpiderWebStruggle struggle)
+        ) {
+            return;
+        }
+
+        // only the root capsule is the body: tail capsules share its
+        // Rigidbody, and an arm or hand is named out so it never catches
+        if (
+            other.gameObject != struggle.gameObject
+            || other.GetComponentInParent<ArmController>() != null
         ) {
             return;
         }
