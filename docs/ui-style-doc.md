@@ -22,7 +22,7 @@ The code twin is `UIStyle` (`Scripts/UI/UIStyle.cs`). Gameplay signals keep thei
 
 ## Type
 
-One family, Baloo 2 (OFL, `Fonts/baloo2/`), in two weights; weight and size make the levels.
+One family, Baloo 2 (OFL, `Fonts/Baloo2/`), in two weights; weight and size make the levels.
 
 - Files: `Baloo2-SemiBold.ttf` and `Baloo2-ExtraBold.ttf`, static instances of the variable font cut to the Latin set (Basic Latin, Latin-1, common punctuation), 37 KB each, so a WebGL build stays small
 - TMP: `Baloo2-SemiBold SDF` and `Baloo2-ExtraBold SDF`, static 1024 atlases of the same set; SemiBold is the TMP default, so text made in code without a font gets it, and a Bold style on SemiBold text draws the real ExtraBold; LiberationSans is the fallback for any glyph outside the set
@@ -61,7 +61,7 @@ A panel that shows what is behind it: `Sprites/UI/Plate_Fill`, tinted Panel at a
 
 The input icons (`Sprites/InputIcons/`) stay, worn as keycaps: the icon's Image draws the matching `*_keycap` silhouette in Brown with a Shadow component (2 right, 3 down, Shadow color), and a child `Outline` Image draws the original outline in Cream on top (`UIStyleBuilder.MakeKeycap`). The fill has no holes, so the shadow never shows through the key.
 
-A Space icon with a press clip keeps its keycap on the root Image and draws the key on the `Outline` child, so the clip's sprite curve points at `Outline`; the finger icons are no keys and only take the Cream. An animated input icon (`Prefabs/InputIcons/`) is sized by its rect, never by its scale: its press clip writes the scale (1, 0.92, back to 1), so a scaled icon looks right in the Editor and shrinks back in Play. `UIStyleBuilder.SizeAnimatedIcons` moves any such scale into the rect.
+A Space icon with a press clip keeps its keycap on the root Image and draws the key on the `Outline` child, so the clip's sprite curve points at `Outline`; the finger icons are no keys and only take the Cream. An animated input icon (the `InputIcon_Key` and `InputIcon_Touch` entities in `Prefabs/InputIcons/`, driven by the controllers in `Animations/InputIcons/`) is sized by its rect, never by its scale: its press clip writes the scale (1, 0.92, back to 1), so a scaled icon looks right in the Editor and shrinks back in Play. `UIStyleBuilder.SizeAnimatedIcons` moves any such scale into the rect.
 
 ## Layout
 
@@ -88,7 +88,7 @@ All of it is built by Editor menus, never by editing prefab YAML:
 - Climb progress: the bar is a Scrollbar turned 90 degrees and stretched 1.8 along its length; its heads and readout turn back and undo that stretch (scale y 1/1.8), so they stand upright at true size; the monkey and cobra wear the loading page's heads, the cobra's neck is a column of its green segments, stretched from under the head down to the bar's bottom end (`ProgressBarWidget.cobraBody`), so the cobra rises from the bottom and never hangs out of the bar; it stays in the bar when it nears the monkey, its head tucking under the monkey's (`isMarkerSideStepped` off); the head flashes red while the cobra surges (`ProgressBarWidget.markerFlash`); the distance reads cream on a Brown plate with a Gold rim
 - Energy and web bars: a Panel track with a Brown rim, a Gold fill
 - Score: a [plate](#plate) 220×64 in the top-left safe margin, level with the pause button, a "Score" caption at its left and the number right-aligned (it grows leftward, away from the bonus feed on its right), Gold with the HudNumber material; the bonus numbers take that material too, in their per-reward colors
-- Popups: a [plate](#plate), as see-through as the old black one, so the monkey's reaching arm stays in sight behind a grab hint; plain text is Cream, while a variant's own signal color (a warning red, a frozen blue) stays
+- Popups: a [plate](#plate), as see-through as the old black one, so the monkey's reaching arm stays in sight behind a grab hint; plain text is Cream, while a popup's own signal color (a warning red, a frozen blue) stays
 - Tutorial: a dark Background wash, Baloo 2 words, keycaps
 - Hack key list (F1–F12): hidden when a scene starts, F9 shows or hides it
 

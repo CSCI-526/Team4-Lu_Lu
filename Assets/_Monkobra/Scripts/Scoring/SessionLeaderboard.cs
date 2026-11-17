@@ -99,7 +99,8 @@ public sealed class SessionLeaderboard {
     // Runtime Lifecycle  ######################################################
     // Runs once per player launch, not on SceneManager.LoadScene. Explicitly
     // reset so a new Editor playtest also works with domain reload disabled.
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    [RuntimeInitializeOnLoadMethod(
+        RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetPlaytest() {
         current = null;
     }

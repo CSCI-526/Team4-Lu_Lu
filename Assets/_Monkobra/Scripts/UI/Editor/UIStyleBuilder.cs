@@ -402,7 +402,8 @@ public static partial class UIStyleBuilder {
     private static void StyleHint(string path) {
         GameObject root = PrefabUtility.LoadPrefabContents(path);
         try {
-            HorizontalLayoutGroup row = root.GetComponent<HorizontalLayoutGroup>();
+            HorizontalLayoutGroup row =
+                root.GetComponent<HorizontalLayoutGroup>();
             if (row != null) {
                 row.spacing = HINT_ROW_GAP;
             }
@@ -410,7 +411,8 @@ public static partial class UIStyleBuilder {
             // W and S side by side, in line with the words
             Transform keys = root.transform.Find("Keys_WS");
             if (keys != null) {
-                VerticalLayoutGroup stack = keys.GetComponent<VerticalLayoutGroup>();
+                VerticalLayoutGroup stack =
+                    keys.GetComponent<VerticalLayoutGroup>();
                 if (stack != null) {
                     Object.DestroyImmediate(stack);
                 }
@@ -420,7 +422,8 @@ public static partial class UIStyleBuilder {
                 pair.spacing = KEY_PAIR_GAP;
                 pair.childAlignment = TextAnchor.MiddleCenter;
                 pair.childControlWidth = pair.childControlHeight = false;
-                pair.childForceExpandWidth = pair.childForceExpandHeight = false;
+                pair.childForceExpandWidth = pair.childForceExpandHeight =
+                    false;
                 float keyWidth = 0f;
                 foreach (RectTransform key in keys) {
                     keyWidth += key.sizeDelta.x;
@@ -543,16 +546,18 @@ public static partial class UIStyleBuilder {
         return rect;
     }
 
-    private static RectTransform FindOrCreate(string childName, Transform parent) {
+    private static RectTransform FindOrCreate(string childName,
+        Transform parent) {
         Transform found = parent.Find(childName);
-        return found != null ? (RectTransform)found : NewChild(childName, parent);
+        return found != null ? (RectTransform)found
+            : NewChild(childName, parent);
     }
 
     // constants  ##############################################################
     private const int UI_LAYER = 5;
 
     // fonts: 2 weights, Latin set, one 1024 atlas each
-    private const string FONTS = "Assets/_Monkobra/Fonts/baloo2/";
+    private const string FONTS = "Assets/_Monkobra/Fonts/Baloo2/";
     private const string SEMIBOLD_TTF = FONTS + "Baloo2-SemiBold.ttf";
     private const string EXTRABOLD_TTF = FONTS + "Baloo2-ExtraBold.ttf";
     internal const string SEMIBOLD_SDF = FONTS + "Baloo2-SemiBold SDF.asset";
@@ -560,7 +565,8 @@ public static partial class UIStyleBuilder {
     private const string TITLE_MATERIAL =
         FONTS + "Baloo2-ExtraBold SDF - Title.mat";
     private const string FALLBACK_SDF =
-        "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset";
+        "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans "
+            + "SDF.asset";
     private const int SAMPLING_SIZE = 48;
     private const int ATLAS_PADDING = 8;
     private const int ATLAS_SIZE = 1024;
@@ -601,7 +607,7 @@ public static partial class UIStyleBuilder {
     private const string LEVEL_SELECT =
         "Assets/_Monkobra/Prefabs/LevelSelectScreen/LevelSelectScreen.prefab";
     private const string HINT_KEYBOARD =
-        "Assets/_Monkobra/Prefabs/LevelSelectScreen/LevelSelectHint_Keyboard.prefab";
+        "Assets/_Monkobra/Prefabs/UI/MenuHint_Keyboard.prefab";
     private const string HINT_TOUCH =
-        "Assets/_Monkobra/Prefabs/LevelSelectScreen/LevelSelectHint_Touch.prefab";
+        "Assets/_Monkobra/Prefabs/UI/MenuHint_Touch.prefab";
 }

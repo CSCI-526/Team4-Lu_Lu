@@ -42,6 +42,6 @@ public class WebGLLoaderArt: IPostprocessBuildWithReport {
     // constants  ##############################################################
     private const string SPRITE_FOLDER = "Assets/_Monkobra/Sprites/TitleScreen";
     private const string FONT =
-        "Assets/_Monkobra/Fonts/baloo2/Baloo2-SemiBold.ttf";
+        "Assets/_Monkobra/Fonts/Baloo2/Baloo2-SemiBold.ttf";
     private const string TARGET_FOLDER = "TemplateData/TitleScreen";
 }

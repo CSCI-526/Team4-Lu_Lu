@@ -26,7 +26,7 @@ public class ControlStyleSwitch: MonoBehaviour {
         ControlStyleManager.StyleChanged -= Apply;
     }
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     private void Apply(ControlStyle style) {
         bool isTouch = style == ControlStyle.Touch;
         SetAll(keyboardObjects, !isTouch);

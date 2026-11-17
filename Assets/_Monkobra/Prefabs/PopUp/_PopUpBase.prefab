@@ -66,17 +66,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a1c0de0a0b14c7e9f3d2b6a71e40002, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MessagePopUp
-  id: 0
   label: {fileID: 7301000000000024}
-  message: 
-  touchMessage: 
-  showS: 2
-  fadeInS: 0.15
-  fadeOutS: 0.5
-  pulseHz: 0
-  priority: 0
-  isRunOnly: 1
-  isOncePerScene: 0
+  iconImage: {fileID: 0}
+  hintSlot: {fileID: 7301000000000094}
 --- !u!114 &7301000000000005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -420,8 +412,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c3a1d90b5e24f81a6d2c8e04b9f7a15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HintIconSlot
-  keyboardPrefab: {fileID: 0}
-  touchPrefab: {fileID: 0}
+  library: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
+  keyboardController: {fileID: 0}
+  touchController: {fileID: 0}
   fitHeight: 64
   iconScale: 1.5
 --- !u!1 &572311434319304004

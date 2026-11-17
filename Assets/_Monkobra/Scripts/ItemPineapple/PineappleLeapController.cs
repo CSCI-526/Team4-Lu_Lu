@@ -140,7 +140,7 @@ public class PineappleLeapController: MonoBehaviour {
         pullTarget =
             monkey.transform.position + Vector3.up * leapConfig.DistanceU;
         // never past the boss fight's arena: the leap stops at its height
-        BossFightController bossFight = BossFightController.I;
+        CobraKingFightController bossFight = CobraKingFightController.I;
         if (bossFight != null) {
             pullTarget.y = Mathf.Max(
                 monkey.transform.position.y,

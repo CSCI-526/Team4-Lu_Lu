@@ -14,8 +14,8 @@ Profile settings (Pages cannot set response headers):
 - WebGL Template: `FitWindow` (`Assets/WebGLTemplates/FitWindow/`): keeps the game at 16:9 and scales it to the largest box the browser window allows, black bars filling the rest, rendering at the screen's real pixel density; a Fullscreen button sits at the bottom right once the game is up. For touch play it sets `touch-action: none`, switches off text selection and the tap highlight, and blocks the long-press context menu, so no drag scrolls or zooms the page and a held finger (the grab) stays with the game. It reaches a build only on the next export; never edit `Monkobra/` by hand. Set `MAX_RENDER_HEIGHT` in its `index.html` to cap the render resolution if frame rate drops. It also draws the [Loading Page](#loading-page)
 - Splash Screen: "Show Splash Screen" off (Player Settings > Splash Image), so the loading page hands straight over to the title
 - Development Build: on, since the hack hints and dev-only UI need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
-- Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `FullPlayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
-- Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `FullPlayScene`, `EndlessScene`
+- Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `GameplayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
+- Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `GameplayScene`
 
 Phones: iOS browsers (all WebKit) have no Fullscreen API for a canvas and cannot lock the orientation. The `FitWindow` template therefore hides the Fullscreen button there and shows an Add to Home Screen hint, links `manifest.webmanifest` for a chrome-less launch from the home screen, and, on a touch phone held in portrait, covers the page with a rotate message and calls `GameController.PauseFromBrowser`, so a live run waits behind the pause screen
 
@@ -57,7 +57,7 @@ Both WebGL builds open on a loading page drawn by `FitWindow/index.html` (HTML a
 - Progress: the cobra's head follows the real download progress of `createUnityInstance`, smoothed, and never faster than `LOADER_MIN_DURATION_S` (1.3 s) allows, counted from when the loading picture is fully in, so a cached, near-instant load still shows one short chase; the tuning constants sit at the top of the script
 - Hand-over: its last frame is the `TitleScreen` prefab picture, with "Loading" where the title shows its start prompt; `TitleScreen` calls `Plugins/WebGL/TitleScreenLoader.jslib` after its first frame and the page then fades out, or after 8 s if no call comes
 - Input: while the page is up it takes every click, tap and key, so none reaches Unity underneath and starts the title unseen; keys keep their browser default
-- Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the UI font (`Fonts/baloo2/Baloo2-SemiBold.ttf`, see [UI Style](ui-style-doc.md)) into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files
+- Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the UI font (`Fonts/Baloo2/Baloo2-SemiBold.ttf`, see [UI Style](ui-style-doc.md)) into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files
 - Layout: one 1280×720 table, written twice: the `LAYOUT` block of `index.html` and the table in `TitleScreenLayoutBuilder` (Editor script), which builds the `TitleScreen` prefab picture from `Monkobra > Build Title Screen`; change both together and rebuild, or the hand-over shows a jump
 
 The Windows build has no page: it opens on the title and shows no team logos.

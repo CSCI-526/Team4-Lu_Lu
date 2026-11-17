@@ -1,7 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>Editor menu items to flip the Endless unlock while testing</summary>
+/// <summary>Editor menu items to flip the Endless unlock while
+/// testing</summary>
 public static class ProgressMenu {
     [MenuItem("Monkobra/Unlock Endless")]
     private static void UnlockEndless() {

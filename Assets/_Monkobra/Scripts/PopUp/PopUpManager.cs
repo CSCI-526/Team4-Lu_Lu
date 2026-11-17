@@ -2,14 +2,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Owns the popup system of one scene: shows one <see cref="MessagePopUp"/>
-/// at a time, by <see cref="PopUpId"/>. A higher priority interrupts the
+/// Owns the popup system of one scene: shows one popup at a time, by
+/// <see cref="PopUpId"/>, on the shared <see cref="MessagePopUp"/> entity of
+/// its <see cref="PopUpKind"/>. What each popup says and how it looks comes
+/// from the <see cref="PopUpCatalog"/>. A higher priority interrupts the
 /// showing popup, which returns to the queue front with its time left; an
 /// equal or lower one queues. It also gates run-only popups on the run being
 /// live, remembers the once-per-scene ones, and drops everything on a loss.
 /// <para>
-/// Put it on the always-active popup root: every variant under it is saved
-/// inactive and found by this script, its only owner.
+/// Put it on the always-active popup root: the two entities under it are
+/// saved inactive and shown only by this script, their only owner.
 /// </para>
 /// </summary>
 public class PopUpManager: MonoBehaviour {
@@ -24,11 +26,11 @@ public class PopUpManager: MonoBehaviour {
     /// its rules: run-only while the run is not live, or once-per-scene
     /// already shown.
     /// </summary>
-    /// <param name="id">the popup variant</param>
+    /// <param name="id">the popup</param>
     /// <param name="args">values for the <c>{0}</c> slots of its text</param>
     public void Show(PopUpId id, params object[] args) {
-        if (!lookup.TryGetValue(id, out MessagePopUp popUp)) {
-            Debug.LogWarning("PopUp:\tno popup mapped to id " + id, this);
+        if (!lookup.TryGetValue(id, out PopUpDefinition popUp)) {
+            Debug.LogWarning("PopUp:\tno popup defined for id " + id, this);
             return;
         }
         if (popUp.IsRunOnly && !IsRunLive) {
@@ -39,8 +41,9 @@ public class PopUpManager: MonoBehaviour {
         }
 
         // the same popup again: refresh it in place, never twice on screen
-        if (current == popUp) {
-            popUp.Show(args);
+        if (current != null && current.Id == id) {
+            ViewOf(current).Show(current, args, -1f);
+            currentArgs = args;
             return;
         }
         RemoveQueued(id);
@@ -49,8 +52,8 @@ public class PopUpManager: MonoBehaviour {
             Present(new Entry(popUp, args, -1f));
         } else if (popUp.Priority > current.Priority) {
             queue.Insert(
-                0, new Entry(current, currentArgs, current.RemainingS));
-            current.Stop();
+                0, new Entry(current, currentArgs, CurrentView.RemainingS));
+            CurrentView.Stop();
             Present(new Entry(popUp, args, -1f));
         } else {
             Enqueue(new Entry(popUp, args, -1f));
@@ -60,26 +63,59 @@ public class PopUpManager: MonoBehaviour {
     /// <summary>
     /// Dismisses a popup: a showing one fades out, a queued one is dropped.
     /// </summary>
-    /// <param name="id">the popup variant</param>
+    /// <param name="id">the popup</param>
     public void Hide(PopUpId id) {
         if (current != null && current.Id == id) {
-            current.Hide();
+            CurrentView.Hide();
             return;
         }
         RemoveQueued(id);
     }
 
     /// <summary>
-    /// Finds a popup variant, so its owner can reach the variant's other
-    /// components, e.g. <see cref="PopUpWorldLink"/>.
+    /// Finds the entity that draws a popup, so its owner can reach the
+    /// entity's other components, e.g. <see cref="PopUpWorldLink"/>. Call it
+    /// after <see cref="Show"/>: the entity is shared by every popup of its
+    /// kind.
     /// </summary>
-    /// <param name="id">the popup variant</param>
-    /// <returns>the variant, or null when no variant has the id</returns>
+    /// <param name="id">the popup</param>
+    /// <returns>the entity, or null when no popup has the id</returns>
     public MessagePopUp GetPopUp(PopUpId id) {
-        return lookup.TryGetValue(id, out MessagePopUp popUp) ? popUp : null;
+        return lookup.TryGetValue(id, out PopUpDefinition popUp)
+            ? ViewOf(popUp)
+            : null;
     }
+
+    // Inspector Fields  #######################################################
+    [Header("Wiring")]
+    [SerializeField]
+    [Tooltip("every popup as data")]
+    private PopUpCatalog catalog;
+
+    [SerializeField]
+    [Tooltip("entity that draws a Message popup")]
+    private MessagePopUp messageView;
+
+    [SerializeField]
+    [Tooltip("entity that draws a Fruit popup, with its line to the fruit")]
+    private MessagePopUp fruitView;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
+        if (catalog == null) {
+            Debug.LogWarning(
+                "PopUp:\tmust assign Inspector Field: catalog", this);
+        }
+        if (messageView == null) {
+            Debug.LogWarning(
+                "PopUp:\tmust assign Inspector Field: messageView", this);
+        }
+        if (fruitView == null) {
+            Debug.LogWarning(
+                "PopUp:\tmust assign Inspector Field: fruitView", this);
+        }
+
         if (I != null && I != this) {
             Debug.LogWarning(
                 "PopUp:\tduplicate PopUpManager, this one is off", this);
@@ -88,18 +124,22 @@ public class PopUpManager: MonoBehaviour {
         }
         I = this;
 
-        // inactive variants included: they are saved off until first shown
-        MessagePopUp[] popUps = GetComponentsInChildren<MessagePopUp>(true);
-        if (popUps.Length == 0) {
-            Debug.LogWarning("PopUp:	no MessagePopUp under this root", this);
-        }
-        foreach (MessagePopUp popUp in popUps) {
-            if (!lookup.TryAdd(popUp.Id, popUp)) {
-                Debug.LogWarning(
-                    "PopUp:	id used by two variants: " + popUp.Id, this);
-                continue;
+        if (catalog != null) {
+            foreach (PopUpDefinition popUp in catalog.Definitions) {
+                if (!lookup.TryAdd(popUp.Id, popUp)) {
+                    Debug.LogWarning(
+                        "PopUp:\tid defined twice: " + popUp.Id, this);
+                }
             }
-            popUp.Hidden += OnPopUpHidden;
+        }
+        if (lookup.Count == 0) {
+            Debug.LogWarning("PopUp:\tno popup defined in the catalog", this);
+        }
+        if (messageView != null) {
+            messageView.Hidden += OnPopUpHidden;
+        }
+        if (fruitView != null) {
+            fruitView.Hidden += OnPopUpHidden;
         }
     }
 
@@ -123,10 +163,11 @@ public class PopUpManager: MonoBehaviour {
         if (gameController != null) {
             gameController.StateChanged -= OnStateChanged;
         }
-        foreach (MessagePopUp popUp in lookup.Values) {
-            if (popUp != null) {
-                popUp.Hidden -= OnPopUpHidden;
-            }
+        if (messageView != null) {
+            messageView.Hidden -= OnPopUpHidden;
+        }
+        if (fruitView != null) {
+            fruitView.Hidden -= OnPopUpHidden;
         }
         if (I == this) {
             I = null;
@@ -134,8 +175,8 @@ public class PopUpManager: MonoBehaviour {
     }
 
     // Event Handlers  #########################################################
-    private void OnPopUpHidden(MessagePopUp popUp) {
-        if (popUp != current) {
+    private void OnPopUpHidden(MessagePopUp view) {
+        if (current == null || view != CurrentView) {
             return;
         }
 
@@ -151,7 +192,7 @@ public class PopUpManager: MonoBehaviour {
 
         queue.Clear();
         if (current != null) {
-            current.Stop();
+            CurrentView.Stop();
             current = null;
         }
 
@@ -161,11 +202,11 @@ public class PopUpManager: MonoBehaviour {
     }
 
     // private members  ########################################################
-    private readonly Dictionary<PopUpId, MessagePopUp> lookup =
-        new Dictionary<PopUpId, MessagePopUp>();
+    private readonly Dictionary<PopUpId, PopUpDefinition> lookup =
+        new Dictionary<PopUpId, PopUpDefinition>();
     private readonly HashSet<PopUpId> shownOnce = new HashSet<PopUpId>();
     private readonly List<Entry> queue = new List<Entry>();
-    private MessagePopUp current;
+    private PopUpDefinition current;
     private object[] currentArgs;
 
     // cached references  ------------------------------------------------------
@@ -176,11 +217,17 @@ public class PopUpManager: MonoBehaviour {
     private bool IsRunLive =>
         gameController == null || gameController.IsRunLive;
 
+    private MessagePopUp CurrentView => ViewOf(current);
+
     // private methods  ########################################################
+    private MessagePopUp ViewOf(PopUpDefinition popUp) {
+        return popUp.Kind == PopUpKind.Fruit ? fruitView : messageView;
+    }
+
     private void Present(Entry entry) {
         current = entry.popUp;
         currentArgs = entry.args;
-        current.Show(entry.args, entry.remainingS);
+        ViewOf(current).Show(current, entry.args, entry.remainingS);
     }
 
     // starts the queue front that may still show, dropping the stale ones
@@ -218,11 +265,11 @@ public class PopUpManager: MonoBehaviour {
 
     // one waiting popup w/ the args & the show time it still owes
     private readonly struct Entry {
-        public readonly MessagePopUp popUp;
+        public readonly PopUpDefinition popUp;
         public readonly object[] args;
         public readonly float remainingS; // negative for a fresh show
 
-        public Entry(MessagePopUp popUp, object[] args, float remainingS) {
+        public Entry(PopUpDefinition popUp, object[] args, float remainingS) {
             this.popUp = popUp;
             this.args = args;
             this.remainingS = remainingS;

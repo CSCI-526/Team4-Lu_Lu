@@ -123,7 +123,7 @@ public static class ModelTwoBoneIK {
         return null;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private const float MIN_LENGTH_U = 0.0001f;
 
     // a fully straight limb has no defined bend plane, it snaps & flickers

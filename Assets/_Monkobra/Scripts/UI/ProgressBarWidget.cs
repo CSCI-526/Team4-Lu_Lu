@@ -287,7 +287,8 @@ public class ProgressBarWidget: MonoBehaviour {
         if (playerObject == null) {
             if (!hasWarnedNoPlayer) {
                 Debug.LogWarning(
-                    "ProgressBarWidget:\tfail to find GameObject tagged: Player",
+                    "ProgressBarWidget:\tfail to find GameObject tagged: "
+                        + "Player",
                     this
                 );
 

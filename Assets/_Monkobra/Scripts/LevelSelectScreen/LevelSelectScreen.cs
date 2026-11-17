@@ -100,12 +100,12 @@ public class LevelSelectScreen: MonoBehaviour {
 
     // Event Handlers  #########################################################
     private void OnNormalClicked() {
-        SceneNames.Load(SceneNames.FULL);
+        SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Full);
     }
 
     private void OnEndlessClicked() {
         if (ProgressStore.IsEndlessUnlocked) {
-            SceneNames.Load(SceneNames.ENDLESS);
+            SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Endless);
         }
     }
 

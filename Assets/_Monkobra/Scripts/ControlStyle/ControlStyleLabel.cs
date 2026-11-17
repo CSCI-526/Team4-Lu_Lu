@@ -66,7 +66,7 @@ public class ControlStyleLabel: MonoBehaviour {
         ControlStyleManager.StyleChanged -= Apply;
     }
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     private void Apply(ControlStyle style) {
         string text = style == ControlStyle.Touch ? touchText : keyboardText;
         if (tmpLabel != null) {

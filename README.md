@@ -41,7 +41,7 @@ Dev keys (active in every build; their hints and the dev-only UI show only in de
 
 ## Getting Started
 
-Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `TitleScene` and press Play (or open `FullPlayScene` to start a run directly). Endless Mode unlocks after the Cobra King is beaten once; for testing use the Editor menu `Monkobra/Unlock Endless`. The game also runs in the browser from the WebGL export served by GitHub Pages; the builds are described in [Build](docs/build-doc.md).
+Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `TitleScene` and press Play (or open `GameplayScene` to start a run directly). Endless Mode unlocks after the Cobra King is beaten once; for testing use the Editor menu `Monkobra/Unlock Endless`. The game also runs in the browser from the WebGL export served by GitHub Pages; the builds are described in [Build](docs/build-doc.md).
 
 ### Testing the Coconut
 

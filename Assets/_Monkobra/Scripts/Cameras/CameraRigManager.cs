@@ -36,7 +36,9 @@ public class CameraRigManager: MonoBehaviour {
     /// <param name="holdS">how long to stay, capped by the shot's duration;
     /// infinite until <see cref="ReleaseShot"/>; s</param>
     /// <returns>if the shot is live now</returns>
-    public bool RequestShot(ShotKind kind, float holdS = float.PositiveInfinity) {
+    public bool RequestShot(
+        ShotKind kind, float holdS = float.PositiveInfinity
+    ) {
         CameraConfig.ShotSettings settings = GetSettings(kind);
         if (config == null || settings == null || GetCamera(kind) == null) {
             return false;
@@ -325,7 +327,9 @@ public class CameraRigManager: MonoBehaviour {
         if (config == null || cobra == null || cobra.IsGuarding) {
             return;
         }
-        if (RequestShot(ShotKind.CobraAlert, config.CobraAlertShot.DurationS)) cobra.PlayChaseAlertHiss();
+        if (RequestShot(ShotKind.CobraAlert, config.CobraAlertShot.DurationS)) {
+            cobra.PlayChaseAlertHiss();
+        }
     }
 
     private CameraConfig.ShotSettings GetSettings(ShotKind kind) {

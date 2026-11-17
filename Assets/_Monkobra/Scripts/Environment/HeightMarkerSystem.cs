@@ -254,7 +254,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         // itself and never shows
         int interval = IntervalU;
         // the boss fight's height gets its own look, no extra words
-        BossFightController bossFight = BossFightController.I;
+        CobraKingFightController bossFight = CobraKingFightController.I;
         // the endless run has no boss, so no boss marker either
         bool isEndless = GameController.I != null
             && GameController.I.Mode == RunMode.Endless;
@@ -269,7 +269,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         bool isFigureShown = false;
         // the second boss, the Spider King, marked the same way at its own
         // height
-        SpiderFightController spiderFight = SpiderFightController.I;
+        SpiderKingFightController spiderFight = SpiderKingFightController.I;
         int spiderHeightU = spiderFight != null
             && spiderFight.isActiveAndEnabled && !isEndless
             && spiderFight.TriggerHeightU > 0f
@@ -381,7 +381,9 @@ public class HeightMarkerSystem: MonoBehaviour {
     // top of the boss marker's plate; labels are pooled, so it follows
     // whichever label shows that marker
     private bool PlaceBossFigure(
-        BossFightController bossFight, TextMeshPro label, SpriteRenderer plate
+        CobraKingFightController bossFight,
+        TextMeshPro label,
+        SpriteRenderer plate
     ) {
         return PlaceFigure(ref bossFigure, bossFight.BuildMarkerFigure, label,
             plate);

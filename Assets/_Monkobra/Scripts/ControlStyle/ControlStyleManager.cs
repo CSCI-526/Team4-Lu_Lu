@@ -71,7 +71,7 @@ public class ControlStyleManager: MonoBehaviour {
         }
     }
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     // a phone or tablet (a mobile browser too, which still reports a
     // keyboard device) and a touch screen without a keyboard start as touch,
     // so the very first tap already meets the touch controls

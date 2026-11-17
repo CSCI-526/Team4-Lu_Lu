@@ -41,7 +41,8 @@ public static partial class UIStyleBuilder {
             }
             TMP_Text title = panel.Find("Title")?.GetComponent<TMP_Text>();
             if (title != null) {
-                StyleText(title, ExtraBold, TITLE_SIZE, UIStyle.Cream, TitleMaterial);
+                StyleText(title, ExtraBold, TITLE_SIZE, UIStyle.Cream,
+                    TitleMaterial);
             }
             StyleIconColumn(panel.Find("Options"), PAUSE_OPTIONS_X, new[] {
                 ("ResumeEscButton", "Icon_Resume", "Resume"),
@@ -74,7 +75,9 @@ public static partial class UIStyleBuilder {
         foreach ((string buttonName, string glyph, string words) in rows) {
             Button button = options.Find(buttonName)?.GetComponent<Button>();
             if (button == null) {
-                Debug.LogError("UIStyleBuilder:\tno " + buttonName + " in Options");
+                Debug.LogError(
+                    "UIStyleBuilder:\tno " + buttonName + " in Options"
+                );
                 continue;
             }
             StyleIconButton(button, glyph);
@@ -92,7 +95,8 @@ public static partial class UIStyleBuilder {
             labelRect.anchorMin = labelRect.anchorMax = new Vector2(0.5f, 0.5f);
             labelRect.pivot = new Vector2(0f, 0.5f);
             labelRect.sizeDelta = new Vector2(width, ICON_FACE);
-            labelRect.anchoredPosition = new Vector2(faceRight + LABEL_GAP, face.y);
+            labelRect.anchoredPosition =
+                new Vector2(faceRight + LABEL_GAP, face.y);
             widestLabel = Mathf.Max(widestLabel, width);
 
             RectTransform key = (RectTransform)button.transform.Find("KeyIcon");
@@ -109,13 +113,15 @@ public static partial class UIStyleBuilder {
         }
 
         // faces 20 apart: the sprites' margins already add 22
-        VerticalLayoutGroup column = options.GetComponent<VerticalLayoutGroup>();
+        VerticalLayoutGroup column =
+            options.GetComponent<VerticalLayoutGroup>();
         float buttonHeight = ICON_FACE + MARGIN_TOP + MARGIN_BOTTOM;
         if (column != null) {
             column.spacing = BUTTON_GAP - (MARGIN_TOP + MARGIN_BOTTOM);
             column.childAlignment = TextAnchor.MiddleCenter;
             column.childControlWidth = column.childControlHeight = false;
-            column.childForceExpandWidth = column.childForceExpandHeight = false;
+            column.childForceExpandWidth = column.childForceExpandHeight =
+                false;
         }
         float spacing = column != null ? column.spacing : 0f;
         RectTransform rect = (RectTransform)options;
@@ -162,7 +168,8 @@ public static partial class UIStyleBuilder {
                 UIStyle.Cream, top - 304f);
 
             // the fruit counts, one row across the card
-            foreach (string row in new[] { "BananaRow", "PineappleRow", "CoconutRow" }) {
+            foreach (string row in new[] { "BananaRow", "PineappleRow",
+                "CoconutRow" }) {
                 RectTransform rowRect = (RectTransform)screen.Find(row);
                 if (rowRect == null) {
                     continue;
@@ -170,7 +177,8 @@ public static partial class UIStyleBuilder {
                 rowRect.anchoredPosition = new Vector2(
                     rowRect.anchoredPosition.x, top - 250f
                 );
-                TMP_Text count = rowRect.Find("Count")?.GetComponent<TMP_Text>();
+                TMP_Text count =
+                    rowRect.Find("Count")?.GetComponent<TMP_Text>();
                 if (count != null) {
                     StyleText(count, SemiBold, COUNT_ROW_SIZE, UIStyle.Cream);
                 }
@@ -209,7 +217,8 @@ public static partial class UIStyleBuilder {
             }
 
             // the dev-only download button: a small gold button in the corner
-            Button download = screen.Find("DownloadReportButton")?.GetComponent<Button>();
+            Button download =
+                screen.Find("DownloadReportButton")?.GetComponent<Button>();
             if (download != null) {
                 StyleMenuButton(download);
                 RectTransform rect = (RectTransform)download.transform;
@@ -223,7 +232,8 @@ public static partial class UIStyleBuilder {
                     -(SAFE_MARGIN - MARGIN_RIGHT) - rect.sizeDelta.x / 2f,
                     -(SAFE_MARGIN - MARGIN_TOP) - rect.sizeDelta.y / 2f
                 );
-                TMP_Text words = download.GetComponentInChildren<TMP_Text>(true);
+                TMP_Text words =
+                    download.GetComponentInChildren<TMP_Text>(true);
                 if (words != null) {
                     words.fontSize = DOWNLOAD_SIZE;
                 }
@@ -239,7 +249,9 @@ public static partial class UIStyleBuilder {
     ) {
         TMP_Text text = screen.Find(textName)?.GetComponent<TMP_Text>();
         if (text == null) {
-            Debug.LogError("UIStyleBuilder:\tno " + textName + " on the lose screen");
+            Debug.LogError(
+                "UIStyleBuilder:\tno " + textName + " on the lose screen"
+            );
             return;
         }
         StyleText(text, font, size, color, material);
@@ -265,12 +277,15 @@ public static partial class UIStyleBuilder {
             // the plate's gold rim takes over the gold line along the top
             root.transform.Find("AccentRule")?.gameObject.SetActive(false);
 
-            TMP_Text title = root.transform.Find("Title")?.GetComponent<TMP_Text>();
+            TMP_Text title =
+                root.transform.Find("Title")?.GetComponent<TMP_Text>();
             if (title != null) {
                 StyleText(title, ExtraBold, PANEL_TITLE_SIZE, UIStyle.Cream);
             }
-            foreach (string header in new[] { "RankHeader", "ClimberHeader", "ScoreHeader" }) {
-                TMP_Text text = root.transform.Find(header)?.GetComponent<TMP_Text>();
+            foreach (string header in new[] { "RankHeader", "ClimberHeader",
+                "ScoreHeader" }) {
+                TMP_Text text =
+                    root.transform.Find(header)?.GetComponent<TMP_Text>();
                 if (text != null) {
                     StyleText(text, SemiBold, LEADERBOARD_HEADER_SIZE,
                         WithAlpha(UIStyle.Cream, 0.6f));
@@ -282,7 +297,8 @@ public static partial class UIStyleBuilder {
                     line.color = UIStyle.Divider;
                 }
             }
-            TMP_Text rank = root.transform.Find("PlayerRank")?.GetComponent<TMP_Text>();
+            TMP_Text rank =
+                root.transform.Find("PlayerRank")?.GetComponent<TMP_Text>();
             if (rank != null) {
                 StyleText(rank, ExtraBold, LEADERBOARD_RANK_SIZE, UIStyle.Gold);
             }
@@ -291,11 +307,13 @@ public static partial class UIStyleBuilder {
         // the rows: the widget paints them per entry from these colors; the
         // player's row takes Bold, which the weight table draws in ExtraBold
         EditPrefab(LEADERBOARD_ROW, root => {
-            foreach (TMP_Text cell in root.GetComponentsInChildren<TMP_Text>(true)) {
+            foreach (TMP_Text cell in
+                root.GetComponentsInChildren<TMP_Text>(true)) {
                 Restyle(cell, SemiBold);
                 cell.fontSize = LEADERBOARD_ROW_SIZE;
             }
-            LeaderboardRowWidget widget = root.GetComponent<LeaderboardRowWidget>();
+            LeaderboardRowWidget widget =
+                root.GetComponent<LeaderboardRowWidget>();
             if (widget != null) {
                 SerializedObject so = new SerializedObject(widget);
                 so.FindProperty("normalTextColor").colorValue = UIStyle.Cream;
@@ -339,6 +357,8 @@ public static partial class UIStyleBuilder {
         "Assets/_Monkobra/Prefabs/PauseScreen/PauseScreen.prefab";
     private const string LOSE_SCREEN =
         "Assets/_Monkobra/Prefabs/LoseScreen/LoseScreen.prefab";
-    private const string LEADERBOARD = UI_PREFABS + "Leaderboard.prefab";
-    private const string LEADERBOARD_ROW = UI_PREFABS + "LeaderboardRow.prefab";
+    private const string LEADERBOARD =
+        PREFABS + "LoseScreen/Leaderboard.prefab";
+    private const string LEADERBOARD_ROW =
+        PREFABS + "LoseScreen/LeaderboardRow.prefab";
 }

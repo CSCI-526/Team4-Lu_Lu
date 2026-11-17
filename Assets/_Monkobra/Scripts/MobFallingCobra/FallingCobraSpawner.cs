@@ -196,34 +196,52 @@ public class FallingCobraSpawner: MonoBehaviour {
     }
 
     private bool TrySpawnCobra(TreeSegmentController segment) {
-        var branches = new List<BoxCollider>();
-        var fruitBranches = new List<BoxCollider>();
-        foreach (BranchController owner in segment.GetComponentsInChildren<BranchController>()) {
-            foreach (BoxCollider box in owner.GetComponentsInChildren<BoxCollider>()) {
-                if (!box.enabled || box.isTrigger || !box.CompareTag("Branch")) continue;
+        List<BoxCollider> branches = new List<BoxCollider>();
+        List<BoxCollider> fruitBranches = new List<BoxCollider>();
+        foreach (
+            BranchController owner
+            in segment.GetComponentsInChildren<BranchController>()
+        ) {
+            foreach (
+                BoxCollider box
+                in owner.GetComponentsInChildren<BoxCollider>()
+            ) {
+                if (!box.enabled || box.isTrigger
+                    || !box.CompareTag("Branch")) continue;
                 branches.Add(box);
                 if (owner.Kind != BranchKind.Empty) fruitBranches.Add(box);
             }
         }
-        // Every waiting snake needs real wood beneath its coil. No branch means no spawn.
+        // Every waiting snake needs real wood beneath its coil. No branch means
+        // no spawn.
         if (branches.Count == 0) return false;
-        List<BoxCollider> candidates = fruitBranches.Count > 0 && Random.value < cobraBalanceConfig.FallingCobraBananaAmbushChance
+        List<BoxCollider> candidates = fruitBranches.Count > 0
+            && Random.value < cobraBalanceConfig.FallingCobraBananaAmbushChance
             ? fruitBranches : branches;
-        FallingCobraController cobra = Instantiate(cobraPrefab, segment.transform);
+        FallingCobraController cobra = Instantiate(cobraPrefab,
+            segment.transform);
         for (int attempt = 0; attempt < maxPlacementAttempts; attempt++) {
             BoxCollider branch = candidates[Random.Range(0, candidates.Count)];
-            Vector3 branchCenter = branch.transform.TransformPoint(branch.center);
+            Vector3 branchCenter =
+                branch.transform.TransformPoint(branch.center);
             Vector3 outward = branchCenter - segment.transform.position;
             outward.y = 0f; outward.Normalize();
-            Vector3 position = new Vector3(segment.transform.position.x, branchCenter.y, segment.transform.position.z) + outward * spawnRadiusU;
-            cobra.transform.SetPositionAndRotation(position, segment.transform.rotation);
+            Vector3 position = new Vector3(segment.transform.position.x,
+                branchCenter.y,
+                    segment.transform.position.z) + outward * spawnRadiusU;
+            cobra.transform.SetPositionAndRotation(position,
+                segment.transform.rotation);
             Physics.SyncTransforms();
             cobra.Initialize(cobraBalanceConfig, segment.transform.position);
-            if (!cobra.AttachToBranch(branch) || !IsSpotFree(cobra.transform.position)) continue;
+            if (!cobra.AttachToBranch(branch)
+                || !IsSpotFree(cobra.transform.position)) continue;
             RampedDifficultyManager difficulty = RampedDifficultyManager.I;
-            if (difficulty != null && (difficulty.IsInBossZoneY(cobra.transform.position.y - cobra.TailBelowPivotU)
+            if (difficulty != null
+                && (difficulty.IsInBossZoneY(cobra.transform.position.y
+                    - cobra.TailBelowPivotU)
                 || difficulty.IsInBossZoneY(cobra.transform.position.y)
-                || difficulty.IsInBossZoneY(cobra.transform.position.y + cobra.LengthU - cobra.TailBelowPivotU))) continue;
+                || difficulty.IsInBossZoneY(cobra.transform.position.y
+                    + cobra.LengthU - cobra.TailBelowPivotU))) continue;
             spawnedCobras.Add(cobra);
             return true;
         }

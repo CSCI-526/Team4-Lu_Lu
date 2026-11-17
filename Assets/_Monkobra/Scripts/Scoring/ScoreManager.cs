@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
-//记录高度分和奖励分，在分数变化时通知 UI，并在游戏结束后停止计分
+// tracks height and reward score, notifies the UI on a change, and stops
+// scoring once the run ends
 // run before UI scripts, so ScoreManager.I is set when they enable
 [DefaultExecutionOrder(-100)]
 public class ScoreManager: MonoBehaviour {
@@ -27,11 +28,17 @@ public class ScoreManager: MonoBehaviour {
     // raised once per scored pickup with the points that pickup just added
     public event Action<RewardKind, long> RewardAdded;
 
-    //必须满足：组件启用、已经开局、尚未结束、没有暂停，才允许计分
-    public bool CanScore => isActiveAndEnabled && hasStarted && !isRunEnded && Time.timeScale > 0f && (GameController.I == null || GameController.I.IsRunLive);
+    /// <returns>if scoring is allowed: enabled, started, not ended, not
+    /// paused, and the run is live</returns>
+    public bool CanScore =>
+        isActiveAndEnabled
+        && hasStarted
+        && !isRunEnded
+        && Time.timeScale > 0f
+        && (GameController.I == null || GameController.I.IsRunLive);
 
     // Public Methods  #########################################################
-    //添加水果等奖励分
+    // adds the points of a fruit or other reward
     public bool TryAddReward(PickupKind kind = PickupKind.Banana) {
         if (!CanScore) {
             return false;
@@ -39,7 +46,9 @@ public class ScoreManager: MonoBehaviour {
 
         long oldScore = TotalScore;
         if (kind == PickupKind.Coconut) {
-            long coconutPoints = Math.Min((long)scoreConfig.PointsFor(RewardKind.Coconut), long.MaxValue - TotalScore);
+            long coconutPoints = Math.Min(
+                (long)scoreConfig.PointsFor(RewardKind.Coconut),
+                long.MaxValue - TotalScore);
             RewardScore += coconutPoints;
             rewardScoreByKind[(int)RewardKind.Coconut] += coconutPoints;
             CoconutCollectedCount++;
@@ -49,7 +58,9 @@ public class ScoreManager: MonoBehaviour {
             return true;
         }
 
-        long bananaPoints = Math.Min((long)scoreConfig.PointsFor(RewardKind.Banana), long.MaxValue - TotalScore);
+        long bananaPoints = Math.Min(
+            (long)scoreConfig.PointsFor(RewardKind.Banana),
+            long.MaxValue - TotalScore);
         RewardScore += bananaPoints;
         rewardScoreByKind[(int)RewardKind.Banana] += bananaPoints;
         // every other reward is a banana pickup
@@ -117,7 +128,8 @@ public class ScoreManager: MonoBehaviour {
         I = this;
     }
 
-    //读取计分设置，记录出生高度，把分数和最高爬升距离清零
+    // reads the score config, notes the start height, zeroes score and
+    // highest climb
     private void Start() {
         pointsPerMeter = scoreConfig.PointsPerMeter;
         unitsPerMeter = scoreConfig.UnitsPerMeter;
@@ -222,7 +234,7 @@ public class ScoreManager: MonoBehaviour {
         }
         double climbedUnits =
             RampedDifficultyManager.I.CurrentPlayerClimbedYDistance;
-        //如果数值无效，或者没超过之前的最高高度，就直接退出。不能刷分
+        // an invalid value, or no new highest height, scores nothing
         if (double.IsNaN(climbedUnits) || double.IsInfinity(climbedUnits)
             || climbedUnits <= highestClimbedUnits) {
             return;

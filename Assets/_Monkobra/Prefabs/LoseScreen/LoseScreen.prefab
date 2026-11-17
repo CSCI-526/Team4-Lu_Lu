@@ -2641,7 +2641,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7200000000000000001, guid: 55e12667f0014ac0895dcdbe4d3377a9, type: 3}
       propertyPath: m_Name
-      value: LevelSelectHint_Keyboard
+      value: MenuHint_Keyboard
       objectReference: {fileID: 0}
     - target: {fileID: 7200000000000000005, guid: 55e12667f0014ac0895dcdbe4d3377a9, type: 3}
       propertyPath: m_AnchorMax.y
@@ -2764,7 +2764,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7300000000000000001, guid: 53a2a08aee88495782e2ea1915649b84, type: 3}
       propertyPath: m_Name
-      value: LevelSelectHint_Touch
+      value: MenuHint_Touch
       objectReference: {fileID: 0}
     - target: {fileID: 7300000000000000001, guid: 53a2a08aee88495782e2ea1915649b84, type: 3}
       propertyPath: m_IsActive

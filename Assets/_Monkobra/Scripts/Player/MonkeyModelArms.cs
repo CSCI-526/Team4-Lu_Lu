@@ -103,7 +103,8 @@ public class MonkeyModelArms: MonoBehaviour {
     [Header("Hand")]
     [SerializeField]
     [Range(0f, 60f)]
-    [Tooltip("how far the wrist bends the fingers in to the bark while gripping; deg")]
+    [Tooltip("how far the wrist bends the fingers in to the bark while "
+        + "gripping; deg")]
     private float wristGripDeg = 25f;
 
     [SerializeField]
@@ -150,7 +151,7 @@ public class MonkeyModelArms: MonoBehaviour {
         PoseArm(rightArm, isLeaping, deltaS);
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private const float MIN_LENGTH_U = 0.0001f;
 
     private MonkeyModelAnimator animator;
@@ -187,14 +188,16 @@ public class MonkeyModelArms: MonoBehaviour {
         Vector3 toPhysics = arm.target.position - shoulder;
         float physicsU = toPhysics.magnitude;
         Vector3 physicsWrist = physicsU > MIN_LENGTH_U
-            ? shoulder + toPhysics / physicsU * Mathf.Max(physicsU - wristInsetU, 0f)
+            ? shoulder
+                + toPhysics / physicsU * Mathf.Max(physicsU - wristInsetU, 0f)
             : climbWrist;
 
         Vector3 wrist = Vector3.Lerp(climbWrist, physicsWrist, arm.follow);
 
         // Reach  --------------------------------------------------------------
         float upperU = Vector3.Distance(shoulder, arm.forearm.position);
-        float forearmU = Vector3.Distance(arm.forearm.position, arm.hand.position);
+        float forearmU =
+            Vector3.Distance(arm.forearm.position, arm.hand.position);
         float restU = upperU + forearmU;
         if (restU < MIN_LENGTH_U) {
             return;
@@ -314,7 +317,8 @@ public class MonkeyModelArms: MonoBehaviour {
 
             // the rest pose is a T-pose: fingers out along the arm, palms
             // facing the ground
-            Vector3 fingersWorld = (hand.position - forearm.position).normalized;
+            Vector3 fingersWorld =
+                (hand.position - forearm.position).normalized;
             Vector3 palmWorld =
                 Vector3.ProjectOnPlane(-model.up, fingersWorld).normalized;
             Quaternion toHand = Quaternion.Inverse(hand.rotation);
@@ -346,7 +350,8 @@ public class MonkeyModelArms: MonoBehaviour {
         public void CurlFingers(Vector3 axis, float fingerDeg, float thumbDeg) {
             for (int i = 0; i < fingerBones.Count; i++) {
                 fingerBones[i].rotation =
-                    Quaternion.AngleAxis(isThumb[i] ? thumbDeg : fingerDeg, axis)
+                    Quaternion.AngleAxis(
+                        isThumb[i] ? thumbDeg : fingerDeg, axis)
                     * fingerBones[i].rotation;
             }
         }

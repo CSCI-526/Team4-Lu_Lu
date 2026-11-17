@@ -20,7 +20,8 @@ public sealed class CartoonCobraVisual: IDisposable {
         [Range(0.5f, 2f)] public float headScale = 1f;
     }
 
-    public CartoonCobraVisual(Transform owner, Material source, Settings settings) {
+    public CartoonCobraVisual(Transform owner, Material source,
+        Settings settings) {
         this.owner = owner;
         this.settings = settings;
         skin = MakeMaterial(source, settings.skin, "Cartoon snake green");
@@ -36,8 +37,10 @@ public sealed class CartoonCobraVisual: IDisposable {
             for (int x = 0; x < 128; x++) {
                 float u = (x / 127f - 0.75f) / 0.16f;
                 float v = (y / 127f - 0.5f) / 0.28f;
-                float spot = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.85f, 1f, u * u + v * v));
-                pixels[y * 128 + x] = Color.Lerp(settings.skin, settings.spots, spot);
+                float spot = 1f - Mathf.SmoothStep(0f, 1f,
+                    Mathf.InverseLerp(0.85f, 1f, u * u + v * v));
+                pixels[y * 128 + x] = Color.Lerp(settings.skin, settings.spots,
+                    spot);
             }
         }
         skinPattern.SetPixels(pixels);
@@ -46,9 +49,12 @@ public sealed class CartoonCobraVisual: IDisposable {
         skin.SetTexture("_MainTex", skinPattern);
         skin.SetColor("_BaseColor", Color.white);
         skin.SetColor("_Color", Color.white);
-        dark = MakeMaterial(source, new Color(0.07f, 0.16f, 0.025f), "Snake face");
-        ivory = MakeMaterial(source, new Color(1f, 0.96f, 0.78f), "Snake ivory");
-        pupil = MakeMaterial(source, new Color(0.09f, 0.055f, 0.025f), "Snake pupils");
+        dark = MakeMaterial(source, new Color(0.07f, 0.16f, 0.025f),
+            "Snake face");
+        ivory = MakeMaterial(source, new Color(1f, 0.96f, 0.78f),
+            "Snake ivory");
+        pupil = MakeMaterial(source, new Color(0.09f, 0.055f, 0.025f),
+            "Snake pupils");
         white = MakeMaterial(source, Color.white, "Snake eye highlights");
 
         GameObject body = new GameObject("CartoonSnakeBody");
@@ -56,10 +62,12 @@ public sealed class CartoonCobraVisual: IDisposable {
         mesh = new Mesh { name = "Continuous cartoon snake body" };
         mesh.MarkDynamic();
         body.AddComponent<MeshFilter>().sharedMesh = mesh;
-        body.AddComponent<MeshRenderer>().sharedMaterials = new[] { skin, belly, spots };
+        body.AddComponent<MeshRenderer>().sharedMaterials = new[] { skin, belly,
+            spots };
     }
 
-    /// <summary>Face coordinates: +y toward the head, -z away from the tree.</summary>
+    /// <summary>Face coordinates: +y toward the head, -z away from the
+    /// tree.</summary>
     public void BuildHead(Transform anchor, float diameter) {
         GameObject face = settings.referenceHead != null
             ? Object.Instantiate(settings.referenceHead)
@@ -79,7 +87,8 @@ public sealed class CartoonCobraVisual: IDisposable {
             List<Vector3> collar = new();
             foreach (Vector3 point in sourceMesh.vertices) {
                 if (point.y <= sourceMesh.bounds.min.y + 0.001f) {
-                    collar.Add(new Vector3(point.x, sourceMesh.bounds.min.y, point.z));
+                    collar.Add(new Vector3(point.x, sourceMesh.bounds.min.y,
+                        point.z));
                     referenceNeckRadius = Mathf.Max(referenceNeckRadius,
                         new Vector2(point.x, point.z).magnitude * size);
                 }
@@ -87,10 +96,12 @@ public sealed class CartoonCobraVisual: IDisposable {
             referenceNeckRing = new Vector3[STRIDE];
             for (int edge = 0; edge <= SIDES; edge++) {
                 float angle = (edge % SIDES) * Mathf.PI * 2f / SIDES;
-                Vector2 direction = new Vector2(-Mathf.Cos(angle), -Mathf.Sin(angle));
+                Vector2 direction = new Vector2(-Mathf.Cos(angle),
+                    -Mathf.Sin(angle));
                 float closestAngle = float.PositiveInfinity;
                 foreach (Vector3 point in collar) {
-                    float difference = Mathf.Abs(Vector2.SignedAngle(direction, new Vector2(point.x, point.z)));
+                    float difference = Mathf.Abs(Vector2.SignedAngle(direction,
+                        new Vector2(point.x, point.z)));
                     if (difference < closestAngle) {
                         closestAngle = difference;
                         referenceNeckRing[edge] = point;
@@ -115,17 +126,21 @@ public sealed class CartoonCobraVisual: IDisposable {
             new Vector3(0.86f, 0.028f, 0.035f));
 
         for (int side = -1; side <= 1; side += 2) {
-            Part(root, "Eye white", ivory, new Vector3(side * 0.36f, 0.34f, -0.51f),
+            Part(root, "Eye white", ivory,
+                new Vector3(side * 0.36f, 0.34f, -0.51f),
                 new Vector3(0.43f, 0.47f, 0.22f));
-            Part(root, "Pupil", pupil, new Vector3(side * 0.32f, 0.30f, -0.628f),
+            Part(root, "Pupil", pupil,
+                new Vector3(side * 0.32f, 0.30f, -0.628f),
                 new Vector3(0.19f, 0.28f, 0.075f), true);
-            Part(root, "Eye shine", white, new Vector3(side * 0.32f - 0.035f, 0.37f, -0.672f),
+            Part(root, "Eye shine", white,
+                new Vector3(side * 0.32f - 0.035f, 0.37f, -0.672f),
                 new Vector3(0.065f, 0.075f, 0.025f), true);
             Transform brow = Part(root, "Determined brow", skin,
                 new Vector3(side * 0.36f, 0.53f, -0.565f),
                 new Vector3(0.56f, 0.18f, 0.24f));
             brow.localRotation = Quaternion.Euler(0f, 0f, side * 23f);
-            Part(root, "Nostril", dark, new Vector3(side * 0.14f, 0.10f, -0.784f),
+            Part(root, "Nostril", dark,
+                new Vector3(side * 0.14f, 0.10f, -0.784f),
                 new Vector3(0.06f, 0.075f, 0.025f), true);
             Transform tooth = Part(root, "Little fang", ivory,
                 new Vector3(side * 0.35f, -0.30f, -0.69f),
@@ -140,8 +155,10 @@ public sealed class CartoonCobraVisual: IDisposable {
         }
     }
 
-    /// <summary>Replace visible beads with a continuous two-tone tube.</summary>
-    public void UpdateBody(Vector3[] centers, float[] radii, Vector3[] outward, bool bellyInward = false) {
+    /// <summary>Replace visible beads with a continuous two-tone
+    /// tube.</summary>
+    public void UpdateBody(Vector3[] centers, float[] radii, Vector3[] outward,
+        bool bellyInward = false) {
         if (centers.Length < 2) {
             return;
         }
@@ -153,7 +170,9 @@ public sealed class CartoonCobraVisual: IDisposable {
             Vector3 end = centers[neckRings];
             float length = Vector3.Distance(start, end);
             Vector3 startTangent = -head.up * length;
-            Vector3 endTangent = (centers[neckRings + 1] - centers[neckRings - 1]).normalized * length;
+            Vector3 endTangent =
+                (centers[neckRings + 1] - centers[neckRings - 1]).normalized
+                    * length;
             for (int i = 0; i < neckRings; i++) {
                 float t = i / (float)neckRings;
                 float t2 = t * t;
@@ -165,7 +184,8 @@ public sealed class CartoonCobraVisual: IDisposable {
                 radii[i] = Mathf.Lerp(referenceNeckRadius, radii[i], t);
             }
         }
-        if (vertices == null || vertices.Length != (centers.Length - 1) * STRIDE + 2) {
+        if (vertices == null
+            || vertices.Length != (centers.Length - 1) * STRIDE + 2) {
             BuildTopology(centers.Length);
         }
         for (int ring = 0; ring < centers.Length - 1; ring++) {
@@ -175,14 +195,17 @@ public sealed class CartoonCobraVisual: IDisposable {
                 tangent = head.up;
             }
             tangent.Normalize();
-            Vector3 front = Vector3.ProjectOnPlane(bellyInward ? -outward[ring] : outward[ring], tangent).normalized;
+            Vector3 front = Vector3.ProjectOnPlane(bellyInward ? -outward[ring]
+                : outward[ring], tangent).normalized;
             if (front.sqrMagnitude < 0.01f) {
-                front = Vector3.ProjectOnPlane(Vector3.forward, tangent).normalized;
+                front = Vector3.ProjectOnPlane(Vector3.forward,
+                    tangent).normalized;
             }
             Vector3 side = Vector3.Cross(tangent, front).normalized;
             for (int edge = 0; edge <= SIDES; edge++) {
                 float angle = edge == SIDES ? 0f : edge * Mathf.PI * 2f / SIDES;
-                Vector3 normal = side * Mathf.Cos(angle) + front * Mathf.Sin(angle);
+                Vector3 normal =
+                    side * Mathf.Cos(angle) + front * Mathf.Sin(angle);
                 int index = ring * STRIDE + edge;
                 Vector3 point = ring == 0 && referenceNeckRing != null
                     ? head.TransformPoint(referenceNeckRing[edge])
@@ -194,9 +217,14 @@ public sealed class CartoonCobraVisual: IDisposable {
         int firstCap = vertices.Length - 2;
         int lastCap = vertices.Length - 1;
         vertices[firstCap] = owner.InverseTransformPoint(centers[0]);
-        vertices[lastCap] = owner.InverseTransformPoint(centers[centers.Length - 1]);
-        normals[firstCap] = owner.InverseTransformDirection((centers[0] - centers[1]).normalized);
-        normals[lastCap] = owner.InverseTransformDirection((centers[centers.Length - 1] - centers[centers.Length - 2]).normalized);
+        vertices[lastCap] =
+            owner.InverseTransformPoint(centers[centers.Length - 1]);
+        normals[firstCap] =
+            owner.InverseTransformDirection((centers[0]
+                - centers[1]).normalized);
+        normals[lastCap] =
+            owner.InverseTransformDirection((centers[centers.Length - 1]
+                - centers[centers.Length - 2]).normalized);
         mesh.vertices = vertices;
         mesh.normals = normals;
         mesh.RecalculateBounds();
@@ -227,7 +255,9 @@ public sealed class CartoonCobraVisual: IDisposable {
     private Material MakeMaterial(Material source, Color color, string name) {
         Material material = new Material(source) { name = name };
         if (settings.referenceHead != null) {
-            material.shader = settings.referenceHead.GetComponent<Renderer>().sharedMaterial.shader;
+            material.shader =
+                settings.referenceHead.GetComponent<Renderer>()
+                    .sharedMaterial.shader;
             if (material.HasProperty("_SurfaceLighting")) {
                 material.SetFloat("_SurfaceLighting", 1f);
             }
@@ -241,7 +271,8 @@ public sealed class CartoonCobraVisual: IDisposable {
         return material;
     }
 
-    private static Transform Part(Transform parent, string name, Material material,
+    private static Transform Part(Transform parent, string name,
+        Material material,
         Vector3 position, Vector3 scale, bool keepColor = false) {
         GameObject part = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         part.name = name;
@@ -268,7 +299,8 @@ public sealed class CartoonCobraVisual: IDisposable {
         Vector2[] uv = new Vector2[vertices.Length];
         for (int ring = 0; ring < rings; ring++) {
             for (int edge = 0; edge <= SIDES; edge++) {
-                uv[ring * STRIDE + edge] = new Vector2(edge / (float)SIDES, ring * 0.09f);
+                uv[ring * STRIDE + edge] = new Vector2(edge / (float)SIDES,
+                    ring * 0.09f);
             }
         }
         List<int>[] triangles = { new(), new(), new() };
@@ -286,7 +318,8 @@ public sealed class CartoonCobraVisual: IDisposable {
                 indices.Add(b); indices.Add(d); indices.Add(c);
             }
         }
-        // Both ends are closed. A single tail vertex avoids a ring of zero-area faces.
+        // Both ends are closed. A single tail vertex avoids a ring of zero-area
+        // faces.
         int firstCap = vertices.Length - 2;
         int lastCap = vertices.Length - 1;
         uv[firstCap] = new Vector2(0.5f, 0f);

@@ -146,11 +146,11 @@ public class MusicManager: MonoBehaviour {
             return false;
         }
 
-        BossFightController cobraKing = BossFightController.I;
+        CobraKingFightController cobraKing = CobraKingFightController.I;
         if (cobraKing != null && cobraKing.IsInArena && !cobraKing.IsDone) {
             return true;
         }
-        SpiderFightController spiderKing = SpiderFightController.I;
+        SpiderKingFightController spiderKing = SpiderKingFightController.I;
         return spiderKing != null && spiderKing.IsInArena;
     }
 }

@@ -17,6 +17,7 @@ public class MonkeyOutline: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
         if (outlineMat == null) {
             Debug.LogWarning(
                 "MonkeyOutline:\tmust assign Inspector Field: outlineMat",

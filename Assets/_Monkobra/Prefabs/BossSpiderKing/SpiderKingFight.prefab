@@ -1,0 +1,198 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5182736450918273641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6273849501827364512}
+  - component: {fileID: 7364950612938475623}
+  - component: {fileID: 8455061723049586734}
+  - component: {fileID: 1546172834150697845}
+  m_Layer: 0
+  m_Name: SpiderKingFight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6273849501827364512
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5182736450918273641}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7364950612938475623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5182736450918273641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd7715cee3f4992813deddbdd34707f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpiderKingBody
+  bodyMaterial: {fileID: 2100000, guid: d2e646acba059234fa840f3630a714ea, type: 2}
+  trunkRadiusU: 5
+  bodyOutU: 0.8
+  bodyColor: {r: 0.16, g: 0.09, b: 0.2, a: 1}
+  markColor: {r: 0.8, g: 0.1, b: 0.12, a: 1}
+  crownColor: {r: 1, g: 0.8, b: 0.15, a: 1}
+  eyeDarkColor: {r: 0.35, g: 0.02, b: 0.05, a: 1}
+  eyeLitColor: {r: 1, g: 0.2, b: 0.1, a: 1}
+--- !u!114 &8455061723049586734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5182736450918273641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc9a4d968c9e47f69d801679aa79e668, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossFightHud
+  tuning:
+    flashS: 0.8
+    speechShowS: 2.2
+    speechOffset: {x: 0, y: 90}
+    promptOffset: {x: 0, y: 80}
+    hintIconLibrary: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
+    promptKeyboardController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
+    promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
+    healthColor: {r: 0.55, g: 0.2, b: 0.75, a: 1}
+    damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+    warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
+    warningOffset: {x: 0, y: 70}
+--- !u!114 &1546172834150697845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5182736450918273641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87cf3a8756c54eaca06f94aeb8479e8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpiderFightController
+  tuning:
+    worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
+    confirmAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    giveUpAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
+    bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
+    watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
+    watermelonScale: {x: 6, y: 6, z: 6}
+    watermelonOffset: {x: 0, y: -0.629, z: 0.06}
+    courseUrl: https://classes.usc.edu/term-20263/course/csci-526
+    choiceSideDeg: 28
+    choiceAboveU: 1.5
+    easyHealthScale: 0.6
+    easyTimeScale: 1.4
+    easySpeedScale: 0.85
+    airWallMaterial: {fileID: 2100000, guid: 906f4892bde12417d93d23637ab10c7c, type: 2}
+    goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
+    goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
+    goldenOutlineWidthScale: 2
+    goldenIntervalS: 10
+    goldenShowS: 8
+    isTestAtStart: 0
+    testStartHeightU: 30
+    monkeySpeedScale: 1.2
+    bossName: SPIDER KING
+    trunkRadiusU: 5
+    arenaHeightU: 18
+    guardDepthU: 20
+    cameraDistanceScale: 1.6
+    branchRadiusU: 6.6
+    melonCount: 5
+    melonRespawnS: 7
+    melonFlyS: 0.55
+    melonDamage: 1
+    webLayEveryU: 1.5
+    webLifeS: 10
+    webGapU: 1.4
+    webMonkeyGapU: 2.5
+    stalkSpeedU: 5.5
+    rushSpeedU: 9
+    stalkDistanceU: 4.8
+    dashStartU: 5
+    restS: 3.2
+    minRestShare: 0.28
+    webShotWindUpS: 0.8
+    webShotSpeedU: 24
+    dashCooldownS: 3.2
+    dashWindUpS: 0.9
+    dashLockS: 0.45
+    dashSpeedU: 22
+    dashOvershootU: 3
+    dashHitU: 1.6
+    stageLostShares: {x: 0.5, y: 0.8}
+    webShotsPerStage: {x: 1, y: 2, z: 3}
+    slashesPerStage: {x: 1, y: 2, z: 3}
+    volleySlowGapS: 1.1
+    volleyFastGapS: 0.7
+    lateSpeedScale: 1.3
+    lateChaseScale: 1.08
+    lateTimeScale: 0.75
+    lateDashCooldownS: 1.5
+    slashMinRangeU: 4
+    slashChance: 0.5
+    slashRangeU: 16
+    slashChargeS: 0.8
+    slashWindUpS: 0.3
+    slashSpeedU: 26
+    slashWidthU: 4.5
+    slashSlowGapS: 0.75
+    slashFastGapS: 0.25
+    cocoonSpeedU: 3
+    cocoonReachU: 1.6
+    firstCocoonSpeedScale: 0.6
+    doubleTapS: 0.3
+    tailWindUpS: 0.06
+    tailActiveS: 0.2
+    tailRecoverS: 0.55
+    waveGoldU: 3.2
+    parryReachU: 2
+    parryStunS: 3.5
+    parrySlowS: 0.75
+    parrySlowTimeScale: 0.2
+    parryCloseUpU: 4.6
+    parryOrbitDeg: 32
+    parryRollDeg: 10
+    slashParryDamage: 1
+    webParryDamage: 0
+    teachSlowScale: 1.8
+    teachGapS: 1.6
+    finalS: 2
+    readyS: 3
+    saveGraceS: 0.25
+    finisherTimeScale: 0.2
+    finisherRealS: 1.4
+    reviveOfferS: 5
+    adSkipAfterS: 3
+    reviveReturnSpeedU: 20
+    defeatFallS: 2
+    glovesEscapeGainScale: 2
+    winCobraDropU: 45
+    winTitle: SPIDER KING DEFEATED!
+    winLine: You got the Silk Gloves
+    winDetailLine: Get out of webs 2x faster
+    warnColor: {r: 0.95, g: 0.2, b: 0.15, a: 1}
+    silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
+    goldenColor: {r: 1, g: 0.8, b: 0.15, a: 1}

@@ -1,7 +1,7 @@
 using UnityEngine;
 
+// one per object, so a pickup is never configured twice
 [DisallowMultipleComponent]
-//同一个对象不能重复挂两个 ScorePickup，避免配置重复
 public class ScorePickup: MonoBehaviour {
     // banana or coconut; picks the points & the counter in ScoreManager
     public PickupKind Kind => kind;
@@ -11,7 +11,9 @@ public class ScorePickup: MonoBehaviour {
             || (GameController.I != null
                 && !GameController.I.IsRunLive)) {
             return false;
-        }//组件没启用、已经领过、游戏暂停或结束，都会拒绝领取
+        }
+
+        // refuse while disabled, already collected, paused, or the run is over
         ScoreManager manager = ScoreManager.I;
         if (manager != null && !manager.CanScore) {
             return false;

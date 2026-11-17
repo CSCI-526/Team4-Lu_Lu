@@ -16,8 +16,9 @@ using UnityEngine.InputSystem;
 /// </para>
 /// <para>
 /// Every speed, ramp rate and branch-hit number, plus the input action
-/// itself, comes from the shared <see cref="MonkeyInputConfig"/> asset, the same
-/// one the arms read, so the body and its arms cannot drift out of tune.
+/// itself, comes from the shared <see cref="MonkeyInputConfig"/> asset, the
+/// same one the arms read, so the body and its arms cannot drift out of
+/// tune.
 /// </para>
 /// </summary>
 public class MonkeyController: MonoBehaviour {
@@ -60,7 +61,8 @@ public class MonkeyController: MonoBehaviour {
     // Public Methods  #########################################################
     public float RoughBarkSpeedScale => roughBarkSpeedScale;
 
-    /// <summary>Tracks actual surface contact; overlap never stacks slowdown.</summary>
+    /// <summary>Tracks actual surface contact; overlap never stacks
+    /// slowdown.</summary>
     public void SetRoughBarkContact(RoughBarkZone zone, bool touching) {
         if (zone == null) return;
         if (touching) {
@@ -291,13 +293,18 @@ public class MonkeyController: MonoBehaviour {
         }
 
         bool isStunned = IsStunned;
-        roughContacts.RemoveWhere(zone => zone == null || !zone.isActiveAndEnabled);
+        roughContacts.RemoveWhere(
+            zone => zone == null || !zone.isActiveAndEnabled);
         bool roughContact = roughContacts.Count > 0 && GameController.I != null
             && GameController.I.IsRunLive && !GameController.I.IsLeaping;
-        float targetScale = roughContact ? worldBalanceConfig.RoughBarkSpeedMultiplier : 1f;
+        float targetScale = roughContact
+            ? worldBalanceConfig.RoughBarkSpeedMultiplier
+            : 1f;
         float blendStep = (1f - worldBalanceConfig.RoughBarkSpeedMultiplier)
-            * Time.fixedDeltaTime / Mathf.Max(0.01f, worldBalanceConfig.RoughBarkBlendS);
-        roughBarkSpeedScale = Mathf.MoveTowards(roughBarkSpeedScale, targetScale, blendStep);
+            * Time.fixedDeltaTime
+            / Mathf.Max(0.01f, worldBalanceConfig.RoughBarkBlendS);
+        roughBarkSpeedScale = Mathf.MoveTowards(
+            roughBarkSpeedScale, targetScale, blendStep);
         Vector2 directionalInput = isStunned || MoveAction == null
             ? Vector2.zero
             : MoveAction.action.ReadValue<Vector2>();
@@ -485,13 +492,7 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key speedBuffKey = hackShortcuts.GetKey(HackAction.SpeedBuff);
-        if (
-            keyboard == null
-            || speedBuffKey == Key.None
-            || !keyboard[speedBuffKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.SpeedBuff)) {
             return;
         }
 
@@ -508,13 +509,7 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key bossJumpKey = hackShortcuts.GetKey(HackAction.BossJump);
-        if (
-            keyboard == null
-            || bossJumpKey == Key.None
-            || !keyboard[bossJumpKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.BossJump)) {
             return;
         }
 
@@ -555,13 +550,7 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key spiderJumpKey = hackShortcuts.GetKey(HackAction.SpiderJump);
-        if (
-            keyboard == null
-            || spiderJumpKey == Key.None
-            || !keyboard[spiderJumpKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.SpiderJump)) {
             return;
         }
 
@@ -572,11 +561,11 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
         // not in the middle of a boss fight
-        BossFightController cobraKing = BossFightController.I;
+        CobraKingFightController cobraKing = CobraKingFightController.I;
         if (cobraKing != null && !cobraKing.IsDone && !cobraKing.IsWaiting) {
             return;
         }
-        SpiderFightController spiderKing = SpiderFightController.I;
+        SpiderKingFightController spiderKing = SpiderKingFightController.I;
         if (spiderKing != null && spiderKing.IsFraming) {
             return;
         }

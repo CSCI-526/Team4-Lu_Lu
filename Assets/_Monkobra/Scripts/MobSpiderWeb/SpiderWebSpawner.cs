@@ -252,7 +252,8 @@ public class SpiderWebSpawner: MonoBehaviour {
             return testSpawnChance;
         }
         return Mathf.Clamp01(
-            worldBalanceConfig.WebSpawnProbabilityCurve.Evaluate(rampedDifficulty)
+            worldBalanceConfig.WebSpawnProbabilityCurve
+                .Evaluate(rampedDifficulty)
         );
     }
 

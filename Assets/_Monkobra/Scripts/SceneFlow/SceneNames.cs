@@ -10,11 +10,11 @@ public static class SceneNames {
     // Public Members  #########################################################
     public const string TITLE = "TitleScene";
     public const string LEVEL_SELECT = "LevelSelectScene";
-    public const string FULL = "FullPlayScene";
-    public const string ENDLESS = "EndlessScene";
+    public const string GAMEPLAY = "GameplayScene";
 
-    /// <summary>raised just before any load through <see cref="Load"/>, while
-    /// the outgoing scene is still intact</summary>
+    /// <summary>raised just before any load through
+    /// <see cref="Load(string)"/>, while the outgoing scene is still intact
+    /// </summary>
     public static event Action Loading;
 
     /// <summary>
@@ -26,5 +26,14 @@ public static class SceneNames {
         Time.timeScale = 1f;
         AudioListener.pause = false;
         SceneManager.LoadScene(sceneName);
+    }
+
+    /// <summary>
+    /// loads a gameplay scene to play <paramref name="mode"/>, one scene
+    /// serving every <see cref="RunMode"/>
+    /// </summary>
+    public static void Load(string sceneName, RunMode mode) {
+        RunModeSelection.Selected = mode;
+        Load(sceneName);
     }
 }

@@ -91,7 +91,8 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
     [SerializeField]
     [Min(0f)]
-    [Tooltip("speed under which the monkey counts as still, the limbs hold; u/s")]
+    [Tooltip("speed under which the monkey counts as still, the limbs hold; "
+        + "u/s")]
     private float minMoveSpeedU = 0.2f;
 
     [SerializeField]
@@ -192,7 +193,8 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
     [SerializeField]
     [Min(0f)]
-    [Tooltip("tail swing per unit of body speed, trailing the motion; deg per u/s")]
+    [Tooltip("tail swing per unit of body speed, trailing the motion; deg "
+        + "per u/s")]
     private float tailLagDegPerU = 8f;
 
     [SerializeField]
@@ -331,12 +333,13 @@ public class MonkeyModelAnimator: MonoBehaviour {
         PoseTail(deltaS);
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private const float MIN_LENGTH_U = 0.0001f;
     private const float MAX_DELTA_S = 0.05f;
 
     // share of the look's yaw each bone adds, spine to head, sums to 1
-    private static readonly float[] LOOK_YAW_SHARES = { 0.1f, 0.2f, 0.3f, 0.4f };
+    private static readonly float[] LOOK_YAW_SHARES =
+        { 0.1f, 0.2f, 0.3f, 0.4f };
 
     // a tail vertex is mostly the hips' and sits behind them
     private const float TAIL_MIN_HIPS_WEIGHT = 0.8f;
@@ -500,7 +503,9 @@ public class MonkeyModelAnimator: MonoBehaviour {
             return;
         }
         HashSet<int> handSide = new HashSet<int>();
-        foreach (Transform part in hand.GetComponentsInChildren<Transform>(true)) {
+        foreach (
+            Transform part in hand.GetComponentsInChildren<Transform>(true)
+        ) {
             int index = data.bones.IndexOf(part);
             if (index >= 0) {
                 handSide.Add(index);
@@ -516,7 +521,8 @@ public class MonkeyModelAnimator: MonoBehaviour {
         for (int i = 0; i < data.weights.Length; i++) {
             BoneWeight weight = data.weights[i];
             bool isArm =
-                IsInfluence(weight, upperIndex) || IsInfluence(weight, foreIndex)
+                IsInfluence(weight, upperIndex)
+                || IsInfluence(weight, foreIndex)
                 || HasAny(weight, handSide);
             if (!isArm) {
                 continue;
@@ -525,7 +531,9 @@ public class MonkeyModelAnimator: MonoBehaviour {
             if (Mathf.Abs(alongU - elbowU) < bandU) {
                 data.weights[i] = MakeWeight(
                     new List<int> { foreIndex, upperIndex },
-                    new List<float> { elbowForearmShare, 1f - elbowForearmShare }
+                    new List<float> {
+                        elbowForearmShare, 1f - elbowForearmShare
+                    }
                 );
             } else if (alongU > wristU - bandU) {
                 data.weights[i] = MoveInfluence(
@@ -558,7 +566,9 @@ public class MonkeyModelAnimator: MonoBehaviour {
         }
         // the shin's other children, the heel bones, turn with the foot
         HashSet<int> lowerLeg = new HashSet<int>();
-        foreach (Transform part in shin.GetComponentsInChildren<Transform>(true)) {
+        foreach (
+            Transform part in shin.GetComponentsInChildren<Transform>(true)
+        ) {
             int index = data.bones.IndexOf(part);
             if (index >= 0) {
                 lowerLeg.Add(index);
@@ -582,7 +592,10 @@ public class MonkeyModelAnimator: MonoBehaviour {
             float legShare = ShareOf(weight, wholeLeg);
             float lowerShare = ShareOf(weight, lowerLeg);
 
-            if (Mathf.Abs(point.y - hipY) < HIP_RING_BAND_U && thighShare >= 0.5f) {
+            if (
+                Mathf.Abs(point.y - hipY) < HIP_RING_BAND_U
+                && thighShare >= 0.5f
+            ) {
                 data.weights[i] = MakeWeight(
                     new List<int> { thighIndex, hipsIndex },
                     new List<float> { 1f - hipRingHipsShare, hipRingHipsShare }
@@ -624,7 +637,8 @@ public class MonkeyModelAnimator: MonoBehaviour {
         }
 
         // tail vertices & how far behind the hips each sits, model frame
-        Matrix4x4 hipsSkin = hips.localToWorldMatrix * data.bindPoses[hipsIndex];
+        Matrix4x4 hipsSkin =
+            hips.localToWorldMatrix * data.bindPoses[hipsIndex];
         Vector3 hipsInModel = modelRoot.InverseTransformPoint(hips.position);
         Vector3 back = BackInModel();
         List<int> tail = new List<int>();
@@ -647,7 +661,10 @@ public class MonkeyModelAnimator: MonoBehaviour {
             minDepthU = Mathf.Min(minDepthU, depthU);
             maxDepthU = Mathf.Max(maxDepthU, depthU);
         }
-        if (tail.Count < tailBoneCount || maxDepthU - minDepthU < MIN_LENGTH_U) {
+        if (
+            tail.Count < tailBoneCount
+            || maxDepthU - minDepthU < MIN_LENGTH_U
+        ) {
             Debug.LogWarning(
                 "MonkeyModelAnimator:\tfound no tail on the model, tail stays "
                     + "still",
@@ -906,7 +923,7 @@ public class MonkeyModelAnimator: MonoBehaviour {
         if (web != null && web.IsTrapped) {
             return false;
         }
-        BossFightController boss = BossFightController.I;
+        CobraKingFightController boss = CobraKingFightController.I;
         if (boss != null && boss.IsInArena) {
             return false;
         }
@@ -1014,8 +1031,10 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
         // the tail trails the body: rising drops it, strafing swings it back
         Vector2 goal = new Vector2(
-            Mathf.Clamp(modelVelocity.x * tailLagDegPerU, -tailMaxDeg, tailMaxDeg),
-            Mathf.Clamp(-modelVelocity.y * tailLagDegPerU, -tailMaxDeg, tailMaxDeg)
+            Mathf.Clamp(
+                modelVelocity.x * tailLagDegPerU, -tailMaxDeg, tailMaxDeg),
+            Mathf.Clamp(
+                -modelVelocity.y * tailLagDegPerU, -tailMaxDeg, tailMaxDeg)
         );
         float stepS = Mathf.Min(deltaS, MAX_DELTA_S);
         tailSpeed += (
@@ -1030,7 +1049,8 @@ public class MonkeyModelAnimator: MonoBehaviour {
         for (int i = 0; i < tailBones.Count; i++) {
             // the idle wave runs down the tail, each bone a little later
             float idleYaw = Mathf.Sin(time - i * 0.7f) * tailIdleDeg;
-            float idlePitch = Mathf.Sin(time * 0.6f - i * 0.5f) * tailIdleDeg * 0.5f;
+            float idlePitch =
+                Mathf.Sin(time * 0.6f - i * 0.5f) * tailIdleDeg * 0.5f;
             Transform bone = tailBones[i];
             bone.rotation =
                 Quaternion.AngleAxis(tailAngle.x * share + idleYaw, up)

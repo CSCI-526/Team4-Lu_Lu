@@ -345,7 +345,7 @@ public class AnalyticsManager: MonoBehaviour {
     private HitBranchSensor observedBranch;
     private CoconutManager observedCoconuts;
     private MonkeyController observedMonkey;
-    private BossFightController observedBoss;
+    private CobraKingFightController observedBoss;
 
     // private methods  ########################################################
     // observes the subjects of <scene> only: right after a load the old
@@ -357,7 +357,7 @@ public class AnalyticsManager: MonoBehaviour {
             InScene(FindFirstObjectByType<HitBranchSensor>(), scene),
             InScene(CoconutManager.I, scene),
             InScene(FindFirstObjectByType<MonkeyController>(), scene),
-            InScene(BossFightController.I, scene)
+            InScene(CobraKingFightController.I, scene)
         );
     }
 
@@ -373,7 +373,7 @@ public class AnalyticsManager: MonoBehaviour {
         HitBranchSensor branch,
         CoconutManager coconuts,
         MonkeyController monkey,
-        BossFightController boss
+        CobraKingFightController boss
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;

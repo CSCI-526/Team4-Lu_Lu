@@ -3,7 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// Runtime animated input icon and instruction of the boss HUD. Follows a
-/// world point on a screen-space Canvas; the icon is a <see cref="HintIconSlot"/>
+/// world point on a screen-space Canvas; the icon is a <see
+/// cref="HintIconSlot"/>
 /// that shows the keyboard or the touch prefab of the style in use.
 /// </summary>
 // Follow this frame's camera pose after CinemachineBrain (order 100).
@@ -13,12 +14,13 @@ public class KeyPromptWidget: MonoBehaviour {
     public static Vector2 DefaultOffset => new Vector2(0f, 80f);
 
     // Public Methods  #########################################################
-    /// <summary>Builds the prompt, initially hidden. The icon prefabs are the
-    /// animated hold-and-release icons of each control style.</summary>
+    /// <summary>Builds the prompt, initially hidden. The controllers animate
+    /// the hold-and-release icons of each control style.</summary>
     public static KeyPromptWidget Create(
         RectTransform parent,
-        GameObject keyboardIcon,
-        GameObject touchIcon,
+        HintIconLibrary library,
+        RuntimeAnimatorController keyboardController,
+        RuntimeAnimatorController touchController,
         string objectName = "Prompt"
     ) {
         if (parent == null) {
@@ -28,7 +30,8 @@ public class KeyPromptWidget: MonoBehaviour {
         RectTransform rect = CreateRect(objectName, parent);
         KeyPromptWidget prompt =
             rect.gameObject.AddComponent<KeyPromptWidget>();
-        prompt.Build(rect, parent, keyboardIcon, touchIcon);
+        prompt.Build(rect, parent, library, keyboardController,
+            touchController);
         rect.gameObject.SetActive(false);
         return prompt;
     }
@@ -95,8 +98,9 @@ public class KeyPromptWidget: MonoBehaviour {
     private void Build(
         RectTransform rect,
         RectTransform parent,
-        GameObject keyboardIcon,
-        GameObject touchIcon
+        HintIconLibrary library,
+        RuntimeAnimatorController keyboardController,
+        RuntimeAnimatorController touchController
     ) {
         promptRect = rect;
         parentRect = parent;
@@ -110,7 +114,8 @@ public class KeyPromptWidget: MonoBehaviour {
         promptRect.sizeDelta = new Vector2(260f, ICON_SIZE + 46f);
 
         RectTransform icon = HintIconSlot.Create(
-            promptRect, keyboardIcon, touchIcon, ICON_SIZE
+            promptRect, library, keyboardController, touchController,
+            ICON_SIZE
         );
         icon.anchorMin = icon.anchorMax = new Vector2(0.5f, 1f);
         icon.pivot = new Vector2(0.5f, 1f);
@@ -150,7 +155,8 @@ public class KeyPromptWidget: MonoBehaviour {
         Camera canvasCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay
             ? null
             : canvas.worldCamera;
-        if (screen.z <= 0f || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
+        if (screen.z <= 0f
+            || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
             parentRect, screen, canvasCamera, out Vector2 local
         )) {
             visibility.alpha = 0f;
@@ -166,9 +172,9 @@ public class KeyPromptWidget: MonoBehaviour {
     }
 
     private static RectTransform CreateRect(string rectName, Transform parent) {
-        var go = new GameObject(rectName, typeof(RectTransform));
+        GameObject go = new GameObject(rectName, typeof(RectTransform));
         go.layer = 5; // UI
-        var rect = (RectTransform)go.transform;
+        RectTransform rect = (RectTransform)go.transform;
         rect.SetParent(parent, false);
         return rect;
     }

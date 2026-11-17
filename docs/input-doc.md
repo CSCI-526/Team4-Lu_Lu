@@ -70,7 +70,7 @@ Four intents, the same in every screen. Each has one Preferred key and fixed Sup
 
 ## Hints and Buttons
 
-- Icons: a hint shows an animated icon, never a key name; one icon per control style, a Space press for Keyboard and a finger tap for Touch, with hold, double-tap and rapid-tap variants where the action needs one
+- Icons: a hint shows an animated icon, never a key name; one icon per control style, a Space press for Keyboard and a finger tap for Touch, with hold, double-tap and rapid-tap variants where the action needs one; each is an Animator controller on the shared `InputIcon_Key` or `InputIcon_Touch` entity, never a prefab of its own
 - Preferred Only: a hint teaches the Preferred input of the style in use; a Support key (P, arrows, E, Enter) is never drawn or written
 - In-Run Pause Button: Keyboard shows the Esc key icon and "to Pause" left of it; Touch shows the button alone
 - Pause & Lose Screens: each option is a row of key icon, square button, text label; Keyboard shows the Esc and R key icons in the left column beside Resume and Restart, Touch hides that column and shows the button and label
