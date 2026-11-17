@@ -17,7 +17,7 @@ graph LR
   Coconut[CoconutManager] -->|Collected, Used| AM
   Hit[HitBranchDetection] -->|BranchHit| AM
   Web[SpiderWebTrap] -->|Encountered| AM
-  More[Leap, Pause, Boss Fight, Spider Fight, ~] -->|events| AM
+  More[Leap, Pause, Cobra Fight, Spider Fight, ~] -->|events| AM
   AM --> Data[SessionData and RunData]
   Data --> Writer[AnalyticsMarkdownWriter]
   Writer --> SF[AnalyticsSessionFile]
@@ -103,9 +103,9 @@ Each event list is a table of its time since the run start; banana, coconut, and
 - Cobra Freeze: times the great cobra froze, from a coconut or the gold armor
 - Height Marker: new height markers the monkey reached, stamped when it scores (`ScoreManager.RewardAdded`); a drop and a second touch of a lower marker is not counted
 - Pause: times the run was paused, a resume is not counted
-- Boss Fight Start: times the monkey entered the boss arena
-- Armor Save: times the gold armor took a great cobra catch
-- Boss Revive: times a revive restarted the boss fight
+- Cobra Fight Start: times the monkey entered the Cobra King's arena
+- Armor Save: times the gold armor took a great cobra catch, in either fight or on the climb after (the Spider King fight spends the same armor)
+- Cobra Revive: times a revive restarted the Cobra King fight
 - Spider Fight Start: times the monkey entered the Spider King's arena (`SpiderKingFightController.FightStarted`)
 - Spider Revive: times a revive restarted the Spider King fight (`SpiderKingFightController.Revived`)
 - Spider Win: times the Spider King was beaten, stamped when the reward is taken (`SpiderKingFightController.FightEnded`)
