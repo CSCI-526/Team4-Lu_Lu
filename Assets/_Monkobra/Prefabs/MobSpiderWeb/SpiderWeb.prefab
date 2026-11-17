@@ -3916,11 +3916,11 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.2, y: 2.2, z: 2.2}
+  m_Size: {x: 1.2, y: 2.0, z: 2.0}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &-7967758877750076835
 MonoBehaviour:
@@ -3937,6 +3937,7 @@ MonoBehaviour:
   pulseScale: 0.1
   pulseTwistDeg: 6
   pulseDurationS: 0.15
+  catchRadiusU: 1.8
 --- !u!1 &2430151885042702714
 GameObject:
   m_ObjectHideFlags: 0
