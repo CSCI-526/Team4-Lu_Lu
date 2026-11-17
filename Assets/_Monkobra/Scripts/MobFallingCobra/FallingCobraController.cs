@@ -335,6 +335,13 @@ public class FallingCobraController: MonoBehaviour {
     private void Update() {
         switch (rig.state) {
             case FallingCobraState.Dormant:
+                // a cobra never outlives its branch: one left in mid air by
+                // a switched off branch goes off with it
+                if (rig.perchBound && (rig.supportBranch == null
+                    || !rig.supportBranch.gameObject.activeInHierarchy)) {
+                    gameObject.SetActive(false);
+                    break;
+                }
                 TryWake();
                 break;
             case FallingCobraState.Warning:
