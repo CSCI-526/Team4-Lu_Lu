@@ -143,9 +143,9 @@ The keys work in every build, their hints show only in a development build or th
 
 | Action | Default Key | Effect |
 | --- | --- | --- |
-| `RestartSession` | F11 | closes the session and opens a new file, run numbering restarts |
-| `DownloadReport` | F10 | downloads the report in the browser, saves the file elsewhere |
-| `MockSession` | F12 | saves a mock session file |
+| `RestartSession` | F9 | closes the session and opens a new file, run numbering restarts |
+| `DownloadReport` | F8 | downloads the report in the browser, saves the file elsewhere |
+| `MockSession` | F10 | saves a mock session file |
 
 The lose screen also carries a Download Analytics button at the top right (`LoseScreenDownloadWidget`) that does what `DownloadReport` does. It is for development builds and the Editor only: outside one the button turns itself off.
 

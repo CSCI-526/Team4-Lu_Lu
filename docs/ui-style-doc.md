@@ -90,7 +90,7 @@ All of it is built by Editor menus, never by editing prefab YAML:
 - Score: a [plate](#plate) 220×64 in the top-left safe margin, level with the pause button, a "Score" caption at its left and the number right-aligned (it grows leftward, away from the bonus feed on its right), Gold with the HudNumber material; the bonus numbers take that material too, in their per-reward colors
 - Popups: a [plate](#plate), as see-through as the old black one, so the monkey's reaching arm stays in sight behind a grab hint; plain text is Cream, while a popup's own signal color (a warning red, a frozen blue) stays
 - Tutorial: a dark Background wash, Baloo 2 words, keycaps
-- Hack key list (F1–F12): hidden when a scene starts, F9 shows or hides it
+- Hack key list: hidden when a scene starts, F12 shows or hides it (and turns the hack keys on or off)
 
 ## Run Screens
 

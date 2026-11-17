@@ -134,16 +134,18 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F1 | toggle `GameController.CobraNoClip`, the great cobra no longer kills | `GameController` |
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
-| F4 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
-| F5 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
-| F6 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
-| F7 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
-| F8 | stick a spider web on the trunk above the monkey | `HackPineappleSpawner` |
-| 9 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight | `MonkeyController` |
-| F10 | download the analytics session report | `AnalyticsManager` |
-| F11 | close the analytics session and open a new file | `AnalyticsManager` |
-| F12 | save a mock analytics session file | `AnalyticsManager` |
-| F9 | show or hide this list on screen (hidden when a scene starts) | `HackShortcutPanel` |
+| 1 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
+| 2 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight | `MonkeyController` |
+| 3 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
+| 4 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
+| 5 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
+| 6 | stick a spider web on the trunk above the monkey | `HackPineappleSpawner` |
+| F8 | download the analytics session report | `AnalyticsManager` |
+| F9 | close the analytics session and open a new file | `AnalyticsManager` |
+| F10 | save a mock analytics session file | `AnalyticsManager` |
+| F12 | turn the hack layer on or off: this list on screen and every key above (dev build only, off when the game starts) | `HackShortcutPanel` |
+
+The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 analytics, F12 the switch. F4~F7 and F11 stay free, since F5 reloads and F11 fullscreens a WebGL page; 7~0 are free too.
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and `ToggleHints` turns the hack layer on or off: one shared static state (`HackShortcutConfig.TryToggleLayer`, off at every play start) that shows the list and lets every other hack key run, so a tester never triggers one by accident. `ToggleHints` reads only when `AreHintsShown`, so it never works in a release build, where the other keys stay live. The state holds across scenes, but only the gameplay scene's panel can flip it. A new hack key is a new `HackAction` plus an entry in the asset.
 

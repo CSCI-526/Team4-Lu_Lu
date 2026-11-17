@@ -37,7 +37,7 @@ Gamepad: left stick or D-pad moves, the north button grabs (a double-tap spends 
 
 Touch: the first touch switches the game to touch mode, a key press switches it back, and every on-screen hint follows. A joystick appears bottom left and moves the monkey. The rest of the screen is the Space key: hold anywhere to reach and release to grab, double-tap anywhere to spend a coconut, tap rapidly to break free of a web, tap to start the run from the tutorial. Menus, the pause and lose screens and the boss buttons are tapped like any button.
 
-Dev keys (active in every build; their hints and the dev-only UI show only in development builds and the Editor): F1 toggles the cobra no-clip cheat (the great cobra no longer kills), F2 toggles max energy (the stamina bar stays at max), F3 toggles a 3x speed buff, F4 jumps to the boss fight, F5 spawns a pineapple branch above the monkey, F6 a coconut branch, F7 a falling cobra, F8 a spider web, F10 downloads the analytics session report, F11 starts a new analytics session, F12 saves a mock session, F9 shows or hides the on-screen list of these keys (hidden at start); the lose screen also shows a Download Analytics button, top right. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
+Dev keys (their hints and the dev-only UI show only in development builds and the Editor; a release build keeps the keys live except F12): in a development build or the Editor F12 turns them on or off together with the on-screen list of these keys (off at start); F1 toggles the cobra no-clip cheat (the great cobra no longer kills), F2 toggles max energy (the stamina bar stays at max), F3 toggles a 3x speed buff, 1 jumps to the Cobra King's fight, 2 to the Spider King's, 3 spawns a pineapple branch above the monkey, 4 a coconut branch, 5 a falling cobra, 6 a spider web, F8 downloads the analytics session report, F9 starts a new analytics session, F10 saves a mock session; the lose screen also shows a Download Analytics button, top right. The list lives in `HackShortcutConfig`, see [Hack Shortcuts](docs/monkobra-tdd.md#hack-shortcuts). On a Mac laptop hold fn with the F key, since macOS takes F1 to F12 for system functions by default.
 
 ## Getting Started
 
@@ -45,7 +45,7 @@ Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6,
 
 ### Testing the Coconut
 
-Coconuts appear only high on the tree and are rare, so a normal run meets few of them. For a quick check, press F6 (fn+F6 on a Mac laptop) during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra.
+Coconuts appear only high on the tree and are rare, so a normal run meets few of them. For a quick check, press 4 during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra.
 
 The real values live in the Coconut group of `Settings/Player/PlayerBalanceConfig.asset`, see the [Grab System](docs/grab-doc.md#coconut).
 
