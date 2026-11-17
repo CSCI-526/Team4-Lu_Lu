@@ -1,8 +1,19 @@
 # Monkobra CHANGELOG
 
 <!--
+todo upd weekly devlog
+
 bug endless mode need to start w/ full heath & no starting zone
-todo upd gdd
+todo pan branch & bark model/texture
+todo erik lighting
+todo erik skybox
+todo erik sfx
+todo add 3x fruit
+fixme mpv tutorial for boss fight
+fixme during boss fight, make energy bar gone, better ways to indicate 1 kill
+
+
+todo todo vertical version
 -->
 
 
@@ -20,7 +31,147 @@ todo upd gdd
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.4...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.0.0-beta.4] - 2026-11-17
+
+### Added
+
+##### Erik
+
+- white always-on outline on the skinned monkey, matching grabbable fruit
+- hack layer: F12 (development build only) toggles hack keys & key list, off at start; release builds keep keys live
+- analytics records the Spider King fight: start, revive & win; mock session plays a spider fight after a won Cobra King one
+- Spider King parry lesson shows the animated double tap icon, replacing the "Tap SPACE 2 times" text
+- accent fonts back over the Baloo 2 default: BadaBoom on scores, Chewy on level-select & Download Analytic labels, Life Is Goofy on the Endless unlock hint
+
+##### Yuqing Lu
+
+- WebGL loading page: cobra eats a row of dots along a branch on real download progress, monkey hopping ahead; ends on the title picture & fades into the game
+- team logo screen before loading: USC Games & Peel Five; click, key or same-tab reload skips it
+- title screen redrawn: logo, grown cobra & monkey on a branch, vines
+- UI style from the logo (`docs/ui-style-doc.md`): Baloo 2 font, palette, logo-style `MenuButton` & `IconButton` prefabs, keycap key icons, applied by `Monkobra > UI Style` menus
+
+### Changed
+
+##### Erik
+
+- project layout follows the u3d skills: renamed & re-homed folders, `Boss/` split into `BossCobraKing/` & `BossSpiderKing/` (classes renamed `CobraKing*`, `SpiderKing*`)
+- 1 gameplay scene: run mode passed on load, `EndlessScene` gone
+- 1 prefab = 1 entity: group prefabs dissolved into the scene; 11 popup variants → 1 `PopUpCatalog`; 9 input icons → 2 + `HintIconLibrary`; branch prefabs share `_BranchBase`
+- cobra meshes thinned, same look
+- script conventions applied project-wide; hack keys read through `HackShortcutConfig`
+- god classes split by role, behavior unchanged: falling cobra, great cobra motor, Cobra King fight, boss HUD, Spider King fight
+- hot paths cached; dormant falling cobras skip work far from the monkey
+- ramped difficulty in 3 stages, 1 per boss; Endless opens at the final stage; hazard & cobra curves re-keyed to 0~3
+- Spider King fight area moved down 50 u: trigger 1000, height marker 1000 m
+- hack keys regrouped: F1~F3 cheats, 1 & 2 boss jumps, 3~6 spawns, F8~F10 analytics, F12 switch (was F9)
+- analytics titles tell bosses apart: "Cobra Fight Start" & "Cobra Revive"
+- PC render pipeline: opaque texture off
+
+##### Yuqing Lu
+
+- pause & lose screens: Exit returns to level selection, not title
+- Made with Unity splash screen off
+- level selection, in-game HUD, pause & lose screens, boss reward panel & revive card in the UI style
+- title start prompt & loading page "Loading" in Baloo 2, keeping 1 font through the hand-over
+- hack key list hidden at start, F9 shows or hides it
+
+### Removed
+
+##### Erik
+
+- dead assets: `_Banana.mat`, `SlipperyTutorialBand.asset`, `FreeGUI-Button.png`, `RoughBark_Albedo/_Normal.png`, empty `Assets/Resources/`
+
+##### Yuqing Lu
+
+- tutorial Noto Sans TC subset font & old popup plate sprite, replaced by Baloo 2
+
+### Fixed
+
+##### Erik
+
+- guaranteed first coconut & pineapple grow on the monkey's side of the trunk, never the far side
+- spider web catches only the monkey's root capsule inside a round zone fitted to the web, no longer tail & hands
+- no falling cobra hangs without a branch after the Cobra King fight
+
+##### Yuqing Lu
+
+- lose screen: Download Analytic button fits its words, key hint row fits at 4:3, Restart & Exit words back
+- progress bar: faces no longer squashed, cobra stays inside the bar & fills it from the bottom
+
+[1.0.0-beta.4]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.3...v1.0.0-beta.4
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.0.0-beta.3] - 2026-11-11
+
+### Added
+
+##### Erik
+
+- touch screen play: the first touch switches the game to touch mode, a real key press switches it back (`ControlStyleManager`, kept across scenes); in touch mode a joystick bottom left moves the monkey and the rest of the screen is the Space key (hold to reach, double-tap for a coconut, tap rapidly to escape a web, tap to start)
+- phones & tablets, mobile browsers incl., start in touch mode, so the first tap counts; the WebGL page leaves touch gestures to the game
+- virtual joystick sprites by rmeldev (CC0), credited in `CREDITS.md`
+- pause button, top right, by click or tap, a square icon button; in Keyboard style the Esc key icon & "to Pause" sit beside it
+- animated hint icons, one per control style (`HintIconSlot`), in the tutorial, popups, coconut hint & boss prompt; the touch tutorial shows a blue action area over the touch zone
+- menu buttons from the FreeGUI sheet by pzUH (CC0), credited in `CREDITS.md`: blue, green on hover or key selection, red on press, grey when locked
+- pause screen: square Resume & Restart buttons, with the Esc & R key icons in Keyboard style
+- Exit to Title is the square `HUDExit_*` icon button on the pause & lose screens, and the lose screen's Restart is the square `HUDRestart_*` button with the R key icon in Keyboard style
+- pause & lose screens: the "W / S to select, Space to confirm" text is the level select's `LevelSelectHint_Keyboard` / `_Touch` icon hints, switched by control style
+- pause & lose screens: each option is a 3-column row, key icon, square button, text label (Resume, Restart, Exit); the key column hides in Touch style
+- every key hint (tutorial, pause, lose & level select screens, coconut how-to, popups, keycaps, boss buttons) follows the control style live
+- E & Enter join Space on every confirm: grab, coconut, web escape, tutorial start, menus, title & boss panels; P backs out of level select like Esc
+- `PersistentBootstrap` creates `Analytics` & `ControlStyleManager` from `Resources/` before the first scene, so any scene plays with both; scene copies stay, the duplicate warning is expected
+- [Input](docs/input-doc.md): the control scheme, Preferred vs Support keys per control style
+
+### Changed
+
+##### Erik
+
+- title starts on Space, E, Enter, a click or a tap, no longer on any key
+- boss revive, ad skip & reward panels read input actions, not raw keys; the course page is button only, Enter no longer opens it
+- hints teach the Preferred input only: icons replace key names, and P, arrows, E & Enter are never drawn
+
+### Deprecated
+
+### Removed
+
+##### Erik
+
+- "Esc or P to Pause" label, the pause screen's key text & the keycap icon table (`Scripts/InputIcons/*`)
+
+### Fixed
+
+##### Erik
+
+- HUD graphics & the tutorial overlay swallowed taps meant for the touch zone
+
+### Security
+
+[1.0.0-beta.3]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.2...v1.0.0-beta.3
 
 
 
@@ -52,6 +203,39 @@ todo upd gdd
 
 ##### Wenhai Dong
 
+- second boss, the Spider King, at 1050 u (zone 1025~1100, bare like the cobra's): rip glowing silk knots by grabbing (x2 damage in its territory ring), it re-spins knots near itself; web shot leaves sticky webs, silk hook drag (tap Space / grab to escape), cocoon on a trapped monkey, leg swipe in its territory; grabbed bananas are tossed to the far side as a lure; the Cobra King armor carries over if unused; win gives Silk Gloves (webs break 2x faster); the Spider King is already seen waiting from 995 u; for testing, `isTestAtStart` (on for now) begins the fight at 30 u
+- Spider King redone: starts w/ the gold armor swirled on (no words), a golden melon now & then gives it back; parries hurt it -1 & play a clash: the thing slows into the glowing tail, a white pop, shock rings & spark streaks, held grinding sparks, then it speeds back w/ a gold trail, all in a 1 s slow motion; the parry spot is closer to the monkey (gold at 2.8 u, batted at 1.6 u); the spent armor shatters off instead of hanging there; a dash is never called off once its red lane shows (its lane cut to the arena); the parry counts from the double tap; the dash lane shows exactly its run plus its catch reach (no end cap); a harder clash: a snap in, a dead stop w/ a camera punch in & shake, crossing white strokes, then a kick off; a parry readies the tail at once so all 3 slashes can be met, a whiff waits 0.55 s; a plainer charge (red rings drawn in round its head; no growing or red glow); the parry is met at the monkey's middle; the armor save is as in the Cobra King's arena (a knock down, the spider not thrown off); laid webs last 10 s; slash blades 4.5 u wide & faster (26 u/s), their hit swept so none skips past; never from closer than 6 u; the fight gets harder in 3 stages (at half & four fifths of its health lost) (web volleys of 2 then 3 bullets; slashes 1, then 2, then 3 in a row) & smoothly faster as its health goes; touching the spider plays a bite w/ red rings & "Don't touch it!"; a revive puts the armor back on w/ its swirl; plain K.O. words; the dash keeps exactly to its red lane; its arena is bare like a boss zone (also the test fight, lifted after the win); no webs at the start, the spider spins a trail of webs all the way it crawls (one per 1.5 u), each gone after 10 s; it starts right above the monkey & chases it (faster, 5.5 u/s), any touch of it is fatal; attacks: one homing silk bullet (24 u/s), charged only in view (it rushes into view first), only parried by double-tapping Space as each turns gold, the tail swings only w/ a bullet coming, so grabs never hitch (the monkey's real tail swings; the spider is stuck a fixed time however many come back), a dash from 7 u along a red lane that locks 0.45 s before it goes, and from afar a slash: after a seen charge, 3 silk blades flying fast along the bark at the monkey, each after a short red aim line, slow-fast or fast-slow, parryable as they turn gold & hurting the spider when batted back; the tail swing has a wind up & follow through instead of a cooldown; a parry plays in slow motion w/ a camera close up; the slash parry is taught right after the web one; killed by thrown melons (20 health), which are there from the start; only web bullets till the first parry (it stops time to teach it), then the fight; the first slash stops time once too; volley gaps 0.7/1.1 s (never under 0.6 s) so each bullet can be batted back; slashes from 4 u, likelier from afar; it keeps 8 u off & dashes only within 5 u, every 2.5 s (1.6 s late); stuck is stuck; nothing hurts in the first lesson; a touch the armor saves throws the monkey 7 u off, out of webs; the golden melon has the Cobra King's gold outline & waits 5 s after the armor goes, then 15 s; the armor takes one hit w/o a 2 s grace; a revive offers EASY / NORMAL as the Cobra King's; the loss is only the K.O.; the golden melon now really shows, as the Cobra King's; rope pull, giant web, knots & poison removed
+- boss height markers: the Cobra King's look-alike now coils round its marker's plate (both ends & along the top, slithering, head swaying) & the Spider King's 1,050 m marker gets the red beating plate w/ a spider perched on it, legs gripping, flexing & tapping (`BossMarkerFigure`)
+- Spider King UI in the UI style (`UIStyle`): its call out on a Panel plate, bold; its gold banners & pops in the UI Gold
+- spider jump hack key moved from F9 to 9 (`HackAction.SpiderJump` = 12 after `ToggleHints`), as the UI style branch takes F9 for the hack key list
+- Spider King: the gloves & sleeves plain silver, shining softly as the armor does; its screen flashes as the Cobra King's (white at the start & the winning blow, red on the K.O., gold on a spent armor); no flash on a revive or a reward snapping on, in either king's fight; the Spider King's last blow slow motion as the Cobra King's (0.2x for 1.4 s real)
+- Spider King: the silk gloves are bigger & a silk sleeve grows up each whole arm, stretching w/ it (`ArmController.ArmVisual`)
+- Spider King: no "Ouch!" line on a hit; on the win the Silk Gloves swirl onto the monkey's hands (spider style: dark, silk cuffs & web, red claws) as the Cobra King's armor does, & stay on, b4 the reward panel
+- Spider King: the guard sits lower (20 u below the entry, was 14 u), the spider crawls down to 6 u below the entry (was 4 u); no GOLDEN ARMOR badge at the bottom right any more (either king)
+- fix: a Spider King lesson stop w/ the monkey stuck in a web could never be passed (the double tap only struggled); the web now lets go as time stops
+- Spider King: its slash charge looks dangerous & unlike the web shot's (blazing red eyes, a flickering red blade sign over its head, red rings & streaks bursting out); the web shot's charge rings are white now
+- boss win panel plain again, as the Cobra King's (only a 0.5 s guard against a mashed Space)
+- Spider King: touching it no longer kills, only its attacks hurt
+- fix: the kept armor's save on the climb after showed nothing when the Cobra King was skipped (F9, endless start: its UI was never built); now "Saved!", the gold flash & badge always show, & the armor shatters off in gold bursts as the cobra is thrown back
+- Spider King: golden melons come in pairs, one either side of the monkey; grabbing either gives the armor & both go
+- Spider King: the monkey is 1.2x as fast in its arena (`MonkeyController.ArenaSpeedScale`), normal again after the win
+- Spider King: calmer still early on (rest 3.2 s at full health, still about 0.9 s at the end; dash every 3.2 s early); the test fight at the start is off, the fight is back at 1050 u w/ the climb's own growth; F9 jumps to just below it (the Cobra King counted as beaten)
+- Spider King: 15 health (was 20), its stages still at half & four fifths of it lost; an attack begun b4 a call out is played out, only new ones wait
+- Spider King: a batted back web bullet no longer hurts the spider (only sticks it); the rapid / triple fire call out stays docked under the health bar for the stage; no attack while it calls out
+- Spider King: a stage of volleys is called out once ("Rapid fire ready!" / "Triple fire ready!"), the line gliding from its head up under the health bar (`BossFightHud.CallOut`); each bullet of a volley charges again at its head (the orb swells, sparks & rings drawn in) through the gap b4 it
+- Spider King: no red banner at a new stage (only its speech bubble); the golden melon shows at once when the armor goes, if missed again 5 s later, then every 10 s
+- Spider King: a stage w/ volleys of 2 or more opens w/ at least 2 volleys b4 any slash; the golden melon comes every 10 s (was 15 s)
+- Spider King: its chase speeds up less late in the fight (to 1.08x, attacks still to 1.3x); a ranged attack needs it well inside the view (18% in from the screen's edges, clearly on the near side); the stage banner has no second line
+- Spider King: a new stage is called out w/ a red banner too ("You'll pay for that!" / "It attacks faster now", "ENOUGH!" / "It's furious!"); a dash the armor saves throws the monkey 8 u sideways off the dash lane, so it is not touched right after
+- Spider King: a parry w/ more attacks coming plays only a short slow beat & a slight camera move, & a full parry shot is cut short once another attack comes, so a 2nd slash or bullet is always seen in time; it circles slower b/t attacks (0.4 of its stalk speed)
+- Spider King: calmer early on (rest b/t attacks 2.6 s at full health, still about 0.9 s at the end; dash every 2.8 s early, 1.5 s late); b/t attacks it circles the monkey instead of standing still
+- fix: Spider King parry clash fx face the camera as drawn in the parry shot (they faced the rest camera, so the white strokes & rings showed as big slanted white bars up close); the clash's white bits smaller & fewer (strokes, pop, rings), its second ring orange
+- Spider King: the air wall no longer veils the view near it (far sheet only faintly tinted, a clearer patch round the monkey, hidden w/ the camera up at it); the parry shot a bit farther out (4.6 u)
+- Spider King: the air wall fades in only near it & spreads out to the horizon; a revive clears the last try's golden melon; the bare area reaches down past the guard, so no climb fruit grows in the boss area; a parry gets its own camera shot (swoop in close, swing round & tilt, slam & shake at the clash, pan after the kicked back thing); a stuck spider still fires out its volley; it keeps 4.8 u off & dashes every 2.2 s (1.5 s late), so dashes come more often
+- Spider King: the arena's cap is a plain see-through sheet; one "Nice!" per lesson parry (the lesson's own banner dropped); parries are timed to the monkey's edge facing the attack, not its middle, & met there
+- Spider King: the arena's cap shown as a web over it that shows as the monkey nears & ripples on a bump; arena 18 u high w/ the guard 14 u below, a bit bigger than the Cobra King's; parries -1 & pop "Nice!"; it keeps 5.5 u off & dashes within 5 u
+- fix: Spider King tuning never reached the game (the prefab kept the values from when it was last imported); every value is now written out in `SpiderFight.prefab`; checked against the asked tuning: rest b/t attacks back to 1.8 s & cocoon crawl to 3 u/s, both lost in a rewrite
+- fix: fruit destroyed in reach (eg a segment recycled after a teleport) no longer breaks `UpwardFruitSensor` & every grab after it
 - boss fight difficulty restored to pre-bare-zone tuning: arena grows own branches, rough bark & webs like the climb; `bossMaxHealth` back to 12
 - boss fight: tail sweep joins at 1/5 king health lost, not 1/3; arena watermelons regrow slower (6 → 9 s) & are removed after the win; golden watermelon banner; webs never overlap
 - boss fight: minion call never lost, repeated after a revive

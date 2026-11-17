@@ -4,13 +4,13 @@
 /// </summary>
 public enum PickupKind {
     /// <summary>
-    /// the common fruit: <see cref="PlayerBalanceConfig.ScoreRewardPoints"/>
+    /// the common fruit: <see cref="ScoreConfig.BananaPoints"/>
     /// and a stamina restore
     /// </summary>
     Banana,
 
     /// <summary>
-    /// rare, higher up: <see cref="PlayerBalanceConfig.CoconutRewardPoints"/>,
+    /// rare, higher up: <see cref="ScoreConfig.CoconutPoints"/>,
     /// no stamina, kept to freeze the great cobra
     /// </summary>
     Coconut,

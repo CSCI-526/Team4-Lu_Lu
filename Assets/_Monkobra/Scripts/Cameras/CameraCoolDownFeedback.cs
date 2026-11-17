@@ -93,7 +93,8 @@ public class CameraCoolDownFeedback: MonoBehaviour {
         // profile (not sharedProfile): edits stay off the shared asset
         if (!volume.profile.TryGet(out vignette)) {
             Debug.LogWarning(
-                "CameraCoolDownFeedback:\tvolume profile has no Vignette override",
+                "CameraCoolDownFeedback:\tvolume profile has no Vignette "
+                    + "override",
                 this
             );
         }

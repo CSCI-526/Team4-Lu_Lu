@@ -39,8 +39,8 @@ graph TD
 | `Environment/FruitOutlineListener` | two-tier outline on a banana |
 | `Environment/BranchController` | shows the fruit its `BranchKind` names: a pineapple, a coconut, a banana, or none |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
-| `UI/StaminaBarController` | `AddStaminaByFruit` restores stamina when a grab's flight lands |
-| `UI/FruitFlyEffect` | flies a grabbed fruit's sprite to its target, then calls back |
+| `Stamina/StaminaBarController` | `AddStaminaByFruit` restores stamina when a grab's flight lands |
+| `FruitFly/FruitFlyEffect` | flies a grabbed fruit's sprite to its target, then calls back |
 | `Environment/FruitFlyOnGrab` | on a fruit: which target and sprite its flight uses |
 | `ItemPineapple/LeapOnGrab` | marks a fruit whose grab starts a leap |
 | `ItemPineapple/PineappleLeapController` | on the monkey root: runs the leap |
@@ -97,19 +97,19 @@ For a quick test press the [hack key](monkobra-tdd.md#hack-shortcuts) that spawn
 
 A rare fruit from higher up, kept instead of eaten: it scores more than a banana, restores no stamina, and is thrown to freeze the great cobra.
 
-- Supply: a coconut hangs on a branch of the coconut kind (`BranchCoconut`, a variant of the branch prefab), rolled by `TreeSegmentController` like the other 3 kinds from `coconutBranchProbabilityCurve` and `coconutBranchAttemptCount` (`WorldBalanceConfig`) at the segment's ramped difficulty, its zero stretch setting where coconuts begin. `BranchController.Setup` hangs the `Coconut` prefab (`fruitPrefab`) with its top pivot on the stem's lower tip; webs rolled later keep clear of it by its `FruitCollider` tag
-- Grab: the same reach and release as a banana, with its own outline materials; its `ScorePickup` is of kind `Coconut`, so `ScoreManager` adds `CoconutRewardPoints` (`scoreRewardPoints` times `coconutScoreMultiplier`) and raises `CoconutCollected` instead of counting a banana
+- Supply: a coconut hangs on a branch of the coconut kind (`Branch_Coconut`, a variant of the branch prefab), rolled by `TreeSegmentController` like the other 3 kinds from `coconutBranchProbabilityCurve` and `coconutBranchAttemptCount` (`WorldBalanceConfig`) at the segment's ramped difficulty, its zero stretch setting where coconuts begin. `BranchController.Setup` hangs the `Coconut` prefab (`fruitPrefab`) with its top pivot on the stem's lower tip; webs rolled later keep clear of it by its `FruitCollider` tag
+- Grab: the same reach and release as a banana, with its own outline materials; its `ScorePickup` is of kind `Coconut`, so `ScoreManager` adds the coconut points of `ScoreConfig` and raises `CoconutCollected` instead of counting a banana
 - No Stamina: `ArmController` gives a coconut's flight no restore, so its sprite flies to the counter and only pops the icon
 - Count: `CoconutManager` (on the `GameController` prefab) adds one per `CoconutCollected`; the count lives in the scene, so a restart's reload empties it
 - Use: the `UseCoconut` input action, a double-tap of Space, E, or the gamepad north button, spends one and throws it: a `CoconutProjectile` falls straight down from just below the monkey at `coconutThrowSpeedU`, and when it touches the cobra or has fallen `coconutThrowDistanceU` the manager calls `CobraMotor.TryFreeze` for `cobraFreezeDurationS`, so the freeze starts at the landing, not at the tap, see [Mobs](mob-doc.md#coconut-freeze). One coconut flies at a time, and a pause holds it in the air. `UseCoconut` is an action of the Input Actions asset with a MultiTap interaction (2 taps, each press short, the gap between them short), so its timing and keys are edited in the asset, and a held reach never completes it. `CoconutManager` enables the action and listens to its `performed` event; the grab (`Interact`) is a separate action on the same keys, so a tap near fruit reaches like any short press and grabs only fruit already under the hand
 - Refused: a double-tap does nothing outside a live run (the starting zone counts, the tutorial and the lose screen do not), while paused, while a web holds the monkey, or within `webEscapeGraceS` of an escape, so mashing out of a web never spends one; while the cobra is already frozen nothing is spent and "Cobra is already frozen" shows
-- HUD: every part starts inactive in its prefab and an owner switches it on, since a script on an inactive object never runs. `CoconutManager` switches on `InGameHUD/CoconutHUD` (`CoconutWidget`: icon, count, dimmed at x0, and a "Double-tap Space" hint under it, flashing when the cobra surges, until the first use of the session) at the first coconut of the scene, and the `FreezeTimerHUD` prefab under `_UI` (`FreezeTimerWidget`: countdown and shrinking bar) only while the cobra is frozen in a run. `CoconutMessageWidget` on `InGameHUD/CoconutMessage` stays active and hands the center prompts to `PopUpManager` ([PopUps](pop-up-doc.md)): the double-tap teaching on the first coconut, the freeze, a refused second one, and the thaw. The widgets are passive views reading the manager
+- HUD: every part starts inactive in its prefab and an owner switches it on, since a script on an inactive object never runs. `CoconutManager` switches on `UI/CoconutHUD` (`CoconutWidget`: icon, count, dimmed at x0, and a "Double-tap Space" hint under it, flashing when the cobra surges, until the first use of the session) at the first coconut of the scene, and the `FreezeTimerHUD` prefab under `UI` (`FreezeTimerWidget`: countdown and shrinking bar) only while the cobra is frozen in a run. `CoconutMessageWidget` on `UI/CoconutMessage` stays active and hands the center prompts to `PopUpManager` ([PopUps](pop-up-doc.md)): the double-tap teaching on the first coconut, the freeze, a refused second one, and the thaw. The widgets are passive views reading the manager
 
 For a quick test use the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns a branch bearing a coconut straight above the monkey.
 
 ## Fruit Fly
 
-`FruitFlyEffect` (singleton `I`) sits on `FruitFlyLayer`, a full-stretch child of `InGameHUD`, and flies a semi-transparent pooled `Image` from the fruit's screen point to its target.
+`FruitFlyEffect` (singleton `I`) sits on `FruitFlyLayer`, a full-stretch child of `UI`, and flies a semi-transparent pooled `Image` from the fruit's screen point to its target.
 
 | Target | Fruit | Flies To |
 | --- | --- | --- |
@@ -137,6 +137,8 @@ For a quick test use the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns 
 
 The listener sits on the object holding the fruit's collider and outlines the meshes under it, or under its `meshRoot` when set, as on the `Pineapple` prefab, whose `PineappleCollider` and `PineappleModel` are siblings. `FruitOutline` measures its width in the mesh's own units, so a scaled model thickens it: the pineapple has its own `PineappleReachable` and `PineappleGrabbable` materials for that reason.
 
+The monkey wears the same outline always on, in white: `MonkeyOutline` adds the `Monkey_Outline` material to the skinned model's renderers at start. Its width is in the model's own units, so tune it on the material.
+
 ## Fruit Supply
 
 Fruit comes from branches, not its own spawner: each branch is one of 4 kinds (empty, banana, coconut, pineapple), a prefab variant per kind, so a branch bears 1 fruit or none. `TreeSegmentController` rolls each kind from its own curve and instantiates its prefab; `BranchController.Setup` then keeps the stem, scales it between 0.5x and 2x, and turns the fruit randomly. A banana is the banana child; a pineapple or coconut is its `fruitPrefab` spawned on the stem with the banana child switched off; an empty branch disables both banana and stem. Branch density and kind mix by height are in [Mobs](mob-doc.md#placement).
@@ -147,7 +149,6 @@ The reach extend speed and the aim turn speed (`reachAimSpeedDeg`, deg/s, 0 snap
 
 ## Known Gaps
 
-- `ArmController` carries a fixme to split it into several systems
 - A miss costs no stamina, only exposure
 - Scenes without a `ScoreManager` restore stamina on a grab but score nothing, see [Score](monkobra-tdd.md#score)
 - A double-tap near fruit briefly reaches, like any short press, before the coconut is spent

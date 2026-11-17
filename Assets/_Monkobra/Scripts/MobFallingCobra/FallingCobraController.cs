@@ -1,4 +1,6 @@
 using UnityEngine;
+using static FallingCobraRig;
+using static FallingCobraMath;
 
 /// <summary>
 /// A cobra hanging dormant on the tree that drops on the monkey. Spawned as a
@@ -9,17 +11,19 @@ using UnityEngine;
 /// Three states. Dormant: nothing moves until the monkey comes within
 /// <c>triggerDistanceU</c> (3D), or within the farther
 /// <see cref="CobraBalanceConfig.FallingCobraReachWakeDistanceU"/> while an
-/// arm reaches for a banana, and the cobra is at or above the monkey's
-/// height, so a grab is the riskiest moment to stand under a cobra.
-/// Warning: a red pulse for <c>warningDurationS</c>. Falling: a
-/// constant downward speed, while each physics step the cobra re-reads the
-/// monkey's angle about the tree axis and slides round the trunk toward it by
-/// the shortest arc, so it keeps homing on a monkey that orbits. Tree
-/// branches block both moves, so a branch holds the snake up. Any part of
+/// arm reaches for a banana. It can notice and watch a monkey passing above it.
+/// Warning: it raises its head, watches the monkey and hisses in its normal
+/// green color.
+/// After a fixed head-up warning it attacks, even if the monkey stays distant
+/// or retreats. Falling: a
+/// short downward pursuit that follows the monkey within its tracking range.
+/// The head rests against the bark and physical contacts follow the visible
+/// snake. Any part of
 /// the snake touching any part of the monkey (body, tail, hand, or its
 /// branch sensor) applies one branch-hit drop and immediately switches the
 /// snake off. It cannot keep falling or strike the monkey again. After
-/// <c>maxFallDistanceU</c> it switches itself off; the segment's restart
+/// <c>maximumFallDurationS</c> or <c>maxFallDistanceU</c> it switches itself
+/// off; the segment's restart
 /// destroys it later.
 /// </para>
 /// </summary>
@@ -28,10 +32,12 @@ public class FallingCobraController: MonoBehaviour {
     // Public Members  #########################################################
     /// <returns>pivot to the far end of the snake, hit radius included; u
     /// </returns>
-    public float LengthU => hitCollider.height;
+    public float LengthU => rig.animatedReferenceMesh != null
+        ?tuning.SmoothBodyLengthU:rig.hitCollider.height;
 
     /// <returns>how far the snake's tail reaches below its pivot; u</returns>
-    public float TailBelowPivotU => hitRadiusU;
+    public float TailBelowPivotU => rig.animatedReferenceMesh != null
+        ? rig.referenceHeadBelowPivotU : tuning.HitRadiusU;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -48,78 +54,77 @@ public class FallingCobraController: MonoBehaviour {
     ) {
         if (config == null) {
             Debug.LogWarning(
-                "FallingCobraController:\tInitialize needs a CobraBalanceConfig, stay "
+                "FallingCobraController:\tInitialize needs a "
+                    + "CobraBalanceConfig, stay "
                     + "dormant",
                 this
             );
             return;
         }
 
-        fallSpeedU = config.FallingCobraFallSpeedU;
-        horizontalSpeedU = config.FallingCobraHorizontalSpeedU;
-        reachWakeDistanceU = config.FallingCobraReachWakeDistanceU;
-        axisXZ = new Vector2(treeAxisPosition.x, treeAxisPosition.z);
+        rig.fallSpeedU = config.FallingCobraFallSpeedU;
+        rig.horizontalSpeedU = config.FallingCobraHorizontalSpeedU;
+        rig.reachWakeDistanceU = config.FallingCobraReachWakeDistanceU;
+        rig.attackDistanceU = config.FallingCobraAttackDistanceU;
+        rig.axisXZ = new Vector2(treeAxisPosition.x, treeAxisPosition.z);
         Vector3 position = transform.position;
-        ringRadiusU = Vector2.Distance(
+        rig.ringRadiusU = Vector2.Distance(
             new Vector2(position.x, position.z),
-            axisXZ
+            rig.axisXZ
         );
-        isInitialized = true;
+        rig.isInitialized = true;
+        AlignReferenceToTree();
     }
 
     // Inspector Fields  #######################################################
-    [Header("Trigger")]
     [SerializeField]
-    [Tooltip("3D distance to the monkey below which the cobra wakes; u")]
-    private float triggerDistanceU = 12f;
+    private FallingCobraTuning tuning = new();
 
-    [Header("Warning and Fall")]
-    [SerializeField]
-    [Tooltip("time of the red pulse b4 the fall; s")]
-    private float warningDurationS = 1.25f;
-
-    [SerializeField]
-    [Tooltip("color of the warning pulse")]
-    private Color warningColor = new Color(1f, 0.15f, 0.1f, 1f);
-
-    [SerializeField]
-    [Tooltip("red pulses per s while warning")]
-    private float warningPulseHz = 4f;
-
-    [SerializeField]
-    [Tooltip("distance fallen b4 the cobra switches itself off; u")]
-    private float maxFallDistanceU = 30f;
-
-    [Header("Body")]
-    [SerializeField]
-    [Tooltip("gap b/t body segments; u")]
-    private float segmentSpacingU = 0.35f;
-
-    [SerializeField]
-    [Tooltip("hit radius of each segment; u")]
-    private float hitRadiusU = 0.5f;
+    // Private Members  ########################################################
+    private FallingCobraRig rig;
+    private FallingCobraHeadMesh headMesh;
+    private FallingCobraBranchCoil branchCoil;
+    private FallingCobraTracking tracking;
+    private FallingCobraEyes eyes;
+    private FallingCobraSwimTrail trail;
+    private FallingCobraSpine spine;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        body = GetComponent<Rigidbody>();
-        hitCollider = GetComponent<CapsuleCollider>();
-        if (body == null || hitCollider == null) {
+        rig = new FallingCobraRig(transform, tuning);
+        headMesh = new FallingCobraHeadMesh(rig);
+        branchCoil = new FallingCobraBranchCoil(rig);
+        tracking = new FallingCobraTracking(rig);
+        eyes = new FallingCobraEyes(rig, TryHit);
+        rig.HeadMesh = headMesh;
+        rig.BranchCoil = branchCoil;
+        rig.Tracking = tracking;
+        rig.Eyes = eyes;
+        trail = new FallingCobraSwimTrail(rig);
+        spine = new FallingCobraSpine(rig);
+        rig.Trail = trail;
+        rig.Spine = spine;
+        rig.body = GetComponent<Rigidbody>();
+        rig.hitCollider = GetComponent<CapsuleCollider>();
+        if (rig.body == null || rig.hitCollider == null) {
             Debug.LogError(
-                "FallingCobraController:\trequires Rigidbody and CapsuleCollider",
+                "FallingCobraController:\trequires Rigidbody and "
+                    + "CapsuleCollider",
                 this
             );
             enabled = false;
             return;
         }
 
-        body.isKinematic = true;
-        body.useGravity = false;
+        rig.body.isKinematic = true;
+        rig.body.useGravity = false;
 
         float highestSegmentY = 0f;
         for (int i = 0; i < transform.childCount; i++) {
             Transform segment = transform.GetChild(i);
             if (segment.name.StartsWith("Segment_")) {
-                segment.localPosition = Vector3.up * (i * segmentSpacingU);
+                segment.localPosition =
+                    Vector3.up * (i * tuning.SegmentSpacingU);
                 highestSegmentY = Mathf.Max(
                     highestSegmentY,
                     segment.localPosition.y
@@ -132,57 +137,229 @@ public class FallingCobraController: MonoBehaviour {
         foreach (
             Collider segmentCollider in GetComponentsInChildren<Collider>()
         ) {
-            if (segmentCollider != hitCollider) {
+            if (segmentCollider != rig.hitCollider) {
                 segmentCollider.enabled = false;
             }
         }
-        hitCollider.direction = 1;
-        hitCollider.radius = hitRadiusU;
-        hitCollider.height = highestSegmentY + hitRadiusU * 2f;
-        hitCollider.center = Vector3.up * highestSegmentY * 0.5f;
-        hitCollider.isTrigger = true;
-        hitCollider.enabled = false;
+        rig.hitCollider.direction = 1;
+        rig.hitCollider.radius = tuning.HitRadiusU;
+        rig.hitCollider.height = highestSegmentY + tuning.HitRadiusU * 2f;
+        rig.hitCollider.center = Vector3.up * highestSegmentY * 0.5f;
+        rig.hitCollider.isTrigger = true;
+        rig.hitCollider.enabled = false;
 
-        snakeRenderers = GetComponentsInChildren<Renderer>();
-        baseColors = new Color[snakeRenderers.Length];
-        warningBlock = new MaterialPropertyBlock();
+        headMesh.BuildCartoonVisual();
+        eyes.CreateVisibleContacts();
+        eyes.CreateTrackingEyes();
 
-        for (int i = 0; i < snakeRenderers.Length; i++) {
-            Material material = snakeRenderers[i].sharedMaterial;
-            baseColors[i] =
-                material != null && material.HasProperty(BASE_COLOR_ID)
-                    ? material.GetColor(BASE_COLOR_ID)
-                    : Color.white;
+        if (tuning.WarningHiss != null) {
+            GameObject voice = new GameObject("SnakeHiss");
+            voice.transform.SetParent(rig.referenceHeadVisual != null
+                ? rig.referenceHeadVisual : transform, false);
+            voice.transform.localPosition = rig.originalHeadFaceCenter;
+            rig.hissSource = voice.AddComponent<AudioSource>();
+            rig.hissSource.clip = tuning.WarningHiss;
+            rig.hissSource.playOnAwake = false;
+            rig.hissSource.loop = false;
+            rig.hissSource.volume = tuning.WarningHissVolume;
+            rig.hissSource.spatialBlend = 1f;
+            rig.hissSource.dopplerLevel = 0f;
+            rig.hissSource.minDistance = tuning.WarningHissMinDistanceU;
+            rig.hissSource.maxDistance =
+                Mathf.Max(tuning.TriggerDistanceU + tuning.AlertExitPaddingU,
+                    tuning.WarningHissMinDistanceU);
         }
+        rig.lastHeadPoseTime = Time.time;
+    }
+
+    private void OnDisable() {
+        if (rig.hissSource != null) {
+            rig.hissSource.Stop();
+        }
+    }
+
+    private void OnDestroy() {
+        rig.cartoonVisual?.Dispose();
+        if (rig.eyeWhiteMaterial != null) {
+            Destroy(rig.eyeWhiteMaterial);
+        }
+        if (rig.eyePupilMaterial != null) {
+            Destroy(rig.eyePupilMaterial);
+        }
+        if (rig.eyePupilMesh != null) {
+            Destroy(rig.eyePupilMesh);
+        }
+        if (rig.animatedReferenceMesh != null) {
+            Destroy(rig.animatedReferenceMesh);
+        }
+    }
+
+    private void AlignReferenceToTree() {
+        AlignReferenceToTree(transform.position);
+    }
+
+    private void AlignReferenceToTree(Vector3 position) {
+        if (!rig.isInitialized || rig.referenceVisual == null) {
+            return;
+        }
+        Vector3 inward = new Vector3(rig.axisXZ.x - position.x, 0f,
+            rig.axisXZ.y - position.z);
+        if (inward.sqrMagnitude <= 0.001f) {
+            return;
+        }
+        inward.Normalize();
+        Vector3 tangent = Vector3.Cross(Vector3.up, -inward);
+        Vector2 surfaceDelta = rig.state == FallingCobraState.Falling
+            ? tracking.CommittedAttackVelocity(position)
+                : tracking.SurfaceDeltaToPlayer(position);
+        if (rig.state != FallingCobraState.Falling && surfaceDelta.y >= 0f) {
+            surfaceDelta.y = -rig.fallSpeedU;
+        }
+        if (surfaceDelta.sqrMagnitude <= 0.001f) {
+            return;
+        }
+        Vector3 heading =
+            (tangent * surfaceDelta.x + Vector3.up * surfaceDelta.y).normalized;
+        Vector3 tailDirection = -heading;
+        if (rig.swimRotationInitialized) {
+            Vector3 previous =
+                Vector3.ProjectOnPlane(transform.up, inward).normalized;
+            if (previous.sqrMagnitude > 0.001f) {
+                float turn =
+                    Vector3.SignedAngle(previous, tailDirection, inward);
+                tailDirection =
+                    Quaternion.AngleAxis(turn
+                        * (1f - Mathf.Exp(-tuning.SwimTurnSharpness
+                            * Time.deltaTime)),
+                    inward) * previous;
+            }
+        }
+        rig.referenceVisual.localRotation = Quaternion.identity;
+        rig.body.rotation = Quaternion.LookRotation(inward, tailDirection);
+        rig.swimRotationInitialized = true;
+    }
+
+    /// <summary>Bind this snake to a real, enabled branch before it can be
+    /// shown or wake.</summary>
+    public bool AttachToBranch(BoxCollider branch) {
+        if (!rig.isInitialized || branch == null || !branch.enabled
+            || !branch.gameObject.activeInHierarchy) {
+            return false;
+        }
+        rig.supportBranch = branch;
+        rig.headRotationReady = false;
+        branchCoil.RefreshBranchFrame();
+        if (rig.branchHalfLength < tuning.SittingCoilRadiusAlongU
+            + tuning.SmoothBodyRadiusU + .1f) {
+            rig.supportBranch = null;
+            return false;
+        }
+        Vector3 outwards =
+            new Vector3(rig.branchCenter.x - rig.axisXZ.x, 0f,
+                rig.branchCenter.z - rig.axisXZ.y).normalized;
+        Vector3 nearTrunk =
+            new Vector3(rig.axisXZ.x, rig.branchCenter.y, rig.axisXZ.y)
+                + outwards
+                    * (tuning.TreeSurfaceRadiusU
+                        + tuning.SittingCoilRadiusAlongU + .9f);
+        rig.branchAnchorAlong =
+            Mathf.Clamp(Vector3.Dot(nearTrunk - rig.branchCenter,
+                rig.branchAxis),
+            -rig.branchHalfLength + tuning.SittingCoilRadiusAlongU + .1f,
+                rig.branchHalfLength - tuning.SittingCoilRadiusAlongU - .1f);
+        Vector3 top = branchCoil.BranchCoilPoint(0f, tuning.SmoothBodyRadiusU);
+        Vector3 root =
+            new Vector3(rig.axisXZ.x, top.y - tuning.StandingBaseHeightU,
+                rig.axisXZ.y) + outwards * rig.ringRadiusU;
+        rig.body.position = root;
+        transform.position = root;
+        if (rig.player == null) {
+            GameObject monkey = GameObject.FindGameObjectWithTag(PLAYER_TAG);
+            if (monkey != null) {
+                rig.player = monkey.transform;
+            }
+        }
+        rig.branchHeadSideSign = rig.player != null
+            && Vector3.Dot(rig.player.position - root, rig.branchSide) < -.01f
+                ? -1f : 1f;
+        rig.perchBound = true;
+        if (rig.referenceRenderer != null) {
+            rig.referenceRenderer.enabled = true;
+        }
+        if (rig.referenceHeadRenderer != null) {
+            rig.referenceHeadRenderer.enabled = true;
+        }
+        Physics.SyncTransforms();
+        LateUpdate();
+        return true;
+    }
+
+    private void LateUpdate() {
+        if (rig.animatedReferenceMesh == null
+            || rig.state == FallingCobraState.Done || !rig.perchBound) {
+            return;
+        }
+        if (IsDormantAndFarFromMonkey()) {
+            return;
+        }
+        branchCoil.RefreshBranchFrame();
+        AlignReferenceToTree();
+        spine.Update();
+    }
+
+    // a perched cobra far beyond its tracking range holds its last pose, so
+    // skip the spine rebuild; the margin lets any head turn finish first
+    private bool IsDormantAndFarFromMonkey() {
+        if (rig.state != FallingCobraState.Dormant || !rig.spinePoseReady
+            || rig.player == null) {
+            return false;
+        }
+        float rangeU = Mathf.Max(tuning.HeadTrackingRangeU,
+            tuning.TriggerDistanceU, rig.reachWakeDistanceU);
+        float gateU = (rangeU + tuning.HeadTrackingExitPaddingU) * 2f;
+        return (rig.player.position - transform.position).sqrMagnitude
+            > gateU * gateU;
     }
 
     private void Start() {
         GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYER_TAG);
         if (playerObject != null) {
-            player = playerObject.transform;
-            playerArms = playerObject.GetComponentsInChildren<ArmController>(true);
-            playerSensor =
+            rig.player = playerObject.transform;
+            rig.playerArms =
+                playerObject.GetComponentsInChildren<ArmController>(true);
+            rig.playerSensor = 
                 playerObject.GetComponentInChildren<HitBranchSensor>(true);
         }
     }
 
     private void Update() {
-        switch (state) {
-            case State.Dormant:
+        switch (rig.state) {
+            case FallingCobraState.Dormant:
+                // a cobra never outlives its branch: one left in mid air by
+                // a switched off branch goes off with it
+                if (rig.perchBound && (rig.supportBranch == null
+                    || !rig.supportBranch.gameObject.activeInHierarchy)) {
+                    gameObject.SetActive(false);
+                    break;
+                }
                 TryWake();
                 break;
-            case State.Warning:
-                PulseWarning();
+            case FallingCobraState.Warning:
+                WatchMonkey();
                 break;
         }
     }
 
     private void FixedUpdate() {
-        if (state == State.Warning && Time.time >= fallStartTime) {
+        tracking.UpdateTrackedMonkey();
+        if (rig.state == FallingCobraState.Warning && CanStartFall()) {
             StartFalling();
         }
-        if (state == State.Falling) {
+        if (rig.state == FallingCobraState.Falling) {
             StepFall();
+            if (gameObject.activeInHierarchy) {
+                eyes.SweepVisibleHead();
+            }
         }
     }
 
@@ -197,95 +374,48 @@ public class FallingCobraController: MonoBehaviour {
 
     // Editor Validation  ######################################################
     private void OnValidate() {
-        triggerDistanceU = Mathf.Max(0f, triggerDistanceU);
-        warningDurationS = Mathf.Max(0f, warningDurationS);
-        warningPulseHz = Mathf.Max(0f, warningPulseHz);
-        maxFallDistanceU = Mathf.Max(0f, maxFallDistanceU);
-        segmentSpacingU = Mathf.Max(0f, segmentSpacingU);
-        hitRadiusU = Mathf.Max(0.01f, hitRadiusU);
+        tuning.Validate();
     }
 
-    // constants  ##############################################################
-    private const string PLAYER_TAG = "Player";
-    private static readonly int BASE_COLOR_ID =
-        Shader.PropertyToID("_BaseColor");
-
-    // private types  ############################################################
-    private enum State {
-        Dormant,
-        Warning,
-        Falling,
-        Done,
-    }
-
-    // private members  ########################################################
-    private State state = State.Dormant;
-    private bool isInitialized; // if the spawner armed this cobra
-    private float fallSpeedU; // from config; u/s
-    private float horizontalSpeedU; // from config; u/s along the ring
-    private float reachWakeDistanceU; // from config; wake range mid-grab; u
-    private Vector2 axisXZ; // tree axis, world xz
-    private float ringRadiusU; // horizontal distance to the axis; u
-    private float warningStartTime;
-    private float fallStartTime;
-    private float fallenU;
-
-    // cached references  ------------------------------------------------------
-    private Rigidbody body;
-    private CapsuleCollider hitCollider;
-    private Renderer[] snakeRenderers;
-    private Color[] baseColors;
-    private MaterialPropertyBlock warningBlock;
-    private Transform player;
-    private ArmController[] playerArms; // the monkey's arms, read for a reach
-    private HitBranchSensor playerSensor; // applies the drop
-
-    // private methods  ########################################################
-    // wakes when the monkey is close and the cobra is not below it, a fall
-    // from beside or under the monkey is useless
     private void TryWake() {
-        if (!isInitialized || player == null) {
+        if (!rig.isInitialized || rig.player == null
+            || rig.supportBranch == null) {
             return;
         }
-        // a leap wakes no cobra on its way past
-        if (GameController.I != null && GameController.I.IsLeaping) {
-            return;
-        }
-        Vector3 position = transform.position;
-        if (position.y < player.position.y) {
-            return;
-        }
-        float wakeDistanceU = IsMonkeyReaching()
-            ? Mathf.Max(triggerDistanceU, reachWakeDistanceU)
-            : triggerDistanceU;
-        if (Vector3.Distance(position, player.position) >= wakeDistanceU) {
+        Vector3 position = rig.ThreatPosition;
+        float wakeDistanceU = tracking.IsMonkeyReaching()
+            ? Mathf.Max(tuning.TriggerDistanceU, rig.reachWakeDistanceU)
+            : tuning.TriggerDistanceU;
+        if (Vector3.Distance(position,
+            tracking.MonkeyAimPosition()) >= wakeDistanceU) {
             return;
         }
 
-        state = State.Warning;
-        warningStartTime = Time.time;
-        fallStartTime = warningStartTime + warningDurationS;
+        rig.state = FallingCobraState.Warning;
+        rig.warningStartTime = Time.time;
+        rig.fallStartTime = rig.warningStartTime + tuning.WarningDurationS;
+        rig.nextHissTime = Time.time;
     }
 
     // Called from either side of the trigger pair. Claim the hit before
     // notifying listeners so callback order cannot create duplicate damage.
     public void TryHit(Collider other) {
-        if (other == null || state != State.Falling || !hitCollider.enabled
+        if (other == null || rig.state != FallingCobraState.Falling
+            || !rig.hitCollider.enabled
             || GameController.I == null || !GameController.I.IsRunLive
             || GameController.I.IsLeaping || Time.timeScale <= 0f) {
             return;
         }
         HitBranchSensor sensor = other.GetComponent<HitBranchSensor>();
-        bool isSensor = sensor != null;
-        if (!isSensor && !IsMonkeyPart(other)) {
+        if (sensor != null || !IsMonkeyPart(other)) {
             return;
         }
-        state = State.Done;
-        hitCollider.enabled = false;
-        HitBranchSensor receiver = sensor != null ? sensor : playerSensor;
+        rig.state = FallingCobraState.Done;
+        rig.hitCollider.enabled = false;
+        HitBranchSensor receiver = sensor != null ? sensor : rig.playerSensor;
         if (receiver != null) {
             receiver.ReportHit(
-                hitCollider,
+                rig.hitCollider,
                 HitBranchSensor.HitKind.FallingCobraController
             );
         }
@@ -298,7 +428,10 @@ public class FallingCobraController: MonoBehaviour {
     /// false for its other trigger volumes, which reach far past the body
     /// </returns>
     private static bool IsMonkeyPart(Collider other) {
-        if (other.GetComponentInParent<ArmController>() != null) {
+        if (other.GetComponent<DetectionZoneRelay>() != null) {
+            return false;
+        }
+        if (other.GetComponentInParent<ArmController>(true) != null) {
             return true;
         }
         if (other.isTrigger) {
@@ -312,184 +445,106 @@ public class FallingCobraController: MonoBehaviour {
         return false;
     }
 
-    private bool IsMonkeyReaching() {
-        if (playerArms == null) {
-            return false;
+    private void WatchMonkey() {
+        if (rig.supportBranch == null) {
+            FinishFall();
+            return;
         }
-        foreach (ArmController arm in playerArms) {
-            if (arm != null && arm.IsReaching) {
-                return true;
-            }
+        if (rig.player == null || !rig.monkeyInHeadRange) {
+            EndWatching();
+            return;
         }
-        return false;
+        if (rig.hissSource != null && Time.time >= rig.nextHissTime
+            && !rig.hissSource.isPlaying) {
+            rig.hissSource.Play();
+            rig.nextHissTime =
+                Time.time
+                    + Mathf.Max(tuning.WarningHissIntervalS,
+                        tuning.WarningHiss.length);
+        }
     }
 
-    private void PulseWarning() {
-        float pulse =
-            0.5f
-            + 0.5f
-                * Mathf.Cos(
-                    (Time.time - warningStartTime)
-                        * warningPulseHz
-                        * 2f
-                        * Mathf.PI
-                );
-        ApplyWarningColor(pulse);
+    private void EndWatching() {
+        rig.state = FallingCobraState.Dormant;
+        if (rig.hissSource != null) {
+            rig.hissSource.Stop();
+        }
     }
 
-    private void ApplyWarningColor(float pulse) {
-        for (int i = 0; i < snakeRenderers.Length; i++) {
-            Renderer snakeRenderer = snakeRenderers[i];
-            snakeRenderer.GetPropertyBlock(warningBlock);
-            warningBlock.SetColor(
-                BASE_COLOR_ID,
-                Color.Lerp(baseColors[i], warningColor, pulse)
-            );
-            snakeRenderer.SetPropertyBlock(warningBlock);
-        }
+    private bool CanStartFall() {
+        return rig.player != null && rig.monkeyInHeadRange
+            && Time.time >= rig.fallStartTime
+            && (GameController.I == null || !GameController.I.IsLeaping);
     }
 
     private void StartFalling() {
-        state = State.Falling;
-        foreach (Renderer snakeRenderer in snakeRenderers) {
-            snakeRenderer.SetPropertyBlock(null);
+        if (!rig.monkeyInHeadRange) {
+            return;
         }
-        hitCollider.enabled = true;
+        float targetSide = rig.player != null
+            ?Vector3.Dot(tracking.MonkeyAimPosition() - rig.branchCenter,
+                rig.branchSide):rig.perchedAimSide;
+        if (Mathf.Abs(targetSide)>.05f) {
+            rig.branchHeadSideSign = Mathf.Sign(targetSide);
+        }
+        rig.pursuitPaused = false;
+        rig.state = FallingCobraState.Falling;
+        rig.attackStartedTime = Time.time;
+        rig.launchWindupOffset = rig.strikeWindupOffset;
+        rig.approachFallScale = 1f;
+        rig.headFeedbackReady = false;
+        rig.headAimCommand = 0f;
+        rig.descentStopped = false;
+        rig.hasCommittedTarget = rig.player != null;
+        if (rig.hasCommittedTarget) {
+            rig.committedTargetPosition = tracking.MonkeyAimPosition();
+            Vector2 target =
+                new Vector2(rig.committedTargetPosition.x,
+                    rig.committedTargetPosition.z) - rig.axisXZ;
+            rig.committedTargetAngle =
+                Mathf.Atan2(target.x, target.y) * Mathf.Rad2Deg;
+        }
+        if (rig.hissSource != null) {
+            rig.hissSource.Stop();
+        }
+        rig.branchEscapeSide = rig.branchHeadSideSign;
+        trail.BeginSwimTrail();
+        rig.hitCollider.enabled = true;
+        rig.previousHeadContact = rig.ThreatPosition;
+        rig.headContactReady = true;
+        eyes.UpdateVisibleContacts();
     }
 
-    // constant drop, plus a slide round the trunk toward the monkey's live
-    // angle; the slide is clamped to the remaining arc so it never overshoots.
-    // Both moves stop short of a tree branch, so a branch holds the snake up
+    private void FinishFall() {
+        rig.state = FallingCobraState.Done;
+        rig.hitCollider.enabled = false;
+        gameObject.SetActive(false);
+    }
+
     private void StepFall() {
-        float dropU = fallSpeedU * Time.fixedDeltaTime;
-        Vector3 position = body.position;
-
-        if (
-            player != null
-            && ringRadiusU > MIN_RING_RADIUS_U
-        ) {
-            Vector2 fromAxis = new Vector2(position.x, position.z) - axisXZ;
-            Vector2 toPlayer =
-                new Vector2(player.position.x, player.position.z) - axisXZ;
-            if (toPlayer.sqrMagnitude > MIN_RING_RADIUS_U * MIN_RING_RADIUS_U) {
-                float angleDeg =
-                    Mathf.Atan2(fromAxis.x, fromAxis.y) * Mathf.Rad2Deg;
-                float targetDeg =
-                    Mathf.Atan2(toPlayer.x, toPlayer.y) * Mathf.Rad2Deg;
-                float maxStepDeg =
-                    horizontalSpeedU
-                    * Time.fixedDeltaTime
-                    / ringRadiusU
-                    * Mathf.Rad2Deg;
-                float stepDeg = Mathf.Clamp(
-                    Mathf.DeltaAngle(angleDeg, targetDeg),
-                    -maxStepDeg,
-                    maxStepDeg
-                );
-
-                Vector3 slidePosition = RingPosition(
-                    position,
-                    angleDeg + stepDeg
-                );
-                Vector3 chord = slidePosition - position;
-                float chordU = chord.magnitude;
-                if (chordU > MIN_RING_RADIUS_U) {
-                    float clearU = ClearTravelU(
-                        position,
-                        chord / chordU,
-                        chordU
-                    );
-                    // a blocked slide covers only its free share of the arc
-                    slidePosition = RingPosition(
-                        position,
-                        angleDeg + stepDeg * (clearU / chordU)
-                    );
-                }
-                position = slidePosition;
-            }
+        if (Time.time - rig.attackStartedTime >= tuning.MaximumFallDurationS) {
+            FinishFall();
+            return;
         }
-
-        float freeDropU = ClearTravelU(position, Vector3.down, dropU);
-        position.y -= freeDropU;
-        body.MovePosition(position);
-
-        // only a real drop counts, so a snake held by a branch stays armed
-        fallenU += freeDropU;
-        if (fallenU >= maxFallDistanceU) {
-            state = State.Done;
-            hitCollider.enabled = false;
-            gameObject.SetActive(false);
+        Vector3 position = rig.body.position;
+        Vector2 velocity = tracking.CommittedAttackVelocity(position);
+        float drop = -velocity.y * Time.fixedDeltaTime;
+        position.y -= drop;
+        if (rig.ringRadiusU > MIN_RING_RADIUS_U) {
+            Vector2 radial = new Vector2(position.x, position.z) - rig.axisXZ;
+            float angle =
+                Mathf.Atan2(radial.x, radial.y) + velocity.x
+                    * Time.fixedDeltaTime / rig.ringRadiusU;
+            position.x = rig.axisXZ.x + Mathf.Sin(angle) * rig.ringRadiusU;
+            position.z = rig.axisXZ.y + Mathf.Cos(angle) * rig.ringRadiusU;
+        }
+        rig.body.MovePosition(position);
+        AlignReferenceToTree(position);
+        rig.body.MoveRotation(rig.body.rotation);
+        rig.fallenU += drop;
+        if (rig.fallenU >= tuning.MaxFallDistanceU) {
+            FinishFall();
         }
     }
 
-    // the point on the trunk ring at the given angle, at the height of
-    // origin
-    private Vector3 RingPosition(Vector3 origin, float angleDeg) {
-        float rad = angleDeg * Mathf.Deg2Rad;
-        return new Vector3(
-            axisXZ.x + Mathf.Sin(rad) * ringRadiusU,
-            origin.y,
-            axisXZ.y + Mathf.Cos(rad) * ringRadiusU
-        );
-    }
-
-    /// <summary>
-    /// Sweeps the hit capsule from <paramref name="origin"/> and stops it a
-    /// skin short of the nearest tree branch in the way. A branch already
-    /// overlapping the capsule at the start never blocks, so a snake that
-    /// spawned inside one still falls free.
-    /// </summary>
-    /// <returns>how far the snake may travel along
-    /// <paramref name="direction"/>, at most <paramref name="distanceU"/>; u
-    /// </returns>
-    private float ClearTravelU(
-        Vector3 origin,
-        Vector3 direction,
-        float distanceU
-    ) {
-        Vector3 scale = transform.lossyScale;
-        float radiusU =
-            hitCollider.radius
-            * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
-        float halfSpanU = Mathf.Max(
-            hitCollider.height * Mathf.Abs(scale.y) * 0.5f - radiusU,
-            0f
-        );
-        Vector3 center =
-            origin
-            + transform.rotation * Vector3.Scale(hitCollider.center, scale);
-        Vector3 axis = transform.up * halfSpanU;
-
-        int hitCnt = Physics.CapsuleCastNonAlloc(
-            center + axis,
-            center - axis,
-            radiusU,
-            direction,
-            sweepHits,
-            distanceU + BLOCK_SKIN_U,
-            Physics.AllLayers,
-            QueryTriggerInteraction.Ignore
-        );
-
-        float nearestU = distanceU + BLOCK_SKIN_U;
-        for (int i = 0; i < hitCnt; i++) {
-            RaycastHit hit = sweepHits[i];
-            bool isStartOverlap =
-                hit.distance <= 0f && hit.point == Vector3.zero;
-            if (
-                isStartOverlap
-                || hit.collider.GetComponentInParent<BranchController>()
-                    == null
-            ) {
-                continue;
-            }
-            nearestU = Mathf.Min(nearestU, hit.distance);
-        }
-        return Mathf.Clamp(nearestU - BLOCK_SKIN_U, 0f, distanceU);
-    }
-
-    private const float MIN_RING_RADIUS_U = 0.001f;
-    private const float BLOCK_SKIN_U = 0.02f; // gap kept from a branch; u
-    private const int SWEEP_HIT_CAP = 16;
-    private readonly RaycastHit[] sweepHits = new RaycastHit[SWEEP_HIT_CAP];
 }

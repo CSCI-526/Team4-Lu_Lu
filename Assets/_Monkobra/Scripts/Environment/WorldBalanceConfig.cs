@@ -17,8 +17,12 @@ public class WorldBalanceConfig: ScriptableObject {
     /// start; y: ramped difficulty 0~1</returns>
     public AnimationCurve PreBossRampCurve => preBossRampCurve;
 
-    /// <returns>x: height above the boss zone end; world u; y: ramped
-    /// difficulty from 1 up</returns>
+    /// <returns>x: progress 0~1 from the Cobra King zone end to the Spider
+    /// King zone start; y: ramped difficulty 1~2</returns>
+    public AnimationCurve MidBossRampCurve => midBossRampCurve;
+
+    /// <returns>x: height above the Spider King zone end; world u; y: ramped
+    /// difficulty from 2 up</returns>
     public AnimationCurve PostBossRampCurve => postBossRampCurve;
 
     /// <returns>no branch grows within this distance of the monkey while the
@@ -32,6 +36,11 @@ public class WorldBalanceConfig: ScriptableObject {
     /// branch curve; the other kinds do not grow there</returns>
     public float StartingZoneBananaBranchChance =>
         startingZoneBananaBranchChance;
+
+    /// <returns>how far, in degrees either way, a guaranteed coconut or
+    /// pineapple branch may sit from the monkey's angle around the trunk when
+    /// its segment rolls; 0 grows it exactly there; deg</returns>
+    public float GuaranteedBranchYawSpreadDeg => guaranteedBranchYawSpreadDeg;
 
     /// <param name="kind">which of the 4 branch kinds</param>
     /// <returns>attempts rolled per segment for that kind, the most one
@@ -80,22 +89,23 @@ public class WorldBalanceConfig: ScriptableObject {
     /// <returns>web creation attempts rolled per segment</returns>
     public int WebAttemptCount => webAttemptCount;
 
-    /// <returns>x: ramped difficulty 0~1; y: chance 0~1 that one attempt
+    /// <returns>x: ramped difficulty 0~3; y: chance 0~1 that one attempt
     /// creates a web</returns>
     public AnimationCurve WebSpawnProbabilityCurve =>
         webSpawnProbabilityCurve;
 
-    /// <returns>climbed height where the boss zone begins: the ramp reaches 1
-    /// here and nothing unrelated to the fight is generated from here on; u
-    /// </returns>
+    /// <returns>climbed height where the Cobra King zone begins: the ramp
+    /// reaches 1 here and nothing unrelated to the fight is generated from
+    /// here on; u</returns>
     public float BossZoneStartU => bossZoneStartU;
 
     /// <returns>height climbed since game start at which the boss fight
     /// begins; u</returns>
     public float BossTriggerHeightU => bossTriggerHeightU;
 
-    /// <returns>climbed height where the boss zone ends: ordinary generation
-    /// resumes and the ramp climbs above 1 from here; u</returns>
+    /// <returns>climbed height where the Cobra King zone ends: ordinary
+    /// generation resumes and the ramp climbs from 1 toward 2 from here; u
+    /// </returns>
     public float BossZoneEndU => bossZoneEndU;
 
     /// <returns>health of the Cobra King</returns>
@@ -105,28 +115,58 @@ public class WorldBalanceConfig: ScriptableObject {
     /// </returns>
     public int BossBananaDamage => bossBananaDamage;
 
+    /// <returns>climbed height where the Spider King's zone begins: the ramp
+    /// reaches 2 here and only its fight generates anything from here to its
+    /// zone end; u</returns>
+    public float SpiderZoneStartU => spiderZoneStartU;
+
+    /// <returns>climbed height at which the Spider King fight begins; u
+    /// </returns>
+    public float SpiderTriggerHeightU => spiderTriggerHeightU;
+
+    /// <returns>climbed height where the Spider King's zone ends: ordinary
+    /// generation resumes and the ramp climbs above 2 from here; u</returns>
+    public float SpiderZoneEndU => spiderZoneEndU;
+
+    /// <returns>climbed height from which the Spider King is seen waiting;
+    /// u</returns>
+    public float SpiderJumpHeightU => spiderJumpHeightU;
+
+    /// <returns>health of the Spider King</returns>
+    public int SpiderMaxHealth => spiderMaxHealth;
+
     // Inspector Fields  #######################################################
     [Header("Ramped Difficulty")]
     [SerializeField]
     [Tooltip(
-        "before the boss zone. x: progress 0~1 from the starting zone exit "
-            + "to the boss zone start; y: ramped difficulty, 0 at the exit, "
-            + "1 at the zone start"
+        "before the Cobra King zone. x: progress 0~1 from the starting zone "
+            + "exit to the Cobra King zone start; y: ramped difficulty, 0 at "
+            + "the exit, 1 at the zone start"
     )]
     private AnimationCurve preBossRampCurve =
         AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
     [SerializeField]
     [Tooltip(
-        "after the boss zone. x: height above the boss zone end; world u; "
-            + "y: ramped difficulty, 1 at the zone end and rising; the "
-            + "difficulty is a flat 1 inside the zone"
+        "between the 2 boss zones. x: progress 0~1 from the Cobra King zone "
+            + "end to the Spider King zone start; y: ramped difficulty, 1 at "
+            + "the Cobra zone end, 2 at the Spider zone start; the "
+            + "difficulty is a flat 1 inside the Cobra zone"
+    )]
+    private AnimationCurve midBossRampCurve =
+        AnimationCurve.Linear(0f, 1f, 1f, 2f);
+
+    [SerializeField]
+    [Tooltip(
+        "after the Spider King zone. x: height above the Spider King zone "
+            + "end; world u; y: ramped difficulty, 2 at the zone end and "
+            + "rising; the difficulty is a flat 2 inside the Spider zone"
     )]
     private AnimationCurve postBossRampCurve = AnimationCurve.Linear(
         0f,
-        1f,
+        2f,
         500f,
-        2f
+        3f
     );
 
     [Header("Branch")]
@@ -146,6 +186,16 @@ public class WorldBalanceConfig: ScriptableObject {
             + "branch curve there, and no other kind grows there"
     )]
     private float startingZoneBananaBranchChance = 0.4f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "a guaranteed coconut or pineapple branch grows within this many "
+            + "degrees, either way, of the monkey's angle around the trunk "
+            + "when its segment rolls, so the first of each is on the "
+            + "monkey's side; 0 grows it exactly above the monkey; deg"
+    )]
+    private float guaranteedBranchYawSpreadDeg = 15f;
 
     [Header("Branch: Empty")]
     [SerializeField]
@@ -252,7 +302,7 @@ public class WorldBalanceConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~1; y: chance 0~1 that one attempt "
+        "x: ramped difficulty 0~3; y: chance 0~1 that one attempt "
             + "creates a web"
     )]
     private AnimationCurve webSpawnProbabilityCurve =
@@ -289,8 +339,37 @@ public class WorldBalanceConfig: ScriptableObject {
     [Tooltip("health a thrown banana takes off the Cobra King per hit")]
     private int bossBananaDamage = 1;
 
+    [Header("Spider Fight")]
+    [SerializeField]
+    [Tooltip(
+        "climbed height where the Spider King's zone begins: only its fight "
+            + "generates anything from here to its zone end; u"
+    )]
+    private float spiderZoneStartU = 975f;
+
+    [SerializeField]
+    [Tooltip("climbed height at which the Spider King fight begins; u")]
+    private float spiderTriggerHeightU = 1000f;
+
+    [SerializeField]
+    [Tooltip("climbed height where the Spider King's zone ends; u")]
+    private float spiderZoneEndU = 1050f;
+
+    [SerializeField]
+    [Tooltip("climbed height from which the Spider King is seen waiting "
+        + "above its trigger height; u")]
+    private float spiderJumpHeightU = 950f;
+
+    [SerializeField]
+    [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
+    private int spiderMaxHealth = 15;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
+        guaranteedBranchYawSpreadDeg = Mathf.Max(
+            0f,
+            guaranteedBranchYawSpreadDeg
+        );
         emptyBranchAttemptCount = Mathf.Max(0, emptyBranchAttemptCount);
         bananaBranchAttemptCount = Mathf.Max(0, bananaBranchAttemptCount);
         coconutBranchAttemptCount = Mathf.Max(0, coconutBranchAttemptCount);
@@ -309,5 +388,14 @@ public class WorldBalanceConfig: ScriptableObject {
         bossZoneEndU = Mathf.Max(bossTriggerHeightU, bossZoneEndU);
         bossMaxHealth = Mathf.Max(1, bossMaxHealth);
         bossBananaDamage = Mathf.Max(1, bossBananaDamage);
+        // the spider zone sits above the cobra's, ordered the same way
+        spiderZoneStartU = Mathf.Max(bossZoneEndU, spiderZoneStartU);
+        spiderTriggerHeightU = Mathf.Max(
+            spiderZoneStartU, spiderTriggerHeightU);
+        spiderZoneEndU = Mathf.Max(spiderTriggerHeightU, spiderZoneEndU);
+        spiderJumpHeightU = Mathf.Clamp(
+            spiderJumpHeightU, bossZoneEndU, spiderTriggerHeightU
+        );
+        spiderMaxHealth = Mathf.Max(1, spiderMaxHealth);
     }
 }

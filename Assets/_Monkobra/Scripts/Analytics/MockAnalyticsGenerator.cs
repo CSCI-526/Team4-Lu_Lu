@@ -144,8 +144,15 @@ public static class MockAnalyticsGenerator {
     private const float HIT_STUN_S = 0.75f;
     private const float UNITS_PER_METER = 0.1f;
     private const int POINTS_PER_METER = 1;
+    // the point values below mirror Settings/Scoring/ScoreConfig.asset
     private const int REWARD_POINTS = 100;
     private const int COCONUT_POINTS = 200;
+    private const int PINEAPPLE_POINTS = 50;
+    private const int COBRA_FREEZE_POINTS = 150;
+    private const int HEIGHT_MARKER_POINTS = 25;
+    private const int WEB_ESCAPE_POINTS = 75;
+    // HeightMarkerSystem.intervalU
+    private const int HEIGHT_MARKER_INTERVAL_U = 50;
     private const float COBRA_FREEZE_S = 10f;
     // MonkeyClimbConfig
     private const float EXHAUSTED_SPEED_MULTIPLIER = 0.2f;
@@ -159,6 +166,10 @@ public static class MockAnalyticsGenerator {
     private const float BOSS_START_U = 500f;
     private const float BOSS_TRIGGER_U = 525f;
     private const float BOSS_END_U = 550f;
+    // the Spider King's zone, trigger & end, as in WorldBalanceConfig
+    private const float SPIDER_START_U = 975f;
+    private const float SPIDER_TRIGGER_U = 1000f;
+    private const float SPIDER_END_U = 1050f;
     private const float PINEAPPLE_GUARANTEED_U = 150f;
     private const float COCONUT_GUARANTEED_U = 250f;
     private const float POST_BOSS_RAMP_PER_U = 0.002f;
@@ -196,33 +207,38 @@ public static class MockAnalyticsGenerator {
     };
     private static readonly float[] EMPTY_CURVE = {
         0f, 0.1f, 0.183f, 0.113f, 0.321f, 0.068f, 0.397f, 0.057f, 0.497f,
-        0.058f, 0.597f, 0.058f, 0.631f, 0.0625f, 1f, 0.1f, 2f, 0.3f
+        0.058f, 0.597f, 0.058f, 0.631f, 0.0625f, 1f, 0.1f, 1.25f, 0.09f, 2f,
+        0.1f, 3f, 0.3f
     };
     private static readonly float[] BANANA_CURVE = {
         0f, 0.06f, 0.103f, 0.0747f, 0.183f, 0.0618f, 0.283f, 0.0778f, 0.383f,
-        0.0858f, 0.483f, 0.0818f, 0.583f, 0.0763f, 1f, 0.074f, 1.256f,
-        0.0851f, 1.52f, 0.0897f, 2f, 0.1f
+        0.0858f, 0.483f, 0.0818f, 0.583f, 0.0763f, 1f, 0.0738f, 1.25f, 0.0664f,
+        2f, 0.0738f, 2.2558f, 0.0851f, 2.5203f, 0.0897f, 3f, 0.1f
     };
     private static readonly float[] COCONUT_CURVE = {
         0f, 0f, 0.495f, 0f, 0.5f, 0.03f, 0.528f, 0.04f, 0.6f, 0.0325f, 1f,
-        0.03f, 2f, 0.036f
+        0.03f, 1.25f, 0.027f, 2f, 0.03f, 2.25f, 0.0315f, 2.5f, 0.033f, 3f,
+        0.036f
     };
     private static readonly float[] PINEAPPLE_CURVE = {
-        0f, 0f, 0.293f, 0f, 0.303f, 0.0343f, 0.353f, 0.0503f, 0.423f,
-        0.0483f, 0.603f, 0.0368f, 1f, 0.0359f, 2f, 0.0376f
+        0f, 0f, 0.293f, 0f, 0.303f, 0.0343f, 0.353f, 0.0503f, 0.423f, 0.0483f,
+        0.603f, 0.0368f, 1f, 0.0359f, 1.25f, 0.0323f, 2f, 0.0359f, 2.25f,
+        0.0331f, 2.5f, 0.0346f, 3f, 0.0376f
     };
     private static readonly float[] BARK_CURVE = {
         0f, 0f, 0.192f, 0f, 0.23f, 0.15f, 0.3f, 0.19f, 0.4f, 0.19f, 0.5f,
-        0.165f, 0.6f, 0.14f, 2f, 0.3f
+        0.165f, 0.6f, 0.14f, 1f, 0.1857f, 1.25f, 0.1671f, 2f, 0.1857f, 3f, 0.3f
     };
     private static readonly float[] WEB_CURVE = {
-        0f, 0f, 0.596f, 0f, 0.8f, 0.4f, 1f, 0.6f, 2f, 0.8f
+        0f, 0f, 0.596f, 0f, 0.8f, 0.4f, 1f, 0.6f, 1.25f, 0.54f, 2f, 0.6f, 3f,
+        0.8f
     };
     private static readonly float[] FALLING_COBRA_CURVE = {
-        0f, 0f, 0.394f, 0f, 0.47f, 0.14f, 0.65f, 0.07f, 1f, 0.2f, 2f, 0.35f
+        0f, 0f, 0.394f, 0f, 0.47f, 0.14f, 0.65f, 0.07f, 1f, 0.2f, 1.25f, 0.18f,
+        2f, 0.2f, 3f, 0.35f
     };
     private static readonly float[] COBRA_BASE_CURVE = {
-        0f, 0.5667f, 0.5f, 0.65f, 1f, 1f, 2f, 1.5f
+        0f, 0.5667f, 0.5f, 0.65f, 1f, 1f, 1.25f, 0.9f, 2f, 1f, 3f, 1.5f
     };
     private static readonly float[] COBRA_DISTANCE_CURVE = {
         0f, 0.3f, 10f, 0.4f, 20f, 0.8f, 54.09f, 0.85f, 60f, 1f, 62.706f,
@@ -301,8 +317,9 @@ public static class MockAnalyticsGenerator {
                 t += STEP_S;
                 float ramp = GetRamp(height);
                 bool isInBossZone = !isEndless
-                    && height >= BOSS_START_U
-                    && height <= BOSS_END_U;
+                    && ((height >= BOSS_START_U && height <= BOSS_END_U)
+                        || (height >= SPIDER_START_U
+                            && height <= SPIDER_END_U));
 
                 MoveCobra(ramp);
                 float climbedU = MoveMonkey();
@@ -340,7 +357,20 @@ public static class MockAnalyticsGenerator {
                     && height >= BOSS_TRIGGER_U
                 ) {
                     isBossDone = true;
-                    if (!FightBoss()) {
+                    if (!FightBoss(false)) {
+                        break;
+                    }
+                }
+                // the Spider King waits above the Cobra King, only for a
+                // monkey that beat it
+                if (
+                    !isEndless
+                    && plan.IsBossWon
+                    && !isSpiderDone
+                    && height >= SPIDER_TRIGGER_U
+                ) {
+                    isSpiderDone = true;
+                    if (!FightBoss(true)) {
                         break;
                     }
                 }
@@ -370,6 +400,9 @@ public static class MockAnalyticsGenerator {
         private bool isInZone = true;
         private bool hasArmor;
         private bool isBossDone;
+        private bool isSpiderDone;
+        // where the fight being played hangs: its trigger height
+        private float fightU = BOSS_TRIGGER_U;
         private Busy busy = Busy.None;
         private float busyUntil;
         private float dropLeftU;
@@ -392,7 +425,7 @@ public static class MockAnalyticsGenerator {
                 return 0f;
             }
             if (isEndless) {
-                return 1f + POST_BOSS_RAMP_PER_U * (y - ZONE_EXIT_U);
+                return 2f + POST_BOSS_RAMP_PER_U * (y - ZONE_EXIT_U);
             }
             if (y < BOSS_START_U) {
                 return (y - ZONE_EXIT_U) / (BOSS_START_U - ZONE_EXIT_U);
@@ -400,8 +433,15 @@ public static class MockAnalyticsGenerator {
             if (y <= BOSS_END_U) {
                 return 1f;
             }
+            if (y < SPIDER_START_U) {
+                return 1f
+                    + (y - BOSS_END_U) / (SPIDER_START_U - BOSS_END_U);
+            }
+            if (y <= SPIDER_END_U) {
+                return 2f;
+            }
 
-            return 1f + POST_BOSS_RAMP_PER_U * (y - BOSS_END_U);
+            return 2f + POST_BOSS_RAMP_PER_U * (y - SPIDER_END_U);
         }
 
         private float GetRecovery() {
@@ -602,6 +642,9 @@ public static class MockAnalyticsGenerator {
             // a novice mashes the escape key slower
             float escapeS = Range(rng, 1.5f, 3.5f)
                 + (1f - skill) * Range(rng, 0f, 2f);
+            // breaking free is the end of the struggle
+            plan.Get(AnalyticsMetric.WebEscape)
+                .Add(new Moment(t + escapeS, height, stamina));
             busy = Busy.Web;
             busyUntil = t + escapeS;
             webImmuneUntil = t + escapeS + 1.5f;
@@ -712,11 +755,21 @@ public static class MockAnalyticsGenerator {
         }
 
         // the boss fight is not climbed, so it is a few timed attempts,
-        // each lost or won by skill; a win lets the run go on above the zone
+        // each lost or won by skill; a win lets the run go on above the zone;
+        // the Spider King's fight is a little harder & has its own metrics
+        // isSpider: whether it is the Spider King's fight, not the Cobra's
         // return: if the monkey won the fight and the run goes on
-        private bool FightBoss() {
-            plan.Get(AnalyticsMetric.BossFight)
-                .Add(new Moment(t, height, stamina));
+        private bool FightBoss(bool isSpider) {
+            fightU = isSpider ? SPIDER_TRIGGER_U : BOSS_TRIGGER_U;
+            AnalyticsMetric reviveMetric = isSpider
+                ? AnalyticsMetric.SpiderRevive
+                : AnalyticsMetric.BossRevive;
+            AddFightEvent(
+                isSpider
+                    ? AnalyticsMetric.SpiderFight
+                    : AnalyticsMetric.BossFight,
+                t
+            );
             int revives = 0;
             while (true) {
                 bool isLong = rng.NextDouble()
@@ -728,7 +781,8 @@ public static class MockAnalyticsGenerator {
                 AddFightTrack(startT, startT + attemptS);
 
                 float winChance = 0.03f
-                    + 0.45f * Mathf.Max(0f, skill - 0.5f);
+                    + (isSpider ? 0.38f : 0.45f)
+                        * Mathf.Max(0f, skill - 0.5f);
                 if (rng.NextDouble() < winChance) {
                     if (rng.NextDouble() < 0.5) {
                         AddFightEvent(
@@ -736,11 +790,17 @@ public static class MockAnalyticsGenerator {
                             startT + attemptS * Range(rng, 0.3f, 0.8f)
                         );
                     }
-                    plan.IsBossWon = true;
-                    height = BOSS_END_U + 1f;
+                    if (isSpider) {
+                        // its reward is the silk gloves, no new armor
+                        AddFightEvent(
+                            AnalyticsMetric.SpiderWin, startT + attemptS);
+                    } else {
+                        plan.IsBossWon = true;
+                        hasArmor = true;
+                    }
+                    height = (isSpider ? SPIDER_END_U : BOSS_END_U) + 1f;
                     stamina = MAX_STAMINA;
                     cobraY = height - WIN_COBRA_DROP_U;
-                    hasArmor = true;
                     busy = Busy.None;
                     Freeze(0f);
                     plan.Track.Add(new Moment(t, height, stamina));
@@ -759,7 +819,7 @@ public static class MockAnalyticsGenerator {
                 );
                 if (revives < 2 && rng.NextDouble() < 0.55) {
                     t += 8f;
-                    AddFightEvent(AnalyticsMetric.BossRevive, t);
+                    AddFightEvent(reviveMetric, t);
                     t += 14f;
                     plan.Track.Add(new Moment(t, height, stamina));
                     revives++;
@@ -770,7 +830,7 @@ public static class MockAnalyticsGenerator {
         }
 
         private void AddFightEvent(AnalyticsMetric metric, float at) {
-            plan.Get(metric).Add(new Moment(at, BOSS_TRIGGER_U, stamina));
+            plan.Get(metric).Add(new Moment(at, fightU, stamina));
         }
 
         // the monkey hangs just under the king's reach, bananas keep it fed
@@ -778,7 +838,7 @@ public static class MockAnalyticsGenerator {
             float at = from;
             while (at + SAMPLE_INTERVAL_S < to) {
                 at += SAMPLE_INTERVAL_S;
-                height = BOSS_TRIGGER_U + Range(rng, -12f, 3f);
+                height = fightU + Range(rng, -12f, 3f);
                 stamina = Mathf.Clamp(
                     stamina + Range(rng, -14f, 12f),
                     20f,
@@ -821,6 +881,7 @@ public static class MockAnalyticsGenerator {
         System.Random rng
     ) {
         AddPauses(plan, rng);
+        AddHeightMarkers(plan);
         RunData run = new RunData {
             Status = plan.IsLost ? RunStatus.Lost : RunStatus.Interrupted,
             Mode = plan.Mode,
@@ -865,12 +926,41 @@ public static class MockAnalyticsGenerator {
         run.HeightScore =
             (long)Mathf.Floor(plan.HighestHeight / UNITS_PER_METER)
             * POINTS_PER_METER;
-        run.CoconutRewardScore = (long)coconuts * COCONUT_POINTS;
-        run.RewardScore =
-            (long)bananas * REWARD_POINTS + run.CoconutRewardScore;
+        // every scored kind, as ScoreManager would tally it; a freeze scores
+        // only for a coconut, not for the boss armor
+        run.RewardScoreByKind[(int)RewardKind.Banana] =
+            (long)bananas * REWARD_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.Coconut] =
+            (long)coconuts * COCONUT_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.Pineapple] =
+            (long)run.CountOf(AnalyticsMetric.PineappleLeap) * PINEAPPLE_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.CobraFreeze] =
+            (long)run.CountOf(AnalyticsMetric.CoconutUsed)
+            * COBRA_FREEZE_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.HeightMarker] =
+            (long)run.CountOf(AnalyticsMetric.HeightMarker)
+            * HEIGHT_MARKER_POINTS;
+        run.RewardScoreByKind[(int)RewardKind.WebEscape] =
+            (long)run.CountOf(AnalyticsMetric.WebEscape) * WEB_ESCAPE_POINTS;
+        foreach (long kindScore in run.RewardScoreByKind) {
+            run.RewardScore += kindScore;
+        }
         run.TotalScore = run.HeightScore + run.RewardScore;
 
         return run;
+    }
+
+    // one marker event the first time the track climbs past each marker
+    // height, like HeightMarkerSystem.MarkerReached
+    private static void AddHeightMarkers(RunPlan plan) {
+        int nextMarker = 1;
+        foreach (Moment m in plan.Track) {
+            while (m.Height >= nextMarker * HEIGHT_MARKER_INTERVAL_U) {
+                plan.Get(AnalyticsMetric.HeightMarker)
+                    .Add(new Moment(m.T, m.Height, m.Stamina));
+                nextMarker++;
+            }
+        }
     }
 
     // the odd pause of the game, about one in 4 min of play

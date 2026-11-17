@@ -2,7 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// Balance of the player's run: stamina budget and drain, starting zone,
-/// branch-hit penalty, score rules and the coconut item. The difficulty ramp,
+/// branch-hit penalty and the coconut item. Score values are in
+/// <see cref="ScoreConfig"/>. The difficulty ramp,
 /// branches, rough bark and webs are in <see cref="WorldBalanceConfig"/>, both
 /// cobras in <see cref="CobraBalanceConfig"/>.
 /// </summary>
@@ -33,15 +34,6 @@ public class PlayerBalanceConfig: ScriptableObject {
     /// <returns>how fast the monkey falls on a branch hit; u/s</returns>
     public float HitDropSpeedU => hitDropSpeedU;
 
-    /// <returns>points earned per meter of height</returns>
-    public int PointsPerMeter => pointsPerMeter;
-
-    /// <returns>Unity units per meter of height</returns>
-    public float UnitsPerMeter => unitsPerMeter;
-
-    /// <returns>points awarded per score reward pickup</returns>
-    public int ScoreRewardPoints => scoreRewardPoints;
-
     /// <returns>fraction 0~1 of <see cref="MaxStamina"/> the monkey starts
     /// the level with, spent in the starting zone</returns>
     public float StartingZoneStartStaminaFraction =>
@@ -56,16 +48,6 @@ public class PlayerBalanceConfig: ScriptableObject {
     /// starting zone lasts; 0.25 = a quarter of the normal rate</returns>
     public float StartingZoneIdleRecoveryMultiplier =>
         startingZoneIdleRecoveryMultiplier;
-
-    /// <returns>coconut points as a multiple of
-    /// <see cref="ScoreRewardPoints"/></returns>
-    public float CoconutScoreMultiplier => coconutScoreMultiplier;
-
-    /// <returns>points awarded per coconut: <see cref="ScoreRewardPoints"/>
-    /// times <see cref="CoconutScoreMultiplier"/>, rounded</returns>
-    public int CoconutRewardPoints => Mathf.RoundToInt(
-        scoreRewardPoints * coconutScoreMultiplier
-    );
 
     /// <returns>how long a used coconut freezes the great cobra; s</returns>
     public float CobraFreezeDurationS => cobraFreezeDurationS;
@@ -143,28 +125,7 @@ public class PlayerBalanceConfig: ScriptableObject {
     [Tooltip("fall speed on a branch hit; u/s")]
     private float hitDropSpeedU = 8f;
 
-    [Header("Score")]
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("points earned per meter of height")]
-    private int pointsPerMeter = 1;
-
-    [SerializeField]
-    [Min(0.001f)]
-    [Tooltip("Unity units per meter of height")]
-    private float unitsPerMeter = 0.1f;
-
-    [SerializeField]
-    [Min(0)]
-    [Tooltip("points awarded per score reward pickup")]
-    private int scoreRewardPoints = 100;
-
     [Header("Coconut")]
-    [SerializeField]
-    [Min(0f)]
-    [Tooltip("coconut points = score reward points x this")]
-    private float coconutScoreMultiplier = 2f;
-
     [SerializeField]
     [Min(0f)]
     [Tooltip("how long a used coconut freezes the great cobra; s")]
@@ -204,10 +165,6 @@ public class PlayerBalanceConfig: ScriptableObject {
         hitStunDurationS = Mathf.Max(0f, hitStunDurationS);
         hitDropDistanceU = Mathf.Max(0f, hitDropDistanceU);
         hitDropSpeedU = Mathf.Max(0f, hitDropSpeedU);
-        pointsPerMeter = Mathf.Max(0, pointsPerMeter);
-        unitsPerMeter = Mathf.Max(0.001f, unitsPerMeter);
-        scoreRewardPoints = Mathf.Max(0, scoreRewardPoints);
-        coconutScoreMultiplier = Mathf.Max(0f, coconutScoreMultiplier);
         cobraFreezeDurationS = Mathf.Max(0f, cobraFreezeDurationS);
         coconutThrowSpeedU = Mathf.Max(0.1f, coconutThrowSpeedU);
         coconutThrowDistanceU = Mathf.Max(0f, coconutThrowDistanceU);

@@ -434,7 +434,8 @@ public class CameraConfig: ScriptableObject {
     [Header("Stamina Pulse")]
     [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("vignette peak, move attempt below the low fraction, bar not empty")]
+    [Tooltip("vignette peak, move attempt below the low fraction, bar not "
+        + "empty")]
     private float lowVignetteIntensity = 0.4f;
 
     [SerializeField]

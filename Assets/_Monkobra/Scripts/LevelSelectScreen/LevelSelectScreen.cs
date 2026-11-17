@@ -26,7 +26,7 @@ public class LevelSelectScreen: MonoBehaviour {
     private TMP_Text endlessLockedHint;
 
     [SerializeField]
-    [Tooltip("goes back to the title, the UI/Cancel action (Esc)")]
+    [Tooltip("goes back to the title, the UI/Cancel action (Esc, P)")]
     private InputActionReference cancelAction;
 
     // MonoBehaviour Lifecycle  ################################################
@@ -100,12 +100,12 @@ public class LevelSelectScreen: MonoBehaviour {
 
     // Event Handlers  #########################################################
     private void OnNormalClicked() {
-        SceneNames.Load(SceneNames.FULL);
+        SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Full);
     }
 
     private void OnEndlessClicked() {
         if (ProgressStore.IsEndlessUnlocked) {
-            SceneNames.Load(SceneNames.ENDLESS);
+            SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Endless);
         }
     }
 

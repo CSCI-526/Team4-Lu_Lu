@@ -44,9 +44,12 @@ public class HackShortcutConfig: ScriptableObject {
     }
 
     // Public Members  #########################################################
-    /// <returns>if hack keys may run, ie every build, release included
-    /// </returns>
-    public static bool IsActive => true;
+    /// <returns>if the hack layer is on, ie hack keys may run: always in a
+    /// build w/o <see cref="AreHintsShown"/>, release included; in a
+    /// development build or the Editor only once
+    /// <see cref="HackAction.ToggleHints"/> has turned it on, so a tester
+    /// never triggers a hack key by accident</returns>
+    public static bool IsActive => !AreHintsShown || isLayerOn;
 
     /// <returns>if hack hints and dev-only UI may show, ie a development
     /// build or the Editor</returns>
@@ -68,10 +71,60 @@ public class HackShortcutConfig: ScriptableObject {
         return Key.None;
     }
 
+    /// <summary>
+    /// Reads the dev key of an action, so no gameplay script touches the
+    /// keyboard device itself. The toggle key is read w/ the hints, the rest
+    /// w/ the hack layer.
+    /// </summary>
+    /// <returns>if the key of the action went down this frame; never while
+    /// its gate is off (<see cref="IsActive"/>, or
+    /// <see cref="AreHintsShown"/> for <see cref="HackAction.ToggleHints"/>),
+    /// w/o a keyboard, or w/o a key</returns>
+    public bool WasPressedThisFrame(HackAction action) {
+        Keyboard keyboard = Keyboard.current;
+        Key key = GetKey(action);
+        bool isGateOpen = action == HackAction.ToggleHints
+            ? AreHintsShown
+            : IsActive;
+        return isGateOpen
+            && keyboard != null
+            && key != Key.None
+            && keyboard[key].wasPressedThisFrame;
+    }
+
+    /// <summary>
+    /// Flips the hack layer when the toggle key went down this frame, and so
+    /// the on-screen list w/ it. Call from one script only, the panel.
+    /// </summary>
+    /// <returns>if the layer was flipped; never outside a development build
+    /// </returns>
+    public bool TryToggleLayer() {
+        if (!WasPressedThisFrame(HackAction.ToggleHints)) {
+            return false;
+        }
+        isLayerOn = !isLayerOn;
+        if (Debug.isDebugBuild) {
+            Debug.Log("HackShortcutConfig:	hack layer " + isLayerOn);
+        }
+        return true;
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("one entry per hack action, each key used once")]
     private List<Entry> entries = new List<Entry>();
+
+    // private members  ########################################################
+    // the hack layer of a development build, off at every start; static, so
+    // it holds across scene loads & every panel reads the same
+    private static bool isLayerOn;
+
+    // an Editor w/o a domain reload keeps statics, so a new play starts off
+    [RuntimeInitializeOnLoadMethod(
+        RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetLayer() {
+        isLayerOn = false;
+    }
 
     // Editor Validation  ######################################################
     private void OnValidate() {

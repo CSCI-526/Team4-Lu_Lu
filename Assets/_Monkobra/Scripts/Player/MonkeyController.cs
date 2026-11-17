@@ -16,8 +16,9 @@ using UnityEngine.InputSystem;
 /// </para>
 /// <para>
 /// Every speed, ramp rate and branch-hit number, plus the input action
-/// itself, comes from the shared <see cref="MonkeyInputConfig"/> asset, the same
-/// one the arms read, so the body and its arms cannot drift out of tune.
+/// itself, comes from the shared <see cref="MonkeyInputConfig"/> asset, the
+/// same one the arms read, so the body and its arms cannot drift out of
+/// tune.
 /// </para>
 /// </summary>
 public class MonkeyController: MonoBehaviour {
@@ -51,10 +52,17 @@ public class MonkeyController: MonoBehaviour {
         get; private set;
     }
 
+    /// <summary>
+    /// scale on climb & orbit speed asked for by a boss fight, eg faster in
+    /// the Spider King's arena; 1 is normal
+    /// </summary>
+    public float ArenaSpeedScale { get; set; } = 1f;
+
     // Public Methods  #########################################################
     public float RoughBarkSpeedScale => roughBarkSpeedScale;
 
-    /// <summary>Tracks actual surface contact; overlap never stacks slowdown.</summary>
+    /// <summary>Tracks actual surface contact; overlap never stacks
+    /// slowdown.</summary>
     public void SetRoughBarkContact(RoughBarkZone zone, bool touching) {
         if (zone == null) return;
         if (touching) {
@@ -253,6 +261,7 @@ public class MonkeyController: MonoBehaviour {
     private void Update() {
         UpdateSpeedBuffKey();
         UpdateBossJumpKey();
+        UpdateSpiderJumpKey();
     }
 
     private void FixedUpdate() {
@@ -284,13 +293,18 @@ public class MonkeyController: MonoBehaviour {
         }
 
         bool isStunned = IsStunned;
-        roughContacts.RemoveWhere(zone => zone == null || !zone.isActiveAndEnabled);
+        roughContacts.RemoveWhere(
+            zone => zone == null || !zone.isActiveAndEnabled);
         bool roughContact = roughContacts.Count > 0 && GameController.I != null
             && GameController.I.IsRunLive && !GameController.I.IsLeaping;
-        float targetScale = roughContact ? worldBalanceConfig.RoughBarkSpeedMultiplier : 1f;
+        float targetScale = roughContact
+            ? worldBalanceConfig.RoughBarkSpeedMultiplier
+            : 1f;
         float blendStep = (1f - worldBalanceConfig.RoughBarkSpeedMultiplier)
-            * Time.fixedDeltaTime / Mathf.Max(0.01f, worldBalanceConfig.RoughBarkBlendS);
-        roughBarkSpeedScale = Mathf.MoveTowards(roughBarkSpeedScale, targetScale, blendStep);
+            * Time.fixedDeltaTime
+            / Mathf.Max(0.01f, worldBalanceConfig.RoughBarkBlendS);
+        roughBarkSpeedScale = Mathf.MoveTowards(
+            roughBarkSpeedScale, targetScale, blendStep);
         Vector2 directionalInput = isStunned || MoveAction == null
             ? Vector2.zero
             : MoveAction.action.ReadValue<Vector2>();
@@ -313,8 +327,9 @@ public class MonkeyController: MonoBehaviour {
             : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
-        // rough bark slows the body, the dev speed buff multiplies it
-        float moveScale = roughBarkSpeedScale
+        // rough bark slows the body, a boss arena & the dev speed buff
+        // multiply it
+        float moveScale = roughBarkSpeedScale * ArenaSpeedScale
             * (IsSpeedBuff ? SPEED_BUFF_SCALE : 1f);
 
         orbitAngleDeg -= directionalInput.x
@@ -439,6 +454,8 @@ public class MonkeyController: MonoBehaviour {
     private const float INPUT_DEADZONE = 0.1f;
     private const float INPUT_DEADZONE_SQR = INPUT_DEADZONE * INPUT_DEADZONE;
     private const float SPEED_BUFF_SCALE = 3f; // dev buff on climb & orbit
+    // the spider jump lands this far below the Spider King's trigger; u
+    private const float SPIDER_JUMP_BELOW_U = 6f;
 
     // private members  ########################################################
     private float orbitAngleDeg;
@@ -475,13 +492,7 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key speedBuffKey = hackShortcuts.GetKey(HackAction.SpeedBuff);
-        if (
-            keyboard == null
-            || speedBuffKey == Key.None
-            || !keyboard[speedBuffKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.SpeedBuff)) {
             return;
         }
 
@@ -498,13 +509,7 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key bossJumpKey = hackShortcuts.GetKey(HackAction.BossJump);
-        if (
-            keyboard == null
-            || bossJumpKey == Key.None
-            || !keyboard[bossJumpKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.BossJump)) {
             return;
         }
 
@@ -532,6 +537,58 @@ public class MonkeyController: MonoBehaviour {
         if (Debug.isDebugBuild) {
             Debug.Log(
                 $"MonkeyController:\tboss jump to y {target.y}",
+                this
+            );
+        }
+    }
+
+    // dev/hack key teleporting the monkey to just below the Spider King's
+    // fight, the Cobra King counted as beaten (its armor worn), so the
+    // second boss is tested w/o the climb
+    private void UpdateSpiderJumpKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.SpiderJump)) {
+            return;
+        }
+
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        bool isLive = GameController.I != null && GameController.I.IsRunLive;
+        if (ramp == null || worldBalanceConfig == null || body == null
+            || !isLive || IsHeld) {
+            return;
+        }
+        // not in the middle of a boss fight
+        CobraKingFightController cobraKing = CobraKingFightController.I;
+        if (cobraKing != null && !cobraKing.IsDone && !cobraKing.IsWaiting) {
+            return;
+        }
+        SpiderKingFightController spiderKing = SpiderKingFightController.I;
+        if (spiderKing != null && spiderKing.IsFraming) {
+            return;
+        }
+
+        GameController.I.EndStartingZone();
+        if (cobraKing != null) {
+            cobraKing.SkipForTest();
+        }
+
+        // a bit below the trigger, in the spider's bare zone, so it is seen
+        // waiting above & the fight starts after a short climb
+        Vector3 target = transform.position;
+        target.y = ramp.PlayerGameStartYPosition
+            + worldBalanceConfig.SpiderTriggerHeightU - SPIDER_JUMP_BELOW_U;
+        transform.position = target;
+        body.position = target;
+        climbSpeedU = 0f;
+        upHeldS = 0f;
+        downHeldS = 0f;
+        Physics.SyncTransforms();
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                $"MonkeyController:\tspider jump to y {target.y}",
                 this
             );
         }

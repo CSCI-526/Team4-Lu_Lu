@@ -134,6 +134,8 @@ public class AnalyticsManager: MonoBehaviour {
         }
 
         if (I != null && I != this) {
+            // a scene may keep its own copy, the first instance wins; the
+            // warning is expected and harmless
             Debug.LogWarning("Analytics:\tduplicate instance destroyed", this);
             Destroy(gameObject);
             return;
@@ -216,7 +218,7 @@ public class AnalyticsManager: MonoBehaviour {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneNames.Loading -= OnSceneLoading;
         SpiderWebTrap.Encountered -= OnWebEncountered;
-        Observe(null, null, null, null, null, null);
+        Observe(null, null, null, null, null, null, null);
         I = null;
     }
 
@@ -272,6 +274,15 @@ public class AnalyticsManager: MonoBehaviour {
         RecordEvent(AnalyticsMetric.Coconut);
     }
 
+    // only the rewards that have a metric of their own are stamped here
+    private void OnRewardAdded(RewardKind kind, long _) {
+        if (kind == RewardKind.HeightMarker) {
+            RecordEvent(AnalyticsMetric.HeightMarker);
+        } else if (kind == RewardKind.WebEscape) {
+            RecordEvent(AnalyticsMetric.WebEscape);
+        }
+    }
+
     private void OnCoconutUsed() {
         RecordEvent(AnalyticsMetric.CoconutUsed);
     }
@@ -319,6 +330,19 @@ public class AnalyticsManager: MonoBehaviour {
         RecordEvent(AnalyticsMetric.BossRevive);
     }
 
+    private void OnSpiderFightStarted() {
+        RecordEvent(AnalyticsMetric.SpiderFight);
+    }
+
+    private void OnSpiderRevived() {
+        RecordEvent(AnalyticsMetric.SpiderRevive);
+    }
+
+    // the spider's FightEnded is raised once its reward is taken, ie a win
+    private void OnSpiderWon() {
+        RecordEvent(AnalyticsMetric.SpiderWin);
+    }
+
     // private members  ########################################################
     private readonly AnalyticsSessionFile file = new AnalyticsSessionFile();
     private AnalyticsHackKeys hackKeys;
@@ -334,7 +358,8 @@ public class AnalyticsManager: MonoBehaviour {
     private HitBranchSensor observedBranch;
     private CoconutManager observedCoconuts;
     private MonkeyController observedMonkey;
-    private BossFightController observedBoss;
+    private CobraKingFightController observedBoss;
+    private SpiderKingFightController observedSpider;
 
     // private methods  ########################################################
     // observes the subjects of <scene> only: right after a load the old
@@ -346,7 +371,8 @@ public class AnalyticsManager: MonoBehaviour {
             InScene(FindFirstObjectByType<HitBranchSensor>(), scene),
             InScene(CoconutManager.I, scene),
             InScene(FindFirstObjectByType<MonkeyController>(), scene),
-            InScene(BossFightController.I, scene)
+            InScene(CobraKingFightController.I, scene),
+            InScene(SpiderKingFightController.I, scene)
         );
     }
 
@@ -362,7 +388,8 @@ public class AnalyticsManager: MonoBehaviour {
         HitBranchSensor branch,
         CoconutManager coconuts,
         MonkeyController monkey,
-        BossFightController boss
+        CobraKingFightController boss,
+        SpiderKingFightController spider
     ) {
         if (observedGame != null) {
             observedGame.StateChanged -= OnGameStateChanged;
@@ -377,8 +404,14 @@ public class AnalyticsManager: MonoBehaviour {
             observedBoss.ArmorAbsorbed -= OnBossArmorAbsorbed;
             observedBoss.Revived -= OnBossRevived;
         }
+        if (observedSpider != null) {
+            observedSpider.FightStarted -= OnSpiderFightStarted;
+            observedSpider.Revived -= OnSpiderRevived;
+            observedSpider.FightEnded -= OnSpiderWon;
+        }
         if (observedScore != null) {
             observedScore.BananaCollected -= OnBananaCollected;
+            observedScore.RewardAdded -= OnRewardAdded;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit -= OnBranchHit;
@@ -395,6 +428,7 @@ public class AnalyticsManager: MonoBehaviour {
         observedCoconuts = coconuts;
         observedMonkey = monkey;
         observedBoss = boss;
+        observedSpider = spider;
 
         if (observedGame != null) {
             observedGame.StateChanged += OnGameStateChanged;
@@ -409,8 +443,14 @@ public class AnalyticsManager: MonoBehaviour {
             observedBoss.ArmorAbsorbed += OnBossArmorAbsorbed;
             observedBoss.Revived += OnBossRevived;
         }
+        if (observedSpider != null) {
+            observedSpider.FightStarted += OnSpiderFightStarted;
+            observedSpider.Revived += OnSpiderRevived;
+            observedSpider.FightEnded += OnSpiderWon;
+        }
         if (observedScore != null) {
             observedScore.BananaCollected += OnBananaCollected;
+            observedScore.RewardAdded += OnRewardAdded;
         }
         if (observedBranch != null) {
             observedBranch.BranchHit += OnBranchHit;
@@ -514,8 +554,11 @@ public class AnalyticsManager: MonoBehaviour {
         run.TotalScore = scoreMgr != null ? scoreMgr.TotalScore : 0;
         run.HeightScore = scoreMgr != null ? scoreMgr.DistanceScore : 0;
         run.RewardScore = scoreMgr != null ? scoreMgr.RewardScore : 0;
-        run.CoconutRewardScore =
-            scoreMgr != null ? scoreMgr.CoconutRewardScore : 0;
+        foreach (RewardKind kind
+            in System.Enum.GetValues(typeof(RewardKind))) {
+            run.RewardScoreByKind[(int)kind] =
+                scoreMgr != null ? scoreMgr.RewardScoreOf(kind) : 0;
+        }
 
         // the end sample needs the run to stay current for a moment
         currentRun = run;

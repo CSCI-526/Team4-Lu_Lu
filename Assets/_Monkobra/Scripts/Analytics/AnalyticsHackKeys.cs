@@ -1,5 +1,4 @@
 using System;
-using UnityEngine.InputSystem;
 
 /// <summary>
 /// Polls the analytics dev keys of <see cref="HackShortcutConfig"/> and fires
@@ -24,22 +23,17 @@ public class AnalyticsHackKeys {
     /// call once per frame
     /// </summary>
     public void Poll() {
-        if (shortcuts == null || !HackShortcutConfig.IsActive) {
+        if (shortcuts == null) {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null) {
-            return;
-        }
-
-        if (IsPressed(keyboard, HackAction.RestartSession)) {
+        if (shortcuts.WasPressedThisFrame(HackAction.RestartSession)) {
             onRestartSession();
         }
-        if (IsPressed(keyboard, HackAction.DownloadReport)) {
+        if (shortcuts.WasPressedThisFrame(HackAction.DownloadReport)) {
             onDownloadReport();
         }
-        if (IsPressed(keyboard, HackAction.MockSession)) {
+        if (shortcuts.WasPressedThisFrame(HackAction.MockSession)) {
             onMockSession();
         }
     }
@@ -49,10 +43,4 @@ public class AnalyticsHackKeys {
     private readonly Action onRestartSession;
     private readonly Action onDownloadReport;
     private readonly Action onMockSession;
-
-    // private methods  ########################################################
-    private bool IsPressed(Keyboard keyboard, HackAction action) {
-        Key key = shortcuts.GetKey(action);
-        return key != Key.None && keyboard[key].wasPressedThisFrame;
-    }
 }

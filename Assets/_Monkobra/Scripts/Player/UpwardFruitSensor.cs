@@ -181,8 +181,28 @@ public class UpwardFruitSensor: MonoBehaviour {
     }
 
     private void FixedUpdate() {
+        ForgetDestroyedFruit();
         // the closest fruit changes as the monkey climbs, not just on events
         RefreshReachTarget();
+    }
+
+    // a fruit destroyed inside a zone, eg its segment recycled after a hack
+    // jump, never raises its trigger exit; left in the lists it would throw
+    // every step & block every grab
+    private void ForgetDestroyedFruit() {
+        if (fruitOrder.TrueForAll(fruit => fruit != null)) {
+            return;
+        }
+        fruitOrder.RemoveAll(fruit => fruit == null);
+        leftFruits.RemoveWhere(fruit => fruit == null);
+        rightFruits.RemoveWhere(fruit => fruit == null);
+        // a destroyed target only compares equal to null: drop the dead ref
+        if (lockedTarget == null) {
+            lockedTarget = null;
+        }
+        if (grabbableFruit == null) {
+            grabbableFruit = null;
+        }
     }
 
     // Event Handlers  #########################################################
@@ -216,10 +236,10 @@ public class UpwardFruitSensor: MonoBehaviour {
         }
     }
 
-    // Constants  ###############################################################
+    // constants  ##############################################################
     private const string FRUIT_TAG = "FruitCollider";
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly HashSet<Collider> leftFruits = new HashSet<Collider>();
     private readonly HashSet<Collider> rightFruits = new HashSet<Collider>();
 
@@ -230,7 +250,7 @@ public class UpwardFruitSensor: MonoBehaviour {
     private Collider reachTarget;
     private Collider lockedTarget; // fruit an arm is reaching for, else null
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     // closest fruit across both zones and the side it sits on; a fruit in both
     // zones takes the side of the monkey's right vector it lies on
     private Collider FindClosestFruit(out DetectionSide side) {

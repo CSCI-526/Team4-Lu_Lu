@@ -65,26 +65,25 @@ public static class AnalyticsMarkdownWriter {
         sb.Append("#### Final Score: ").Append(run.TotalScore).Append("\n\n");
         sb.Append("- Score from Height: ").Append(run.HeightScore);
         sb.Append('\n');
-        // the reward score holds both fruits, the coconut part kept apart
-        long bananaScore = run.RewardScore - run.CoconutRewardScore;
-        sb.Append("- Score from Banana: ");
-        sb.Append(FormatPickupScore(
-            bananaScore,
-            run.CountOf(AnalyticsMetric.Banana)
-        ));
+        // the reward score is split by kind: banana and coconut always show,
+        // the other kinds only once they scored
+        foreach (RewardKind kind in Enum.GetValues(typeof(RewardKind))) {
+            long kindScore = run.RewardScoreByKind[(int)kind];
+            bool isFruit = kind == RewardKind.Banana
+                || kind == RewardKind.Coconut;
+            if (kindScore <= 0 && !isFruit) {
+                continue;
+            }
+            AnalyticsMetric? counter = RewardCountMetric(kind);
+            sb.Append("- Score from ").Append(RewardLabel(kind)).Append(": ");
+            sb.Append(FormatPickupScore(
+                kindScore,
+                counter.HasValue ? run.CountOf(counter.Value) : 0
+            ));
+            sb.Append('\n');
+        }
         sb.Append('\n');
-        sb.Append("- Score from Coconut: ");
-        sb.Append(FormatPickupScore(
-            run.CoconutRewardScore,
-            run.CountOf(AnalyticsMetric.Coconut)
-        ));
-        sb.Append("\n\n");
-        AppendScoreSplit(
-            sb,
-            run.HeightScore,
-            bananaScore,
-            run.CoconutRewardScore
-        );
+        AppendScoreSplit(sb, run.HeightScore, run.RewardScoreByKind);
 
         // every metric gets one section, a new metric needs no code here
         foreach (AnalyticsMetric metric in AnalyticsMetrics.All) {
@@ -323,10 +322,13 @@ public static class AnalyticsMarkdownWriter {
     private static void AppendScoreSplit(
         StringBuilder sb,
         long heightScore,
-        long bananaScore,
-        long coconutScore
+        long[] rewardScores
     ) {
-        if (heightScore <= 0 && bananaScore <= 0 && coconutScore <= 0) {
+        long total = heightScore;
+        foreach (long score in rewardScores) {
+            total += score;
+        }
+        if (total <= 0) {
             return;
         }
 
@@ -335,13 +337,47 @@ public static class AnalyticsMarkdownWriter {
         if (heightScore > 0) {
             sb.Append("    \"Height\" : ").Append(heightScore).Append('\n');
         }
-        if (bananaScore > 0) {
-            sb.Append("    \"Banana\" : ").Append(bananaScore).Append('\n');
-        }
-        if (coconutScore > 0) {
-            sb.Append("    \"Coconut\" : ").Append(coconutScore).Append('\n');
+        foreach (RewardKind kind in Enum.GetValues(typeof(RewardKind))) {
+            long score = rewardScores[(int)kind];
+            if (score > 0) {
+                sb.Append("    \"").Append(RewardLabel(kind)).Append("\" : ");
+                sb.Append(score).Append('\n');
+            }
         }
         sb.Append("```\n\n");
+    }
+
+    // how the report words a reward kind
+    private static string RewardLabel(RewardKind kind) {
+        switch (kind) {
+            case RewardKind.CobraFreeze:
+                return "Cobra Freeze";
+            case RewardKind.HeightMarker:
+                return "Height Marker";
+            case RewardKind.WebEscape:
+                return "Web Escape";
+            default:
+                return kind.ToString();
+        }
+    }
+
+    // the metric whose count equals how often a kind scored, none when no
+    // metric matches (a cobra freeze also counts the boss armor's freezes)
+    private static AnalyticsMetric? RewardCountMetric(RewardKind kind) {
+        switch (kind) {
+            case RewardKind.Banana:
+                return AnalyticsMetric.Banana;
+            case RewardKind.Coconut:
+                return AnalyticsMetric.Coconut;
+            case RewardKind.Pineapple:
+                return AnalyticsMetric.PineappleLeap;
+            case RewardKind.HeightMarker:
+                return AnalyticsMetric.HeightMarker;
+            case RewardKind.WebEscape:
+                return AnalyticsMetric.WebEscape;
+            default:
+                return null;
+        }
     }
 
     // line of sampled height over the run, skipped w/o 2 samples; the x axis

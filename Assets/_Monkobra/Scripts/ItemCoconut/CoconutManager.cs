@@ -11,8 +11,8 @@ using UnityEngine.InputSystem;
 /// <see cref="CobraMotor.TryFreeze"/>, for
 /// <see cref="PlayerBalanceConfig.CobraFreezeDurationS"/>.
 /// <para>
-/// UseCoconut is an action of the Input Actions asset: a double-tap (Space, E
-/// or gamepad North, the keys of the grab) set up there as a MultiTap
+/// UseCoconut is an action of the Input Actions asset: a double-tap (Space, E,
+/// Enter or gamepad North, the keys of the grab) set up there as a MultiTap
 /// interaction, so its timing and keys are edited in the asset, not here. A
 /// press held to reach never completes it. This enables the action while it
 /// is enabled itself, and listens to its performed event only.
@@ -417,7 +417,8 @@ public class CoconutManager: MonoBehaviour {
         if (cobra == null) {
             return;
         }
-        bool isFrozenNow = cobra.TryFreeze(playerBalanceConfig.CobraFreezeDurationS);
+        bool isFrozenNow =
+            cobra.TryFreeze(playerBalanceConfig.CobraFreezeDurationS);
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CoconutManager:\tcoconut landed, "

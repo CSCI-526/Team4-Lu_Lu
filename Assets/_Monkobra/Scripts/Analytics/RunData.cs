@@ -62,14 +62,16 @@ public class RunData {
     // top of the stamina bar, the y range of the stamina chart
     public float MaxStamina = 1f;
 
-    // starting zone  -----------------------------------------------------------
+    // starting zone
+    // -----------------------------------------------------------
     // if the run opened in the starting zone, so it holds the zone's events
     public bool StartedInZone;
     // if the monkey left the starting zone during the run
     public bool HasZoneExit;
     public EventStamp ZoneExit;
 
-    // set once the run leaves InProgress  --------------------------------------
+    // set once the run leaves InProgress
+    // --------------------------------------
     public EventStamp End;
     public DeathCause Cause = DeathCause.Unknown;
     // highest point reached, as opposed to where the run ended (End.Height);
@@ -78,8 +80,9 @@ public class RunData {
     public long TotalScore;
     public long HeightScore;
     public long RewardScore;
-    // part of RewardScore from coconuts, the rest is from bananas
-    public long CoconutRewardScore;
+    // RewardScore split by RewardKind, indexed by the enum value
+    public readonly long[] RewardScoreByKind =
+        new long[Enum.GetValues(typeof(RewardKind)).Length];
     // seconds from start to end
     public float DurationS;
 

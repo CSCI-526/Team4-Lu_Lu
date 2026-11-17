@@ -36,6 +36,17 @@ public enum HackAction {
     /// <summary>closes the analytics session and opens a new file</summary>
     RestartSession,
 
-    /// <summary>saves a mock analytics session file, for layout checks</summary>
+    /// <summary>saves a mock analytics session file, for layout checks
+    /// </summary>
     MockSession,
+
+    /// <summary>turns the hack layer on or off in a development build: the
+    /// on-screen list of hack keys (<see cref="HackShortcutPanel"/>) and every
+    /// other hack key, off when the game starts; never runs elsewhere
+    /// </summary>
+    ToggleHints,
+
+    /// <summary>teleports the monkey to just below the Spider King's
+    /// trigger height, the Cobra King counted as beaten</summary>
+    SpiderJump,
 }

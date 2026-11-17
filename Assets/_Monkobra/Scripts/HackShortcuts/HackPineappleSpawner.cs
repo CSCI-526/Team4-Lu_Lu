@@ -103,31 +103,21 @@ public class HackPineappleSpawner: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null) {
-            return;
-        }
-        if (IsPressed(keyboard, HackAction.SpawnPineapple)) {
+        if (hackShortcuts.WasPressedThisFrame(HackAction.SpawnPineapple)) {
             SpawnBranch(false);
         }
-        if (IsPressed(keyboard, HackAction.SpawnCoconut)) {
+        if (hackShortcuts.WasPressedThisFrame(HackAction.SpawnCoconut)) {
             SpawnBranch(true);
         }
-        if (IsPressed(keyboard, HackAction.SpawnFallingCobra)) {
+        if (hackShortcuts.WasPressedThisFrame(HackAction.SpawnFallingCobra)) {
             SpawnFallingCobra();
         }
-        if (IsPressed(keyboard, HackAction.SpawnSpiderWeb)) {
+        if (hackShortcuts.WasPressedThisFrame(HackAction.SpawnSpiderWeb)) {
             SpawnSpiderWeb();
         }
     }
 
     // private methods  ########################################################
-    // if the action's key went down this frame
-    private bool IsPressed(Keyboard keyboard, HackAction action) {
-        Key key = hackShortcuts.GetKey(action);
-        return key != Key.None && keyboard[key].wasPressedThisFrame;
-    }
-
     // horizontal direction from the trunk axis out to the monkey, zero if the
     // monkey stands on the axis
     private Vector3 GetOutward() {

@@ -68,8 +68,8 @@ public class GameController: MonoBehaviour {
         }
     }
 
-    /// <summary>which kind of run this scene plays</summary>
-    public RunMode Mode => runMode;
+    /// <summary>which kind of run this scene plays, picked on load</summary>
+    public RunMode Mode => RunModeSelection.Selected;
 
     /// <summary>
     /// if the run is over and the restart input delay has passed, so a
@@ -107,6 +107,14 @@ public class GameController: MonoBehaviour {
         if (Debug.isDebugBuild) {
             Debug.Log("GameController:\tpaused " + isPaused, this);
         }
+    }
+
+    /// <summary>
+    /// pauses the run on a call from the web page, eg the rotate overlay
+    /// of the WebGL template shown in portrait; named by `SendMessage`
+    /// </summary>
+    public void PauseFromBrowser() {
+        SetPaused(true);
     }
 
     /// <summary>
@@ -166,18 +174,13 @@ public class GameController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("Full: the normal run with the boss fight; Endless: starts "
-        + "after the boss, no boss fight, hazards keep ramping")]
-    private RunMode runMode = RunMode.Full;
-
-    [SerializeField]
     [Min(0f)]
     [Tooltip("unscaled seconds the lose screen ignores restart input")]
     private float restartInputDelay = 0.5f;
 
     [SerializeField]
     [Tooltip("starts the run from the tutorial screen, the Player/Jump "
-        + "action (Space); no other key starts it")]
+        + "action (Space, E, Enter); no other key starts it")]
     private InputActionReference startRunAction;
 
     [SerializeField]
@@ -349,13 +352,7 @@ public class GameController: MonoBehaviour {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-        Key noClipKey = hackShortcuts.GetKey(HackAction.NoClip);
-        if (
-            keyboard == null
-            || noClipKey == Key.None
-            || !keyboard[noClipKey].wasPressedThisFrame
-        ) {
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.NoClip)) {
             return;
         }
 
