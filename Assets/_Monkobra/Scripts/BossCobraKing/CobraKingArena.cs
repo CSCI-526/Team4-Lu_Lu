@@ -134,6 +134,17 @@ public sealed class CobraKingArena {
                 branch.gameObject.SetActive(false);
             }
         }
+        // a falling cobra never outlives its branch: one perched up here would
+        // hang in mid air, whichever listener ran first
+        foreach (FallingCobraController cobra in
+            UnityEngine.Object.FindObjectsByType<FallingCobraController>(
+                FindObjectsSortMode.None)) {
+            if (cobra.transform.position.y > minY) {
+                // inactive first, Destroy only lands at the end of the frame
+                cobra.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(cobra.gameObject);
+            }
+        }
     }
 
     // two banana branches beside the monkey, plain & golden: the first throw
