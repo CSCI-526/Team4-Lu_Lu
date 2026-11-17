@@ -1,11 +1,17 @@
 # Monkobra CHANGELOG
 
 <!--
-Todo pan branch & bark model/texture
-Todo erik lighting
-Todo erik skybox
-Todo erik sfx
-Bug endless mode need to start w/ full heath & no starting zone
+Fixme put back other fonts
+Todo add jump to 2nd boss fight
+Todo 2nd boss fight double click
+Fixme difficulty system updated, game balance
+Todo upd weekly devlog
+
+todo pan branch & bark model/texture
+todo erik lighting
+todo erik skybox
+todo erik sfx
+bug endless mode need to start w/ full heath & no starting zone
 todo vertical version
 -->
 
