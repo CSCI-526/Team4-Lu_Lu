@@ -46,6 +46,7 @@ todo vertical version
 - hot paths: cobra head bounds, freeze timer text & tutorial stick rect cached; dormant falling cobras skip the spine rebuild far from the monkey
 - PC render pipeline: opaque texture off, nothing read it
 - Spider King fight area moved down 50 u: zone 975~1050, trigger 1000 (was 1050), seen waiting from 945 u, so its height marker reads 1000 m
+- boss HUD can show an animated double tap icon under its low banner (`BossFightHud.ShowDoubleTapHint`, controllers in `BossFightHudTuning`, wired in `SpiderKingFight`); nothing calls it yet
 
 ##### Yuqing Lu
 

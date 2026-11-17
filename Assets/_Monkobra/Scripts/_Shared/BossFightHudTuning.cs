@@ -19,6 +19,10 @@ public sealed class BossFightHudTuning {
         promptKeyboardController;
     public RuntimeAnimatorController PromptTouchController =>
         promptTouchController;
+    public RuntimeAnimatorController DoubleKeyboardController =>
+        doubleKeyboardController;
+    public RuntimeAnimatorController DoubleTouchController =>
+        doubleTouchController;
     public Color HealthColor => healthColor;
     public Color DamageColor => damageColor;
     public Color WarningColor => warningColor;
@@ -47,6 +51,14 @@ public sealed class BossFightHudTuning {
     [SerializeField]
     [Tooltip("animates the prompt finger while touch is in use (hold)")]
     private RuntimeAnimatorController promptTouchController;
+    [SerializeField]
+    [Tooltip("animates the banner's keycap while a keyboard is in use (Space "
+        + "double tap); blank shows none")]
+    private RuntimeAnimatorController doubleKeyboardController;
+    [SerializeField]
+    [Tooltip("animates the banner's finger while touch is in use (double "
+        + "tap); blank shows none")]
+    private RuntimeAnimatorController doubleTouchController;
     [SerializeField]
     private Color healthColor = new Color(0.85f, 0.15f, 0.15f);
     [SerializeField]

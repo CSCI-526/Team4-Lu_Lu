@@ -187,6 +187,7 @@ public class BossFightHud: MonoBehaviour {
         }
         rig.bannerLabel.text = text;
         rig.bannerLabel.color = color;
+        ShowDoubleTapIcon(false);
         rig.bannerLabel.rectTransform.anchoredPosition =
             rig.bannerCenterPosition;
         rig.bannerLabel.gameObject.SetActive(true);
@@ -209,8 +210,18 @@ public class BossFightHud: MonoBehaviour {
         rig.bannerHideTime = seconds > 0f ? Time.unscaledTime + seconds : -1f;
     }
 
+    /// <summary>
+    /// Shows the animated double tap icon under the low banner, the keycap
+    /// of a keyboard or the finger of touch; it goes w/ the next banner or
+    /// <see cref="HideBanner"/>. Call it after the banner it teaches under.
+    /// </summary>
+    public void ShowDoubleTapHint() {
+        ShowDoubleTapIcon(true);
+    }
+
     /// <summary>Hides the big banner.</summary>
     public void HideBanner() {
+        ShowDoubleTapIcon(false);
         if (rig.bannerLabel == null) {
             return;
         }
@@ -469,6 +480,14 @@ public class BossFightHud: MonoBehaviour {
         set => rig.speechWorldPosition = value;
     }
 
+    // the icon under the banner, on or off; a no-op w/o the icon
+    private void ShowDoubleTapIcon(bool isShown) {
+        if (rig.doubleTapIcon != null
+            && rig.doubleTapIcon.gameObject.activeSelf != isShown) {
+            rig.doubleTapIcon.gameObject.SetActive(isShown);
+        }
+    }
+
     private void Update() {
         if (rig.rootRect == null) {
             return;
@@ -482,6 +501,7 @@ public class BossFightHud: MonoBehaviour {
             && Time.unscaledTime >= rig.bannerHideTime) {
             rig.bannerHideTime = -1f;
             rig.bannerLabel.gameObject.SetActive(false);
+            ShowDoubleTapIcon(false);
         }
         if (rig.speechRect != null) {
             rig.speechLeftS -= Time.deltaTime;
