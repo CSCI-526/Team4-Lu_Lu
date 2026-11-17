@@ -205,27 +205,31 @@ public static class MockAnalyticsGenerator {
     };
     private static readonly float[] EMPTY_CURVE = {
         0f, 0.1f, 0.183f, 0.113f, 0.321f, 0.068f, 0.397f, 0.057f, 0.497f,
-        0.058f, 0.597f, 0.058f, 0.631f, 0.0625f, 1f, 0.1f, 2f, 0.3f
+        0.058f, 0.597f, 0.058f, 0.631f, 0.0625f, 1f, 0.1f, 1.25f, 0.09f, 2f,
+        0.1f, 3f, 0.3f
     };
     private static readonly float[] BANANA_CURVE = {
         0f, 0.06f, 0.103f, 0.0747f, 0.183f, 0.0618f, 0.283f, 0.0778f, 0.383f,
-        0.0858f, 0.483f, 0.0818f, 0.583f, 0.0763f, 1f, 0.074f, 1.256f,
-        0.0851f, 1.52f, 0.0897f, 2f, 0.1f
+        0.0858f, 0.483f, 0.0818f, 0.583f, 0.0763f, 1f, 0.0738f, 1.25f, 0.0664f,
+        2f, 0.0738f, 2.2558f, 0.0851f, 2.5203f, 0.0897f, 3f, 0.1f
     };
     private static readonly float[] COCONUT_CURVE = {
         0f, 0f, 0.495f, 0f, 0.5f, 0.03f, 0.528f, 0.04f, 0.6f, 0.0325f, 1f,
-        0.03f, 2f, 0.036f
+        0.03f, 1.25f, 0.027f, 2f, 0.03f, 2.25f, 0.0315f, 2.5f, 0.033f, 3f,
+        0.036f
     };
     private static readonly float[] PINEAPPLE_CURVE = {
-        0f, 0f, 0.293f, 0f, 0.303f, 0.0343f, 0.353f, 0.0503f, 0.423f,
-        0.0483f, 0.603f, 0.0368f, 1f, 0.0359f, 2f, 0.0376f
+        0f, 0f, 0.293f, 0f, 0.303f, 0.0343f, 0.353f, 0.0503f, 0.423f, 0.0483f,
+        0.603f, 0.0368f, 1f, 0.0359f, 1.25f, 0.0323f, 2f, 0.0359f, 2.25f,
+        0.0331f, 2.5f, 0.0346f, 3f, 0.0376f
     };
     private static readonly float[] BARK_CURVE = {
         0f, 0f, 0.192f, 0f, 0.23f, 0.15f, 0.3f, 0.19f, 0.4f, 0.19f, 0.5f,
-        0.165f, 0.6f, 0.14f, 2f, 0.3f
+        0.165f, 0.6f, 0.14f, 1f, 0.1857f, 1.25f, 0.1671f, 2f, 0.1857f, 3f, 0.3f
     };
     private static readonly float[] WEB_CURVE = {
-        0f, 0f, 0.596f, 0f, 0.8f, 0.4f, 1f, 0.6f, 2f, 0.8f
+        0f, 0f, 0.596f, 0f, 0.8f, 0.4f, 1f, 0.6f, 1.25f, 0.54f, 2f, 0.6f, 3f,
+        0.8f
     };
     private static readonly float[] FALLING_COBRA_CURVE = {
         0f, 0f, 0.394f, 0f, 0.47f, 0.14f, 0.65f, 0.07f, 1f, 0.2f, 2f, 0.35f
