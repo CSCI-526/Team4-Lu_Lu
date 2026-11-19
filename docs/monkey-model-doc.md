@@ -34,7 +34,7 @@ Each script only reads the monkey's state and moves model bones. None touches a 
 `MonkeyModelArms` poses each arm as a two bone IK chain, elbow out, down, and back, like hugging the trunk.
 
 - Climbing: each hand follows the animator's cycle
-- Reaching or leaping: the hand blends onto the physics hand of `ArmController`, so the visible grab lands where it is judged
+- Reaching or leaping: the hand blends onto the physics hand of `ArmController`, so the visible grab lands where it is judged; a leap hands the arm back to the climb cycle as soon as the hands let go, not at the end of the landing grace, when the freed physics hand still swings back on its joint
 - Past a bent arm's reach: the upper arm and forearm both lengthen alike
 - Wrist: bends but never twists, so the forearm never wrings thin
 - Fingers: curled on the bark, open to reach

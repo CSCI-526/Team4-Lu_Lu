@@ -146,9 +146,8 @@ public class MonkeyModelArms: MonoBehaviour {
     // after physics, the arm scripts and the torso pose this frame
     private void LateUpdate() {
         float deltaS = Time.deltaTime;
-        bool isLeaping = GameController.I != null && GameController.I.IsLeaping;
-        PoseArm(leftArm, isLeaping, deltaS);
-        PoseArm(rightArm, isLeaping, deltaS);
+        PoseArm(leftArm, deltaS);
+        PoseArm(rightArm, deltaS);
     }
 
     // private members  ########################################################
@@ -156,7 +155,7 @@ public class MonkeyModelArms: MonoBehaviour {
 
     private MonkeyModelAnimator animator;
 
-    private void PoseArm(ArmRig arm, bool isLeaping, float deltaS) {
+    private void PoseArm(ArmRig arm, float deltaS) {
         if (!arm.IsBound || !arm.target.gameObject.activeInHierarchy) {
             return;
         }
@@ -165,8 +164,11 @@ public class MonkeyModelArms: MonoBehaviour {
         arm.ResetToBind();
 
         // Target  -------------------------------------------------------------
-        // the physics hand rules while it reaches or leaps, else the cycle
-        bool followsPhysics = arm.IsReaching || isLeaping || animator == null;
+        // the physics hand rules while it reaches or a leap holds it up,
+        // else the cycle; not through the leap's landing grace, when the
+        // freed physics hand swings back on its joint & would fling the
+        // model's arm out
+        bool followsPhysics = arm.IsReaching || arm.IsLeapReaching || animator == null;
         arm.follow = Mathf.Lerp(
             arm.follow,
             followsPhysics ? 1f : 0f,
@@ -260,6 +262,9 @@ public class MonkeyModelArms: MonoBehaviour {
 
         public bool IsReaching =>
             controller != null && controller.IsReaching;
+
+        public bool IsLeapReaching =>
+            controller != null && controller.IsLeapReaching;
 
         // -1 on the model's left, +1 on its right, mirrors the arm's pose
         [NonSerialized]

@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4183920563710482201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4183920563710482202}
+  - component: {fileID: 4183920563710482203}
+  m_Layer: 0
+  m_Name: JungleBackdrop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4183920563710482202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4183920563710482201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4183920563710482203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4183920563710482201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da54d7d486fe4cb09b61dec4136efb37, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::JungleBackdrop
+  skyMaterial: {fileID: 2100000, guid: 1a99b166307d423aba988911a1d112fc, type: 2}
+  forestMaterial: {fileID: 2100000, guid: dce5731c52dc4882ba7530d8d03c0513, type: 2}
+  cloudMaterial: {fileID: 2100000, guid: 46f5fe5827644cf89d4c3a22958a8d2b, type: 2}
+  birdMaterial: {fileID: 2100000, guid: 98dc9b733bcc4ca7b35b4e14bb07b341, type: 2}
