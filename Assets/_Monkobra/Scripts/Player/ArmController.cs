@@ -25,6 +25,10 @@ public class ArmController: MonoBehaviour {
     /// collider (already inactive). A failed release never raises it.</summary>
     public static event System.Action<Collider> FruitGrabbed;
 
+    /// <summary>Raised when a release finds the hand off the aimed fruit, too
+    /// short or past it, so nothing is grabbed, eg for its sound.</summary>
+    public static event System.Action GrabMissed;
+
     /// <returns>if the arm is reaching for fruit, else climbing</returns>
     public bool IsReaching => isReaching;
 
@@ -577,6 +581,7 @@ public class ArmController: MonoBehaviour {
                     this
                 );
             }
+            GrabMissed?.Invoke();
             return;
         }
         // read before the pickup switches the fruit off

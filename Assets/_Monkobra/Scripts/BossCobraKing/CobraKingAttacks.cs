@@ -118,6 +118,7 @@ public sealed class CobraKingAttacks {
         rig.Arena.AddTrunkZone(rig.lockAngle, rig.lockY,
             tuning.BiteRadiusU * 2f, "BITE!", true);
         rig.biteStarted = false;
+        rig.onAttackWarned?.Invoke();
     }
 
     // the strike starts once the head is free, its wind-up filling the rest
@@ -174,6 +175,7 @@ public sealed class CobraKingAttacks {
             isBand = true
         });
         rig.tailHit = false;
+        rig.onAttackWarned?.Invoke();
     }
 
     // the band's sign follows the monkey round the trunk, so it stays in view

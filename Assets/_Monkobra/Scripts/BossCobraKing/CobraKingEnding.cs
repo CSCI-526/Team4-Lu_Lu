@@ -285,6 +285,7 @@ public sealed class CobraKingEnding {
         rig.hud.SetHealth(0f);
 
         rig.crown = rig.body.Shatter();
+        rig.onShattered?.Invoke();
         if (rig.crown != null) {
             rig.crownStart = rig.crown.position;
             rig.crownStartScale = rig.crown.localScale;

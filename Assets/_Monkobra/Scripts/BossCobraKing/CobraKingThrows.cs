@@ -111,6 +111,7 @@ public sealed class CobraKingThrows {
         int damage = tuning.WorldBalanceConfig.BossBananaDamage;
         rig.health = Mathf.Max(0, rig.health - damage);
         rig.body.FlashHit();
+        rig.onJewelHit?.Invoke();
         rig.hud.SetHealth(rig.health / (float)rig.maxHealth);
         rig.hud.PopDamage("-" + damage, rig.body.WeakSpotPosition);
 

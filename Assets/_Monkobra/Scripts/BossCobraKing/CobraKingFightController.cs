@@ -75,6 +75,18 @@ public class CobraKingFightController: MonoBehaviour {
     /// <summary>raised when a revive restarts the fight</summary>
     public event System.Action Revived;
 
+    /// <summary>raised as each warned attack begins: a bite, a tail sweep,
+    /// a minion wave; its warning shows from now</summary>
+    public event System.Action AttackWarned;
+
+    /// <summary>raised each time a thrown banana hits the crown & hurts the
+    /// king</summary>
+    public event System.Action JewelHit;
+
+    /// <summary>raised when the beaten king shatters, before its crown flies
+    /// onto the monkey</summary>
+    public event System.Action KingShattered;
+
     /// <returns>highest world y a pineapple leap may carry the monkey to:
     /// the fight's start height before the fight, so a leap stops at the
     /// arena instead of flying past it, the ceiling under the king during
@@ -358,6 +370,9 @@ public class CobraKingFightController: MonoBehaviour {
 
     private void Awake() {
         rig = new CobraKingRig(this, tuning);
+        rig.onAttackWarned = () => AttackWarned?.Invoke();
+        rig.onJewelHit = () => JewelHit?.Invoke();
+        rig.onShattered = () => KingShattered?.Invoke();
         arena = new CobraKingArena(rig);
         armor = new CobraKingArmor(rig);
         throws = new CobraKingThrows(rig);

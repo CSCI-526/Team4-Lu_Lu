@@ -112,6 +112,11 @@ public sealed class CobraKingRig {
 
     // Shared State  ##########################################################
     public readonly MonoBehaviour owner;
+    // the fight's moments for listeners such as its sounds, raised through
+    // the controller's events; set by the controller
+    public System.Action onAttackWarned;
+    public System.Action onJewelHit;
+    public System.Action onShattered;
     public readonly Transform host;
     public readonly CobraKingTuning tuning;
     public CobraKingArena Arena;

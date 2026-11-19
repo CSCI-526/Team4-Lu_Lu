@@ -72,6 +72,7 @@ public sealed class CobraKingMinions {
                 order++;
             }
         }
+        rig.onAttackWarned?.Invoke();
     }
 
     public void UpdateMinionStream() {
