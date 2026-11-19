@@ -20,8 +20,11 @@ using UnityEngine;
 /// </para>
 /// <para>
 /// Pure scenery: no colliders, no shadows, never touches the scene's light
-/// or ambient, and nothing stands within <see cref="clearRadiusU"/> of the
-/// trunk, so it never comes between the camera and the monkey.
+/// or ambient. Nothing stands within <see cref="clearRadiusU"/> of the trunk
+/// but a few low trees under the start, kept <see cref="underClearU"/> from
+/// the trunk & <see cref="underTopBelowStartU"/> under the start, so the
+/// monkey never looks down onto bare ground, yet nothing ever comes between
+/// the camera and the monkey or the cobra on the trunk.
 /// </para>
 /// </summary>
 public class JungleBackdrop: MonoBehaviour {
@@ -89,6 +92,24 @@ public class JungleBackdrop: MonoBehaviour {
             + "clear of the camera; u"
     )]
     private float clearRadiusU = 75f;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("low trees in the clearing, under the monkey's start")]
+    private int underTrees = 60;
+
+    [SerializeField]
+    [Min(22f)]
+    [Tooltip(
+        "no part of a low tree comes nearer the trunk's axis than this, "
+            + "clear of the camera's orbit; u"
+    )]
+    private float underClearU = 26f;
+
+    [SerializeField]
+    [Min(8f)]
+    [Tooltip("the low trees' crowns stay at least this far under the start; u")]
+    private float underTopBelowStartU = 14f;
 
     [SerializeField]
     [Tooltip("the ring of real trees reaches this far out, the painted forest beyond; u")]
@@ -290,7 +311,17 @@ public class JungleBackdrop: MonoBehaviour {
         for (int i = 0; i < TREE_WEDGES; i++) {
             wedges[i] = new BackdropMeshes();
         }
-        AddNearTrees(wedges, random, canopyLocal, floorLocal);
+        List<Vector3> placed = new List<Vector3>(); // x, z, footprint radius
+        float startLocal = canopyLocal + canopyBelowStartU;
+        // the ring first, then the clearing's low trees between its gaps
+        AddTrees(
+            wedges, placed, random, nearTrees, clearRadiusU, nearRadiusU,
+            startLocal - 3f, canopyLocal, floorLocal
+        );
+        AddTrees(
+            wedges, placed, random, underTrees, underClearU, clearRadiusU + 10f,
+            startLocal - underTopBelowStartU, canopyLocal, floorLocal
+        );
         trees = new GameObject("Trees").transform;
         trees.SetParent(transform, false);
         for (int i = 0; i < TREE_WEDGES; i++) {
@@ -349,16 +380,24 @@ public class JungleBackdrop: MonoBehaviour {
         }
     }
 
-    // a ring of trees round the trunk, spread evenly, each its own height,
-    // girth & shape: mostly round crowns, some tall & slender, some broad
-    // with a crown of 3 clumps; all below the monkey's start, so none hides
-    // it
-    private void AddNearTrees(BackdropMeshes[] wedges, System.Random random, float canopyLocal, float floorLocal) {
-        List<Vector3> placed = new List<Vector3>(); // x, z, footprint radius
-        // the highest any crown top reaches, a few u under the start
-        float topLimit = canopyLocal + canopyBelowStartU - 3f;
-        int attempts = nearTrees * 20;
-        while (placed.Count < nearTrees && attempts-- > 0) {
+    // trees between innerU & outerU from the trunk, wholly outside innerU,
+    // spread evenly, each its own height, girth & shape: mostly round
+    // crowns, some tall & slender, some broad with a crown of 3 clumps; no
+    // crown top above topLimit
+    private void AddTrees(
+        BackdropMeshes[] wedges,
+        List<Vector3> placed,
+        System.Random random,
+        int count,
+        float innerU,
+        float outerU,
+        float topLimit,
+        float canopyLocal,
+        float floorLocal
+    ) {
+        int planted = 0;
+        int attempts = count * 20;
+        while (planted < count && attempts-- > 0) {
             float kind = (float)random.NextDouble();
             bool isSlender = kind < 0.2f;
             bool isBroad = kind > 0.78f;
@@ -369,16 +408,21 @@ public class JungleBackdrop: MonoBehaviour {
                 radius *= 1.15f;
             }
             float footprint = isBroad ? radius * 1.4f : radius;
-            float inner = clearRadiusU + footprint;
+            // the lean below shifts a crown up to 0.15 of its radius
+            float inner = innerU + footprint * 1.2f;
+            if (inner >= outerU) {
+                continue;
+            }
             // even over the ring's area
             float distance = Mathf.Sqrt(
-                Mathf.Lerp(inner * inner, nearRadiusU * nearRadiusU, (float)random.NextDouble())
+                Mathf.Lerp(inner * inner, outerU * outerU, (float)random.NextDouble())
             );
             Vector3 foot = Around(random, distance) + Vector3.up * floorLocal;
             if (Crowds(placed, foot, footprint)) {
                 continue;
             }
             placed.Add(new Vector3(foot.x, foot.z, footprint));
+            planted++;
 
             float squash = isSlender
                 ? Mathf.Lerp(1.1f, 1.5f, (float)random.NextDouble())
