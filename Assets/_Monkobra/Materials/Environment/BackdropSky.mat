@@ -23,6 +23,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _FloorMap:
+        m_Texture: {fileID: 2800000, guid: ac10ed7816fe4ca89e64c819efe0b638, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _DetailMap:
         m_Texture: {fileID: 2800000, guid: c60a6dab070b4db69c812cb4adf2df43, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -41,11 +45,12 @@ Material:
     - _CloudScale: 0.7
     - _DetailMeanLum: 0.162
     - _DetailScale: 180
+    - _FloorScale: 60
     - _MacroRadius: 2700
     m_Colors:
     - _CloudColor: {r: 1, g: 1, b: 1, a: 1}
     - _CloudShade: {r: 0.8, g: 0.86, b: 0.92, a: 1}
-    - _FloorColor: {r: 0.24, g: 0.35, b: 0.25, a: 1}
+    - _FloorTint: {r: 1.1, g: 1.2, b: 1.15, a: 1}
     - _HillFar: {r: 0.56, g: 0.68, b: 0.74, a: 1}
     - _HillNear: {r: 0.36, g: 0.52, b: 0.38, a: 1}
     - _RidgeAmp: {r: 160, g: 300, b: 500, a: 800}

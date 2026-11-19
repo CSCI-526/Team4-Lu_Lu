@@ -104,7 +104,7 @@ public class JungleBackdrop: MonoBehaviour {
     [SerializeField]
     [Min(0)]
     [Tooltip("round-crowned trees in the near ring")]
-    private int nearTrees = 600;
+    private int nearTrees = 560;
 
     [SerializeField]
     [Tooltip("near trees' crown radius, smallest / largest; u")]
@@ -257,6 +257,7 @@ public class JungleBackdrop: MonoBehaviour {
         new Color(0.33f, 0.50f, 0.34f), new Color(0.46f, 0.60f, 0.31f),
     };
     private static readonly Color BARK = new Color(0.40f, 0.34f, 0.28f);
+    private const int TREE_WEDGES = 8;
 
     private bool isReady;
     private float startY;
@@ -283,9 +284,19 @@ public class JungleBackdrop: MonoBehaviour {
 
         sky = Layer("Sky", BackdropMeshes.Dome(skyRadiusU), skyMaterial).transform;
 
-        BackdropMeshes builder = new BackdropMeshes();
-        AddNearTrees(builder, random, canopyLocal, floorLocal);
-        trees = Layer("Trees", builder.Build("BackdropTrees"), forestMaterial).transform;
+        // the ring in wedges, each its own mesh, so Unity culls the ones
+        // out of view, most of all the ones behind the camera
+        BackdropMeshes[] wedges = new BackdropMeshes[TREE_WEDGES];
+        for (int i = 0; i < TREE_WEDGES; i++) {
+            wedges[i] = new BackdropMeshes();
+        }
+        AddNearTrees(wedges, random, canopyLocal, floorLocal);
+        trees = new GameObject("Trees").transform;
+        trees.SetParent(transform, false);
+        for (int i = 0; i < TREE_WEDGES; i++) {
+            Layer("Trees" + i, wedges[i].Build("BackdropTrees" + i), forestMaterial)
+                .transform.SetParent(trees, false);
+        }
 
         AddClouds(random);
         AddBirds(random);
@@ -338,32 +349,74 @@ public class JungleBackdrop: MonoBehaviour {
         }
     }
 
-    // a ring of round-crowned trees, spread evenly, their crowns about the
-    // canopy's top
-    private void AddNearTrees(BackdropMeshes trees, System.Random random, float canopyLocal, float floorLocal) {
-        List<Vector3> placed = new List<Vector3>(); // x, z, crown radius
+    // a ring of trees round the trunk, spread evenly, each its own height,
+    // girth & shape: mostly round crowns, some tall & slender, some broad
+    // with a crown of 3 clumps; all below the monkey's start, so none hides
+    // it
+    private void AddNearTrees(BackdropMeshes[] wedges, System.Random random, float canopyLocal, float floorLocal) {
+        List<Vector3> placed = new List<Vector3>(); // x, z, footprint radius
+        // the highest any crown top reaches, a few u under the start
+        float topLimit = canopyLocal + canopyBelowStartU - 3f;
         int attempts = nearTrees * 20;
         while (placed.Count < nearTrees && attempts-- > 0) {
+            float kind = (float)random.NextDouble();
+            bool isSlender = kind < 0.2f;
+            bool isBroad = kind > 0.78f;
             float radius = Mathf.Lerp(crownRadiusU.x, crownRadiusU.y, (float)random.NextDouble());
-            float inner = clearRadiusU + radius;
+            if (isSlender) {
+                radius *= 0.6f;
+            } else if (isBroad) {
+                radius *= 1.15f;
+            }
+            float footprint = isBroad ? radius * 1.4f : radius;
+            float inner = clearRadiusU + footprint;
             // even over the ring's area
             float distance = Mathf.Sqrt(
                 Mathf.Lerp(inner * inner, nearRadiusU * nearRadiusU, (float)random.NextDouble())
             );
             Vector3 foot = Around(random, distance) + Vector3.up * floorLocal;
-            if (Crowds(placed, foot, radius)) {
+            if (Crowds(placed, foot, footprint)) {
                 continue;
             }
-            placed.Add(new Vector3(foot.x, foot.z, radius));
+            placed.Add(new Vector3(foot.x, foot.z, footprint));
 
-            // crowns break the canopy's top by up to ~10 u, sinking under
-            // it toward the ring's edge, so the ring melts into the painting
+            float squash = isSlender
+                ? Mathf.Lerp(1.1f, 1.5f, (float)random.NextDouble())
+                : isBroad
+                    ? Mathf.Lerp(0.5f, 0.68f, (float)random.NextDouble())
+                    : Mathf.Lerp(0.65f, 1f, (float)random.NextDouble());
+            // heights spread wide, slender ones standing tallest
+            float rise = isSlender
+                ? Mathf.Lerp(-2f, 8f, (float)random.NextDouble())
+                : Mathf.Lerp(-15f, 1f, (float)random.NextDouble());
+            // crowns break the canopy's top, sinking under it toward the
+            // ring's edge, so the ring melts into the painting
             float sink = 18f * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(paintedFromU + 30f, nearRadiusU, distance));
-            float centreY = canopyLocal + Mathf.Lerp(-9f, -3f, (float)random.NextDouble()) - sink;
-            Vector3 centre = new Vector3(foot.x, centreY, foot.z);
-            trees.AddTrunk(foot, centre, radius * 0.12f, 0.5f, 5, 2, BARK);
-            trees.AddCrown(centre, radius, 0.82f, 11, 6, CrownColor(random), random);
+            float centreY = Mathf.Min(canopyLocal + rise, topLimit - radius * squash) - sink;
+            // a slight lean
+            Vector3 lean = new Vector3((float)random.NextDouble() - 0.5f, 0f, (float)random.NextDouble() - 0.5f)
+                * radius * 0.3f;
+            Vector3 centre = new Vector3(foot.x, centreY, foot.z) + lean;
+
+            float girth = isSlender ? 0.13f : isBroad ? 0.17f : Mathf.Lerp(0.09f, 0.15f, (float)random.NextDouble());
+            Color green = CrownColor(random);
+            BackdropMeshes wedge = wedges[Wedge(foot)];
+            wedge.AddTrunk(foot, centre, radius * girth, isBroad ? 0.8f : 0.5f, 5, 2, BARK);
+            wedge.AddCrown(centre, radius, squash, 11, 6, green, random);
+            if (isBroad) {
+                float spin = (float)random.NextDouble() * Mathf.PI * 2f;
+                for (int k = 0; k < 2; k++) {
+                    float a = spin + k * Mathf.PI * 0.85f;
+                    Vector3 side = new Vector3(Mathf.Cos(a), -0.25f, Mathf.Sin(a)) * radius * 0.75f;
+                    wedge.AddCrown(centre + side, radius * 0.62f, squash * 1.1f, 9, 5, green * 0.93f, random);
+                }
+            }
         }
+    }
+
+    private static int Wedge(Vector3 foot) {
+        float turn = Mathf.Repeat(Mathf.Atan2(foot.z, foot.x) / (Mathf.PI * 2f), 1f);
+        return Mathf.Min((int)(turn * TREE_WEDGES), TREE_WEDGES - 1);
     }
 
     private static bool Crowds(List<Vector3> placed, Vector3 foot, float radius) {

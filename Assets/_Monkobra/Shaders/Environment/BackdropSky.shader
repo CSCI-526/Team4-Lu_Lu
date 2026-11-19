@@ -19,7 +19,9 @@ Shader "Monkobra/BackdropSky" {
         [NoScaleOffset] _MacroMap("Forest tint (RGB, 0.5 neutral) + river (A)", 2D) = "grey" {}
         _MacroRadius("Macro map half width (u)", Float) = 2700
         _RiverColor("River", Color) = (0.26,0.70,0.80,1)
-        _FloorColor("Forest floor, under the near trees", Color) = (0.24,0.35,0.25,1)
+        [NoScaleOffset] _FloorMap("Forest floor from above, tiled", 2D) = "grey" {}
+        _FloorScale("Floor tile size (u)", Float) = 60
+        _FloorTint("Floor tint", Color) = (1.1,1.2,1.15,1)
 
         [Header(Hills)]
         [NoScaleOffset] _RidgeMap("Ridge profiles, near (R) to far (A)", 2D) = "black" {}
@@ -53,10 +55,12 @@ Shader "Monkobra/BackdropSky" {
             #include "BackdropCommon.hlsl"
 
             TEXTURE2D(_RidgeMap); SAMPLER(sampler_RidgeMap);
+            TEXTURE2D(_FloorMap); SAMPLER(sampler_FloorMap);
 
             CBUFFER_START(UnityPerMaterial)
                 float _DetailScale, _DetailMeanLum, _MacroRadius;
-                half4 _RiverColor, _FloorColor;
+                half4 _RiverColor, _FloorTint;
+                float _FloorScale;
                 float4 _RidgeDistance, _RidgeBase, _RidgeAmp;
                 half4 _HillNear, _HillFar;
                 float _CloudScale;
@@ -150,10 +154,22 @@ Shader "Monkobra/BackdropSky" {
                 // nearer than the painted canopy, the floor between the trees
                 float paintedFromU = _BackdropLayout.w;
                 float radius = length(fromCentre);
-                float floorDistance = (eye.y - _BackdropLayout.z) / -direction.y;
-                half3 floorColor = BackdropHaze(_FloorColor.rgb, floorDistance);
                 half color01 = smoothstep(paintedFromU - 40.0, paintedFromU, radius);
-                half3 color = lerp(floorColor, canopy, color01);
+                half3 color = canopy;
+                if (color01 < 1.0) {
+                    // only where the floor shows: moss, earth, leaf litter,
+                    // a second, broader sample breaking up the tiling
+                    float floorDistance = (eye.y - _BackdropLayout.z) / -direction.y;
+                    float2 floorXZ = eye.xz + direction.xz * floorDistance;
+                    float floorFootprint = pixelAngle * floorDistance * rsqrt(max(-direction.y, 0.02));
+                    float floorLod = log2(max(floorFootprint * 512.0 / _FloorScale, 1.0));
+                    half3 ground = SAMPLE_TEXTURE2D_LOD(_FloorMap, sampler_FloorMap, floorXZ / _FloorScale, floorLod).rgb;
+                    half3 broad = SAMPLE_TEXTURE2D_LOD(_FloorMap, sampler_FloorMap,
+                        floorXZ / (_FloorScale * 5.3) + 0.37, max(floorLod - 2.4, 0.0) + 2.0).rgb;
+                    ground *= lerp(0.75, 1.3, saturate(dot(broad, half3(2.0, 2.0, 1.0)) / 0.5));
+                    half3 floorColor = BackdropHaze(ground * _FloorTint.rgb, floorDistance);
+                    color = lerp(floorColor, canopy, color01);
+                }
                 if (radius > paintedFromU && radius < _BackdropLayout.y + 60.0) {
                     float4 hitCS = TransformWorldToHClip(hit);
                     depth = hitCS.z / hitCS.w;

@@ -9,6 +9,10 @@ Writes 3 small PNGs into ``Assets/_Monkobra/Textures/Environment/``:
   neutral), A the Amazon river, a wide meander round the trunk
 - ``Backdrop_Ridges.png``, 1024 x 1, linear data, wrapping round: the
   height profile of the 4 hill ridges, nearest in R to farthest in A
+- ``Backdrop_ForestFloor.png``, 512 square, tiling, colour: the ground under
+  the near trees seen from above, moss & bare earth, leaf litter, ferns and
+  low shrubs, mottled with shade; nothing round & crown-like, so it never
+  reads as a second canopy
 
 Painted procedurally, no source images, so the art is original. Run from the
 repository root::
@@ -193,6 +197,73 @@ def canopy_macro(size=1024):
     return np.concatenate([np.clip(tint, 0, 1), water[..., None]], -1)
 
 
+# Forest Floor  ################################################################
+def forest_floor(size=512):
+    yy, xx = np.mgrid[0:size, 0:size].astype(float)
+    # moss against bare earth, in broad irregular patches
+    moss = (periodic_noise((size, size), 6, 4) + 1) / 2
+    moss = np.clip((moss - 0.42) * 3.0, 0, 1)
+    earth = np.array([0.30, 0.26, 0.17])
+    green = np.array([0.27, 0.38, 0.19])
+    rgb = earth * (1 - moss[..., None]) + green * moss[..., None]
+    rgb *= (1 + 0.12 * periodic_noise((size, size), 32, 2))[..., None]
+
+    # leaf litter: small elongated flecks, browns & olives
+    litter = np.array([[0.42, 0.32, 0.18], [0.48, 0.40, 0.22], [0.34, 0.36, 0.18], [0.38, 0.26, 0.15]])
+    for _ in range(2600):
+        cx, cy = rng.random(2) * size
+        length, width = rng.uniform(2.5, 6), rng.uniform(1.0, 2.2)
+        a = rng.random() * np.pi
+        x0, x1 = int(cx - 7), int(cx + 8)
+        y0, y1 = int(cy - 7), int(cy + 8)
+        ys = np.arange(y0, y1) % size
+        xs = np.arange(x0, x1) % size
+        dy = (np.arange(y0, y1) - cy)[:, None]
+        dx = (np.arange(x0, x1) - cx)[None, :]
+        u = dx * np.cos(a) + dy * np.sin(a)
+        v = -dx * np.sin(a) + dy * np.cos(a)
+        inside = np.clip(1.5 - np.sqrt((u / length) ** 2 + (v / width) ** 2) * 1.5, 0, 1)
+        color = litter[rng.integers(0, len(litter))] * rng.uniform(0.85, 1.1)
+        patch = rgb[np.ix_(ys, xs)]
+        rgb[np.ix_(ys, xs)] = patch * (1 - inside[..., None]) + color * inside[..., None]
+
+    # ferns & seedlings: fans of thin bright fronds
+    fern = np.array([0.30, 0.48, 0.22])
+    for _ in range(140):
+        cx, cy = rng.random(2) * size
+        fronds = rng.integers(5, 9)
+        reach = rng.uniform(7, 16)
+        start = rng.random() * 6.28
+        for k in range(fronds):
+            a = start + k * 6.28 / fronds + rng.uniform(-0.2, 0.2)
+            for t in np.linspace(0.15, 1, 14):
+                px = int(cx + np.cos(a) * reach * t) % size
+                py = int(cy + np.sin(a) * reach * t) % size
+                w = 1 if t > 0.6 else 2
+                rgb[py - w + 1:py + w, px - w + 1:px + w] = fern * (0.8 + 0.4 * t)
+
+    # low shrubs: ragged dark clumps, lit along one edge
+    for _ in range(45):
+        cx, cy = rng.random(2) * size
+        r = rng.uniform(8, 18)
+        dx = (xx - cx + size / 2) % size - size / 2
+        dy = (yy - cy + size / 2) % size - size / 2
+        angle = np.arctan2(dy, dx)
+        ragged = r * (1 + 0.3 * np.sin(angle * rng.integers(5, 9) + rng.random() * 6.28)
+                      + 0.15 * np.sin(angle * rng.integers(11, 17)))
+        inside = np.clip(ragged - np.hypot(dx, dy), 0, 1)
+        lit = np.clip(0.75 + 0.45 * (-dx - dy) / (r * 1.4), 0.55, 1.15)
+        clump = np.array([0.22, 0.34, 0.17])[None, None] * lit[..., None]
+        rgb = rgb * (1 - inside[..., None]) + clump * inside[..., None]
+
+    # dappled shade from the canopy overhead
+    shade = (periodic_noise((size, size), 10, 3) + 1) / 2
+    rgb *= (0.62 + 0.5 * shade)[..., None]
+    rgb = gaussian_filter(rgb, (0.5, 0.5, 0), mode="wrap")
+    alpha = np.ones((size, size, 1))
+    return np.concatenate([np.clip(rgb, 0, 1), alpha], -1)
+
+
 # Ridges  ######################################################################
 def ridges(width=1024):
     """4 periodic ridge profiles, 0 to 1, near (R) to far (A)"""
@@ -219,3 +290,4 @@ if __name__ == "__main__":
     save("Backdrop_CanopyDetail.png", canopy_detail())
     save("Backdrop_CanopyMacro.png", canopy_macro())
     save("Backdrop_Ridges.png", ridges())
+    save("Backdrop_ForestFloor.png", forest_floor())
