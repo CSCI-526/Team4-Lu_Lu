@@ -4,11 +4,11 @@
     720
   ],
   "pngScale": 2,
-  "note": "rect is x, y, w, h in panel units from the top left; center is the layer's middle from the panel's middle, y up, as a Unity anchoredPosition; layers are back to front",
+  "note": "rect is x, y, w, h in panel units from the top left; center is the layer's middle from the panel's middle, y up, as a Unity anchoredPosition; layers are back to front; a cue's start and end are offsets in panel units, y down (see make_panels.py)",
   "panels": [
     {
       "index": 1,
-      "caption": "The rains never came. The trees went bare, and the family went hungry.",
+      "caption": "The rains never came. The trees went bare,\nand the family went hungry.",
       "layers": [
         {
           "name": "Background",
@@ -22,35 +22,53 @@
           "center": [
             0.0,
             0.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Family",
           "file": "Panel_1/Family.png",
           "rect": [
-            395,
-            313,
-            700,
-            288
+            394,
+            312,
+            702,
+            290
           ],
           "center": [
             105.0,
             -97.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Leaf",
           "file": "Panel_1/Leaf.png",
           "rect": [
             1146,
-            323,
+            322,
             36,
-            24
+            26
           ],
           "center": [
             524.0,
             25.0
-          ]
+          ],
+          "cue": {
+            "kind": "Fall",
+            "delay": 0.8,
+            "period": 4.0,
+            "amount": 16,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              -50,
+              250
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         }
       ],
       "motion": {
@@ -68,10 +86,7 @@
             420
           ],
           "zoom": 1.12
-        },
-        "cues": [
-          "Leaf: drifts down from the tree to the ground, swaying, over 4 s, then fades"
-        ]
+        }
       }
     },
     {
@@ -90,35 +105,53 @@
           "center": [
             0.0,
             0.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Family",
           "file": "Panel_2/Family.png",
           "rect": [
-            257,
+            256,
             190,
-            860,
-            447
+            862,
+            448
           ],
           "center": [
             47.0,
-            -53.5
-          ]
+            -54.0
+          ],
+          "cue": null
         },
         {
           "name": "Grumble",
           "file": "Panel_2/Grumble.png",
           "rect": [
             668,
-            487,
-            37,
-            40
+            486,
+            38,
+            42
           ],
           "center": [
-            46.5,
+            47.0,
             -147.0
-          ]
+          ],
+          "cue": {
+            "kind": "Pulse",
+            "delay": 0.0,
+            "period": 0.5,
+            "amount": 0.15,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              0,
+              0
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         }
       ],
       "motion": {
@@ -136,10 +169,7 @@
             420
           ],
           "zoom": 1.12
-        },
-        "cues": [
-          "Grumble: pulses (scale 1 to 1.15 and back) twice a second"
-        ]
+        }
       }
     },
     {
@@ -158,7 +188,8 @@
           "center": [
             0.0,
             0.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Father",
@@ -167,12 +198,13 @@
             200,
             268,
             228,
-            337
+            338
           ],
           "center": [
             -326.0,
-            -76.5
-          ]
+            -77.0
+          ],
+          "cue": null
         },
         {
           "name": "Hero",
@@ -180,41 +212,74 @@
           "rect": [
             822,
             282,
-            213,
-            323
+            214,
+            324
           ],
           "center": [
-            288.5,
-            -83.5
-          ]
+            289.0,
+            -84.0
+          ],
+          "cue": null
         },
         {
           "name": "TaleBubble",
           "file": "Panel_3/TaleBubble.png",
           "rect": [
-            53,
-            13,
-            659,
-            270
+            52,
+            12,
+            660,
+            272
           ],
           "center": [
-            -257.5,
+            -258.0,
             212.0
-          ]
+          ],
+          "cue": {
+            "kind": "Pop",
+            "delay": 0.4,
+            "period": 0.35,
+            "amount": 0.0,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              0,
+              0
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         },
         {
           "name": "HeroBubble",
           "file": "Panel_3/HeroBubble.png",
           "rect": [
             968,
-            105,
-            249,
-            175
+            104,
+            250,
+            176
           ],
           "center": [
-            452.5,
-            167.5
-          ]
+            453.0,
+            168.0
+          ],
+          "cue": {
+            "kind": "Pop",
+            "delay": 3.6,
+            "period": 0.35,
+            "amount": 0.0,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              0,
+              0
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         }
       ],
       "motion": {
@@ -232,16 +297,12 @@
             330
           ],
           "zoom": 1.25
-        },
-        "cues": [
-          "TaleBubble: pops in (scale 0.6 to 1, overshoot) at 0.4 s, while the view is on Father",
-          "HeroBubble: pops in once the view reaches Hero; Hero gives a small bounce with it"
-        ]
+        }
       }
     },
     {
       "index": 4,
-      "caption": "At dawn he set off, carrying his family’s hope on his back.",
+      "caption": "At dawn he set off,\ncarrying his family’s hope on his back.",
       "layers": [
         {
           "name": "Background",
@@ -255,63 +316,113 @@
           "center": [
             0.0,
             0.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Birds",
           "file": "Panel_4/Birds.png",
           "rect": [
-            1043,
-            211,
-            97,
-            43
+            1042,
+            210,
+            98,
+            44
           ],
           "center": [
-            451.5,
-            127.5
-          ]
+            451.0,
+            128.0
+          ],
+          "cue": {
+            "kind": "Drift",
+            "delay": 0.0,
+            "period": 12,
+            "amount": 4,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              -80,
+              30
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         },
         {
           "name": "Hero",
           "file": "Panel_4/Hero.png",
           "rect": [
-            915,
+            914,
             328,
-            88,
+            90,
             134
           ],
           "center": [
             319.0,
             -35.0
-          ]
+          ],
+          "cue": {
+            "kind": "Walk",
+            "delay": 0.3,
+            "period": 6.5,
+            "amount": 3,
+            "start": [
+              -56,
+              53
+            ],
+            "end": [
+              39,
+              -40
+            ],
+            "startScale": 1.35,
+            "endScale": 0.55
+          }
         },
         {
           "name": "Family",
           "file": "Panel_4/Family.png",
           "rect": [
-            67,
+            66,
             214,
-            622,
+            624,
             430
           ],
           "center": [
             -262.0,
             -69.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "WaveMarks",
           "file": "Panel_4/WaveMarks.png",
           "rect": [
             646,
-            497,
-            37,
-            47
+            496,
+            38,
+            48
           ],
           "center": [
-            24.5,
-            -160.5
-          ]
+            25.0,
+            -160.0
+          ],
+          "cue": {
+            "kind": "Blink",
+            "delay": 0.0,
+            "period": 0.5,
+            "amount": 0.0,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              0,
+              0
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         }
       ],
       "motion": {
@@ -329,12 +440,7 @@
             380
           ],
           "zoom": 1.06
-        },
-        "cues": [
-          "Hero: walks up the path from about (900, 500) at 1.3x to (990, 418) at 0.6x, a small bob each step, then fades at the horizon",
-          "Birds: drift toward the sun",
-          "WaveMarks: blink on and off with a little wiggle"
-        ]
+        }
       }
     },
     {
@@ -353,7 +459,8 @@
           "center": [
             0.0,
             0.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Tree",
@@ -361,27 +468,44 @@
           "rect": [
             282,
             0,
-            771,
+            772,
             720
           ],
           "center": [
-            27.5,
+            28.0,
             0.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Bananas",
           "file": "Panel_5/Bananas.png",
           "rect": [
-            847,
+            846,
             118,
-            239,
-            239
+            240,
+            240
           ],
           "center": [
-            326.5,
-            122.5
-          ]
+            326.0,
+            122.0
+          ],
+          "cue": {
+            "kind": "Breathe",
+            "delay": 0.0,
+            "period": 3.0,
+            "amount": 0.03,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              0,
+              0
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         },
         {
           "name": "Canopy",
@@ -395,7 +519,8 @@
           "center": [
             26.0,
             209.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Undergrowth",
@@ -409,63 +534,98 @@
           "center": [
             0.0,
             -214.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "Cobra",
           "file": "Panel_5/Cobra.png",
           "rect": [
-            423,
             422,
-            478,
+            422,
+            480,
             180
           ],
           "center": [
             22.0,
             -152.0
-          ]
+          ],
+          "cue": null
         },
         {
           "name": "CobraGlow",
           "file": "Panel_5/CobraGlow.png",
           "rect": [
             606,
-            457,
+            456,
             98,
-            44
+            46
           ],
           "center": [
             15.0,
             -119.0
-          ]
+          ],
+          "cue": {
+            "kind": "Reveal",
+            "delay": 8.2,
+            "period": 0.25,
+            "amount": 0.0,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              0,
+              0
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         },
         {
           "name": "Hero",
           "file": "Panel_5/Hero.png",
           "rect": [
-            229,
+            228,
             390,
-            131,
-            191
+            132,
+            192
           ],
           "center": [
-            -345.5,
-            -125.5
-          ]
+            -346.0,
+            -126.0
+          ],
+          "cue": null
         },
         {
           "name": "Motes",
           "file": "Panel_5/Motes.png",
           "rect": [
-            695,
+            694,
             86,
-            338,
-            345
+            340,
+            346
           ],
           "center": [
             224.0,
-            101.5
-          ]
+            101.0
+          ],
+          "cue": {
+            "kind": "Twinkle",
+            "delay": 0.0,
+            "period": 1.6,
+            "amount": 0.35,
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              0,
+              0
+            ],
+            "startScale": 1.0,
+            "endScale": 1.0
+          }
         },
         {
           "name": "Foreground",
@@ -479,7 +639,8 @@
           "center": [
             0.0,
             -263.0
-          ]
+          ],
+          "cue": null
         }
       ],
       "motion": {
@@ -497,12 +658,7 @@
             380
           ],
           "zoom": 1.04
-        },
-        "cues": [
-          "Bananas: the glow breathes slowly",
-          "Motes: drift and twinkle in the light",
-          "CobraGlow: hidden until the view settles, then fades in twice like a blink"
-        ]
+        }
       }
     }
   ]

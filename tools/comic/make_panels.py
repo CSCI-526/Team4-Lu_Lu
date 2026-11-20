@@ -179,9 +179,27 @@ def plate_caption(lines):
 
 
 # ---------------------------------------------------------------- the panels
-# A panel is its caption, its layers back to front (name, svg, opaque), and its motion:
-# the camera eases from one view to another (center and zoom in panel units), and cues
-# tell when a layer loops or appears.
+# A panel is its caption, its layers back to front (name, svg, opaque), its motion (the
+# camera eases from one view to another, a center and a zoom in panel units), and the cues
+# of the layers that move on their own. A cue is one of IntroComicScreen's kinds:
+#   Fall     drops from `start` to `end` (offsets, panel units, y down) over `period` s,
+#            swaying `amount` units, and fades at the end; once
+#   Pulse    scale grows by `amount` and back, every `period` s
+#   Pop      hidden until `delay`, then pops in (overshoot) over `period` s
+#   Walk     moves from `start` at `startScale` to `end` at `endScale` over `period` s,
+#            bobbing `amount` units a step, pivoting at its feet, and fades at the end
+#   Drift    moves from `start` to `end` over `period` s, bobbing `amount` units
+#   Blink    shows and hides, `period` s each
+#   Breathe  scale grows by `amount` and back, every `period` s, smoothly
+#   Twinkle  alpha falls to `amount` and back, every `period` s
+#   Reveal   hidden until `delay`, then blinks on twice, `period` s a blink, and stays
+# Every cue waits `delay` s from the panel's start.
+
+
+def cue(kind, delay=0.0, period=1.0, amount=0.0, start=(0, 0), end=(0, 0), start_scale=1.0, end_scale=1.0):
+    return dict(kind=kind, delay=delay, period=period, amount=amount, start=list(start), end=list(end),
+                startScale=start_scale, endScale=end_scale)
+
 
 def panel_drought():
     far = (372, 16, 150, 0.4)
@@ -202,11 +220,11 @@ def panel_drought():
     family += [figure("Hero", "SitSlumped", 470, 585, 0.8), figure("Sister", "SitSlumped", 620, 585, 0.8),
                figure("Mother", "SitSlumped", 770, 585, 0.8), figure("Father", "SitSlumped", 945, 585, 0.8)]
     return dict(
-        caption="The rains never came. The trees went bare, and the family went hungry.",
+        caption="The rains never came. The trees went bare,\nand the family went hungry.",
         layers=[("Background", "\n".join(bg), True), ("Family", "\n".join(family), False),
                 ("Leaf", dry_leaf(1150, 330, 20), False)],
-        motion=dict(seconds=6, start=dict(center=[640, 360], zoom=1.0), end=dict(center=[700, 420], zoom=1.12),
-                    cues=["Leaf: drifts down from the tree to the ground, swaying, over 4 s, then fades"]))
+        motion=dict(seconds=6, start=dict(center=[640, 360], zoom=1.0), end=dict(center=[700, 420], zoom=1.12)),
+        cues=dict(Leaf=cue("Fall", delay=0.8, period=4.0, amount=16, end=(-50, 250))))
 
 
 def panel_sister():
@@ -229,8 +247,8 @@ def panel_sister():
         caption="Little Sister hadn’t eaten in days.",
         layers=[("Background", "\n".join(bg), True), ("Family", "\n".join(family), False),
                 ("Grumble", grumble(672, 494, 0.9), False)],
-        motion=dict(seconds=5, start=dict(center=[640, 360], zoom=1.0), end=dict(center=[600, 420], zoom=1.12),
-                    cues=["Grumble: pulses (scale 1 to 1.15 and back) twice a second"]))
+        motion=dict(seconds=5, start=dict(center=[640, 360], zoom=1.0), end=dict(center=[600, 420], zoom=1.12)),
+        cues=dict(Grumble=cue("Pulse", period=0.5, amount=0.15)))
 
 
 def panel_legend():
@@ -253,9 +271,8 @@ def panel_legend():
                 ("Hero", contact(930, 594, 64) + figure("Hero", "Determined", 930, 590, 1.0), False),
                 ("TaleBubble", tale_bubble(60, 20, 640, 228, (318, 270)), False),
                 ("HeroBubble", bubble(1090, 160, 230, 96, (1000, 266), "I’ll go!"), False)],
-        motion=dict(seconds=7, start=dict(center=[500, 300], zoom=1.25), end=dict(center=[780, 330], zoom=1.25),
-                    cues=["TaleBubble: pops in (scale 0.6 to 1, overshoot) at 0.4 s, while the view is on Father",
-                          "HeroBubble: pops in once the view reaches Hero; Hero gives a small bounce with it"]))
+        motion=dict(seconds=7, start=dict(center=[500, 300], zoom=1.25), end=dict(center=[780, 330], zoom=1.25)),
+        cues=dict(TaleBubble=cue("Pop", delay=0.4, period=0.35), HeroBubble=cue("Pop", delay=3.6, period=0.35)))
 
 
 def panel_departure():
@@ -278,14 +295,15 @@ def panel_departure():
               back_figure("Sister", 580, 628, 1.1, arm_right=112, head_rot=-5)]
     hx, hy = hand_point("Sister", "shoulderRight", 112, 580, 628, 1.1, mirror=True)
     return dict(
-        caption="At dawn he set off, carrying his family’s hope on his back.",
+        caption="At dawn he set off,\ncarrying his family’s hope on his back.",
         layers=[("Background", "\n".join(bg), True), ("Birds", birds, False),
                 ("Hero", contact(956, 455, 26, 5) + figure("Hero", "BackBundle", 956, 452, 0.4), False),
                 ("Family", "\n".join(family), False), ("WaveMarks", wave_marks(hx, hy, 1), False)],
-        motion=dict(seconds=7, start=dict(center=[640, 360], zoom=1.0), end=dict(center=[700, 380], zoom=1.06),
-                    cues=["Hero: walks up the path from about (900, 500) at 1.3x to (990, 418) at 0.6x, "
-                          "a small bob each step, then fades at the horizon",
-                          "Birds: drift toward the sun", "WaveMarks: blink on and off with a little wiggle"]))
+        motion=dict(seconds=7, start=dict(center=[640, 360], zoom=1.0), end=dict(center=[700, 380], zoom=1.06)),
+        cues=dict(Hero=cue("Walk", delay=0.3, period=6.5, amount=3, start=(-56, 53), end=(39, -40),
+                           start_scale=1.35, end_scale=0.55),
+                  Birds=cue("Drift", period=12, amount=4, end=(-80, 30)),
+                  WaveMarks=cue("Blink", period=0.5)))
 
 
 COBRA = (655, 470, 0.42)            # cobra_hiding's place and scale in panel 5
@@ -331,9 +349,9 @@ def panel_tree():
                 ("Hero", figure("Hero", "BackBundle", 290, 575, 0.6), False),
                 ("Motes", motes(95, 14, 700, 1040, 60, 420), False),
                 ("Foreground", "\n".join(front), False)],
-        motion=dict(seconds=8, start=dict(center=[880, 240], zoom=1.35), end=dict(center=[640, 380], zoom=1.04),
-                    cues=["Bananas: the glow breathes slowly", "Motes: drift and twinkle in the light",
-                          "CobraGlow: hidden until the view settles, then fades in twice like a blink"]))
+        motion=dict(seconds=8, start=dict(center=[880, 240], zoom=1.35), end=dict(center=[640, 380], zoom=1.04)),
+        cues=dict(Bananas=cue("Breathe", period=3.0, amount=0.03), Motes=cue("Twinkle", period=1.6, amount=0.35),
+                  CobraGlow=cue("Reveal", delay=8.2, period=0.25)))
 
 
 PANELS = [panel_drought, panel_sister, panel_legend, panel_departure, panel_tree]
@@ -358,9 +376,12 @@ def export_layer(folder, name, svg, opaque, tmp):
         box = image.getchannel("A").getbbox()
         if not box:
             sys.exit(f"{folder.name}/{name} is empty")
-        x0, y0 = max(0, box[0] // PNG_SCALE - PAD), max(0, box[1] // PNG_SCALE - PAD)
-        x1 = min(W, -(-box[2] // PNG_SCALE) + PAD)
-        y1 = min(H, -(-box[3] // PNG_SCALE) + PAD)
+        # even edges in panel units, so each side of the 2x PNG is a multiple of 4
+        # and Unity can block-compress it
+        even = lambda v: v - v % 2
+        x0, y0 = max(0, even(box[0] // PNG_SCALE - PAD)), max(0, even(box[1] // PNG_SCALE - PAD))
+        x1 = min(W, even(-(-box[2] // PNG_SCALE) + PAD + 1))
+        y1 = min(H, even(-(-box[3] // PNG_SCALE) + PAD + 1))
         rect = [x0, y0, x1 - x0, y1 - y0]
         image.crop((x0 * PNG_SCALE, y0 * PNG_SCALE, x1 * PNG_SCALE, y1 * PNG_SCALE)).save(png, optimize=True)
     x0, y0, w, h = rect
@@ -390,7 +411,8 @@ def main():
     (OUT_DIR / "preview").mkdir(parents=True, exist_ok=True)
     data = dict(size=[W, H], pngScale=PNG_SCALE,
                 note="rect is x, y, w, h in panel units from the top left; center is the layer's middle "
-                     "from the panel's middle, y up, as a Unity anchoredPosition; layers are back to front",
+                     "from the panel's middle, y up, as a Unity anchoredPosition; layers are back to front; "
+                     "a cue's start and end are offsets in panel units, y down (see make_panels.py)",
                 panels=[])
     previews = []
     with tempfile.TemporaryDirectory() as tmp:
@@ -405,7 +427,11 @@ def main():
             for name, svg, opaque in panel["layers"]:
                 x, y, w, h = export_layer(folder, name, svg, opaque, tmp)
                 layers.append(dict(name=name, file=f"Panel_{n}/{name}.png", rect=[x, y, w, h],
-                                   center=[x + w / 2 - W / 2, H / 2 - (y + h / 2)]))
+                                   center=[x + w / 2 - W / 2, H / 2 - (y + h / 2)],
+                                   cue=panel.get("cues", {}).get(name)))
+            unknown = set(panel.get("cues", {})) - {name for name, _, _ in panel["layers"]}
+            if unknown:
+                sys.exit(f"Panel {n} cues a layer it does not have: {sorted(unknown)}")
             data["panels"].append(dict(index=n, caption=panel["caption"], layers=layers, motion=panel["motion"]))
             # the preview: every layer, then the caption plate as Unity will draw it
             body = "\n".join(svg for _, svg, _ in panel["layers"]) + plate_caption(panel["caption"].split("\n"))
