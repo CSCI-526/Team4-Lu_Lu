@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="70" height="36" viewBox="-35 -18 70 36">
+<!-- pivot at (0, 0) in viewBox units -->
+<path d="M -23.65 10.38 L -26.07 10.54 L -26.77 10.38 L -26.92 9.97 L -26.94 -9.71 L -26.77 -10.21 L -25.73 -10.55 L -24.35 -10.51 L -22.62 -10.16 L -19.51 -9.06 L -16.06 -7.44 L -12.95 -5.7 L -9.96 -3.84 L -9.74 -3.49 L -10.01 -1.77 L -10 4.45 L -11.92 5.58 L -17.46 8.24 L -20.2 9.37 Z" fill="#58745B" stroke="#352016" stroke-width="9" stroke-linejoin="round" paint-order="stroke"/>
+<path d="M 26.77 10.38 L 25.73 10.55 L 24.35 10.48 L 21.24 9.73 L 16.76 7.94 L 10.19 4.64 L 9.96 4.1 L 10.01 -1.42 L 9.72 -3.49 L 9.84 -3.7 L 14.68 -6.69 L 20.55 -9.48 L 24.35 -10.52 L 26.07 -10.51 L 26.77 -10.19 L 26.94 -9.03 L 26.94 9.63 Z" fill="#58745B" stroke="#352016" stroke-width="9" stroke-linejoin="round" paint-order="stroke"/>
+<path d="M 2.93 5.94 L -2.93 5.94 L -3.83 5.48 L -4.8 4.45 L -5.17 3.4 L -5.17 -1.77 L -4.82 -2.81 L -3.63 -3.99 L -2.59 -4.36 L 2.59 -4.36 L 3.63 -4 L 4.8 -2.81 L 5.17 -1.77 L 5.12 3.75 L 4.31 5.03 Z" fill="#6C8568" stroke="#352016" stroke-width="9" stroke-linejoin="round" paint-order="stroke"/>
+</svg>

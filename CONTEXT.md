@@ -41,6 +41,7 @@ monkobra/
 ├── docs/              design, technical, mob, grab, balance, gameplay loop, analytics, build, UI style, and git documents
 ├── devlog-assets/     images embedded by DEVLOG.md
 ├── builds/            local build output of all three builds, ignored by git
+├── tools/             offline generators outside Unity: `backdrop/`, `music/`, `sfx/` (Python), `firebase/` (leaderboard rules), `comic/` (the intro comic's character kit: `trace_reference.py` traces the drawn faces in `reference/` into `traced.json`, then `make_characters.py` writes the SVG + 2× PNG parts, poses, `rig.json` and `overview.png` into `characters/`)
 ├── Assets/
 │   ├── _Monkobra/     all authored assets, <Type>/<Module>/<asset>
 │   │   ├── Scenes/    TitleScene, LevelSelectScene, GameplayScene; the gameplay scene is root prefab instances plus the plain `Envs` object, see [Scene Hierarchy](#scene-hierarchy)

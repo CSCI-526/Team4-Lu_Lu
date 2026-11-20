@@ -1,0 +1,1403 @@
+{
+  "about": "Intro comic character rig. Units: 1 SVG unit = 1 px in the SVG, 2 px in the PNG. pivotPx is in PNG pixels from the top-left; unityPivot is normalized from the bottom-left, as a Sprite's custom pivot. Sockets are in SVG units from the body's pivot, y down. A pose's rotation is in degrees clockwise on screen, so a Unity z rotation is its negative; a nudge is in body units off a socket, or in the parent's units on a part. Left and right are the character's own; the back view mirrors the rig.",
+  "pngScale": 2,
+  "parts": {
+    "Father_Head": {
+      "svg": "parts/Father_Head.svg",
+      "png": "parts/Father_Head.png",
+      "sizePx": [
+        464,
+        434
+      ],
+      "pivotPx": [
+        232,
+        398
+      ],
+      "unityPivot": [
+        0.5,
+        0.0829
+      ],
+      "attachTo": "neck"
+    },
+    "Father_Face_Normal": {
+      "svg": "parts/Father_Face_Normal.svg",
+      "png": "parts/Father_Face_Normal.png",
+      "sizePx": [
+        464,
+        434
+      ],
+      "pivotPx": [
+        232,
+        398
+      ],
+      "unityPivot": [
+        0.5,
+        0.0829
+      ],
+      "attachTo": "head pivot"
+    },
+    "Father_Face_Hungry": {
+      "svg": "parts/Father_Face_Hungry.svg",
+      "png": "parts/Father_Face_Hungry.png",
+      "sizePx": [
+        464,
+        434
+      ],
+      "pivotPx": [
+        232,
+        398
+      ],
+      "unityPivot": [
+        0.5,
+        0.0829
+      ],
+      "attachTo": "head pivot"
+    },
+    "Father_Body": {
+      "svg": "parts/Father_Body.svg",
+      "png": "parts/Father_Body.png",
+      "sizePx": [
+        256,
+        300
+      ],
+      "pivotPx": [
+        128,
+        246
+      ],
+      "unityPivot": [
+        0.5,
+        0.18
+      ],
+      "attachTo": "root"
+    },
+    "Father_ArmLeft": {
+      "svg": "parts/Father_ArmLeft.svg",
+      "png": "parts/Father_ArmLeft.png",
+      "sizePx": [
+        106,
+        238
+      ],
+      "pivotPx": [
+        58,
+        46
+      ],
+      "unityPivot": [
+        0.5472,
+        0.8067
+      ],
+      "attachTo": "shoulderLeft"
+    },
+    "Father_ArmRight": {
+      "svg": "parts/Father_ArmRight.svg",
+      "png": "parts/Father_ArmRight.png",
+      "sizePx": [
+        106,
+        238
+      ],
+      "pivotPx": [
+        48,
+        46
+      ],
+      "unityPivot": [
+        0.4528,
+        0.8067
+      ],
+      "attachTo": "shoulderRight"
+    },
+    "Father_LegLeft": {
+      "svg": "parts/Father_LegLeft.svg",
+      "png": "parts/Father_LegLeft.png",
+      "sizePx": [
+        126,
+        190
+      ],
+      "pivotPx": [
+        46,
+        52
+      ],
+      "unityPivot": [
+        0.3651,
+        0.7263
+      ],
+      "attachTo": "hipLeft"
+    },
+    "Father_LegRight": {
+      "svg": "parts/Father_LegRight.svg",
+      "png": "parts/Father_LegRight.png",
+      "sizePx": [
+        126,
+        190
+      ],
+      "pivotPx": [
+        80,
+        52
+      ],
+      "unityPivot": [
+        0.6349,
+        0.7263
+      ],
+      "attachTo": "hipRight"
+    },
+    "Father_Tail": {
+      "svg": "parts/Father_Tail.svg",
+      "png": "parts/Father_Tail.png",
+      "sizePx": [
+        262,
+        236
+      ],
+      "pivotPx": [
+        32,
+        190
+      ],
+      "unityPivot": [
+        0.1221,
+        0.1949
+      ],
+      "attachTo": "tail"
+    },
+    "Father_Tail_Limp": {
+      "svg": "parts/Father_Tail_Limp.svg",
+      "png": "parts/Father_Tail_Limp.png",
+      "sizePx": [
+        338,
+        128
+      ],
+      "pivotPx": [
+        32,
+        58
+      ],
+      "unityPivot": [
+        0.0947,
+        0.5469
+      ],
+      "attachTo": "tail"
+    },
+    "Father_BowTie": {
+      "svg": "parts/Father_BowTie.svg",
+      "png": "parts/Father_BowTie.png",
+      "sizePx": [
+        140,
+        72
+      ],
+      "pivotPx": [
+        70,
+        36
+      ],
+      "unityPivot": [
+        0.5,
+        0.5
+      ],
+      "attachTo": "neck"
+    },
+    "Father_Cane": {
+      "svg": "parts/Father_Cane.svg",
+      "png": "parts/Father_Cane.png",
+      "sizePx": [
+        82,
+        246
+      ],
+      "pivotPx": [
+        58,
+        64
+      ],
+      "unityPivot": [
+        0.7073,
+        0.7398
+      ],
+      "attachTo": "the left hand, upright"
+    },
+    "Mother_Head": {
+      "svg": "parts/Mother_Head.svg",
+      "png": "parts/Mother_Head.png",
+      "sizePx": [
+        444,
+        416
+      ],
+      "pivotPx": [
+        222,
+        380
+      ],
+      "unityPivot": [
+        0.5,
+        0.0865
+      ],
+      "attachTo": "neck"
+    },
+    "Mother_Face_Normal": {
+      "svg": "parts/Mother_Face_Normal.svg",
+      "png": "parts/Mother_Face_Normal.png",
+      "sizePx": [
+        444,
+        416
+      ],
+      "pivotPx": [
+        222,
+        380
+      ],
+      "unityPivot": [
+        0.5,
+        0.0865
+      ],
+      "attachTo": "head pivot"
+    },
+    "Mother_Face_Hungry": {
+      "svg": "parts/Mother_Face_Hungry.svg",
+      "png": "parts/Mother_Face_Hungry.png",
+      "sizePx": [
+        444,
+        416
+      ],
+      "pivotPx": [
+        222,
+        380
+      ],
+      "unityPivot": [
+        0.5,
+        0.0865
+      ],
+      "attachTo": "head pivot"
+    },
+    "Mother_Body": {
+      "svg": "parts/Mother_Body.svg",
+      "png": "parts/Mother_Body.png",
+      "sizePx": [
+        220,
+        272
+      ],
+      "pivotPx": [
+        110,
+        222
+      ],
+      "unityPivot": [
+        0.5,
+        0.1838
+      ],
+      "attachTo": "root"
+    },
+    "Mother_ArmLeft": {
+      "svg": "parts/Mother_ArmLeft.svg",
+      "png": "parts/Mother_ArmLeft.png",
+      "sizePx": [
+        98,
+        216
+      ],
+      "pivotPx": [
+        54,
+        42
+      ],
+      "unityPivot": [
+        0.551,
+        0.8056
+      ],
+      "attachTo": "shoulderLeft"
+    },
+    "Mother_ArmRight": {
+      "svg": "parts/Mother_ArmRight.svg",
+      "png": "parts/Mother_ArmRight.png",
+      "sizePx": [
+        96,
+        216
+      ],
+      "pivotPx": [
+        44,
+        42
+      ],
+      "unityPivot": [
+        0.4583,
+        0.8056
+      ],
+      "attachTo": "shoulderRight"
+    },
+    "Mother_LegLeft": {
+      "svg": "parts/Mother_LegLeft.svg",
+      "png": "parts/Mother_LegLeft.png",
+      "sizePx": [
+        116,
+        172
+      ],
+      "pivotPx": [
+        42,
+        48
+      ],
+      "unityPivot": [
+        0.3621,
+        0.7209
+      ],
+      "attachTo": "hipLeft"
+    },
+    "Mother_LegRight": {
+      "svg": "parts/Mother_LegRight.svg",
+      "png": "parts/Mother_LegRight.png",
+      "sizePx": [
+        116,
+        172
+      ],
+      "pivotPx": [
+        74,
+        48
+      ],
+      "unityPivot": [
+        0.6379,
+        0.7209
+      ],
+      "attachTo": "hipRight"
+    },
+    "Mother_Tail": {
+      "svg": "parts/Mother_Tail.svg",
+      "png": "parts/Mother_Tail.png",
+      "sizePx": [
+        238,
+        216
+      ],
+      "pivotPx": [
+        30,
+        172
+      ],
+      "unityPivot": [
+        0.1261,
+        0.2037
+      ],
+      "attachTo": "tail"
+    },
+    "Mother_Tail_Limp": {
+      "svg": "parts/Mother_Tail_Limp.svg",
+      "png": "parts/Mother_Tail_Limp.png",
+      "sizePx": [
+        306,
+        120
+      ],
+      "pivotPx": [
+        30,
+        54
+      ],
+      "unityPivot": [
+        0.098,
+        0.55
+      ],
+      "attachTo": "tail"
+    },
+    "Mother_Flower": {
+      "svg": "parts/Mother_Flower.svg",
+      "png": "parts/Mother_Flower.png",
+      "sizePx": [
+        108,
+        104
+      ],
+      "pivotPx": [
+        54,
+        52
+      ],
+      "unityPivot": [
+        0.5,
+        0.5
+      ],
+      "attachTo": "head, at its offset"
+    },
+    "Hero_Head": {
+      "svg": "parts/Hero_Head.svg",
+      "png": "parts/Hero_Head.png",
+      "sizePx": [
+        418,
+        390
+      ],
+      "pivotPx": [
+        210,
+        356
+      ],
+      "unityPivot": [
+        0.5024,
+        0.0872
+      ],
+      "attachTo": "neck"
+    },
+    "Hero_Face_Normal": {
+      "svg": "parts/Hero_Face_Normal.svg",
+      "png": "parts/Hero_Face_Normal.png",
+      "sizePx": [
+        418,
+        390
+      ],
+      "pivotPx": [
+        210,
+        356
+      ],
+      "unityPivot": [
+        0.5024,
+        0.0872
+      ],
+      "attachTo": "head pivot"
+    },
+    "Hero_Face_Hungry": {
+      "svg": "parts/Hero_Face_Hungry.svg",
+      "png": "parts/Hero_Face_Hungry.png",
+      "sizePx": [
+        418,
+        390
+      ],
+      "pivotPx": [
+        210,
+        356
+      ],
+      "unityPivot": [
+        0.5024,
+        0.0872
+      ],
+      "attachTo": "head pivot"
+    },
+    "Hero_Face_Determined": {
+      "svg": "parts/Hero_Face_Determined.svg",
+      "png": "parts/Hero_Face_Determined.png",
+      "sizePx": [
+        418,
+        390
+      ],
+      "pivotPx": [
+        210,
+        356
+      ],
+      "unityPivot": [
+        0.5024,
+        0.0872
+      ],
+      "attachTo": "head pivot"
+    },
+    "Hero_Body": {
+      "svg": "parts/Hero_Body.svg",
+      "png": "parts/Hero_Body.png",
+      "sizePx": [
+        186,
+        226
+      ],
+      "pivotPx": [
+        94,
+        184
+      ],
+      "unityPivot": [
+        0.5054,
+        0.1858
+      ],
+      "attachTo": "root"
+    },
+    "Hero_ArmLeft": {
+      "svg": "parts/Hero_ArmLeft.svg",
+      "png": "parts/Hero_ArmLeft.png",
+      "sizePx": [
+        84,
+        182
+      ],
+      "pivotPx": [
+        46,
+        38
+      ],
+      "unityPivot": [
+        0.5476,
+        0.7912
+      ],
+      "attachTo": "shoulderLeft"
+    },
+    "Hero_ArmRight": {
+      "svg": "parts/Hero_ArmRight.svg",
+      "png": "parts/Hero_ArmRight.png",
+      "sizePx": [
+        84,
+        182
+      ],
+      "pivotPx": [
+        38,
+        38
+      ],
+      "unityPivot": [
+        0.4524,
+        0.7912
+      ],
+      "attachTo": "shoulderRight"
+    },
+    "Hero_LegLeft": {
+      "svg": "parts/Hero_LegLeft.svg",
+      "png": "parts/Hero_LegLeft.png",
+      "sizePx": [
+        98,
+        146
+      ],
+      "pivotPx": [
+        36,
+        42
+      ],
+      "unityPivot": [
+        0.3673,
+        0.7123
+      ],
+      "attachTo": "hipLeft"
+    },
+    "Hero_LegRight": {
+      "svg": "parts/Hero_LegRight.svg",
+      "png": "parts/Hero_LegRight.png",
+      "sizePx": [
+        98,
+        146
+      ],
+      "pivotPx": [
+        62,
+        42
+      ],
+      "unityPivot": [
+        0.6327,
+        0.7123
+      ],
+      "attachTo": "hipRight"
+    },
+    "Hero_Tail": {
+      "svg": "parts/Hero_Tail.svg",
+      "png": "parts/Hero_Tail.png",
+      "sizePx": [
+        202,
+        184
+      ],
+      "pivotPx": [
+        28,
+        144
+      ],
+      "unityPivot": [
+        0.1386,
+        0.2174
+      ],
+      "attachTo": "tail"
+    },
+    "Hero_Tail_Limp": {
+      "svg": "parts/Hero_Tail_Limp.svg",
+      "png": "parts/Hero_Tail_Limp.png",
+      "sizePx": [
+        258,
+        104
+      ],
+      "pivotPx": [
+        28,
+        48
+      ],
+      "unityPivot": [
+        0.1085,
+        0.5385
+      ],
+      "attachTo": "tail"
+    },
+    "Hero_HeadBack": {
+      "svg": "parts/Hero_HeadBack.svg",
+      "png": "parts/Hero_HeadBack.png",
+      "sizePx": [
+        418,
+        390
+      ],
+      "pivotPx": [
+        210,
+        356
+      ],
+      "unityPivot": [
+        0.5024,
+        0.0872
+      ],
+      "attachTo": "neck"
+    },
+    "Hero_BodyBack": {
+      "svg": "parts/Hero_BodyBack.svg",
+      "png": "parts/Hero_BodyBack.png",
+      "sizePx": [
+        186,
+        226
+      ],
+      "pivotPx": [
+        94,
+        184
+      ],
+      "unityPivot": [
+        0.5054,
+        0.1858
+      ],
+      "attachTo": "root"
+    },
+    "Hero_ArmLeft_Fist": {
+      "svg": "parts/Hero_ArmLeft_Fist.svg",
+      "png": "parts/Hero_ArmLeft_Fist.png",
+      "sizePx": [
+        88,
+        186
+      ],
+      "pivotPx": [
+        44,
+        38
+      ],
+      "unityPivot": [
+        0.5,
+        0.7957
+      ],
+      "attachTo": "shoulderLeft"
+    },
+    "Hero_ArmRight_Fist": {
+      "svg": "parts/Hero_ArmRight_Fist.svg",
+      "png": "parts/Hero_ArmRight_Fist.png",
+      "sizePx": [
+        88,
+        186
+      ],
+      "pivotPx": [
+        44,
+        38
+      ],
+      "unityPivot": [
+        0.5,
+        0.7957
+      ],
+      "attachTo": "shoulderRight"
+    },
+    "Hero_Bundle": {
+      "svg": "parts/Hero_Bundle.svg",
+      "png": "parts/Hero_Bundle.png",
+      "sizePx": [
+        216,
+        252
+      ],
+      "pivotPx": [
+        108,
+        86
+      ],
+      "unityPivot": [
+        0.5,
+        0.6587
+      ],
+      "attachTo": "back"
+    },
+    "Sister_Head": {
+      "svg": "parts/Sister_Head.svg",
+      "png": "parts/Sister_Head.png",
+      "sizePx": [
+        356,
+        332
+      ],
+      "pivotPx": [
+        178,
+        302
+      ],
+      "unityPivot": [
+        0.5,
+        0.0904
+      ],
+      "attachTo": "neck"
+    },
+    "Sister_Face_Normal": {
+      "svg": "parts/Sister_Face_Normal.svg",
+      "png": "parts/Sister_Face_Normal.png",
+      "sizePx": [
+        356,
+        332
+      ],
+      "pivotPx": [
+        178,
+        302
+      ],
+      "unityPivot": [
+        0.5,
+        0.0904
+      ],
+      "attachTo": "head pivot"
+    },
+    "Sister_Face_Hungry": {
+      "svg": "parts/Sister_Face_Hungry.svg",
+      "png": "parts/Sister_Face_Hungry.png",
+      "sizePx": [
+        356,
+        332
+      ],
+      "pivotPx": [
+        178,
+        302
+      ],
+      "unityPivot": [
+        0.5,
+        0.0904
+      ],
+      "attachTo": "head pivot"
+    },
+    "Sister_Body": {
+      "svg": "parts/Sister_Body.svg",
+      "png": "parts/Sister_Body.png",
+      "sizePx": [
+        132,
+        158
+      ],
+      "pivotPx": [
+        66,
+        126
+      ],
+      "unityPivot": [
+        0.5,
+        0.2025
+      ],
+      "attachTo": "root"
+    },
+    "Sister_ArmLeft": {
+      "svg": "parts/Sister_ArmLeft.svg",
+      "png": "parts/Sister_ArmLeft.png",
+      "sizePx": [
+        64,
+        128
+      ],
+      "pivotPx": [
+        34,
+        28
+      ],
+      "unityPivot": [
+        0.5312,
+        0.7812
+      ],
+      "attachTo": "shoulderLeft"
+    },
+    "Sister_ArmRight": {
+      "svg": "parts/Sister_ArmRight.svg",
+      "png": "parts/Sister_ArmRight.png",
+      "sizePx": [
+        64,
+        128
+      ],
+      "pivotPx": [
+        30,
+        28
+      ],
+      "unityPivot": [
+        0.4688,
+        0.7812
+      ],
+      "attachTo": "shoulderRight"
+    },
+    "Sister_LegLeft": {
+      "svg": "parts/Sister_LegLeft.svg",
+      "png": "parts/Sister_LegLeft.png",
+      "sizePx": [
+        74,
+        106
+      ],
+      "pivotPx": [
+        28,
+        32
+      ],
+      "unityPivot": [
+        0.3784,
+        0.6981
+      ],
+      "attachTo": "hipLeft"
+    },
+    "Sister_LegRight": {
+      "svg": "parts/Sister_LegRight.svg",
+      "png": "parts/Sister_LegRight.png",
+      "sizePx": [
+        74,
+        106
+      ],
+      "pivotPx": [
+        46,
+        32
+      ],
+      "unityPivot": [
+        0.6216,
+        0.6981
+      ],
+      "attachTo": "hipRight"
+    },
+    "Sister_Tail": {
+      "svg": "parts/Sister_Tail.svg",
+      "png": "parts/Sister_Tail.png",
+      "sizePx": [
+        146,
+        134
+      ],
+      "pivotPx": [
+        24,
+        102
+      ],
+      "unityPivot": [
+        0.1644,
+        0.2388
+      ],
+      "attachTo": "tail"
+    },
+    "Sister_Tail_Limp": {
+      "svg": "parts/Sister_Tail_Limp.svg",
+      "png": "parts/Sister_Tail_Limp.png",
+      "sizePx": [
+        182,
+        82
+      ],
+      "pivotPx": [
+        24,
+        38
+      ],
+      "unityPivot": [
+        0.1319,
+        0.5366
+      ],
+      "attachTo": "tail"
+    },
+    "Sister_Bow": {
+      "svg": "parts/Sister_Bow.svg",
+      "png": "parts/Sister_Bow.png",
+      "sizePx": [
+        116,
+        76
+      ],
+      "pivotPx": [
+        58,
+        38
+      ],
+      "unityPivot": [
+        0.5,
+        0.5
+      ],
+      "attachTo": "head, at its offset"
+    },
+    "Cobra_Head": {
+      "svg": "parts/Cobra_Head.svg",
+      "png": "parts/Cobra_Head.png",
+      "sizePx": [
+        436,
+        420
+      ],
+      "pivotPx": [
+        218,
+        210
+      ],
+      "unityPivot": [
+        0.5,
+        0.5
+      ],
+      "attachTo": "free: the head of the bush scene, its pivot at its middle"
+    }
+  },
+  "sockets": {
+    "Father": {
+      "neck": [
+        0.0,
+        -103.36
+      ],
+      "shoulderLeft": [
+        46.13,
+        -76.16
+      ],
+      "shoulderRight": [
+        -46.13,
+        -76.16
+      ],
+      "hipLeft": [
+        25.95,
+        5.44
+      ],
+      "hipRight": [
+        -25.95,
+        5.44
+      ],
+      "tail": [
+        28.83,
+        2.72
+      ],
+      "tailBack": [
+        0.0,
+        10.88
+      ],
+      "back": [
+        0.0,
+        -76.16
+      ]
+    },
+    "Mother": {
+      "neck": [
+        0.0,
+        -92.72
+      ],
+      "shoulderLeft": [
+        39.04,
+        -68.32
+      ],
+      "shoulderRight": [
+        -39.04,
+        -68.32
+      ],
+      "hipLeft": [
+        21.96,
+        4.88
+      ],
+      "hipRight": [
+        -21.96,
+        4.88
+      ],
+      "tail": [
+        24.4,
+        2.44
+      ],
+      "tailBack": [
+        0.0,
+        9.76
+      ],
+      "back": [
+        0.0,
+        -68.32
+      ]
+    },
+    "Hero": {
+      "neck": [
+        0.0,
+        -76.0
+      ],
+      "shoulderLeft": [
+        32.0,
+        -56.0
+      ],
+      "shoulderRight": [
+        -32.0,
+        -56.0
+      ],
+      "hipLeft": [
+        18.0,
+        4.0
+      ],
+      "hipRight": [
+        -18.0,
+        4.0
+      ],
+      "tail": [
+        20.0,
+        2.0
+      ],
+      "tailBack": [
+        0.0,
+        8.0
+      ],
+      "back": [
+        0.0,
+        -56.0
+      ]
+    },
+    "Sister": {
+      "neck": [
+        0.0,
+        -50.16
+      ],
+      "shoulderLeft": [
+        21.12,
+        -36.96
+      ],
+      "shoulderRight": [
+        -21.12,
+        -36.96
+      ],
+      "hipLeft": [
+        11.88,
+        2.64
+      ],
+      "hipRight": [
+        -11.88,
+        2.64
+      ],
+      "tail": [
+        13.2,
+        1.32
+      ],
+      "tailBack": [
+        0.0,
+        5.28
+      ],
+      "back": [
+        0.0,
+        -36.96
+      ]
+    }
+  },
+  "props": {
+    "Father": [
+      {
+        "part": "Father_BowTie",
+        "at": "neck",
+        "nudge": [
+          0,
+          17
+        ],
+        "drawn": "after Body",
+        "poses": [
+          "SitSlumped",
+          "Stand"
+        ]
+      },
+      {
+        "part": "Father_Cane",
+        "at": "hand:ArmLeft",
+        "nudge": [
+          0,
+          0
+        ],
+        "drawn": "before ArmLeft",
+        "poses": [
+          "Stand"
+        ]
+      }
+    ],
+    "Mother": [
+      {
+        "part": "Mother_Flower",
+        "at": "on:Head",
+        "nudge": [
+          75.56,
+          -117.42
+        ],
+        "drawn": "after Head",
+        "poses": [
+          "SitSlumped",
+          "Stand"
+        ]
+      }
+    ],
+    "Hero": [
+      {
+        "part": "Hero_Bundle",
+        "at": "back",
+        "nudge": [
+          0,
+          0
+        ],
+        "drawn": "after HeadBack",
+        "poses": [
+          "BackBundle"
+        ]
+      }
+    ],
+    "Sister": [
+      {
+        "part": "Sister_Bow",
+        "at": "on:Head",
+        "nudge": [
+          32.52,
+          -134.07
+        ],
+        "drawn": "after Head",
+        "poses": [
+          "SitSlumped",
+          "Stand"
+        ]
+      }
+    ]
+  },
+  "poses": {
+    "Stand": {
+      "mirror": false,
+      "drawOrder": [
+        {
+          "part": "Tail",
+          "at": "tail",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "LegRight",
+          "at": "hipRight",
+          "rotation": 5,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "LegLeft",
+          "at": "hipLeft",
+          "rotation": -5,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "ArmRight",
+          "at": "shoulderRight",
+          "rotation": 24,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "ArmLeft",
+          "at": "shoulderLeft",
+          "rotation": -24,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Body",
+          "at": "body",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Head",
+          "at": "neck",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Face_Normal",
+          "at": "on:Head",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        }
+      ],
+      "drawn": [
+        "Hero_Stand",
+        "Father_Stand",
+        "Mother_Stand",
+        "Sister_Stand"
+      ]
+    },
+    "SitSlumped": {
+      "mirror": false,
+      "drawOrder": [
+        {
+          "part": "Tail_Limp",
+          "at": "tail",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "LegRight",
+          "at": "hipRight",
+          "rotation": 50,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "LegLeft",
+          "at": "hipLeft",
+          "rotation": -50,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Body",
+          "at": "body",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "ArmRight",
+          "at": "shoulderRight",
+          "rotation": -24,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "ArmLeft",
+          "at": "shoulderLeft",
+          "rotation": 24,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Head",
+          "at": "neck",
+          "rotation": 9,
+          "nudge": [
+            0,
+            11
+          ]
+        },
+        {
+          "part": "Face_Hungry",
+          "at": "on:Head",
+          "rotation": 0,
+          "nudge": [
+            0,
+            6
+          ]
+        }
+      ],
+      "drawn": [
+        "Hero_SitSlumped",
+        "Father_SitSlumped",
+        "Mother_SitSlumped",
+        "Sister_SitSlumped"
+      ]
+    },
+    "Determined": {
+      "mirror": false,
+      "drawOrder": [
+        {
+          "part": "Tail",
+          "at": "tail",
+          "rotation": -18,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "LegRight",
+          "at": "hipRight",
+          "rotation": 14,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "LegLeft",
+          "at": "hipLeft",
+          "rotation": -14,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "ArmRight_Fist",
+          "at": "shoulderRight",
+          "rotation": 130,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "ArmLeft_Fist",
+          "at": "shoulderLeft",
+          "rotation": -22,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Body",
+          "at": "body",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Head",
+          "at": "neck",
+          "rotation": -4,
+          "nudge": [
+            0,
+            -2
+          ]
+        },
+        {
+          "part": "Face_Determined",
+          "at": "on:Head",
+          "rotation": 0,
+          "nudge": [
+            0,
+            -3
+          ]
+        }
+      ],
+      "drawn": [
+        "Hero_Determined"
+      ]
+    },
+    "BackBundle": {
+      "mirror": true,
+      "drawOrder": [
+        {
+          "part": "LegRight",
+          "at": "hipRight",
+          "rotation": 4,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "LegLeft",
+          "at": "hipLeft",
+          "rotation": -12,
+          "nudge": [
+            0,
+            -5
+          ]
+        },
+        {
+          "part": "ArmRight",
+          "at": "shoulderRight",
+          "rotation": 30,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "ArmLeft",
+          "at": "shoulderLeft",
+          "rotation": -22,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "BodyBack",
+          "at": "body",
+          "rotation": 0,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "Tail",
+          "at": "tailBack",
+          "rotation": 24,
+          "nudge": [
+            0,
+            0
+          ]
+        },
+        {
+          "part": "HeadBack",
+          "at": "neck",
+          "rotation": -4,
+          "nudge": [
+            0,
+            0
+          ]
+        }
+      ],
+      "drawn": [
+        "Hero_BackBundle"
+      ]
+    }
+  }
+}
