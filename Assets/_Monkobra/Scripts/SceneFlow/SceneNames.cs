@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 public static class SceneNames {
     // Public Members  #########################################################
     public const string TITLE = "TitleScene";
+    public const string INTRO_COMIC = "IntroComicScene";
     public const string LEVEL_SELECT = "LevelSelectScene";
     public const string GAMEPLAY = "GameplayScene";
 

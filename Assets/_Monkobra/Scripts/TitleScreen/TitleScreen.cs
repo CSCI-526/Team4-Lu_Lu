@@ -4,11 +4,12 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// the title screen: Space, E, Enter, a click or a tap opens the level
-/// selection; the prompt pulses on unscaled time. Its picture is the last
-/// frame of the WebGL loading page (FitWindow template), which it tells to
-/// fade out once drawn, so the browser hands over to the game without a
-/// visible cut.
+/// the title screen: Space, E, Enter, a click or a tap opens the intro comic
+/// the first time a launch (<see cref="IntroComicScreen.HasPlayed"/>), else
+/// the level selection; the prompt pulses on unscaled time. Its picture is
+/// the last frame of the WebGL loading page (FitWindow template), which it
+/// tells to fade out once drawn, so the browser hands over to the game
+/// without a visible cut.
 /// </summary>
 public class TitleScreen: MonoBehaviour {
     // Inspector Fields  #######################################################
@@ -102,7 +103,8 @@ public class TitleScreen: MonoBehaviour {
         }
 
         if (startAction.WasPressedThisFrame()) {
-            SceneNames.Load(SceneNames.LEVEL_SELECT);
+            SceneNames.Load(IntroComicScreen.HasPlayed
+                ? SceneNames.LEVEL_SELECT : SceneNames.INTRO_COMIC);
         }
     }
 

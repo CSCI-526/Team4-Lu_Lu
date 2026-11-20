@@ -55,7 +55,7 @@ Two prefabs in `Prefabs/UI/`: `MenuButton` (a long button with a label) and `Ico
 
 ## Plate
 
-A panel that shows what is behind it: `Sprites/UI/Plate_Fill`, tinted Panel at alpha 0.55, with a child `Rim` drawing `Sprites/UI/Plate_Rim` in Gold (both 9-sliced, one shape, radius 22). The rim is its own Image, never an `Outline` component: an Outline repeats the whole fill under it in its color, which shows through a see-through plate and tints it gold. `UIStyleBuilder.MakePlate` builds one on an existing Image. Used by the popups and the score.
+A panel that shows what is behind it: `Sprites/UI/Plate_Fill`, tinted Panel at alpha 0.55, with a child `Rim` drawing `Sprites/UI/Plate_Rim` in Gold (both 9-sliced, one shape, radius 22). The rim is its own Image, never an `Outline` component: an Outline repeats the whole fill under it in its color, which shows through a see-through plate and tints it gold. `UIStyleBuilder.MakePlate` builds one on an existing Image. Used by the popups and the score. The intro comic's caption plate is the one opaque plate: its fill is the olive `#353D23` the see-through plate shows over the comic's dry ground, so the words read the same on the sunny panels and in the dark jungle (`UIStyleBuilder.StyleIntroCaption`).
 
 ## Key Icons
 

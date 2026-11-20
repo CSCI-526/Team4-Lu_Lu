@@ -25,7 +25,9 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 | Nickname field (lose screen): type, then Enter or SAVE | save a display nickname without changing player identity |
 | W, S or Up, Down; mouse hover (pause and lose screens) | move the highlight over Resume, Restart, Exit (back to the level selection) |
 | Space, E, Enter or click (pause and lose screens) | confirm the highlighted option; on the lose screen with nothing highlighted, restart |
-| Space, E, Enter, click or tap (title) | open the level selection |
+| Space, E, Enter, click or tap (title) | open the intro comic the first time, then the level selection |
+| Space, E, Enter, click or tap (intro comic) | finish the panel, then turn the page |
+| Esc or P; Skip button (intro comic) | skip to the level selection |
 | W, S or Up, Down; mouse hover (menus) | move the highlight |
 | Space, E, Enter or click (menus) | confirm |
 | Esc or P (level selection) | back to the title |

@@ -1,0 +1,410 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9343aa77d4639490b8dae47565f50858, type: 3}
+  m_Name: IntroComicConfig
+  m_EditorClassIdentifier: Assembly-CSharp::IntroComicConfig
+  panels:
+  - caption: 'The rains never came. The trees went bare,
+
+      and the family went
+      hungry.'
+    motionS: 6
+    start:
+      center: {x: 0, y: 0}
+      zoom: 1
+    end:
+      center: {x: 60, y: -60}
+      zoom: 1.12
+    layers:
+    - name: Background
+      sprite: {fileID: 21300000, guid: a24b2cc9517324fcc929b4a83808858a, type: 3}
+      center: {x: 0, y: 0}
+      size: {x: 1280, y: 720}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Family
+      sprite: {fileID: 21300000, guid: 1a674571da56441b2a9ad6ff97252cbf, type: 3}
+      center: {x: 105, y: -97}
+      size: {x: 702, y: 290}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Leaf
+      sprite: {fileID: 21300000, guid: 77e17ef504a9448a382585637be19d97, type: 3}
+      center: {x: 524, y: 25}
+      size: {x: 36, y: 26}
+      cue:
+        kind: 1
+        delayS: 0.8
+        periodS: 4
+        amount: 16
+        start: {x: 0, y: -0}
+        end: {x: -50, y: -250}
+        startScale: 1
+        endScale: 1
+  - caption: "Little Sister hadn\u2019t eaten in days."
+    motionS: 5
+    start:
+      center: {x: 0, y: 0}
+      zoom: 1
+    end:
+      center: {x: -40, y: -60}
+      zoom: 1.12
+    layers:
+    - name: Background
+      sprite: {fileID: 21300000, guid: 146b531ac726a42efb7a724ef5905240, type: 3}
+      center: {x: 0, y: 0}
+      size: {x: 1280, y: 720}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Family
+      sprite: {fileID: 21300000, guid: 39d4329e4f41c499287f5cf69190330b, type: 3}
+      center: {x: 47, y: -54}
+      size: {x: 862, y: 448}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Grumble
+      sprite: {fileID: 21300000, guid: ab92165a6690740199a9c3fdd5d1c924, type: 3}
+      center: {x: 47, y: -147}
+      size: {x: 38, y: 42}
+      cue:
+        kind: 2
+        delayS: 0
+        periodS: 0.5
+        amount: 0.15
+        start: {x: 0, y: -0}
+        end: {x: 0, y: -0}
+        startScale: 1
+        endScale: 1
+  - caption: 'Father told of a faraway rainforest,
+
+      heavy with fruit, but full
+      of danger.'
+    motionS: 7
+    start:
+      center: {x: -140, y: 60}
+      zoom: 1.25
+    end:
+      center: {x: 140, y: 30}
+      zoom: 1.25
+    layers:
+    - name: Background
+      sprite: {fileID: 21300000, guid: bc54f936bbece4eeeb8e9fb92241939c, type: 3}
+      center: {x: 0, y: 0}
+      size: {x: 1280, y: 720}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Father
+      sprite: {fileID: 21300000, guid: ebde7e278475f44e380dbc35945584de, type: 3}
+      center: {x: -326, y: -77}
+      size: {x: 228, y: 338}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Hero
+      sprite: {fileID: 21300000, guid: 8916c9a466f534c39b7fd4d262d6726e, type: 3}
+      center: {x: 289, y: -84}
+      size: {x: 214, y: 324}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: TaleBubble
+      sprite: {fileID: 21300000, guid: 6baadc1ed661c48f7a76fc26d336bb69, type: 3}
+      center: {x: -258, y: 212}
+      size: {x: 660, y: 272}
+      cue:
+        kind: 3
+        delayS: 0.4
+        periodS: 0.35
+        amount: 0
+        start: {x: 0, y: -0}
+        end: {x: 0, y: -0}
+        startScale: 1
+        endScale: 1
+    - name: HeroBubble
+      sprite: {fileID: 21300000, guid: e453ebd4ffb2e4931b2e7ce5e5a2398f, type: 3}
+      center: {x: 453, y: 168}
+      size: {x: 250, y: 176}
+      cue:
+        kind: 3
+        delayS: 3.6
+        periodS: 0.35
+        amount: 0
+        start: {x: 0, y: -0}
+        end: {x: 0, y: -0}
+        startScale: 1
+        endScale: 1
+  - caption: "At dawn he set off,\ncarrying his family\u2019s hope on his back."
+    motionS: 7
+    start:
+      center: {x: 0, y: 0}
+      zoom: 1
+    end:
+      center: {x: 60, y: -20}
+      zoom: 1.06
+    layers:
+    - name: Background
+      sprite: {fileID: 21300000, guid: 7f3f18f05c55944e68388040ec6629a3, type: 3}
+      center: {x: 0, y: 0}
+      size: {x: 1280, y: 720}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Birds
+      sprite: {fileID: 21300000, guid: c4603fc8127604535aeecbfba9ff3c22, type: 3}
+      center: {x: 451, y: 128}
+      size: {x: 98, y: 44}
+      cue:
+        kind: 5
+        delayS: 0
+        periodS: 12
+        amount: 4
+        start: {x: 0, y: -0}
+        end: {x: -80, y: -30}
+        startScale: 1
+        endScale: 1
+    - name: Hero
+      sprite: {fileID: 21300000, guid: a36be7522ec584635a458a9af446ec8a, type: 3}
+      center: {x: 319, y: -35}
+      size: {x: 90, y: 134}
+      cue:
+        kind: 4
+        delayS: 0.3
+        periodS: 6.5
+        amount: 3
+        start: {x: -56, y: -53}
+        end: {x: 39, y: 40}
+        startScale: 1.35
+        endScale: 0.55
+    - name: Family
+      sprite: {fileID: 21300000, guid: 0df7f457fc2b24230adb192847fddb21, type: 3}
+      center: {x: -262, y: -69}
+      size: {x: 624, y: 430}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: WaveMarks
+      sprite: {fileID: 21300000, guid: 7ba1db1d7c2f74e6cbf43f6ad882e211, type: 3}
+      center: {x: 25, y: -160}
+      size: {x: 38, y: 48}
+      cue:
+        kind: 6
+        delayS: 0
+        periodS: 0.5
+        amount: 0
+        start: {x: 0, y: -0}
+        end: {x: 0, y: -0}
+        startScale: 1
+        endScale: 1
+  - caption: 'The fruit hung high in the giant tree...
+
+      but something in the
+      shadows was watching.'
+    motionS: 8
+    start:
+      center: {x: 240, y: 120}
+      zoom: 1.35
+    end:
+      center: {x: 0, y: -20}
+      zoom: 1.04
+    layers:
+    - name: Background
+      sprite: {fileID: 21300000, guid: 4e80ff351cf1c4ea08de614d595e5957, type: 3}
+      center: {x: 0, y: 0}
+      size: {x: 1280, y: 720}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Tree
+      sprite: {fileID: 21300000, guid: 2c5a6cb717a484b69988828eb5d5d5ec, type: 3}
+      center: {x: 28, y: 0}
+      size: {x: 772, y: 720}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Bananas
+      sprite: {fileID: 21300000, guid: 128a48ec65eee4d8d85e82694ca422e2, type: 3}
+      center: {x: 326, y: 122}
+      size: {x: 240, y: 240}
+      cue:
+        kind: 7
+        delayS: 0
+        periodS: 3
+        amount: 0.03
+        start: {x: 0, y: -0}
+        end: {x: 0, y: -0}
+        startScale: 1
+        endScale: 1
+    - name: Canopy
+      sprite: {fileID: 21300000, guid: 048fe408b67f845a89a5520aec38147e, type: 3}
+      center: {x: 26, y: 209}
+      size: {x: 1228, y: 302}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Undergrowth
+      sprite: {fileID: 21300000, guid: f1d78e4f4456d4c8faa280b897a70d9c, type: 3}
+      center: {x: 0, y: -214}
+      size: {x: 1280, y: 292}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Cobra
+      sprite: {fileID: 21300000, guid: 8ad3d9cb45f904db284277f65ecda1b3, type: 3}
+      center: {x: 22, y: -152}
+      size: {x: 480, y: 180}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: CobraGlow
+      sprite: {fileID: 21300000, guid: e0556629a507746218cb1ec5a82d6263, type: 3}
+      center: {x: 15, y: -119}
+      size: {x: 98, y: 46}
+      cue:
+        kind: 9
+        delayS: 8.2
+        periodS: 0.25
+        amount: 0
+        start: {x: 0, y: -0}
+        end: {x: 0, y: -0}
+        startScale: 1
+        endScale: 1
+    - name: Hero
+      sprite: {fileID: 21300000, guid: e041c2b0b734347c68d82c061139353c, type: 3}
+      center: {x: -346, y: -126}
+      size: {x: 132, y: 192}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+    - name: Motes
+      sprite: {fileID: 21300000, guid: 30092657422b9408c8f8bb6c72dd4eb6, type: 3}
+      center: {x: 224, y: 101}
+      size: {x: 340, y: 346}
+      cue:
+        kind: 8
+        delayS: 0
+        periodS: 1.6
+        amount: 0.35
+        start: {x: 0, y: -0}
+        end: {x: 0, y: -0}
+        startScale: 1
+        endScale: 1
+    - name: Foreground
+      sprite: {fileID: 21300000, guid: 26f949f29011945bea35dfbd125e0b89, type: 3}
+      center: {x: 0, y: -263}
+      size: {x: 1280, y: 194}
+      cue:
+        kind: 0
+        delayS: 0
+        periodS: 1
+        amount: 0
+        start: {x: 0, y: 0}
+        end: {x: 0, y: 0}
+        startScale: 1
+        endScale: 1
+  fadeS: 0.45
+  hintDelayS: 1.5
+  inputDelayS: 0.4
