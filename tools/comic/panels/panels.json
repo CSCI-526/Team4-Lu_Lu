@@ -1,0 +1,509 @@
+{
+  "size": [
+    1280,
+    720
+  ],
+  "pngScale": 2,
+  "note": "rect is x, y, w, h in panel units from the top left; center is the layer's middle from the panel's middle, y up, as a Unity anchoredPosition; layers are back to front",
+  "panels": [
+    {
+      "index": 1,
+      "caption": "The rains never came. The trees went bare, and the family went hungry.",
+      "layers": [
+        {
+          "name": "Background",
+          "file": "Panel_1/Background.png",
+          "rect": [
+            0,
+            0,
+            1280,
+            720
+          ],
+          "center": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Family",
+          "file": "Panel_1/Family.png",
+          "rect": [
+            395,
+            313,
+            700,
+            288
+          ],
+          "center": [
+            105.0,
+            -97.0
+          ]
+        },
+        {
+          "name": "Leaf",
+          "file": "Panel_1/Leaf.png",
+          "rect": [
+            1146,
+            323,
+            36,
+            24
+          ],
+          "center": [
+            524.0,
+            25.0
+          ]
+        }
+      ],
+      "motion": {
+        "seconds": 6,
+        "start": {
+          "center": [
+            640,
+            360
+          ],
+          "zoom": 1.0
+        },
+        "end": {
+          "center": [
+            700,
+            420
+          ],
+          "zoom": 1.12
+        },
+        "cues": [
+          "Leaf: drifts down from the tree to the ground, swaying, over 4 s, then fades"
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "caption": "Little Sister hadn’t eaten in days.",
+      "layers": [
+        {
+          "name": "Background",
+          "file": "Panel_2/Background.png",
+          "rect": [
+            0,
+            0,
+            1280,
+            720
+          ],
+          "center": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Family",
+          "file": "Panel_2/Family.png",
+          "rect": [
+            257,
+            190,
+            860,
+            447
+          ],
+          "center": [
+            47.0,
+            -53.5
+          ]
+        },
+        {
+          "name": "Grumble",
+          "file": "Panel_2/Grumble.png",
+          "rect": [
+            668,
+            487,
+            37,
+            40
+          ],
+          "center": [
+            46.5,
+            -147.0
+          ]
+        }
+      ],
+      "motion": {
+        "seconds": 5,
+        "start": {
+          "center": [
+            640,
+            360
+          ],
+          "zoom": 1.0
+        },
+        "end": {
+          "center": [
+            600,
+            420
+          ],
+          "zoom": 1.12
+        },
+        "cues": [
+          "Grumble: pulses (scale 1 to 1.15 and back) twice a second"
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "caption": "Father told of a faraway rainforest,\nheavy with fruit, but full of danger.",
+      "layers": [
+        {
+          "name": "Background",
+          "file": "Panel_3/Background.png",
+          "rect": [
+            0,
+            0,
+            1280,
+            720
+          ],
+          "center": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Father",
+          "file": "Panel_3/Father.png",
+          "rect": [
+            200,
+            268,
+            228,
+            337
+          ],
+          "center": [
+            -326.0,
+            -76.5
+          ]
+        },
+        {
+          "name": "Hero",
+          "file": "Panel_3/Hero.png",
+          "rect": [
+            822,
+            282,
+            213,
+            323
+          ],
+          "center": [
+            288.5,
+            -83.5
+          ]
+        },
+        {
+          "name": "TaleBubble",
+          "file": "Panel_3/TaleBubble.png",
+          "rect": [
+            53,
+            13,
+            659,
+            270
+          ],
+          "center": [
+            -257.5,
+            212.0
+          ]
+        },
+        {
+          "name": "HeroBubble",
+          "file": "Panel_3/HeroBubble.png",
+          "rect": [
+            968,
+            105,
+            249,
+            175
+          ],
+          "center": [
+            452.5,
+            167.5
+          ]
+        }
+      ],
+      "motion": {
+        "seconds": 7,
+        "start": {
+          "center": [
+            500,
+            300
+          ],
+          "zoom": 1.25
+        },
+        "end": {
+          "center": [
+            780,
+            330
+          ],
+          "zoom": 1.25
+        },
+        "cues": [
+          "TaleBubble: pops in (scale 0.6 to 1, overshoot) at 0.4 s, while the view is on Father",
+          "HeroBubble: pops in once the view reaches Hero; Hero gives a small bounce with it"
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "caption": "At dawn he set off, carrying his family’s hope on his back.",
+      "layers": [
+        {
+          "name": "Background",
+          "file": "Panel_4/Background.png",
+          "rect": [
+            0,
+            0,
+            1280,
+            720
+          ],
+          "center": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Birds",
+          "file": "Panel_4/Birds.png",
+          "rect": [
+            1043,
+            211,
+            97,
+            43
+          ],
+          "center": [
+            451.5,
+            127.5
+          ]
+        },
+        {
+          "name": "Hero",
+          "file": "Panel_4/Hero.png",
+          "rect": [
+            915,
+            328,
+            88,
+            134
+          ],
+          "center": [
+            319.0,
+            -35.0
+          ]
+        },
+        {
+          "name": "Family",
+          "file": "Panel_4/Family.png",
+          "rect": [
+            67,
+            214,
+            622,
+            430
+          ],
+          "center": [
+            -262.0,
+            -69.0
+          ]
+        },
+        {
+          "name": "WaveMarks",
+          "file": "Panel_4/WaveMarks.png",
+          "rect": [
+            646,
+            497,
+            37,
+            47
+          ],
+          "center": [
+            24.5,
+            -160.5
+          ]
+        }
+      ],
+      "motion": {
+        "seconds": 7,
+        "start": {
+          "center": [
+            640,
+            360
+          ],
+          "zoom": 1.0
+        },
+        "end": {
+          "center": [
+            700,
+            380
+          ],
+          "zoom": 1.06
+        },
+        "cues": [
+          "Hero: walks up the path from about (900, 500) at 1.3x to (990, 418) at 0.6x, a small bob each step, then fades at the horizon",
+          "Birds: drift toward the sun",
+          "WaveMarks: blink on and off with a little wiggle"
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "caption": "The fruit hung high in the giant tree...\nbut something in the shadows was watching.",
+      "layers": [
+        {
+          "name": "Background",
+          "file": "Panel_5/Background.png",
+          "rect": [
+            0,
+            0,
+            1280,
+            720
+          ],
+          "center": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Tree",
+          "file": "Panel_5/Tree.png",
+          "rect": [
+            282,
+            0,
+            771,
+            720
+          ],
+          "center": [
+            27.5,
+            0.0
+          ]
+        },
+        {
+          "name": "Bananas",
+          "file": "Panel_5/Bananas.png",
+          "rect": [
+            847,
+            118,
+            239,
+            239
+          ],
+          "center": [
+            326.5,
+            122.5
+          ]
+        },
+        {
+          "name": "Canopy",
+          "file": "Panel_5/Canopy.png",
+          "rect": [
+            52,
+            0,
+            1228,
+            302
+          ],
+          "center": [
+            26.0,
+            209.0
+          ]
+        },
+        {
+          "name": "Undergrowth",
+          "file": "Panel_5/Undergrowth.png",
+          "rect": [
+            0,
+            428,
+            1280,
+            292
+          ],
+          "center": [
+            0.0,
+            -214.0
+          ]
+        },
+        {
+          "name": "Cobra",
+          "file": "Panel_5/Cobra.png",
+          "rect": [
+            423,
+            422,
+            478,
+            180
+          ],
+          "center": [
+            22.0,
+            -152.0
+          ]
+        },
+        {
+          "name": "CobraGlow",
+          "file": "Panel_5/CobraGlow.png",
+          "rect": [
+            606,
+            457,
+            98,
+            44
+          ],
+          "center": [
+            15.0,
+            -119.0
+          ]
+        },
+        {
+          "name": "Hero",
+          "file": "Panel_5/Hero.png",
+          "rect": [
+            229,
+            390,
+            131,
+            191
+          ],
+          "center": [
+            -345.5,
+            -125.5
+          ]
+        },
+        {
+          "name": "Motes",
+          "file": "Panel_5/Motes.png",
+          "rect": [
+            695,
+            86,
+            338,
+            345
+          ],
+          "center": [
+            224.0,
+            101.5
+          ]
+        },
+        {
+          "name": "Foreground",
+          "file": "Panel_5/Foreground.png",
+          "rect": [
+            0,
+            526,
+            1280,
+            194
+          ],
+          "center": [
+            0.0,
+            -263.0
+          ]
+        }
+      ],
+      "motion": {
+        "seconds": 8,
+        "start": {
+          "center": [
+            880,
+            240
+          ],
+          "zoom": 1.35
+        },
+        "end": {
+          "center": [
+            640,
+            380
+          ],
+          "zoom": 1.04
+        },
+        "cues": [
+          "Bananas: the glow breathes slowly",
+          "Motes: drift and twinkle in the light",
+          "CobraGlow: hidden until the view settles, then fades in twice like a blink"
+        ]
+      }
+    }
+  ]
+}

@@ -108,18 +108,24 @@ def wave_marks(x, y, side):
 HEAD_DROP = 36  # how far the head sits down in its leaves, in kit units
 
 
-def cobra_hiding(x, y, s):
+def cobra_hiding(x, y, s, low=False):
     """The kit's cobra head peeking from leaves at the tree's foot. Unlike Cobra_InBush there
-    is no dark bush under it: the leaves fan out wide so the head melts into the undergrowth."""
+    is no dark bush under it: the leaves fan out wide so the head melts into the undergrowth.
+    low keeps the leaves down by the head's sides, a wide low clump with nothing tall above it."""
     rnd = random.Random(91)
-    out = [mc.twig(-118, 70, -52, -205, -28, 9), mc.twig(172, 60, 132, -120, 22, 7)]
+    out = [] if low else [mc.twig(-118, 70, -52, -205, -28, 9), mc.twig(172, 60, 132, -120, 22, 7)]
     # an outer ring along the ground, leaning outward, so the clump spreads into the undergrowth
-    for bx, by, a in ((-300, 210, -160), (-230, 190, -132), (-150, 170, -112), (150, 170, -68),
-                      (230, 190, -48), (300, 210, -20), (-260, 240, 176), (260, 240, 4)):
+    ring = (((-300, 220, -170), (-230, 205, -152), (-150, 190, -142), (150, 190, -38),
+             (230, 205, -28), (300, 220, -10), (-260, 240, 176), (260, 240, 4)) if low else
+            ((-300, 210, -160), (-230, 190, -132), (-150, 170, -112), (150, 170, -68),
+             (230, 190, -48), (300, 210, -20), (-260, 240, 176), (260, 240, 4)))
+    for bx, by, a in ring:
         L = rnd.uniform(230, 300)
         out.append(mc.leaf(bx, by, a + rnd.uniform(-6, 6), L, L * 0.3, rnd.choice(mc.BACK_LEAVES), "#2C7C4A"))
     for a in range(-176, 0, 16):  # behind the head, fanned all round
         L = rnd.uniform(240, 330)
+        if low:  # short where it would stand up over the head, long out to the sides
+            L = 100 + 190 * abs(math.cos(math.radians(a))) + (L - 285) / 4
         out.append(mc.leaf(rnd.uniform(-30, 30), rnd.uniform(60, 100), a + rnd.uniform(-5, 5), L, L * 0.28,
                            rnd.choice(mc.BACK_LEAVES), "#2C7C4A"))
     # a fill behind the chin, so no bark shows between the front leaves
