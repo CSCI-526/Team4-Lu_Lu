@@ -124,3 +124,6 @@ InitTestScene*.unity*
 /tools/firebase/*-debug.log
 /firebase-debug.log
 /firestore-debug.log
+
+# Python bytecode from the tools/ generators
+__pycache__/
