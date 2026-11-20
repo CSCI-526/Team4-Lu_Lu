@@ -77,7 +77,8 @@ public class RunScreenMenu: MonoBehaviour {
     }
 
     private void Update() {
-        if (!isSubmitRestarts || submitAction == null
+        if (TextInputFocus.BlocksShortcuts || !isSubmitRestarts
+            || submitAction == null
             || !submitAction.action.WasPressedThisFrame()) {
             return;
         }

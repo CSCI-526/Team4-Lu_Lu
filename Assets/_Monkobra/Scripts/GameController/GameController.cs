@@ -271,6 +271,9 @@ public class GameController: MonoBehaviour {
     }
 
     private void Update() {
+        if (TextInputFocus.BlocksShortcuts) {
+            return;
+        }
         UpdateStartKey();
         UpdateNoClipKey();
         UpdatePauseKey();

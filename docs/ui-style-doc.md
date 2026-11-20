@@ -79,6 +79,10 @@ All of it is built by Editor menus, never by editing prefab YAML:
 4. `Monkobra > UI Style > 4. Style HUD`: the input icons, the HUD prefabs, the popups, the tutorial, and the font overrides of both gameplay scenes
 5. `Monkobra > UI Style > 5. Style Pause and Lose Screens`: the pause screen, the lose screen, and the leaderboard
 6. `Monkobra > Build Title Screen`: the title picture, whose start prompt words take the loading page's font
+7. `Monkobra > UI Style > 6. Build Leaderboard Name Input`: the Baloo 2 nickname
+   field and gold MenuButton SAVE control; the screen and Firebase setup builders
+   apply it too. The same ten rows use 27-unit spacing to leave room for the input
+   and a small-print hint inside the existing plate.
 
 `Build All` runs steps 1 to 3. To change the character set, cut the fonts again from the Google Fonts variable `Baloo2[wght].ttf` with fontTools (instance at weight 600 and 800, then subset), delete the two SDF assets, and run step 1.
 

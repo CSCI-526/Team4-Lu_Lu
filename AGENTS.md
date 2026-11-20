@@ -43,7 +43,7 @@ Read these `docs/` files when their topic arises:
 
 ## Setup Commands
 
-Editor version is Unity `6000.3.22f1` (Unity 6, URP). Open the repository folder through Unity Hub. Builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) are made from the Editor with the Build Profiles in [Build](docs/build-doc.md); no test command exists yet.
+Editor version is Unity `6000.3.22f1` (Unity 6, URP). Open the repository folder through Unity Hub. Builds (WebGL for GitHub Pages, WebGL for itch.io, Windows) are made from the Editor with the Build Profiles in [Build](docs/build-doc.md); scoped leaderboard checks are listed under Testing Instructions.
 
 ## GitHub Pages WebGL Build
 
@@ -70,7 +70,7 @@ Steps, folder rules, and required Player Settings are in [Build](docs/build-doc.
 
 ## Testing Instructions
 
-No test suite exists yet. When one is added, record the exact scoped command here, and keep tests in sync with changed code.
+Firebase leaderboard REST/rules tests: `npx --yes firebase-tools@13.35.1 emulators:exec --config tools/firebase/firebase.json --project demo-monkobra --only auth,firestore "node --test tools/firebase/leaderboard.test.mjs"` (Node.js 20, Java 17). The C# client batch check and local setup are in [Leaderboard](docs/leaderboard-doc.md#local-testing-without-a-firebase-account). Keep tests in sync with changed code; no general gameplay suite exists yet.
 
 ## PR & Commit Instructions
 
