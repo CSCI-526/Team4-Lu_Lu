@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="169" height="64" viewBox="-16 -29 169 64">
+<!-- pivot at (0, 0) in viewBox units -->
+<path d="M 0 0 C 27.2 16.32 62.56 21.76 100.64 19.04 C 127.84 16.32 141.44 5.44 136 -6.8 C 130.56 -17.68 116.96 -14.96 116.96 -5.44" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#352016" stroke-width="24.24"/>
+<path d="M 0 0 C 27.2 16.32 62.56 21.76 100.64 19.04 C 127.84 16.32 141.44 5.44 136 -6.8 C 130.56 -17.68 116.96 -14.96 116.96 -5.44" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#805033" stroke-width="12.24"/>
+</svg>

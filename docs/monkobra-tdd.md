@@ -36,13 +36,16 @@ A system gets its own document when it spans several scripts and carries rules a
 
 | Scene | Purpose |
 | --- | --- |
-| `TitleScene` | the startup scene of every build: Space, a click or a tap opens the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
+| `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
+| `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build Intro Comic` from `tools/comic/panels/` |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
 | `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `GameController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
 graph LR
-  Title[TitleScene] -->|Space, click, tap| Select[LevelSelectScene]
+  Title[TitleScene] -->|Space, click, tap, first time| Comic[IntroComicScene]
+  Title -->|Space, click, tap, later| Select[LevelSelectScene]
+  Comic -->|last page, Esc, Skip| Select
   Select -->|Normal Play| Play[GameplayScene, Full]
   Select -->|Endless Mode, unlocked| Play2[GameplayScene, Endless]
   Select -->|Back, Esc| Title

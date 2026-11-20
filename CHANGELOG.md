@@ -1,8 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-Todo yuqing starting story as its own scene
-
 Todo pan branch & bark model/texture
 Todo pan skybox
 Todo pan sfx
@@ -27,6 +25,14 @@ todo todo add 3x fruit
 ## [Unreleased]
 
 ### Added
+
+##### Yuqing Lu
+
+- intro comic as its own scene between the title and the level selection: five
+  motion-comic panels (the drought, the hungry sister, the rainforest tale, the
+  hero setting off, the cobra under the fruit tree) with captions; a press lets
+  a panel finish, then turns the page, Esc or Skip leaves; once a launch; the
+  art is drawn by `tools/comic` and brought in by `Monkobra > Build Intro Comic`
 
 ##### Belle Dai
 

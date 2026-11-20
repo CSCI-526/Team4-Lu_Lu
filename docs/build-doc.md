@@ -15,7 +15,7 @@ Profile settings (Pages cannot set response headers):
 - Splash Screen: "Show Splash Screen" off (Player Settings > Splash Image), so the loading page hands straight over to the title
 - Development Build: on, since the hack hints and dev-only UI need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
 - Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `GameplayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
-- Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `GameplayScene`
+- Scenes: the global list, in order `TitleScene` (the startup scene), `IntroComicScene`, `LevelSelectScene`, `GameplayScene`; `Monkobra > Build Intro Comic` puts the comic scene after the title
 
 Phones: iOS browsers (all WebKit) have no Fullscreen API for a canvas and cannot lock the orientation. The `FitWindow` template therefore hides the Fullscreen button there and shows an Add to Home Screen hint, links `manifest.webmanifest` for a chrome-less launch from the home screen, and, on a touch phone held in portrait, covers the page with a rotate message and calls `GameController.PauseFromBrowser`, so a live run waits behind the pause screen
 
