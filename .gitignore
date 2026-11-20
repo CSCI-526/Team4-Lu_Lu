@@ -116,3 +116,11 @@ InitTestScene*.unity*
 # Editor config, kept local
 .vsconfig
 .vscode/
+
+# Machine-specific agent notes
+/AGENTS.local.md
+
+# Firebase emulator logs
+/tools/firebase/*-debug.log
+/firebase-debug.log
+/firestore-debug.log

@@ -11,7 +11,11 @@ public class LeaderboardRowWidget: MonoBehaviour {
             return;
         }
         rankLabel.text = rank.ToString("D2");
+        if (rank <= 0) {
+            rankLabel.text = "--";
+        }
         nameLabel.text = entry.Name;
+        nameLabel.richText = false;
         scoreLabel.text = entry.Score.ToString("N0");
         Color textColor = entry.IsPlayer ? playerTextColor : normalTextColor;
         FontStyles style = entry.IsPlayer ? FontStyles.Bold : FontStyles.Normal;

@@ -30,7 +30,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | Camera | Cinemachine 3.1.7 (event shots, impulse shake, noise) |
 | UI | uGUI 2.0.0 with TextMesh Pro |
 | Target | WebGL on GitHub Pages, built from the Editor |
-| Tests | none yet, `com.unity.test-framework` is installed |
+| Tests | Firebase emulator REST/rules test and C# integration check; see [Leaderboard](leaderboard-doc.md#local-testing-without-a-firebase-account); `com.unity.test-framework` is installed |
 
 ## Scenes
 
@@ -282,6 +282,24 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 - `TouchControlsPanel` shows the touch controls only in Touch mode while the run is playable (tutorial, starting zone, playing; not paused, lost or won). `TouchControls` is the first child of the `UI` canvas, so every HUD element, popup and screen draws above it and takes its taps first
 
 ## UI
+
+The lose-screen leaderboard optionally uses Firebase Anonymous Auth and Firestore
+REST. `FirebaseLeaderboardConfig` enables it without a native SDK; the existing
+practice board remains when unconfigured. `FirebaseLeaderboardClient` persists a
+pending best before uploading, uses an atomic maximum to preserve high scores,
+and loads the top ten separately for normal and endless modes. Setup, failure
+behaviour, identity limits and emulator verification are in
+[Firebase Leaderboard](leaderboard-doc.md).
+
+`LeaderboardNameEditor` saves a display nickname in project-scoped PlayerPrefs
+and requests a resubmission through `LeaderboardWidget`. Identity remains the
+anonymous UID, including across name changes. `UIStyleBuilder.LeaderboardNames`
+builds the field/button through Editor APIs. `TextInputFocus` guards
+`GameController`, `RunScreenMenu` and the centralized hack-key reader during text
+entry so a typed shortcut cannot restart a run or trigger a hack.
+The nickname editor runs after TMP's LateUpdate to suspend IME composition for
+this Latin-only field, restoring the prior mode on deselection/disable;
+`MenuButtonHover` leaves text selection alone during entry.
 
 | Element | Script | Shows |
 | --- | --- | --- |

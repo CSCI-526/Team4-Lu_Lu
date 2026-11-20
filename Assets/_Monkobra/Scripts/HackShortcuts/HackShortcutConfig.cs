@@ -86,7 +86,7 @@ public class HackShortcutConfig: ScriptableObject {
         bool isGateOpen = action == HackAction.ToggleHints
             ? AreHintsShown
             : IsActive;
-        return isGateOpen
+        return !TextInputFocus.BlocksShortcuts && isGateOpen
             && keyboard != null
             && key != Key.None
             && keyboard[key].wasPressedThisFrame;

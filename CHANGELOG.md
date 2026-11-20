@@ -3,8 +3,6 @@
 <!--
 Todo yuqing starting story as its own scene
 
-Todo belle leaderboard
-
 Todo pan branch & bark model/texture
 Todo pan skybox
 Todo pan sfx
@@ -30,6 +28,16 @@ todo todo add 3x fruit
 
 ### Added
 
+##### Belle Dai
+
+- optional Firebase leaderboard prototype on the existing lose screen: anonymous
+  players, persistent per-mode personal bests, top ten and offline pending scores;
+  Editor setup, Spark deployment instructions and local emulator verification
+  with a blank configuration template for local Firebase setup
+- editable web-playtest nicknames on the leaderboard, saved per device while
+  keeping the same anonymous UID and personal best; shared-style input and SAVE
+  button, with run/menu/hack shortcuts suppressed during text entry
+
 ### Changed
 
 ### Deprecated
@@ -37,6 +45,12 @@ todo todo add 3x fruit
 ### Removed
 
 ### Fixed
+
+##### Belle Dai
+
+- keep the English nickname field out of IME composition while focused and
+  restore the previous mode afterwards; hovering buttons no longer steals text
+  focus during nickname entry
 
 ### Security
 

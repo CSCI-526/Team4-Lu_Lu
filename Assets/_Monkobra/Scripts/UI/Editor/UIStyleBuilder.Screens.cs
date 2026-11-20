@@ -302,6 +302,7 @@ public static partial class UIStyleBuilder {
             if (rank != null) {
                 StyleText(rank, ExtraBold, LEADERBOARD_RANK_SIZE, UIStyle.Gold);
             }
+            BuildLeaderboardNamesIn(root);
         });
 
         // the rows: the widget paints them per entry from these colors; the

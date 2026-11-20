@@ -10,7 +10,8 @@ using UnityEngine.UI;
 public class MenuButtonHover: MonoBehaviour, IPointerEnterHandler {
     // Public Members  #########################################################
     public void OnPointerEnter(PointerEventData eventData) {
-        if (selectable != null && selectable.IsInteractable()
+        if (!TextInputFocus.BlocksShortcuts
+            && selectable != null && selectable.IsInteractable()
             && EventSystem.current != null) {
             EventSystem.current.SetSelectedGameObject(gameObject);
         }
