@@ -85,11 +85,11 @@ public sealed class SpiderKingShots {
             float ahead = CrescentAhead(crescent, out float across)
                 - MONKEY_EDGE_U;
             bool isOnWay =
-                Mathf.Abs(across) <= tuning.SlashWidthU * 0.5f + 0.6f;
+                Mathf.Abs(across) <= rig.SlashWidthNowU * 0.5f + 0.6f;
             bool isGold = isOnWay && ahead >= -0.5f
-                && ahead <= tuning.WaveGoldU;
+                && ahead <= rig.WaveGoldNowU;
             DrawCrescent(crescent, isGold);
-            if (isOnWay && ahead >= -0.5f && ahead <= tuning.ParryReachU
+            if (isOnWay && ahead >= -0.5f && ahead <= rig.ParryReachNowU
                 && rig.Parry.IsParryArmed()) {
                 rig.Parry.OnCrescentParried(crescent);
                 continue;
@@ -132,7 +132,7 @@ public sealed class SpiderKingShots {
         float radians = crescent.directionDeg * Mathf.Deg2Rad;
         float du = Mathf.Cos(radians);
         float dv = Mathf.Sin(radians);
-        float side = lateral * tuning.SlashWidthU * 0.5f;
+        float side = lateral * rig.SlashWidthNowU * 0.5f;
         float ahead = crescent.distanceU - back
             + CRESCENT_BULGE_U * (1f - lateral * lateral);
         return rig.Attacks.BarkPoint(crescent.originAngle, crescent.originY,
@@ -193,7 +193,7 @@ public sealed class SpiderKingShots {
         float radians = crescent.directionDeg * Mathf.Deg2Rad;
         float along = mu * Mathf.Cos(radians) + mv * Mathf.Sin(radians);
         float across = -mu * Mathf.Sin(radians) + mv * Mathf.Cos(radians);
-        float halfWidth = tuning.SlashWidthU * 0.5f;
+        float halfWidth = rig.SlashWidthNowU * 0.5f;
         if (Mathf.Abs(across) > halfWidth) {
             return false;
         }
@@ -319,9 +319,9 @@ public sealed class SpiderKingShots {
             // to the monkey's near edge, the side the bullet comes from
             float toMonkey = Vector3.Distance(at, rig.monkey.position)
                 - MONKEY_EDGE_U;
-            bool isGold = toMonkey <= tuning.WaveGoldU;
+            bool isGold = toMonkey <= rig.WaveGoldNowU;
             DrawWave(shot, at, isGold);
-            if (toMonkey <= tuning.ParryReachU && rig.Parry.IsParryArmed()) {
+            if (toMonkey <= rig.ParryReachNowU && rig.Parry.IsParryArmed()) {
                 rig.Parry.OnParry(shot, at);
                 continue;
             }

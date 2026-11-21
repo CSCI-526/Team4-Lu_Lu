@@ -64,7 +64,7 @@ The boss fight owns a stretch of the trunk, set by 3 heights in `WorldBalanceCon
 - Flat Difficulty: the ramp reaches 1 at the Cobra King zone start and holds it through the zone, climbs to 2 by the Spider King zone start, holds 2 through that zone, then climbs above 2 after its end on its own curve
 - Why: the fight builds its arena at runtime and needs a clear, fair stage; keeping the stage clear by generation is simpler than sweeping hazards away when the fight begins
 - Marker Meters: the 3 heights are climbed heights, the same meters the trunk height markers show
-- Endless Mode: no boss zone and no flat stretch; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at 2, the level after the Spider King, and keeps climbing; climbed heights, score and markers stay real
+- Endless Mode: a boss rush every `endlessBossIntervalU` (300 u), each boss harder by encounter, and the monkey & great cobra 3 times as fast all run, fights included (`endlessSpeedScale`), every endless boss set faster & tougher to match (`endlessFight*Scale`); no fixed boss zone and no flat stretch, only each coming arena kept bare; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at 2, the level after the Spider King, and keeps climbing; climbed heights, score and markers stay real
 
 ## Balance Lives In Three Assets
 

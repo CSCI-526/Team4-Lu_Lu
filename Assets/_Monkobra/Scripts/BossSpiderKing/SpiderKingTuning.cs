@@ -64,6 +64,8 @@ public sealed class SpiderKingTuning {
     public Vector2 StageLostShares => stageLostShares;
     public Vector3Int WebShotsPerStage => webShotsPerStage;
     public Vector3Int SlashesPerStage => slashesPerStage;
+    public Vector3Int EndlessSlashesPerStage => endlessSlashesPerStage;
+    public float EndlessSlashWidthScale => endlessSlashWidthScale;
     public float VolleySlowGapS => volleySlowGapS;
     public float VolleyFastGapS => volleyFastGapS;
     public float LateSpeedScale => lateSpeedScale;
@@ -337,9 +339,19 @@ public sealed class SpiderKingTuning {
         + "later ones a volley, each to bat back")]
     [SerializeField]
     private Vector3Int webShotsPerStage = new Vector3Int(1, 2, 3);
-    [Tooltip("slashes in a row in stages 1, 2 & 3")]
+    [Tooltip("slashes in a row in stages 1, 2 & 3; one at a time, a row of "
+        + "them only in the endless run's later fights")]
     [SerializeField]
-    private Vector3Int slashesPerStage = new Vector3Int(1, 2, 3);
+    private Vector3Int slashesPerStage = new Vector3Int(1, 1, 1);
+    [Tooltip("the most slashes in a row in stages 1, 2 & 3 in the endless "
+        + "run's boss rush: each later Spider King fight adds one, up to these")]
+    [SerializeField]
+    private Vector3Int endlessSlashesPerStage = new Vector3Int(1, 2, 3);
+    [Tooltip("scale on a slash's width in the endless run's boss rush, where "
+        + "the monkey is quicker to step out of its way")]
+    [SerializeField]
+    [Min(1f)]
+    private float endlessSlashWidthScale = 1.3f;
     [Tooltip("the long gap b/t two bullets of a volley; s")]
     [SerializeField]
     [Min(0.05f)]
@@ -352,7 +364,7 @@ public sealed class SpiderKingTuning {
         + "crawl & dash, lerped from 1 as its health goes")]
     [SerializeField]
     [Min(1f)]
-    private float lateSpeedScale = 1.3f;
+    private float lateSpeedScale = 1.4f;
     [Tooltip("at the last stage: scale on its chase & circling only, lerped "
         + "from 1 as its health goes")]
     [SerializeField]

@@ -131,7 +131,7 @@ public sealed class SpiderKingArena {
         rig.bareTopY = rig.entryY + tuning.ArenaHeightU + 6f;
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
-            ramp.SetExtraBossZone(rig.bareBottomY, rig.bareTopY);
+            ramp.SetExtraBossZone(rig.owner, rig.bareBottomY, rig.bareTopY);
         }
         foreach (BranchController branch in
             UnityEngine.Object.FindObjectsByType<BranchController>(
@@ -158,6 +158,18 @@ public sealed class SpiderKingArena {
             RemoveIfInArena(bark.gameObject);
         }
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
+    }
+
+    // the endless run's rush: the coming fight's range is kept bare as the
+    // tree grows toward it, as the arena will be
+    public void ReserveRushRange() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp == null || !rig.IsRush) {
+            return;
+        }
+        float entryY = EndlessBossRush.TriggerWorldY(rig.rushEncounter);
+        ramp.SetExtraBossZone(rig.owner, entryY - tuning.GuardDepthU - 4f,
+            entryY + tuning.ArenaHeightU + 6f);
     }
 
     public void RemoveIfInArena(GameObject thing) {
@@ -189,7 +201,7 @@ public sealed class SpiderKingArena {
         }
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
-            ramp.ClearExtraBossZone();
+            ramp.ClearExtraBossZone(rig.owner);
         }
     }
 
@@ -564,9 +576,8 @@ public sealed class SpiderKingArena {
         }
         rig.maxHealth = rig.isEasy
             ? Mathf.Max(1,
-                Mathf.RoundToInt(tuning.WorldBalanceConfig.SpiderMaxHealth
-                * tuning.EasyHealthScale))
-            : tuning.WorldBalanceConfig.SpiderMaxHealth;
+                Mathf.RoundToInt(rig.BaseMaxHealth * tuning.EasyHealthScale))
+            : rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(1f);
         rig.lastStage = 0;

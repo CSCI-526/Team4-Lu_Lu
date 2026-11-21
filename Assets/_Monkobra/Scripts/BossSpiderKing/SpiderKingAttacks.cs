@@ -349,8 +349,7 @@ public sealed class SpiderKingAttacks {
     // batted back w/ the tail as it turns gold, which hurts the spider
     public void StartSlash(bool isTeaching = false) {
         rig.isSlashing = true;
-        rig.slashLeft = isTeaching ? 1
-            : SpiderKingMovement.PerStage(tuning.SlashesPerStage, rig.Stage);
+        rig.slashLeft = isTeaching ? 1 : rig.SlashesNow;
         rig.slashSlow = isTeaching ? tuning.TeachSlowScale : 1f;
         rig.slashChargeLeftS = tuning.SlashChargeS * rig.slashSlow;
         rig.slashGapIndex = 0;

@@ -102,7 +102,8 @@ public sealed class CobraKingArena {
     // zone, where nothing else is generated
     public void WarnIfArenaLeavesZone() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        if (ramp == null) {
+        // the endless run's rush keeps its own bare range
+        if (ramp == null || rig.IsRush) {
             return;
         }
         float zoneStartY = ramp.PlayerGameStartYPosition
@@ -118,6 +119,77 @@ public sealed class CobraKingArena {
         }
     }
 
+    // Endless Boss Rush  -------------------------------------------------------
+    // the world y range a boss of the endless run's rush keeps bare, from
+    // under its guard to over its coil
+    public Vector2 RushRange(float entryY) {
+        return new Vector2(entryY - tuning.GuardDepthU - 4f,
+            entryY + tuning.NestHeightU + 10f);
+    }
+
+    // the coming fight's range is kept bare as the tree grows toward it
+    public void ReserveRushRange() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp == null || !rig.IsRush) {
+            return;
+        }
+        Vector2 range = RushRange(
+            EndlessBossRush.TriggerWorldY(rig.rushEncounter));
+        ramp.SetExtraBossZone(rig.owner, range.x, range.y);
+    }
+
+    public void ReleaseRushRange() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp != null) {
+            ramp.ClearExtraBossZone(rig.owner);
+        }
+    }
+
+    // what the endless tree grew in the arena b4 it was reserved goes:
+    // branches w/ their fruit, webs, falling cobras, rough bark
+    public void ClearRushArena() {
+        Vector2 range = RushRange(rig.entryY);
+        ReserveRushRangeAt(range);
+        foreach (BranchController branch in
+            UnityEngine.Object.FindObjectsByType<BranchController>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(branch.gameObject, range);
+        }
+        foreach (SpiderWebTrap web in
+            UnityEngine.Object.FindObjectsByType<SpiderWebTrap>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(web.gameObject, range);
+        }
+        foreach (FallingCobraController cobra in
+            UnityEngine.Object.FindObjectsByType<FallingCobraController>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(cobra.gameObject, range);
+        }
+        foreach (RoughBarkZone bark in
+            UnityEngine.Object.FindObjectsByType<RoughBarkZone>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(bark.gameObject, range);
+        }
+    }
+
+    private void ReserveRushRangeAt(Vector2 range) {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp != null) {
+            ramp.SetExtraBossZone(rig.owner, range.x, range.y);
+        }
+    }
+
+    private static void RemoveIfIn(GameObject thing, Vector2 range) {
+        float y = thing.transform.position.y;
+        if (y < range.x || y > range.y) {
+            return;
+        }
+        ForgetFruits(thing);
+        // inactive first, Destroy only lands at the end of the frame
+        thing.SetActive(false);
+        UnityEngine.Object.Destroy(thing);
+    }
+
     // a segment recycled over the top during the fight rolls new branches
     public void OnBranchesGenerated(TreeSegmentController segment) {
         BranchController[] branches =
@@ -128,8 +200,13 @@ public sealed class CobraKingArena {
     public void ClearBranchesNearNest(BranchController[] branches) {
         float minY =
             rig.coilBottomY - rig.body.HangDepthU - tuning.NestClearanceU;
+        // the endless run's rush: only up to its arena's top, the climb
+        // above keeps its branches
+        float maxY = rig.IsRush ? RushRange(rig.entryY).y
+            : float.PositiveInfinity;
         foreach (BranchController branch in branches) {
-            if (branch.transform.position.y > minY) {
+            float branchY = branch.transform.position.y;
+            if (branchY > minY && branchY <= maxY) {
                 ForgetFruits(branch.gameObject);
                 branch.gameObject.SetActive(false);
             }
@@ -139,7 +216,8 @@ public sealed class CobraKingArena {
         foreach (FallingCobraController cobra in
             UnityEngine.Object.FindObjectsByType<FallingCobraController>(
                 FindObjectsSortMode.None)) {
-            if (cobra.transform.position.y > minY) {
+            float cobraY = cobra.transform.position.y;
+            if (cobraY > minY && cobraY <= maxY) {
                 // inactive first, Destroy only lands at the end of the frame
                 cobra.gameObject.SetActive(false);
                 UnityEngine.Object.Destroy(cobra.gameObject);
@@ -166,10 +244,9 @@ public sealed class CobraKingArena {
         rig.maxHealth = rig.isEasy
             ? Mathf.Max(
                 1,
-                Mathf.RoundToInt(tuning.WorldBalanceConfig.BossMaxHealth
-                    * tuning.EasyHealthScale)
+                Mathf.RoundToInt(rig.BaseMaxHealth * tuning.EasyHealthScale)
             )
-            : tuning.WorldBalanceConfig.BossMaxHealth;
+            : rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(1f);
         foreach (CobraKingArenaFruit choice in rig.choices) {

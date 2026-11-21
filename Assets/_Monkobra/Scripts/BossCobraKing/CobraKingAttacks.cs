@@ -41,9 +41,10 @@ public sealed class CobraKingAttacks {
 
     public void StartRest() {
         rig.loop = CobraKingLoop.Rest;
-        rig.loopTimeS = rig.isEasy
+        rig.loopTimeS = (rig.isEasy
             ? (rig.Third >= 2 ? tuning.EasyRestFinalS : tuning.EasyRestS)
-            : (rig.Third >= 2 ? tuning.RestFinalS : tuning.RestS);
+            : (rig.Third >= 2 ? tuning.RestFinalS : tuning.RestS))
+            * rig.RushTimeScale;
         rig.body.SetWeakSpotLit(true);
     }
 

@@ -244,6 +244,23 @@ public class CobraKingBody: MonoBehaviour {
         return crown;
     }
 
+    /// <summary>
+    /// Removes the (shattered) king, so it can be built again, eg for the
+    /// next boss of the endless run's rush; a freed crown is left as it is.
+    /// </summary>
+    public void Clear() {
+        if (root != null) {
+            Destroy(root.gameObject);
+        }
+        root = null;
+        head = null;
+        crown = null;
+        isBuilt = false;
+        buttTimeS = -1f;
+        buttImpact = null;
+        hitFlashLeftS = 0f;
+    }
+
     /// <summary>Lights or dims the weak spot.</summary>
     public void SetWeakSpotLit(bool isLit) {
         isWeakSpotLit = isLit;

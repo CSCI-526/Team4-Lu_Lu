@@ -45,7 +45,7 @@ public class SpiderKingFightController: MonoBehaviour {
     /// <returns>climbed height the fight starts at, for its trunk height
     /// marker; u, -1 when unknown</returns>
     public float TriggerHeightU => tuning.WorldBalanceConfig != null
-        ? tuning.WorldBalanceConfig.SpiderTriggerHeightU
+        ? rig.TriggerClimbU
         : -1f;
 
     /// <returns>if its height marker is done w/: the fight has begun</returns>
@@ -226,6 +226,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.hud.CoursePageClicked += ending.OpenCoursePage;
         rig.hud.ContinueClicked += ending.ContinueAfterReward;
         rig.hud.SkipAdClicked += ending.SkipAd;
+        rig.hud.ModeChosen += OnModeChosen;
         rig.colorBlock = new MaterialPropertyBlock();
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -234,6 +235,25 @@ public class SpiderKingFightController: MonoBehaviour {
                 this
             );
         }
+    }
+
+    // the endless run: the boss rush's second fight, & every other one
+    // after, is the spider's
+    private void Start() {
+        if (I == this && EndlessBossRush.IsOn) {
+            rig.rushEncounter = 1;
+        }
+    }
+
+    // the revive's difficulty card picked: time runs again & the fight goes
+    // on in that mode
+    private void OnModeChosen(bool isEasy) {
+        if (rig.teach != SpiderKingTeachStep.Choose
+            || rig.phase != SpiderKingPhase.Fighting) {
+            return;
+        }
+        Time.timeScale = 1f;
+        arena.ChooseMode(isEasy);
     }
 
     private void OnDestroy() {
@@ -278,6 +298,9 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == SpiderKingPhase.Waiting) {
+            // the endless run's rush keeps the coming arena bare; kept up
+            // every frame, as the run's start y is only known after a Start
+            arena.ReserveRushRange();
             UpdatePreview(game);
             if (CanBegin(game)) {
                 BeginFight();
@@ -295,6 +318,13 @@ public class SpiderKingFightController: MonoBehaviour {
         }
         if (rig.phase == SpiderKingPhase.Rewarding) {
             ending.UpdateRewardPause(game);
+            return;
+        }
+        // the revive's difficulty card holds time still till a pick
+        if (rig.phase == SpiderKingPhase.Fighting
+            && rig.teach == SpiderKingTeachStep.Choose
+            && rig.hud.IsChoosingMode) {
+            Time.timeScale = 0f;
             return;
         }
 
@@ -325,11 +355,18 @@ public class SpiderKingFightController: MonoBehaviour {
     }
 
     // Setup  ------------------------------------------------------------------
-    // after the Cobra King, never in the endless run, never mid leap
+    // after the Cobra King, never mid leap; in the endless run at its turn
+    // of the boss rush
     private bool CanBegin(GameController game) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        if (!game.IsRunLive || game.IsLeaping || ramp == null
-            || game.Mode == RunMode.Endless) {
+        if (!game.IsRunLive || game.IsLeaping || ramp == null) {
+            return false;
+        }
+        if (rig.IsRush) {
+            return game.State == GameState.Playing
+                && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
+        }
+        if (game.Mode == RunMode.Endless) {
             return false;
         }
         if (tuning.IsTestAtStart) {
@@ -355,12 +392,16 @@ public class SpiderKingFightController: MonoBehaviour {
             rig.body.Place(rig.previewAngle, rig.previewY, 0f);
             return;
         }
-        if (!game.IsRunLive || game.Mode == RunMode.Endless) {
+        if (!game.IsRunLive
+            || (game.Mode == RunMode.Endless && !rig.IsRush)) {
             return;
         }
+        // seen waiting from a bit below: the jump height, or 50 u below the
+        // fight in the endless run's rush
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        if (ramp == null || ramp.CurrentPlayerClimbedYDistance
-                < tuning.WorldBalanceConfig.SpiderJumpHeightU - 5f) {
+        float seenFromU = rig.IsRush ? rig.TriggerClimbU - 50f
+            : tuning.WorldBalanceConfig.SpiderJumpHeightU - 5f;
+        if (ramp == null || ramp.CurrentPlayerClimbedYDistance < seenFromU) {
             return;
         }
         MonkeyController found = FindFirstObjectByType<MonkeyController>();
@@ -371,7 +412,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.previewAngle =
             rig.AngleOf(found.transform.position) + START_TURN_DEG;
         rig.previewY = ramp.PlayerGameStartYPosition
-            + tuning.WorldBalanceConfig.SpiderTriggerHeightU + START_ABOVE_U;
+            + rig.TriggerClimbU + START_ABOVE_U;
         rig.body.Build(rig.trunkCenter, rig.previewAngle, rig.previewY);
     }
 
@@ -431,8 +472,10 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.startY = rig.entryY + START_ABOVE_U;
         rig.spiderAngle = rig.startAngle;
         rig.spiderY = rig.startY;
-        rig.maxHealth = tuning.WorldBalanceConfig.SpiderMaxHealth;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
+        rig.isEasy = false;
+        rig.lastStage = 0;
         rig.body.Build(rig.trunkCenter, rig.spiderAngle, rig.spiderY);
         // the whole arena is there from the start, melons too
         arena.SpawnMelons();

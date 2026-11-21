@@ -255,13 +255,12 @@ public class HeightMarkerSystem: MonoBehaviour {
         int interval = IntervalU;
         // the boss fight's height gets its own look, no extra words
         CobraKingFightController bossFight = CobraKingFightController.I;
-        // the endless run has no boss, so no boss marker either
-        bool isEndless = GameController.I != null
-            && GameController.I.Mode == RunMode.Endless;
+        // the endless run marks the boss rush's next fights, the kings'
+        // own trigger heights following it
         // the trigger height rarely lands on a marker (525 vs. every 50), so
         // the boss look goes to the marker just below it, the 500 m one
         int bossHeightU = bossFight != null && bossFight.isActiveAndEnabled
-            && !isEndless && bossFight.TriggerHeightU > 0f
+            && bossFight.TriggerHeightU > 0f
             ? Mathf.FloorToInt(bossFight.TriggerHeightU / interval) * interval
             : int.MinValue;
         // once the fight has begun its marker is gone, the real king is there
@@ -271,7 +270,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         // height
         SpiderKingFightController spiderFight = SpiderKingFightController.I;
         int spiderHeightU = spiderFight != null
-            && spiderFight.isActiveAndEnabled && !isEndless
+            && spiderFight.isActiveAndEnabled
             && spiderFight.TriggerHeightU > 0f
             ? Mathf.FloorToInt(spiderFight.TriggerHeightU / interval) * interval
             : int.MinValue;

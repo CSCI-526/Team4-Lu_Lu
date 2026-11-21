@@ -48,20 +48,25 @@ public class RampedDifficultyManager: MonoBehaviour {
         return y < RampBaseYPosition;
     }
 
+    /// <returns>the world balance tuning this reads, eg for the endless
+    /// boss rush; null if unassigned</returns>
+    public WorldBalanceConfig WorldBalanceConfig => worldBalanceConfig;
+
     /// <summary>
     /// Keeps a world height range bare like the boss zone till
-    /// <see cref="ClearExtraBossZone"/>, eg a boss arena outside the zone.
+    /// <see cref="ClearExtraBossZone"/>, eg a boss arena outside the zone;
+    /// one range per <paramref name="owner"/>, so two bosses never undo each
+    /// other's.
     /// </summary>
-    public void SetExtraBossZone(float bottomY, float topY) {
-        extraBossZoneBottomY = Mathf.Min(bottomY, topY);
-        extraBossZoneTopY = Mathf.Max(bottomY, topY);
-        hasExtraBossZone = true;
+    public void SetExtraBossZone(Object owner, float bottomY, float topY) {
+        extraBossZones[owner] = new Vector2(
+            Mathf.Min(bottomY, topY), Mathf.Max(bottomY, topY));
     }
 
-    /// <summary>Ends the range set by <see cref="SetExtraBossZone"/>.
-    /// </summary>
-    public void ClearExtraBossZone() {
-        hasExtraBossZone = false;
+    /// <summary>Ends the range <paramref name="owner"/> set by
+    /// <see cref="SetExtraBossZone"/>.</summary>
+    public void ClearExtraBossZone(Object owner) {
+        extraBossZones.Remove(owner);
     }
 
     /// <param name="y">any y position; world u</param>
@@ -70,9 +75,11 @@ public class RampedDifficultyManager: MonoBehaviour {
     /// anything</returns>
     public bool IsInBossZoneY(float y) {
         // a fight's own arena, eg the Spider King's test fight near the start
-        if (hasExtraBossZone && y >= extraBossZoneBottomY
-            && y <= extraBossZoneTopY) {
-            return true;
+        // or a boss of the endless run's boss rush
+        foreach (Vector2 zone in extraBossZones.Values) {
+            if (y >= zone.x && y <= zone.y) {
+                return true;
+            }
         }
         // the endless tree has no boss zone, so no hazard-free gap
         if (worldBalanceConfig == null || IsEndless) {
@@ -251,8 +258,8 @@ public class RampedDifficultyManager: MonoBehaviour {
         );
     }
 
-    // a bare range set by a boss fight, in world y
-    private bool hasExtraBossZone;
-    private float extraBossZoneBottomY;
-    private float extraBossZoneTopY;
+    // the bare ranges set by boss fights, bottom & top world y, per fight
+    private readonly System.Collections.Generic.Dictionary<Object, Vector2>
+        extraBossZones = new System.Collections.Generic.Dictionary<Object,
+            Vector2>();
 }

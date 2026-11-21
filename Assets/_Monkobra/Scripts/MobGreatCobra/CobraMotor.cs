@@ -341,7 +341,9 @@ public class CobraMotor: MonoBehaviour {
         // except in the starting zone: the cobra stays active & orbits, but
         // holds its height until the zone ends
         if (!IsInStartingZone) {
-            rig.headHeight += rig.currentClimbSpeed * Time.deltaTime;
+            // the endless run's boss rush climbs it as fast as the monkey
+            rig.headHeight += rig.currentClimbSpeed
+                * EndlessBossRush.ClimbSpeedScale * Time.deltaTime;
         }
 
         coil.UpdateBody();

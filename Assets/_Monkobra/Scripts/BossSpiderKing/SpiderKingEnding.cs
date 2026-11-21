@@ -180,11 +180,13 @@ public sealed class SpiderKingEnding {
         // as in the Cobra King's arena: two melons, a plain EASY & a golden
         // NORMAL; the first grabbed picks, & the fight waits till then
         rig.isEasy = false;
-        rig.maxHealth = tuning.WorldBalanceConfig.SpiderMaxHealth;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
+        // a plain difficulty card, time stopped till a pick; the spider
+        // waits meanwhile
         rig.teach = SpiderKingTeachStep.Choose;
-        rig.Arena.SpawnChoices();
-        rig.Teaching.Teach("Easy or Normal?", "Grab a melon", UIStyle.Gold, 0f);
+        rig.hud.HideBanner();
+        rig.hud.ShowModeChoice();
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
             stamina.AddStamina(stamina.MaxStamina);
@@ -261,8 +263,15 @@ public sealed class SpiderKingEnding {
         }
         rig.hud.HideBossBar();
         // as the Cobra King's armor: the silk gloves swirl in & snap onto
-        // the monkey's hands, then the reward panel
-        StartGloveReward();
+        // the monkey's hands, then the reward panel; worn already (a later
+        // fight of the endless run's rush), straight to the panel
+        if (HasGloves()) {
+            rig.gloveRewardTimeS = -1f;
+            rig.hud.ShowRewardPanel(tuning.WinTitle, tuning.WinLine,
+                tuning.WinDetailLine);
+        } else {
+            StartGloveReward();
+        }
     }
 
     // Silk Gloves  ------------------------------------------------------------
@@ -449,6 +458,18 @@ public sealed class SpiderKingEnding {
         }
     }
 
+    private bool HasGloves() {
+        if (rig.gloves == null) {
+            return false;
+        }
+        foreach (Transform glove in rig.gloves) {
+            if (glove != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void ContinueAfterReward() {
         if (rig.phase != SpiderKingPhase.Rewarding) {
             return;
@@ -476,6 +497,28 @@ public sealed class SpiderKingEnding {
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "SpiderKingFightController:\twon, silk gloves given, climb on",
+                rig.owner
+            );
+        }
+        if (rig.IsRush) {
+            ArmNextRush();
+        }
+    }
+
+    // Endless Boss Rush  ------------------------------------------------------
+    // the spider waits again two bosses on, the Cobra King's in b/t, harder;
+    // the gloves stay on
+    public void ArmNextRush() {
+        rig.rushEncounter += 2;
+        rig.phase = SpiderKingPhase.Waiting;
+        rig.hud.ClearCallOut();
+        rig.isEasy = false;
+        rig.lastStage = 0;
+        rig.Arena.ReserveRushRange();
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "SpiderKingFightController:\tnext rush fight at "
+                    + rig.TriggerClimbU + " u",
                 rig.owner
             );
         }

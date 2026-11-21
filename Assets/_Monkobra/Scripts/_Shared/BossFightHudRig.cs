@@ -79,6 +79,16 @@ public sealed class BossFightHudRig {
     public RectTransform rewardButton;
     public float armorBadgePopS;
     // pop-in time left; unscaled s
+    // the difficulty choice after a revive  ---------------------------------
+    public GameObject modePanel;
+    public RectTransform easyButton;
+    public RectTransform normalButton;
+    public RectTransform easyRing;
+    public RectTransform normalRing;
+    public bool isModeEasy; // the picked choice, NORMAL first
+    public float modeAgeS; // real s it has been up
+    public bool isModeMoveHeld; // a sideways press not let go yet
+    public const float MODE_READY_S = 0.4f; // b4 a key may pick
     public RectTransform easyTag;
     public RectTransform normalTag;
     public Vector3 easyTagWorld;

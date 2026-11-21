@@ -127,6 +127,9 @@ public sealed class CobraKingRig {
     public CobraKingEnding Ending;
     public CobraKingFeedback Feedback;
     public CobraKingPhase phase = CobraKingPhase.Waiting;
+    // the endless run's boss rush: this fight's encounter (0, 2, 4, ...), -1
+    // outside the rush
+    public int rushEncounter = -1;
     public CobraKingLoop loop;
     public CobraKingAttack attack;
     public readonly Queue<CobraKingAttack> attackQueue =
@@ -268,10 +271,31 @@ public sealed class CobraKingRig {
             ? tuning.BananaRespawnScaleByThird.x
             : 1f;
 
-    // easy mode warns a notch longer: its last third as normal's start
-    public float WarnScale => isEasy
+    // easy mode warns a notch longer: its last third as normal's start; a
+    // later boss of the endless run's rush warns shorter
+    public float WarnScale => (isEasy
         ? (Third >= 2 ? 1f : tuning.EasyWarnScale)
-        : (Third >= 2 ? tuning.FinalWarnScale : 1f);
+        : (Third >= 2 ? tuning.FinalWarnScale : 1f)) * RushTimeScale;
+
+    /// <returns>if this fight is a boss of the endless run's rush</returns>
+    public bool IsRush => rushEncounter >= 0;
+
+    /// <returns>scale on the warnings & rests of a boss of the endless
+    /// run's rush, 1 outside it</returns>
+    public float RushTimeScale => IsRush
+        ? EndlessBossRush.TimeScale(rushEncounter) : 1f;
+
+    /// <returns>the king's full health on normal: more for a later boss of
+    /// the endless run's rush</returns>
+    public int BaseMaxHealth => Mathf.Max(1, Mathf.RoundToInt(
+        tuning.WorldBalanceConfig.BossMaxHealth
+            * (IsRush ? EndlessBossRush.HealthScale(rushEncounter) : 1f)));
+
+    /// <returns>climbed height the fight begins at: the config's, or this
+    /// boss's in the endless run's rush; u</returns>
+    public float TriggerClimbU => IsRush
+        ? EndlessBossRush.TriggerU(rushEncounter)
+        : tuning.WorldBalanceConfig.BossTriggerHeightU;
 
     public int MinionWaves => isEasy ? tuning.EasyMinionWaves
         : tuning.MinionWaves;

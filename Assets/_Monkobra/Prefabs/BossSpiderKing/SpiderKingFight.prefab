@@ -146,10 +146,12 @@ MonoBehaviour:
     dashHitU: 1.6
     stageLostShares: {x: 0.5, y: 0.8}
     webShotsPerStage: {x: 1, y: 2, z: 3}
-    slashesPerStage: {x: 1, y: 2, z: 3}
+    slashesPerStage: {x: 1, y: 1, z: 1}
+    endlessSlashesPerStage: {x: 1, y: 2, z: 3}
+    endlessSlashWidthScale: 1.3
     volleySlowGapS: 1.1
     volleyFastGapS: 0.7
-    lateSpeedScale: 1.3
+    lateSpeedScale: 1.4
     lateChaseScale: 1.08
     lateTimeScale: 0.75
     lateDashCooldownS: 1.5

@@ -272,6 +272,58 @@ public sealed class BossFightHudBuilder {
         return panel.gameObject;
     }
 
+    // the difficulty choice after a revive: a short title & two big
+    // buttons, EASY & NORMAL, side by side; the picked one rings in cream
+    public GameObject CreateModeChoice(System.Action<bool> onPick) {
+        RectTransform panel = CreateRect("ModeChoice", rig.rootRect);
+        Stretch(panel);
+        AddImage(panel, Tint(UIStyle.Background, 0.75f));
+        RectTransform card = CreateRect("Card", panel);
+        card.sizeDelta = new Vector2(620f, 320f);
+        AddImage(card, Tint(UIStyle.Panel, 0.96f));
+        TextMeshProUGUI title = CreateLabel("Title", card, "Difficulty", 56f,
+            UIStyle.Gold);
+        title.fontStyle = FontStyles.Bold;
+        PlaceLabel(title, new Vector2(0f, 100f), new Vector2(580f, 70f));
+        rig.easyRing = CreateRing("EasyRing", card, new Vector2(-140f, -5f));
+        rig.normalRing = CreateRing("NormalRing", card,
+            new Vector2(140f, -5f));
+        rig.easyButton = CreateChoiceButton("Easy", card,
+            new Vector2(-140f, -5f), EASY_COLOR, () => onPick(true));
+        rig.normalButton = CreateChoiceButton("Normal", card,
+            new Vector2(140f, -5f), UIStyle.Gold, () => onPick(false));
+        TextMeshProUGUI hint = CreateLabel("Hint", card, "", 24f,
+            Tint(UIStyle.Cream, 0.85f));
+        PlaceLabel(hint, new Vector2(0f, -110f), new Vector2(580f, 36f));
+        AddStyleText(hint, "A / D, then Space", "Tap one");
+        panel.gameObject.SetActive(false);
+        return panel.gameObject;
+    }
+
+    // the EASY signal green, as on the old choice tags
+    private static readonly Color EASY_COLOR = new Color(0.55f, 0.95f, 0.55f);
+
+    private static RectTransform CreateChoiceButton(string word,
+        Transform parent, Vector2 position, Color face, System.Action onClick) {
+        RectTransform rect = (RectTransform)CreateButton(word, parent, word,
+            face, position, onClick, word, UIStyle.Brown).transform;
+        rect.sizeDelta = new Vector2(240f, 96f);
+        TextMeshProUGUI label = rect.GetComponentInChildren<TextMeshProUGUI>();
+        label.fontSize = 40f;
+        label.fontStyle = FontStyles.Bold;
+        return rect;
+    }
+
+    // a cream ring behind a choice, shown while it is picked
+    private static RectTransform CreateRing(string ringName, Transform parent,
+        Vector2 position) {
+        RectTransform ring = CreateRect(ringName, parent);
+        ring.anchoredPosition = position;
+        ring.sizeDelta = new Vector2(256f, 112f);
+        AddImage(ring, UIStyle.Cream);
+        return ring;
+    }
+
     // a dark plate w/ a gold diamond & GOLDEN ARMOR
     public RectTransform CreateArmorBadge() {
         Color gold = UIStyle.Gold;

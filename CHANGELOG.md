@@ -5,7 +5,6 @@ Todo pan branch & bark model/texture
 Todo pan skybox
 Todo pan sfx
 
-Bug wenhai endless mode w/ boss fight rampping difficult
 Fixme wenhai during boss fight
 
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
@@ -45,6 +44,24 @@ todo todo add 3x fruit
   button, with run/menu/hack shortcuts suppressed during text entry
 
 ### Changed
+
+##### Wenhai Dong
+
+- endless run is a boss rush: every 300 u a boss waits, the Cobra King and the
+  Spider King taking turns, each later one harder (more health, shorter wind
+  ups, warnings & rests, faster spider shots); the spider's rows of 2 or 3
+  slashes only come in its later endless fights; the monkey and the great
+  cobra climb 3x as fast all run, fights included, so every endless boss has
+  1.5x health, 0.7x wind ups, warnings & rests, and the Spider King 1.6x
+  crawl, shot, slash & dash speed w/ its gold & parry reach grown to match and
+  1.3x wider blades; each coming arena is kept bare and marked
+- Spider King normal play: slashes one at a time, the curve kept by volleys,
+  shorter rests and faster late attacks (`lateSpeedScale` 1.4)
+- both kings' revive: a plain difficulty card, EASY or NORMAL, time stopped,
+  picked w/ A / D and Space or a tap, instead of choice fruit and the armor
+  words
+- boss fight extra bare zones are kept per boss
+  (`RampedDifficultyManager.SetExtraBossZone(owner, ...)`)
 
 ### Deprecated
 

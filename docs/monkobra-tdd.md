@@ -57,7 +57,7 @@ graph LR
 
 Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`EventSystem_Menu`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `StartPress` (Space, left click, a touch, gamepad start) serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
 
-Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the boss fight is skipped (`CobraKingFightController` starts in its done state, gold armor worn), `RampedDifficultyManager` reads the post boss curve from the starting zone exit on and has no boss zone, and `HeightMarkerSystem` draws no boss marker.
+Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the run is a boss rush (`EndlessBossRush`, see [Mobs](mob-doc.md#endless-boss-rush)): the Cobra King and the Spider King take turns every `endlessBossIntervalU` (300 u), each harder than the last, starting in the gold armor; the monkey and the great cobra climb `endlessSpeedScale` (3) times as fast, fights included, the bosses set faster & tougher to match; `RampedDifficultyManager` reads the post boss curve from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
 
 Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Unlock Endless` and `Monkobra/Reset Progress` flip it for testing.
 
@@ -138,7 +138,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
 | 1 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
-| 2 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight | `MonkeyController` |
+| 2 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight, never in the endless run (its boss rush brings the Spider King itself) | `MonkeyController` |
 | 3 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
 | 4 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | 5 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
