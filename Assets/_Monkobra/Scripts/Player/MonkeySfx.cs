@@ -4,9 +4,10 @@ using UnityEngine;
 /// <summary>
 /// The monkey's sound effects: grabbing a banana, a coconut or a pineapple,
 /// a missed grab, the pineapple leap's rush, throwing a coconut,
-/// the cobra freezing & thawing, a web catching & letting go, reaching a
+/// the cobra freezing & thawing, each tug against a web, reaching a
 /// height marker, running low on stamina, a hit by a branch or a hazard,
-/// and the cobra's bite that ends the run.
+/// and the cobra's bite that ends the run; now & then, after any fruit, the
+/// monkey's happy call.
 /// <para>
 /// On the <c>_Monkey</c> prefab root. It only listens: to the
 /// <see cref="ArmController"/> grab events, the monkey's
@@ -55,10 +56,36 @@ public class MonkeySfx: MonoBehaviour {
 
     [Header("Web")]
     [SerializeField]
-    private AudioClip webStuck;
+    [Tooltip("each escape press while a web holds the monkey, a few takes cycled "
+        + "through; nothing as it is caught or breaks free")]
+    private AudioClip[] webStruggles;
 
     [SerializeField]
-    private AudioClip webEscape;
+    [Range(0f, 1f)]
+    [Tooltip("how much higher a tug sounds as escape nears, 0.3 = 30% at the end")]
+    private float struggleRisePitch = 0.3f;
+
+    [Header("Happy Calls")]
+    [SerializeField]
+    [Tooltip("the monkey's happy calls, one picked at random now & then after "
+        + "a fruit, any kind, boss fights' too")]
+    private AudioClip[] happyCalls;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip("chance a fruit brings a happy call")]
+    private float happyChance = 0.35f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("the call comes this long after the grab's own sound; s")]
+    private float happyDelayS = 0.12f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("the least time between 2 happy calls, so a fruit streak never "
+        + "chatters; s")]
+    private float happyCooldownS = 4f;
 
     [Header("Progress & Danger")]
     [SerializeField]
@@ -79,8 +106,8 @@ public class MonkeySfx: MonoBehaviour {
     [Header("Tuning")]
     [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("every effect's loudness, over the music's 0.5")]
-    private float volume = 0.9f;
+    [Tooltip("every effect's loudness, beside the music's 0.5")]
+    private float volume = 0.55f;
 
     [SerializeField]
     [Range(0f, 0.2f)]
@@ -93,13 +120,14 @@ public class MonkeySfx: MonoBehaviour {
         if (bananaGrab == null || coconutGrab == null || pineappleGrab == null
             || grabMiss == null || leapRush == null
             || coconutThrow == null || cobraFreeze == null || cobraThaw == null
-            || webStuck == null || webEscape == null || markerReached == null
+            || webStruggles == null || webStruggles.Length == 0
+            || happyCalls == null || happyCalls.Length == 0 || markerReached == null
             || staminaLow == null || hit == null || lose == null) {
             Debug.LogWarning(
                 "MonkeySfx:\tmust assign Inspector Fields: bananaGrab, "
                     + "coconutGrab, pineappleGrab, grabMiss, leapRush, "
-                    + "coconutThrow, cobraFreeze, cobraThaw, webStuck, "
-                    + "webEscape, markerReached, staminaLow, hit, lose",
+                    + "coconutThrow, cobraFreeze, cobraThaw, webStruggles, "
+                    + "happyCalls, markerReached, staminaLow, hit, lose",
                 this
             );
             enabled = false;
@@ -124,8 +152,7 @@ public class MonkeySfx: MonoBehaviour {
             leap.Begun += OnLeapBegun;
         }
         if (web != null) {
-            web.Trapped += OnWebTrapped;
-            web.Escaped += OnWebEscaped;
+            web.EscapePressed += OnEscapePressed;
         }
     }
 
@@ -169,8 +196,7 @@ public class MonkeySfx: MonoBehaviour {
             leap.Begun -= OnLeapBegun;
         }
         if (web != null) {
-            web.Trapped -= OnWebTrapped;
-            web.Escaped -= OnWebEscaped;
+            web.EscapePressed -= OnEscapePressed;
         }
     }
 
@@ -208,8 +234,11 @@ public class MonkeySfx: MonoBehaviour {
     private HeightMarkerSystem markers;
     private StaminaBarController stamina;
     private bool hasWarnedLow;
+    private int nextStruggle;
+    private int lastHappy = -1;
+    private float lastHappyTime = float.NegativeInfinity;
 
-    private void Play(AudioClip clip, float share = 1f) {
+    private void Play(AudioClip clip, float share = 1f, float pitch = 1f, float delayS = 0f) {
         if (sources == null || clip == null) {
             return;
         }
@@ -217,8 +246,22 @@ public class MonkeySfx: MonoBehaviour {
         nextVoice = (nextVoice + 1) % VOICES;
         voice.clip = clip;
         voice.volume = volume * share;
-        voice.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
-        voice.Play();
+        voice.pitch = pitch * (1f + Random.Range(-pitchJitter, pitchJitter));
+        voice.PlayDelayed(delayS);
+    }
+
+    // now & then a happy call, never the same one twice running
+    private void MaybeCheer() {
+        if (Time.time - lastHappyTime < happyCooldownS || Random.value >= happyChance) {
+            return;
+        }
+        int pick = Random.Range(0, happyCalls.Length);
+        if (pick == lastHappy && happyCalls.Length > 1) {
+            pick = (pick + 1 + Random.Range(0, happyCalls.Length - 1)) % happyCalls.Length;
+        }
+        lastHappy = pick;
+        lastHappyTime = Time.time;
+        Play(happyCalls[pick], 0.8f, 1f, happyDelayS);
     }
 
     // Event Handlers  #########################################################
@@ -228,11 +271,12 @@ public class MonkeySfx: MonoBehaviour {
         }
         if (fruit.GetComponentInParent<LeapOnGrab>(true) != null) {
             Play(pineappleGrab);
-            return;
+        } else {
+            ScorePickup pickup = fruit.GetComponentInParent<ScorePickup>(true);
+            bool isCoconut = pickup != null && pickup.Kind == PickupKind.Coconut;
+            Play(isCoconut ? coconutGrab : bananaGrab);
         }
-        ScorePickup pickup = fruit.GetComponentInParent<ScorePickup>(true);
-        bool isCoconut = pickup != null && pickup.Kind == PickupKind.Coconut;
-        Play(isCoconut ? coconutGrab : bananaGrab);
+        MaybeCheer();
     }
 
     private void OnGrabMissed() {
@@ -255,12 +299,10 @@ public class MonkeySfx: MonoBehaviour {
         Play(cobraThaw);
     }
 
-    private void OnWebTrapped(bool isFirst) {
-        Play(webStuck);
-    }
-
-    private void OnWebEscaped() {
-        Play(webEscape);
+    // a tug sounds higher the nearer the monkey is to breaking free
+    private void OnEscapePressed(float progress) {
+        Play(webStruggles[nextStruggle], 0.8f, 1f + struggleRisePitch * progress);
+        nextStruggle = (nextStruggle + 1) % webStruggles.Length;
     }
 
     private void OnMarkerReached(int heightU) {

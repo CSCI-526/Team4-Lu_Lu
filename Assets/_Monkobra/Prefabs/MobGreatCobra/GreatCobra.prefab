@@ -1367,10 +1367,11 @@ MonoBehaviour:
     hissStartDistanceU: 7
     hissExitPaddingU: 1
     hissIntervalS: 2.8
-    hissVolume: 0.75
+    hissVolume: 0.45
     hissPitch: 0.82
     hissMinDistanceU: 3
     hissMaxDistanceU: 35
+    chaseAlertHissVolume: 0.5
     eyeSizeU: 0.14
     peekIntervalRangeS: {x: 4, y: 7}
     peekRiseU: 3.5

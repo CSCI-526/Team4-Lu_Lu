@@ -1922,7 +1922,7 @@ MonoBehaviour:
     warningDurationS: 2.5
     alertExitPaddingU: 3
     warningHiss: {fileID: 8300000, guid: 34e7c832cfb4cd5448d8d365a2a9f4f9, type: 3}
-    warningHissVolume: 0.3
+    warningHissVolume: 0.18
     warningHissIntervalS: 2.4
     warningHissMinDistanceU: 3
     waitingLookDownDegrees: 35
