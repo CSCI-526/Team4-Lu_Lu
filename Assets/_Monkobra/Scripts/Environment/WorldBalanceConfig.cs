@@ -412,7 +412,7 @@ public class WorldBalanceConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("scale on the monkey's & the great cobra's climb in the endless "
         + "run, outside a boss fight")]
-    private float endlessSpeedScale = 3f;
+    private float endlessSpeedScale = 2f;
 
     [SerializeField]
     [Tooltip("a boss's extra health per earlier boss in the endless run, a "
@@ -442,17 +442,17 @@ public class WorldBalanceConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("every endless boss's health, a scale, before the per boss "
         + "step: the monkey is as fast in its fights as on the climb")]
-    private float endlessFightHealthScale = 1.5f;
+    private float endlessFightHealthScale = 1.3f;
 
     [SerializeField]
     [Tooltip("every endless boss's wind ups, warnings & rests, a scale, "
         + "before the per boss step")]
-    private float endlessFightTimeScale = 0.7f;
+    private float endlessFightTimeScale = 0.8f;
 
     [SerializeField]
     [Tooltip("every endless boss's crawl, shot, slash & dash speeds, a scale, "
         + "before the per boss step")]
-    private float endlessFightSpeedScale = 1.6f;
+    private float endlessFightSpeedScale = 1.4f;
 
     // Editor Validation  ######################################################
     private void OnValidate() {
