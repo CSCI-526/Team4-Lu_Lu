@@ -67,6 +67,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc9a4d968c9e47f69d801679aa79e668, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightHud
+  config: {fileID: 11400000, guid: 27abe374be03ea84c88a826d385fe3b0, type: 2}
   tuning:
     flashS: 0.8
     speechShowS: 2.2
@@ -93,6 +94,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87cf3a8756c54eaca06f94aeb8479e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderFightController
+  worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
+  config: {fileID: 11400000, guid: 33bba91203208b64d93c1a5fbaad45c3, type: 2}
   tuning:
     worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
     confirmAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -212,7 +215,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf29393f90034a8a8af86d75e7ec6949, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderKingSfx
   entrance: {fileID: 8300000, guid: 078a087aa163458a9dde73f3c47d71e6, type: 3}
   attack: {fileID: 8300000, guid: 6e4f1b13303a43ddb108cc6b3e7267d7, type: 3}

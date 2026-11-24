@@ -1917,6 +1917,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f013f45ac33c9624c8cdb3041b37174c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FallingCobra
+  config: {fileID: 11400000, guid: 0585a0ce2f5e4214fad104c393922555, type: 2}
   tuning:
     triggerDistanceU: 12
     warningDurationS: 2.5
@@ -1948,9 +1949,15 @@ MonoBehaviour:
     hoodNeckClearanceLengthU: 0.65
     branchEscapeClearanceU: 0.12
     branchHeadSideU: 1.1
+    perchedAimSharpness: 7
+    minimumNeckThicknessShare: 0.85
+    freeNeckSwayU: 0.12
+    bodyBarkSettleDropU: 1.2
+    bodyBarkContactFeatherU: 0.05
     standReleaseDurationS: 0.7
     standReleaseReachU: 0.15
     headPoseSharpness: 4
+    neckCollarLengthU: 0.75
     maxFallDistanceU: 30
     maximumFallDurationS: 2.5
     attackSpeedRampS: 0.45
@@ -1958,6 +1965,14 @@ MonoBehaviour:
     treeSurfaceRadiusU: 5
     treeSurfaceClearanceU: 0.02
     bellyPressDepthU: 0.06
+    strikeWindupDurationS: 0.42
+    strikePullbackU: 0.36
+    strikeCompressionU: 0.08
+    strikePoseSharpness: 22
+    strikeLaunchRampS: 0.09
+    strikeBurstDurationS: 0.38
+    strikeSpeedMultiplier: 1.6
+    strikeHeadFollowScale: 0.5
     headTrailSmoothTimeS: 0.16
     headTurnDropU: 1.25
     headTrackingRangeU: 10
@@ -1976,6 +1991,12 @@ MonoBehaviour:
     approachDropRangeU: 3
     headAimGain: 6
     headAimDamping: 1
+    trackingSurfaceTurnDegrees: 160
+    targetHeightStopMarginU: 0.15
+    verticalArrivalGain: 3
+    maximumStrikeReachU: 0.65
+    strikeReachDistanceU: 2
+    uncoilSupportBlendU: 0.4
     eyeAnchorsReady: 1
     leftEyeSurfaceLocal: {x: 0.23245883, y: -0.5315881, z: 0.30910403}
     rightEyeSurfaceLocal: {x: 0.4506514, y: -0.535934, z: 0.11822308}
@@ -2012,6 +2033,9 @@ MonoBehaviour:
     neckWaistScale: 0.74
     releaseCurveDurationS: 1.15
     headContactBlendLengthU: 0.45
+    roundedNeckLengthU: 1.8
+    roundedNeckPasses: 20
+    roundedNeckMaxOffsetU: 0.12
 --- !u!136 &3902953696277176351
 CapsuleCollider:
   m_ObjectHideFlags: 0

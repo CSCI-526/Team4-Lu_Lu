@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 553928786f9b44bd92598421741ee3f8, type: 3}
+  m_Name: BossFightHudConfig_SpiderKing
+  m_EditorClassIdentifier: Assembly-CSharp::BossFightHudConfig
+  flashS: 0.8
+  speechShowS: 2.2
+  speechOffset: {x: 0, y: 90}
+  promptOffset: {x: 0, y: 80}
+  hintIconLibrary: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
+  promptKeyboardController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
+  promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
+  doubleKeyboardController: {fileID: 9100000, guid: f7c5a6d8e9fa6b52c3a4b5c6d7e8f9a0, type: 2}
+  doubleTouchController: {fileID: 9100000, guid: a8d6b7e9fa0b7c63d4b5c6d7e8f9a0b1, type: 2}
+  healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
+  damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
+  warningOffset: {x: 0, y: 70}

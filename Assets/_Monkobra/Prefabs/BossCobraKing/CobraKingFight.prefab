@@ -56,7 +56,7 @@ MonoBehaviour:
   neckBeadCount: 9
   headDropU: 3.5
   headOutU: 3
-  headSize: {x: 2.8, y: 2.4, z: 2.6}
+  headSizeU: {x: 2.8, y: 2.4, z: 2.6}
   headTurnSpeedDeg: 45
   buttDiveS: 0.15
   buttReturnS: 0.5
@@ -81,6 +81,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc9a4d968c9e47f69d801679aa79e668, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightHud
+  config: {fileID: 11400000, guid: 2e4606b0d3b926f40b4772cbc49fca93, type: 2}
   tuning:
     flashS: 0.8
     speechShowS: 2.2
@@ -89,6 +90,8 @@ MonoBehaviour:
     hintIconLibrary: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
     promptKeyboardController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
     promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
+    doubleKeyboardController: {fileID: 0}
+    doubleTouchController: {fileID: 0}
     healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
     damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
     warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
@@ -105,6 +108,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e6d54d703149299779b0cbe8b87e06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossFightController
+  worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
+  config: {fileID: 11400000, guid: 29ad2b08babf61a43ab782ead1d771a5, type: 2}
   tuning:
     worldBalanceConfig: {fileID: 11400000, guid: 5b8c7a20f4e9cb641a8ce00b5c08c1ed, type: 2}
     spiderFightPrefab: {fileID: 1546172834150697845, guid: 2d5aed9d3ca84b378f8afd2c696c0b5f, type: 3}
@@ -243,7 +248,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00d29c892625413387879953b81c8b36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CobraKingSfx
   entrance: {fileID: 8300000, guid: 078a087aa163458a9dde73f3c47d71e6, type: 3}
   attackWarn: {fileID: 8300000, guid: 6e4f1b13303a43ddb108cc6b3e7267d7, type: 3}

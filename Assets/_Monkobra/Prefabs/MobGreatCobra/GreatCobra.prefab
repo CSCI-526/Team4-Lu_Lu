@@ -1265,6 +1265,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9829221b635be4cfba4313900241db4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CobraClimb
+  pathCenter: {fileID: 7335942435961454440}
+  bodySegments:
+  - {fileID: 4063569279546901762}
+  - {fileID: 8200612287081337590}
+  - {fileID: 1980693062751719723}
+  - {fileID: 1721931522515783602}
+  - {fileID: 5806219029489959205}
+  - {fileID: 5723352222877392496}
+  - {fileID: 7663785573373184699}
+  - {fileID: 8839392414918264803}
+  - {fileID: 2497250746448015323}
+  - {fileID: 6941576348691434800}
+  - {fileID: 3234009328530305621}
+  - {fileID: 2611354926040572187}
+  - {fileID: 314694077139660833}
+  - {fileID: 1634319500167080360}
+  - {fileID: 4368178624018231665}
+  - {fileID: 6966695551904149437}
+  - {fileID: 2697583977193151554}
+  - {fileID: 8817812591395748306}
+  - {fileID: 697809309729298994}
+  - {fileID: 8282021799308646717}
+  cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
+  playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  monkeyClimbConfig: {fileID: 11400000, guid: 5f758de8d78c4f6194921d44e5a0aab0, type: 2}
+  config: {fileID: 11400000, guid: c2adf5c22135dc7478ab76bf419a5739, type: 2}
   tuning:
     pathCenter: {fileID: 7335942435961454440}
     bodySegments:
