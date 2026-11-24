@@ -2,13 +2,14 @@
 
 The background music is ukulele and djembe in C major (see
 ``tools/music/make_music.py``); the effects share its instruments, its key
-and its wooden, hand-played feel: mallet on marimba, a hollow shell, a
+and its wooden, hand-played feel: a hollow shell, fruit torn & burst, a
 plucked ukulele, a cartoon squeak. Every sound is made from sines and
 noise, no samples, so it is original and free of any license.
 
 P0, the core feel, writes mono 16-bit WAVs:
 
-- ``Grab_Banana``: a bright pop & 2 rising marimba notes
+- ``Grab_Banana``: a banana torn off its bunch, fibres ripping fast & the
+  stem snapping
 - ``Grab_Coconut``: a hollow knock on the shell & a softer one
 - ``Grab_Miss``: a soft, deflated puff falling in pitch
 - ``Hit_Branch``: a wooden bonk, leaves shaking & the monkey's squeak
@@ -22,16 +23,18 @@ P1, items, hazards & progress:
 - ``Coconut_Throw``: a short whoosh
 - ``Coconut_Freeze``: the coconut's hollow bonk on the cobra
 - ``Coconut_Thaw``: ice cracking apart
-- ``Web_Stuck``: a gloopy, sticky splat stretching
-- ``Web_Escape``: a rubbery snap & 2 rising ukulele notes
+- ``Web_Struggle_1`` to ``_3``: one tug against the web, sticky strands
+  peeling over a rubbery stretch, 3 takes to cycle through
 - ``Marker_Reached``: a glockenspiel chime, G5 & C6
 - ``Stamina_Low``: 2 soft heartbeats
+- ``Monkey_Happy_1`` to ``_5``: the monkey's happy calls, a hoo-hoo, an
+  excited hoo-hoo-hoo-hoo, an ooh-AAH, a hee-hee giggle, a hoo-HAA-ha
 
 The Cobra King fight, into ``BossCobraKing/``:
 
 - ``CobraKing_Entrance``: a deep gong & a long hiss
-- ``CobraKing_AttackWarn``: 0.3 s, a hiss & a tone rushing up into a hard
-  hit, the one cue before every warned attack
+- ``CobraKing_AttackWarn``: one hiss rising & swelling, the one cue before
+  every warned attack
 - ``CobraKing_ArmorBlock``: a bright metal clang
 - ``CobraKing_FruitSplat``: a thrown fruit bursting on the crown, the rind
   cracking, a heavy thump & a big wet splat
@@ -96,19 +99,6 @@ def finish(sig, gain):
 
 
 # Instruments  #################################################################
-def marimba(f, dur_s=0.6):
-    """bar struck by a soft mallet: the 4th & 10th partials of a tuned bar"""
-    t = times(dur_s)
-    tone = (
-        np.sin(2 * np.pi * f * t) * np.exp(-t / 0.32)
-        + 0.35 * np.sin(2 * np.pi * f * 3.93 * t) * np.exp(-t / 0.07)
-        + 0.12 * np.sin(2 * np.pi * f * 9.8 * t) * np.exp(-t / 0.025)
-    )
-    mallet = filt(noise(len(t)), "low", 2500) * np.exp(-t / 0.003) * 0.4
-    attack = np.minimum(t / 0.002, 1.0)
-    return fade_out(peak1((tone + mallet) * attack), 0.05)
-
-
 def squeak(f_start, f_peak, f_end, dur_s=0.22):
     """a little monkey cry: a buzzing voice through 2 'ee-a' formants,
     sliding up then down"""
@@ -125,15 +115,37 @@ def squeak(f_start, f_peak, f_end, dur_s=0.22):
 
 
 # P0 Sounds  ###################################################################
-def grab_banana():
-    """a bright pop & 2 rising marimba notes, G5 to C6"""
-    out = np.zeros(int(0.75 * SR))
+def fibres(dur_s, density_from, density_to, band=(900, 5000)):
+    """fibres snapping one after another: tiny clicks, thickening"""
+    n = int(dur_s * SR)
+    out = np.zeros(n)
+    t = 0.0
+    while t < dur_s:
+        k = t / dur_s
+        rate = density_from + (density_to - density_from) * k
+        t += rng.exponential(1.0 / rate)
+        if t >= dur_s:
+            break
+        g = times(rng.uniform(0.002, 0.006))
+        click = filt(noise(len(g)), "band", list(band)) * np.exp(-g / 0.0015)
+        place(out, click, t, rng.uniform(0.3, 1.0) * (0.4 + 0.6 * k))
+    return out
+
+
+def stem_snap(low=180):
+    """a stem letting go: a sharp crack & a soft knock"""
     t = times(0.08)
-    pop = sweep(1500, 380, 0.008, t) * np.exp(-t / 0.025)
-    pop += filt(noise(len(t)), "high", 3000) * np.exp(-t / 0.002) * 0.6
-    place(out, pop, 0.0, 0.8)
-    place(out, marimba(hz("G5")), 0.02, 0.7)
-    place(out, marimba(hz("C6")), 0.09, 0.75)
+    crack = filt(noise(len(t)), "band", [1500, 6000]) * np.exp(-t / 0.004)
+    knock = sweep(low * 1.6, low, 0.01, t) * np.exp(-t / 0.02)
+    return peak1(crack + 0.7 * knock)
+
+
+def grab_banana():
+    """a banana torn off its bunch: fibres ripping fast for 0.12 s, then the
+    stem snapping clean"""
+    out = np.zeros(int(0.3 * SR))
+    place(out, fibres(0.12, 120, 600), 0.0, 0.8)
+    place(out, stem_snap(), 0.12, 0.9)
     return finish(out, 0.8)
 
 
@@ -301,35 +313,17 @@ def coconut_thaw():
     return finish(out, 0.7)
 
 
-def web_stuck():
-    """a gloopy, sticky splat, then the web stretching"""
-    out = np.zeros(int(0.7 * SR))
-    t = times(0.3)
-    freq = 120 + 260 * np.exp(-t / 0.05)
-    freq *= 1 + 0.25 * np.sin(2 * np.pi * 34 * t) * np.exp(-t / 0.1)
-    glop = np.sin(2 * np.pi * np.cumsum(freq) / SR) * np.exp(-t / 0.1)
-    squelch = filt(noise(len(t)), "band", [400, 1600])
-    squelch *= (0.5 + 0.5 * np.sin(2 * np.pi * 26 * t)) * np.exp(-t / 0.07) * 0.6
-    place(out, peak1(glop + squelch), 0.0, 1.0)
-    t = times(0.35)
-    freq = 260 - 90 * t / t[-1]
+def web_struggle():
+    """one tug against the web: sticky strands peeling with a fine crackle,
+    over a short rubbery stretch"""
+    out = np.zeros(int(0.32 * SR))
+    place(out, fibres(0.13, 500, 1400, (1500, 6500)) * np.sin(np.pi * times(0.13) / 0.13), 0.0, 0.55)
+    t = times(0.16)
+    freq = 150 + 70 * t / t[-1]
     phase = 2 * np.pi * np.cumsum(freq) / SR
-    stretch = np.sin(phase + 1.2 * np.sin(phase)) * np.sin(np.pi * t / t[-1]) * 0.3
-    place(out, stretch, 0.12)
+    stretch = np.sin(phase + 1.4 * np.sin(2 * phase)) * np.sin(np.pi * t / t[-1])
+    place(out, filt(stretch, "low", 1800), 0.01, 0.5)
     return finish(out, 0.7)
-
-
-def web_escape():
-    """a rubbery snap as the strands let go & 2 rising ukulele notes"""
-    out = np.zeros(int(1.0 * SR))
-    t = times(0.25)
-    snap = filt(noise(len(t)), "high", 2000) * np.exp(-t / 0.004)
-    freq = 380 + 220 * (1 - np.exp(-t / 0.04))
-    twang = np.sin(2 * np.pi * np.cumsum(freq) / SR) * np.exp(-t / 0.07)
-    place(out, peak1(snap + 0.8 * twang), 0.0, 0.85)
-    place(out, ukulele(hz("G4")), 0.06, 0.45)
-    place(out, ukulele(hz("C5")), 0.15, 0.5)
-    return finish(out, 0.75)
 
 
 def marker_reached():
@@ -350,6 +344,97 @@ def stamina_low():
             thump += filt(noise(len(t)), "low", 300) * np.exp(-t / 0.015) * 0.4
             place(out, peak1(thump), beat + at, 1.0 if k == 0 else 0.7)
     return finish(out, 0.6)
+
+
+# Monkey Voice  ################################################################
+# formants of a small creature's mouth, (F1, F2, F3) in Hz: a short vocal
+# tract puts them well above a person's
+VOWELS = {
+    "oo": (420, 1050, 2900),
+    "oh": (600, 1150, 3000),
+    "ah": (1050, 1550, 3300),
+    "ee": (380, 2800, 3700),
+}
+
+
+def voice(syllables, length_s):
+    """a monkey's call: a buzzing voice, its pitch & vowel gliding through
+    each syllable, shaped by moving formants in the spectrum
+
+    :param syllables: (start s, length s, pitch from Hz, pitch to Hz, vowel
+        from, vowel to, loudness) each
+    """
+    n = int(length_s * SR)
+    pitch = np.full(n, 300.0)
+    loud = np.zeros(n)
+    formants = np.zeros((n, 3))
+    formants[:] = VOWELS["oh"]
+    for start, dur, f_from, f_to, v_from, v_to, gain in syllables:
+        a = int(start * SR)
+        b = min(n, a + int(dur * SR))
+        k = np.linspace(0, 1, b - a)
+        # pitch: up fast, easing at the top, a little drop at the very end
+        pitch[a:b] = f_from + (f_to - f_from) * np.sin(k * np.pi / 2) - 0.08 * f_to * k ** 6
+        env = np.clip(k * dur / 0.015, 0, 1) * np.clip((1 - k) * dur / 0.045, 0, 1)
+        loud[a:b] = np.maximum(loud[a:b], env * gain)
+        mix = np.clip((k - 0.15) / 0.6, 0, 1)[:, None]
+        formants[a:b] = np.array(VOWELS[v_from]) * (1 - mix) + np.array(VOWELS[v_to]) * mix
+    t = np.arange(n) / SR
+    pitch *= 1 + 0.02 * np.sin(2 * np.pi * 7 * t) + 0.004 * filt(noise(n), "low", 30) / 0.1
+    phase = 2 * np.pi * np.cumsum(pitch) / SR
+    source = np.zeros(n)
+    for k in range(1, 30):
+        audible = (k * pitch < 9000).astype(float)
+        source += audible * np.sin(k * phase) / k ** 1.05
+    source += 0.08 * filt(noise(n), "band", [1500, 7000])
+
+    _, _, spec = stft(source, SR, nperseg=1024, noverlap=896)
+    freqs = np.linspace(0, SR / 2, spec.shape[0])[:, None]
+    frames = np.clip(np.linspace(0, n - 1, spec.shape[1]).astype(int), 0, n - 1)
+    shape = np.full(spec.shape, 0.03)
+    for i, (amp, width) in enumerate(((1.0, 160), (0.65, 220), (0.3, 320))):
+        centre = formants[frames, i][None, :]
+        shape += amp / (1 + ((freqs - centre) / (width / 2)) ** 2)
+    _, out = istft(spec * shape, SR, nperseg=1024, noverlap=896)
+    out = out[:n] * loud
+    return peak1(out)
+
+
+def monkey_happy_1():
+    """hoo-hoo! 2 hoots rising"""
+    return finish(voice([
+        (0.0, 0.14, 420, 560, "oo", "oo", 0.85),
+        (0.18, 0.2, 500, 720, "oo", "oh", 1.0),
+    ], 0.45), 0.7)
+
+
+def monkey_happy_2():
+    """hoo-hoo-hoo-hoo, quick & excited, climbing"""
+    calls = [(i * 0.105, 0.085, 440 + 70 * i, 560 + 90 * i, "oo", "oh", 0.75 + 0.08 * i) for i in range(4)]
+    return finish(voice(calls, 0.5), 0.7)
+
+
+def monkey_happy_3():
+    """ooh-AAH! a low hoot, then a big delighted cry opening up"""
+    return finish(voice([
+        (0.0, 0.15, 380, 470, "oo", "oo", 0.7),
+        (0.19, 0.3, 560, 900, "oo", "ah", 1.0),
+    ], 0.55), 0.7)
+
+
+def monkey_happy_4():
+    """hee-hee-hee, a high giggle"""
+    calls = [(i * 0.09, 0.065, 880 - 30 * i, 1050 - 40 * i, "ee", "ee", 0.9 - 0.1 * i) for i in range(3)]
+    return finish(voice(calls, 0.32), 0.6)
+
+
+def monkey_happy_5():
+    """hoo-HAA-ha, a hoot & a laugh"""
+    return finish(voice([
+        (0.0, 0.12, 450, 560, "oo", "oo", 0.75),
+        (0.15, 0.2, 680, 860, "oh", "ah", 1.0),
+        (0.38, 0.11, 700, 620, "ah", "ah", 0.7),
+    ], 0.55), 0.7)
 
 
 # Cobra King  #################################################################
@@ -390,30 +475,19 @@ def cobra_king_entrance():
 
 
 def cobra_king_attack_warn():
-    """here it comes: a hiss & a tone rushing up for 0.18 s, then a hard
-    hit landing on the moment; dry, so it stops dead"""
-    length_s = 0.3
-    rise_s = 0.18
-    out = np.zeros(int(length_s * SR))
-
-    t = times(rise_s)
-    k = t / rise_s
-    # 2 tones a fifth apart, sweeping up an octave & a half, fluttering
-    freq = 330 * 2 ** (1.5 * k ** 1.6) * (1 + 0.03 * np.sin(2 * np.pi * 26 * t))
-    phase = 2 * np.pi * np.cumsum(freq) / SR
-    tone = sum(np.sin(n * phase) / n for n in range(1, 7))
-    tone += 0.6 * sum(np.sin(n * 1.5 * phase) / n for n in range(1, 5))
-    swell = k ** 1.8
-    hiss = filt(filt(noise(len(t)), "high", 2500), "low", 9000) * swell
-    place(out, peak1(tone) * swell * 0.55 + peak1(hiss) * 0.45, 0.0, 1.0)
-
-    # the hit: a heavy low drum & a sharp crack
-    t = times(length_s - rise_s)
-    drum = sweep(170, 55, 0.015, t) * np.exp(-t / 0.05)
-    crack = filt(noise(len(t)), "band", [1200, 6000]) * np.exp(-t / 0.012)
-    place(out, peak1(np.tanh(2.0 * (drum + 0.9 * crack))), rise_s - 0.005, 1.0)
-    out = np.tanh(1.3 * out) / np.tanh(1.3)
-    return peak1(fade_out(out, 0.03)) * 0.95
+    """one hiss rising in pitch & swelling to its end, sssSSS!, the cue
+    the attack is about to land"""
+    dur = 0.28
+    t = times(dur)
+    raw = noise(len(t))
+    lo = filt(raw, "band", [2600, 6000])
+    hi = filt(raw, "band", [5200, 10500])
+    k = t / dur
+    hiss = lo * (1 - k) + hi * k
+    env = np.clip(t / 0.02, 0, 1) * (0.45 + 0.55 * k ** 1.3) * np.clip((dur - t) / 0.04, 0, 1)
+    out = np.zeros(int(0.32 * SR))
+    place(out, peak1(hiss * env), 0.0, 1.0)
+    return peak1(fade_out(out, 0.02)) * 0.95
 
 
 def cobra_king_armor_block():
@@ -516,6 +590,12 @@ def cobra_king_victory():
 
 
 # Main  ########################################################################
+# takes picked from a review, kept by the seed they were heard with
+SEEDS = {
+    "Grab_Banana": 703,
+    "CobraKing_AttackWarn": 701,
+}
+
 # name: (module folder, maker)
 SOUNDS = {
     "Grab_Banana": ("Player", grab_banana),
@@ -528,10 +608,16 @@ SOUNDS = {
     "Coconut_Throw": ("Player", coconut_throw),
     "Coconut_Freeze": ("Player", coconut_freeze),
     "Coconut_Thaw": ("Player", coconut_thaw),
-    "Web_Stuck": ("Player", web_stuck),
-    "Web_Escape": ("Player", web_escape),
+    "Web_Struggle_1": ("Player", web_struggle),
+    "Web_Struggle_2": ("Player", web_struggle),
+    "Web_Struggle_3": ("Player", web_struggle),
     "Marker_Reached": ("Player", marker_reached),
     "Stamina_Low": ("Player", stamina_low),
+    "Monkey_Happy_1": ("Player", monkey_happy_1),
+    "Monkey_Happy_2": ("Player", monkey_happy_2),
+    "Monkey_Happy_3": ("Player", monkey_happy_3),
+    "Monkey_Happy_4": ("Player", monkey_happy_4),
+    "Monkey_Happy_5": ("Player", monkey_happy_5),
     "CobraKing_Entrance": ("BossCobraKing", cobra_king_entrance),
     "CobraKing_AttackWarn": ("BossCobraKing", cobra_king_attack_warn),
     "CobraKing_ArmorBlock": ("BossCobraKing", cobra_king_armor_block),
@@ -547,7 +633,7 @@ def make_all():
     for name, (folder, make) in SOUNDS.items():
         # each its own noise, seeded by its name, so adding or dropping one
         # never changes another's take
-        seed = zlib.crc32(name.encode())
+        seed = SEEDS.get(name, zlib.crc32(name.encode()))
         rng = np.random.default_rng(seed)
         # the borrowed ukulele draws on the music script's own noise
         make_music.rng = np.random.default_rng(seed + 1)

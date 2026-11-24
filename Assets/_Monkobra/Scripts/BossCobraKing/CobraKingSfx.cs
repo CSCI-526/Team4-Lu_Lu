@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// The Cobra King fight's sound effects: a gong & hiss as it begins, a
-/// tone rushing up into a hard hit before each warned attack, a clang when
+/// rising hiss before each warned attack, a clang when
 /// the gold armor takes a hit, a watermelon bursting as a thrown fruit hits
 /// the crown, the beaten king shattering, and a short victory call a moment
 /// later.
@@ -48,8 +48,8 @@ public class CobraKingSfx: MonoBehaviour {
     [Header("Tuning")]
     [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("every effect's loudness, over the music's 0.5")]
-    private float volume = 0.9f;
+    [Tooltip("every effect's loudness, beside the music's 0.5")]
+    private float volume = 0.55f;
 
     [SerializeField]
     [Min(0f)]

@@ -291,8 +291,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpiderWebStruggle
   inputConfig: {fileID: 11400000, guid: 807cabe9104f1f948afe0b58847b456f, type: 2}
   escapeAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  pressGain: 0.12
-  decayPerS: 0.35
+  pressGain: 0.15
+  decayPerS: 0.2
   protectionDurationS: 1
 --- !u!114 &2864019573318265417
 MonoBehaviour:
@@ -368,13 +368,25 @@ MonoBehaviour:
   coconutThrow: {fileID: 8300000, guid: aa21228d593a4b948eb79ead2db91256, type: 3}
   cobraFreeze: {fileID: 8300000, guid: cf8fafcea7054aa18e874daf63fab97b, type: 3}
   cobraThaw: {fileID: 8300000, guid: 858cf40d20e847d1aa92d69669617223, type: 3}
-  webStuck: {fileID: 8300000, guid: 66fa02ef1d514361a8c56169701d6fb0, type: 3}
-  webEscape: {fileID: 8300000, guid: 7d6a3a0a8c574f6ebafd8879ccd6cf59, type: 3}
+  webStruggles:
+  - {fileID: 8300000, guid: 3ec4ab4b12b64ad8b3c2af937825ecf0, type: 3}
+  - {fileID: 8300000, guid: 83309e3a3a264e40956e37d587828425, type: 3}
+  - {fileID: 8300000, guid: f6bf0a1f693a4a3e876c540b07f54f69, type: 3}
+  struggleRisePitch: 0.3
+  happyCalls:
+  - {fileID: 8300000, guid: 878c990b7a1f4c2eb21417265f31764e, type: 3}
+  - {fileID: 8300000, guid: fb3e25062b47423e85f2158b38db5f89, type: 3}
+  - {fileID: 8300000, guid: 630fbd57ff224db6a13f787d619332d1, type: 3}
+  - {fileID: 8300000, guid: 6363856493a1484aa89409abe1408f67, type: 3}
+  - {fileID: 8300000, guid: 78e958b8ea75428da87dd6adcc26c1a4, type: 3}
+  happyChance: 0.35
+  happyDelayS: 0.12
+  happyCooldownS: 4
   markerReached: {fileID: 8300000, guid: bcaf38ce2d044414a08e64177eade8a6, type: 3}
   staminaLow: {fileID: 8300000, guid: c08bed165a3c4b70831089263ad7ebf8, type: 3}
   hit: {fileID: 8300000, guid: f199ebba366b446ca8380265a5aa91c3, type: 3}
   lose: {fileID: 8300000, guid: 2e3d3d0395e34747899bd912932809f7, type: 3}
-  volume: 0.9
+  volume: 0.55
   pitchJitter: 0.05
 --- !u!1 &2917627373943038392
 GameObject:

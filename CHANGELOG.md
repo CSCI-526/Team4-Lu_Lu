@@ -60,8 +60,6 @@ todo todo add 3x fruit
 - both kings' revive: a plain difficulty card, EASY or NORMAL, time stopped,
   picked w/ A / D and Space or a tap, instead of choice fruit and the armor
   words
-- first-grab popup line points at the nearest fruit the player can see (on screen,
-  trunk's near side), not a farther or hidden one off screen
 - boss fight extra bare zones are kept per boss
   (`RampedDifficultyManager.SetExtraBossZone(owner, ...)`)
 

@@ -131,9 +131,7 @@ public class FruitGrabPrompt: MonoBehaviour {
     }
 
     // nearest live fruit of an unlearned kind within the config radius of the
-    // monkey that the player can see: on screen & on the trunk's near side,
-    // so the popup's line points at it, never off screen or into the trunk;
-    // null for none; the scan ignores the arm zones on purpose
+    // monkey, null for none; the scan ignores the arm zones on purpose
     private Collider FindNearestUnlearnedFruit() {
         Vector3 origin = sensor.transform.position;
         int count = Physics.OverlapSphereNonAlloc(
@@ -146,47 +144,31 @@ public class FruitGrabPrompt: MonoBehaviour {
 
         Collider nearest = null;
         float nearestSqrDistance = float.MaxValue;
-        Camera view = Camera.main;
+        int nearestRank = int.MaxValue;
         for (int i = 0; i < count; i++) {
             Collider candidate = scanBuffer[i];
             if (
                 !candidate.CompareTag(FRUIT_TAG)
                 || !IsPromptable(candidate)
                 || IsLearned(GetFruitKind(candidate))
-                || !IsSeen(candidate.bounds.center, view)
             ) {
                 continue;
             }
+            // the rarer kind outranks distance, so a far pineapple is not
+            // hidden behind a near banana
+            int rank = GetFruitKind(candidate) == FruitKind.Banana ? 1 : 0;
             float sqrDistance =
                 (candidate.bounds.center - origin).sqrMagnitude;
-            if (sqrDistance < nearestSqrDistance) {
+            if (
+                rank < nearestRank
+                || rank == nearestRank && sqrDistance < nearestSqrDistance
+            ) {
+                nearestRank = rank;
                 nearestSqrDistance = sqrDistance;
                 nearest = candidate;
             }
         }
         return nearest;
-    }
-
-    // if a point is on screen & on the trunk's side facing the camera; true
-    // w/o a camera
-    private bool IsSeen(Vector3 point, Camera view) {
-        if (view == null) {
-            return true;
-        }
-        Vector3 port = view.WorldToViewportPoint(point);
-        if (port.z <= 0f || port.x < 0f || port.x > 1f || port.y < 0f
-            || port.y > 1f) {
-            return false;
-        }
-        Transform trunk = monkey != null ? monkey.transform.parent : null;
-        if (trunk == null) {
-            return true;
-        }
-        Vector3 toPoint = point - trunk.position;
-        Vector3 toCamera = view.transform.position - trunk.position;
-        toPoint.y = 0f;
-        toCamera.y = 0f;
-        return Vector3.Dot(toPoint, toCamera) > 0f;
     }
 
     private bool CanShowPrompt() {

@@ -251,6 +251,6 @@ MonoBehaviour:
   crownHit: {fileID: 8300000, guid: 77de4b4be7074bf38a9252289a86cf1a, type: 3}
   shatter: {fileID: 8300000, guid: baffc27557c64d468d30a1dbbb3744c9, type: 3}
   victory: {fileID: 8300000, guid: 0b7eb70e3d394ecf8aabdf491d609ad0, type: 3}
-  volume: 0.9
+  volume: 0.55
   victoryDelayS: 1
   pitchJitter: 0.04
