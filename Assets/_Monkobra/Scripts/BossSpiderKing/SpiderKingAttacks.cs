@@ -57,6 +57,7 @@ public sealed class SpiderKingAttacks {
         rig.volleyCharge = null;
         rig.body.SetCharge(0f);
         bullet.isCharging = false;
+        rig.onAttackStruck?.Invoke();
         bullet.from = rig.body.HeadPosition;
         bullet.length = rig.Shots.PathLength(bullet);
         if (rig.volleyLeft == 0) {
@@ -162,6 +163,7 @@ public sealed class SpiderKingAttacks {
             case SpiderKingAttack.Web:
                 if (shot != null) {
                     shot.isCharging = false;
+                    rig.onAttackStruck?.Invoke();
                     shot.from = rig.body.HeadPosition;
                     shot.length = rig.Shots.PathLength(shot);
                 }
@@ -207,6 +209,7 @@ public sealed class SpiderKingAttacks {
     // the dash runs to where the lane was locked
     public void StartDash() {
         rig.isDashing = true;
+        rig.onAttackStruck?.Invoke();
         rig.hasDashHit = false;
         rig.dashTimeS = 0f;
         rig.dashTravelU = 0f;
@@ -349,8 +352,7 @@ public sealed class SpiderKingAttacks {
     // batted back w/ the tail as it turns gold, which hurts the spider
     public void StartSlash(bool isTeaching = false) {
         rig.isSlashing = true;
-        rig.slashLeft = isTeaching ? 1
-            : SpiderKingMovement.PerStage(tuning.SlashesPerStage, rig.Stage);
+        rig.slashLeft = isTeaching ? 1 : rig.SlashesNow;
         rig.slashSlow = isTeaching ? tuning.TeachSlowScale : 1f;
         rig.slashChargeLeftS = tuning.SlashChargeS * rig.slashSlow;
         rig.slashGapIndex = 0;
@@ -397,6 +399,7 @@ public sealed class SpiderKingAttacks {
         rig.body.SetSwipe(0f);
         ShowSlashAim(false);
         rig.Shots.LaunchCrescent(rig.slashAimDeg);
+        rig.onAttackStruck?.Invoke();
         rig.slashLeft--;
         if (rig.slashLeft <= 0) {
             rig.isSlashing = false;

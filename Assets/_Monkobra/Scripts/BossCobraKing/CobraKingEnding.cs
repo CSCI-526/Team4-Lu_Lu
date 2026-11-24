@@ -183,9 +183,9 @@ public sealed class CobraKingEnding {
         // a new try, so the minion call is heard again
         rig.hasCalledMinions = false;
         rig.isEasy = false;
-        rig.maxHealth = tuning.WorldBalanceConfig.BossMaxHealth;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.hasShield = true;
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
@@ -208,11 +208,11 @@ public sealed class CobraKingEnding {
                 tuning.ReviveReturnSpeedU);
             rig.isReturningToStart = true;
         }
-        rig.Arena.SpawnChoices();
         rig.Arena.SpawnWebs(tuning.WebCount);
         rig.Arena.SpawnLowWebs();
-        rig.hud.ShowBannerFor(tuning.ArmorIntroTitle, rig.ChoiceLine,
-            tuning.GoldenColor, 0f);
+        // a plain difficulty card, time stopped till a pick
+        rig.isChoosing = true;
+        rig.hud.ShowModeChoice();
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CobraKingFightController:\trevived after the ad, fight "
@@ -282,8 +282,13 @@ public sealed class CobraKingEnding {
             rig.monkeyController.ClearHeightCeiling();
         }
         rig.hud.SetPrompt(false, Vector3.zero);
-        rig.hud.SetHealth(0f);
+        rig.hud.SetHealth(0, rig.maxHealth);
 
+        // a later boss of the endless run's rush: the last crown makes way
+        if (rig.crown != null) {
+            UnityEngine.Object.Destroy(rig.crown.gameObject);
+            rig.crown = null;
+        }
         rig.crown = rig.body.Shatter();
         rig.onShattered?.Invoke();
         if (rig.crown != null) {
@@ -402,6 +407,58 @@ public sealed class CobraKingEnding {
             Debug.Log(
                 "CobraKingFightController:\twon, armor given, the climb goes "
                     + "on",
+                rig.owner
+            );
+        }
+        if (rig.IsRush) {
+            ArmNextRush();
+        }
+    }
+
+    // Endless Boss Rush  ------------------------------------------------------
+    // the king waits again two bosses on, the Spider King's in b/t, harder;
+    // the won armor stays on & the crown on the monkey's head
+    public void ArmNextRush() {
+        rig.Arena.ReleaseRushRange();
+        rig.rushEncounter += 2;
+        rig.phase = CobraKingPhase.Waiting;
+        rig.body.Clear();
+        rig.Feedback.ClearAttackObjects();
+        rig.Feedback.ClearMarkers();
+        rig.Arena.ClearFruits();
+        foreach (SpiderWebTrap web in rig.webs) {
+            if (web != null) {
+                UnityEngine.Object.Destroy(web.gameObject);
+            }
+        }
+        rig.webs.Clear();
+        rig.attackQueue.Clear();
+        rig.loop = CobraKingLoop.Intro;
+        rig.isMinionStreaming = false;
+        rig.isWaveRunning = false;
+        rig.isFinaleSweepNext = false;
+        rig.hasHit = false;
+        rig.hasThrown = false;
+        rig.hasCalledMinions = false;
+        rig.hasWon = false;
+        rig.isFinisherWin = false;
+        rig.isEasy = false;
+        rig.isChoosing = false;
+        rig.isArenaFruitGone = false;
+        rig.arenaBranchSpots.Clear();
+        rig.arenaBranchFruits.Clear();
+        rig.goldenIndex = -1;
+        rig.isRewardPanelShown = false;
+        rig.isReturningToStart = false;
+        rig.hasWarnedChase = true;
+        if (rig.cameraFraming != null) {
+            rig.cameraFraming.SetBossFraming(0f, 1f);
+        }
+        rig.Arena.ReserveRushRange();
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "CobraKingFightController:\tnext rush fight at "
+                    + rig.TriggerClimbU + " u",
                 rig.owner
             );
         }

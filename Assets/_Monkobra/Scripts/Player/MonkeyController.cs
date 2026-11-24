@@ -327,9 +327,10 @@ public class MonkeyController: MonoBehaviour {
             : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
-        // rough bark slows the body, a boss arena & the dev speed buff
-        // multiply it
+        // rough bark slows the body, a boss arena, the endless run's boss
+        // rush (outside a fight) & the dev speed buff multiply it
         float moveScale = roughBarkSpeedScale * ArenaSpeedScale
+            * EndlessBossRush.ClimbSpeedScale
             * (IsSpeedBuff ? SPEED_BUFF_SCALE : 1f);
 
         orbitAngleDeg -= directionalInput.x
@@ -556,8 +557,9 @@ public class MonkeyController: MonoBehaviour {
 
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         bool isLive = GameController.I != null && GameController.I.IsRunLive;
+        // the endless run's boss rush brings its own Spider King fights
         if (ramp == null || worldBalanceConfig == null || body == null
-            || !isLive || IsHeld) {
+            || !isLive || IsHeld || EndlessBossRush.IsOn) {
             return;
         }
         // not in the middle of a boss fight

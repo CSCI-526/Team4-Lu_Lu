@@ -280,7 +280,6 @@ public sealed class SpiderKingParry {
         AddCross(at);
         BurstStreaks(at, new Color(1f, 0.55f, 0.1f), 26, 6f, 15f);
         BurstStreaks(at, new Color(1f, 0.9f, 0.4f), 16, 4f, 10f);
-        Burst(at, Color.white, 3);
         AddRing(at, tuning.GoldenColor, 0f);
         AddRing(at, new Color(1f, 0.55f, 0.1f), 0.07f);
         AddPop(at);

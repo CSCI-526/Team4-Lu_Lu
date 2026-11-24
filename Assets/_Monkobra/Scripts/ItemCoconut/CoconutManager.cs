@@ -438,6 +438,10 @@ public class CoconutManager: MonoBehaviour {
         if (!IsRunLive || isPaused || Time.time < escapeGraceEndTime) {
             return false;
         }
+        // a double-tap in a boss fight is a grab or a parry, not a coconut
+        if (EndlessBossRush.IsFightOn) {
+            return false;
+        }
         return struggle == null
             || (!struggle.IsTrapped && !struggle.IsProtected);
     }

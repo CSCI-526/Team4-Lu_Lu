@@ -961,3 +961,13 @@ MonoBehaviour:
   spiderZoneEndU: 1050
   spiderJumpHeightU: 950
   spiderMaxHealth: 15
+  endlessBossIntervalU: 300
+  endlessSpeedScale: 1
+  endlessHealthStep: 0.4
+  endlessTimeStep: 0.12
+  endlessMinTimeScale: 0.6
+  endlessSpeedStep: 0.1
+  endlessMaxSpeedScale: 1.5
+  endlessFightHealthScale: 1
+  endlessFightTimeScale: 1
+  endlessFightSpeedScale: 1

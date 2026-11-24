@@ -58,6 +58,11 @@ public sealed class BossFightHudRig {
     // null for an overlay canvas
     public RectTransform rootRect;
     public RectTransform healthFill;
+    // the heart left of the health bar & its count of the health left
+    public RectTransform heart;
+    public TextMeshProUGUI heartLabel;
+    public int heartHealth = -1;
+    public float heartPopLeftS;
     public TextMeshProUGUI nameLabel;
     public RectTransform speechRect;
     public TextMeshProUGUI speechLabel;
@@ -79,6 +84,16 @@ public sealed class BossFightHudRig {
     public RectTransform rewardButton;
     public float armorBadgePopS;
     // pop-in time left; unscaled s
+    // the difficulty choice after a revive  ---------------------------------
+    public GameObject modePanel;
+    public RectTransform easyButton;
+    public RectTransform normalButton;
+    public RectTransform easyRing;
+    public RectTransform normalRing;
+    public bool isModeEasy; // the picked choice, NORMAL first
+    public float modeAgeS; // real s it has been up
+    public bool isModeMoveHeld; // a sideways press not let go yet
+    public const float MODE_READY_S = 0.4f; // b4 a key may pick
     public RectTransform easyTag;
     public RectTransform normalTag;
     public Vector3 easyTagWorld;

@@ -165,8 +165,8 @@ public sealed class SpiderKingMovement {
 
     public float Rush() {
         Vector3 at = rig.monkey.position;
-        bool hasArrived = MoveToward(rig.AngleOf(at), at.y, tuning.RushSpeedU,
-            tuning.StalkDistanceU);
+        bool hasArrived = MoveToward(rig.AngleOf(at), at.y,
+            tuning.RushSpeedU * rig.RushSpeedScale, tuning.StalkDistanceU);
         return hasArrived ? 0f : 1f;
     }
 
@@ -293,7 +293,7 @@ public sealed class SpiderKingMovement {
         return tuning.RestS
             * Mathf.Lerp(tuning.MinRestShare, 1f,
                 rig.health / (float)rig.maxHealth)
-            * (rig.isEasy ? tuning.EasyTimeScale : 1f);
+            * (rig.isEasy ? tuning.EasyTimeScale : 1f) * rig.RushTimeScale;
     }
 
     public static int PerStage(Vector3Int values, int stage) =>

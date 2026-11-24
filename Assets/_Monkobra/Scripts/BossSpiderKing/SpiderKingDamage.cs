@@ -34,7 +34,8 @@ public sealed class SpiderKingDamage {
             return;
         }
         rig.health = Mathf.Max(0, rig.health - damage);
-        rig.hud.SetHealth(rig.health / (float)rig.maxHealth);
+        rig.onSpiderHit?.Invoke();
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.hud.PopDamage("-" + damage, rig.body.HeadPosition);
         rig.Parry.Burst(rig.body.HeadPosition, new Color(0.9f, 0.2f, 0.25f),
             10);

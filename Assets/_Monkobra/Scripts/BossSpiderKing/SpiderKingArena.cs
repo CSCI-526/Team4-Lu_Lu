@@ -131,7 +131,7 @@ public sealed class SpiderKingArena {
         rig.bareTopY = rig.entryY + tuning.ArenaHeightU + 6f;
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
-            ramp.SetExtraBossZone(rig.bareBottomY, rig.bareTopY);
+            ramp.SetExtraBossZone(rig.owner, rig.bareBottomY, rig.bareTopY);
         }
         foreach (BranchController branch in
             UnityEngine.Object.FindObjectsByType<BranchController>(
@@ -158,6 +158,18 @@ public sealed class SpiderKingArena {
             RemoveIfInArena(bark.gameObject);
         }
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
+    }
+
+    // the endless run's rush: the coming fight's range is kept bare as the
+    // tree grows toward it, as the arena will be
+    public void ReserveRushRange() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp == null || !rig.IsRush) {
+            return;
+        }
+        float entryY = EndlessBossRush.TriggerWorldY(rig.rushEncounter);
+        ramp.SetExtraBossZone(rig.owner, entryY - tuning.GuardDepthU - 4f,
+            entryY + tuning.ArenaHeightU + 6f);
     }
 
     public void RemoveIfInArena(GameObject thing) {
@@ -189,7 +201,7 @@ public sealed class SpiderKingArena {
         }
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
-            ramp.ClearExtraBossZone();
+            ramp.ClearExtraBossZone(rig.owner);
         }
     }
 
@@ -481,10 +493,12 @@ public sealed class SpiderKingArena {
         return true;
     }
 
-    // as the segments' spawner: the web's face looks away from the trunk
+    // as the segments' spawner: the web's face looks away from the trunk; a
+    // copy of the light template, not the 158 object prefab, as the spider
+    // lays several a second
     public void PlaceWeb(float angle, float y) {
         SpiderWebTrap web = UnityEngine.Object.Instantiate(
-            tuning.WebPrefab,
+            LaidWebTemplate(),
             rig.PointOnTrunk(angle, y, tuning.TrunkRadiusU + 0.02f),
             Quaternion.Euler(0f, -angle, 0f),
             rig.host
@@ -495,6 +509,57 @@ public sealed class SpiderKingArena {
             restScale = web.transform.localScale,
         });
     }
+
+    // the web prefab once, kept under an inactive holder (so nothing of it
+    // runs), its strand cubes merged into 1 mesh on its root: the same look
+    // & trap in 2 objects & 1 draw instead of 158 & 157
+    private SpiderWebTrap LaidWebTemplate() {
+        if (laidWebTemplate != null) {
+            return laidWebTemplate;
+        }
+        GameObject holder = new GameObject("LaidWebTemplate");
+        holder.SetActive(false);
+        holder.transform.SetParent(rig.host, false);
+        SpiderWebTrap template = UnityEngine.Object.Instantiate(
+            tuning.WebPrefab, holder.transform, false);
+        Transform root = template.transform;
+        MeshFilter[] strands = root.GetComponentsInChildren<MeshFilter>(true);
+        List<CombineInstance> parts = new List<CombineInstance>();
+        Material material = null;
+        foreach (MeshFilter strand in strands) {
+            if (strand.transform == root || strand.sharedMesh == null) {
+                continue;
+            }
+            Renderer strandRenderer = strand.GetComponent<Renderer>();
+            if (material == null && strandRenderer != null) {
+                material = strandRenderer.sharedMaterial;
+            }
+            parts.Add(new CombineInstance {
+                mesh = strand.sharedMesh,
+                transform = root.worldToLocalMatrix
+                    * strand.transform.localToWorldMatrix,
+            });
+        }
+        if (parts.Count == 0) {
+            laidWebTemplate = template;
+            return laidWebTemplate;
+        }
+        Mesh merged = new Mesh { name = "LaidWebStrands" };
+        merged.CombineMeshes(parts.ToArray(), true, true);
+        foreach (MeshFilter strand in strands) {
+            if (strand.transform != root) {
+                UnityEngine.Object.DestroyImmediate(strand.gameObject);
+            }
+        }
+        root.gameObject.AddComponent<MeshFilter>().sharedMesh = merged;
+        MeshRenderer look = root.gameObject.AddComponent<MeshRenderer>();
+        look.sharedMaterial = material;
+        look.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        laidWebTemplate = template;
+        return laidWebTemplate;
+    }
+
+    private SpiderWebTrap laidWebTemplate;
 
     public bool IsWebHoldingMonkey(SpiderWebTrap web) {
         return rig.struggle != null && rig.struggle.IsTrapped
@@ -564,11 +629,10 @@ public sealed class SpiderKingArena {
         }
         rig.maxHealth = rig.isEasy
             ? Mathf.Max(1,
-                Mathf.RoundToInt(tuning.WorldBalanceConfig.SpiderMaxHealth
-                * tuning.EasyHealthScale))
-            : tuning.WorldBalanceConfig.SpiderMaxHealth;
+                Mathf.RoundToInt(rig.BaseMaxHealth * tuning.EasyHealthScale))
+            : rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.lastStage = 0;
         // the parry lesson again if it was never passed
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Ready

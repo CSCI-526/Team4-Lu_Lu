@@ -5,7 +5,6 @@ Todo pan branch & bark model/texture
 Todo pan skybox
 Todo pan sfx
 
-Bug wenhai endless mode w/ boss fight rampping difficult
 Fixme wenhai during boss fight
 
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
@@ -45,6 +44,70 @@ todo todo add 3x fruit
   button, with run/menu/hack shortcuts suppressed during text entry
 
 ### Changed
+
+##### Wenhai Dong
+
+- endless run is a boss rush: every 300 u a boss waits, the Cobra King and the
+  Spider King taking turns, each later one harder (more health, shorter wind
+  ups, warnings & rests, faster spider shots); the spider's rows of 2 or 3
+  slashes only come in its later endless fights; the monkey and the great
+  cobra keep their normal speed (tunable, `endlessSpeedScale`); each coming
+  arena is kept bare and marked
+- Spider King's health bar red as the Cobra King's (was purple); shorter
+  rests b/t its attacks (`restS` 3.2 s, down to 1.4 s), so more slashes a
+  fight
+- Spider King's parry clash w/o its few white sparks
+- the web round a stuck Spider King no longer logs "Can't remove BoxCollider
+  because SpiderWebTrap depends on it": its decor copy drops scripts b4
+  colliders
+- both kings' health bars show the health left on a heart at their left (the
+  bar's red w/ a brown rim, the count in cream, popping as it drops), in
+  normal & endless fights alike
+- endless bosses aligned w/ the normal fights: each king's first fight is
+  exactly its normal one (Spider King 15 health, no faster), each later
+  fight of the same king harder (+40% health, 12% shorter times, 10% faster
+  per round; Cobra King 12 / 17 / 22 / 26, Spider King 15 / 21 / 27 / 33)
+- Spider King normal play: slashes one at a time, the curve kept by volleys,
+  shorter rests and faster late attacks (`lateSpeedScale` 1.4)
+- both kings' revive: a plain difficulty card, EASY or NORMAL, time stopped,
+  picked w/ A / D and Space or a tap, instead of choice fruit and the armor
+  words
+- Spider King's laid webs are copies of one light template, the web prefab's
+  157 strand cubes merged into 1 mesh, so a fight laying several a second no
+  longer stutters
+- boss fight effect parts drop their collider at the frame's end, never
+  immediately, so a burst made in a physics callback (the armor's save on the
+  great cobra's bite) no longer logs an error each time
+- both kings' fight controllers skip unhooking roles they never made (a
+  duplicate, or a script reload in Play), so no ArgumentException then
+- boss fight extra bare zones are kept per boss
+  (`RampedDifficultyManager.SetExtraBossZone(owner, ...)`)
+- a double-tap in a boss fight no longer throws a coconut
+- the gold armor's words show only the first time it is ever got
+  (`ProgressStore.ARMOR_INTRO`, kept across runs & modes); the boss lessons
+  are taught every fight as before
+- Spider King fight sounds, as the Cobra King's & w/ its clips
+  (`SpiderKingSfx`): a gong as it begins, a hiss as each bullet, slash & dash
+  strikes, a splat as it is hurt, a shatter & victory call as it falls
+- Spider King's slash crescents slower, 26 → 18 u/s (`slashSpeedU`)
+- Silk Gloves no longer worn on the monkey: only their effect, webs broken 2x
+  faster, the win going straight to the reward panel
+- Cobra King's attack hiss plays as each attack strikes (the bite landing,
+  the sweep coming round, the minions dropping), not at its warning
+  (`AttackStruck`)
+- Spider King easier, its moves kept: 15 health, slower crawl (4.8 u/s) &
+  web bullets (20 u/s), rests 3.2 s (never under 1.4 s), rarer
+  dashes, at most 2 bullets a volley, a gentler late speed up, a quicker tail
+  after a whiff; easy mode much softer still (0.45 health, 1.7x slower times,
+  0.7x speed, 1.3x wider parry reach, `easyReachScale`)
+- Spider King's slash crescents drawn thicker & flickering red-white, so they
+  read from afar; their width & hit unchanged
+- Spider King starts right above the monkey, never across the trunk; while
+  waiting it crawls round to stay above it
+- falling cobras much lighter, so the climb after the Cobra King no longer
+  stutters: the body tube 96 x 16 instead of 257 x 32 (about 4.6x fewer
+  vertices made again each frame), and a dormant one skips that rebuild while
+  off screen or beyond its wake range (+4 u, was twice that range)
 
 ### Deprecated
 

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7364950612938475623}
   - component: {fileID: 8455061723049586734}
   - component: {fileID: 1546172834150697845}
+  - component: {fileID: 2958164037261849173}
   m_Layer: 0
   m_Name: SpiderKingFight
   m_TagString: Untagged
@@ -76,7 +77,7 @@ MonoBehaviour:
     promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
     doubleKeyboardController: {fileID: 9100000, guid: f7c5a6d8e9fa6b52c3a4b5c6d7e8f9a0, type: 2}
     doubleTouchController: {fileID: 9100000, guid: a8d6b7e9fa0b7c63d4b5c6d7e8f9a0b1, type: 2}
-    healthColor: {r: 0.55, g: 0.2, b: 0.75, a: 1}
+    healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
     damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
     warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
     warningOffset: {x: 0, y: 70}
@@ -104,9 +105,10 @@ MonoBehaviour:
     courseUrl: https://classes.usc.edu/term-20263/course/csci-526
     choiceSideDeg: 28
     choiceAboveU: 1.5
-    easyHealthScale: 0.6
-    easyTimeScale: 1.4
-    easySpeedScale: 0.85
+    easyHealthScale: 0.45
+    easyTimeScale: 1.7
+    easySpeedScale: 0.7
+    easyReachScale: 1.3
     airWallMaterial: {fileID: 2100000, guid: 906f4892bde12417d93d23637ab10c7c, type: 2}
     goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
     goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
@@ -130,35 +132,37 @@ MonoBehaviour:
     webLifeS: 10
     webGapU: 1.4
     webMonkeyGapU: 2.5
-    stalkSpeedU: 5.5
+    stalkSpeedU: 4.8
     rushSpeedU: 9
     stalkDistanceU: 4.8
     dashStartU: 5
     restS: 3.2
-    minRestShare: 0.28
+    minRestShare: 0.4375
     webShotWindUpS: 0.8
-    webShotSpeedU: 24
-    dashCooldownS: 3.2
+    webShotSpeedU: 20
+    dashCooldownS: 4.2
     dashWindUpS: 0.9
     dashLockS: 0.45
     dashSpeedU: 22
     dashOvershootU: 3
     dashHitU: 1.6
     stageLostShares: {x: 0.5, y: 0.8}
-    webShotsPerStage: {x: 1, y: 2, z: 3}
-    slashesPerStage: {x: 1, y: 2, z: 3}
+    webShotsPerStage: {x: 1, y: 2, z: 2}
+    slashesPerStage: {x: 1, y: 1, z: 1}
+    endlessSlashesPerStage: {x: 1, y: 2, z: 3}
+    endlessSlashWidthScale: 1
     volleySlowGapS: 1.1
     volleyFastGapS: 0.7
-    lateSpeedScale: 1.3
-    lateChaseScale: 1.08
-    lateTimeScale: 0.75
-    lateDashCooldownS: 1.5
+    lateSpeedScale: 1.25
+    lateChaseScale: 1.04
+    lateTimeScale: 0.85
+    lateDashCooldownS: 2.4
     slashMinRangeU: 4
     slashChance: 0.5
     slashRangeU: 16
     slashChargeS: 0.8
     slashWindUpS: 0.3
-    slashSpeedU: 26
+    slashSpeedU: 18
     slashWidthU: 4.5
     slashSlowGapS: 0.75
     slashFastGapS: 0.25
@@ -168,7 +172,7 @@ MonoBehaviour:
     doubleTapS: 0.3
     tailWindUpS: 0.06
     tailActiveS: 0.2
-    tailRecoverS: 0.55
+    tailRecoverS: 0.45
     waveGoldU: 3.2
     parryReachU: 2
     parryStunS: 3.5
@@ -198,3 +202,24 @@ MonoBehaviour:
     warnColor: {r: 0.95, g: 0.2, b: 0.15, a: 1}
     silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
     goldenColor: {r: 1, g: 0.8, b: 0.15, a: 1}
+--- !u!114 &2958164037261849173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5182736450918273641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf29393f90034a8a8af86d75e7ec6949, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SpiderKingSfx
+  entrance: {fileID: 8300000, guid: 078a087aa163458a9dde73f3c47d71e6, type: 3}
+  attack: {fileID: 8300000, guid: 6e4f1b13303a43ddb108cc6b3e7267d7, type: 3}
+  spiderHit: {fileID: 8300000, guid: 77de4b4be7074bf38a9252289a86cf1a, type: 3}
+  shatter: {fileID: 8300000, guid: baffc27557c64d468d30a1dbbb3744c9, type: 3}
+  victory: {fileID: 8300000, guid: 0b7eb70e3d394ecf8aabdf491d609ad0, type: 3}
+  volume: 0.55
+  attackVolumeShare: 0.7
+  victoryDelayS: 1
+  pitchJitter: 0.06

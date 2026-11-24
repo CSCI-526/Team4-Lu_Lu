@@ -85,11 +85,11 @@ public sealed class SpiderKingShots {
             float ahead = CrescentAhead(crescent, out float across)
                 - MONKEY_EDGE_U;
             bool isOnWay =
-                Mathf.Abs(across) <= tuning.SlashWidthU * 0.5f + 0.6f;
+                Mathf.Abs(across) <= rig.SlashWidthNowU * 0.5f + 0.6f;
             bool isGold = isOnWay && ahead >= -0.5f
-                && ahead <= tuning.WaveGoldU;
+                && ahead <= rig.WaveGoldNowU;
             DrawCrescent(crescent, isGold);
-            if (isOnWay && ahead >= -0.5f && ahead <= tuning.ParryReachU
+            if (isOnWay && ahead >= -0.5f && ahead <= rig.ParryReachNowU
                 && rig.Parry.IsParryArmed()) {
                 rig.Parry.OnCrescentParried(crescent);
                 continue;
@@ -132,7 +132,7 @@ public sealed class SpiderKingShots {
         float radians = crescent.directionDeg * Mathf.Deg2Rad;
         float du = Mathf.Cos(radians);
         float dv = Mathf.Sin(radians);
-        float side = lateral * tuning.SlashWidthU * 0.5f;
+        float side = lateral * rig.SlashWidthNowU * 0.5f;
         float ahead = crescent.distanceU - back
             + CRESCENT_BULGE_U * (1f - lateral * lateral);
         return rig.Attacks.BarkPoint(crescent.originAngle, crescent.originY,
@@ -140,14 +140,17 @@ public sealed class SpiderKingShots {
     }
 
     // a silk blade: three silk strands one behind the other, tied by short
-    // spokes like a torn piece of web; white, gold & flashing when it can
-    // be batted back, gold flying back
+    // spokes like a torn piece of web; thick & flickering red-white so it
+    // reads from afar, gold & flashing when it can be batted back, gold
+    // flying back; only its look, its width & hit are as before
     public void DrawCrescent(SpiderKingCrescent crescent, bool isGold) {
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
+        float flicker = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 14f);
         Color color = crescent.isReflected
             ? tuning.GoldenColor
             : isGold ? Color.Lerp(tuning.GoldenColor, Color.white, pulse)
-                : Color.white;
+                : Color.Lerp(Color.white, tuning.WarnColor,
+                    CRESCENT_WARN_TINT * flicker);
         int index = 0;
         for (int strand = 0; strand < CRESCENT_STRANDS; strand++) {
             float back = strand * 0.3f;
@@ -159,7 +162,9 @@ public sealed class SpiderKingShots {
                 SetCrescentPart(crescent, index++,
                     CrescentPoint(crescent, l0, back),
                     CrescentPoint(crescent, l1, back),
-                    Mathf.Lerp(0.04f, strand == 0 ? 0.16f : 0.09f, middle),
+                    Mathf.Lerp(CRESCENT_TIP_THICK_U, strand == 0
+                        ? CRESCENT_FRONT_THICK_U : CRESCENT_BACK_THICK_U,
+                        middle),
                     color);
             }
         }
@@ -169,9 +174,18 @@ public sealed class SpiderKingShots {
                 CrescentPoint(crescent, lateral, 0f),
                 CrescentPoint(crescent, lateral * 0.7f,
                     (CRESCENT_STRANDS - 1) * 0.3f),
-                0.04f, color);
+                CRESCENT_SPOKE_THICK_U, color);
         }
     }
+
+    // a blade's look: its strands' thickness at the tips, in the front
+    // strand's middle & the back ones', its spokes'; u
+    private const float CRESCENT_TIP_THICK_U = 0.12f;
+    private const float CRESCENT_FRONT_THICK_U = 0.42f;
+    private const float CRESCENT_BACK_THICK_U = 0.24f;
+    private const float CRESCENT_SPOKE_THICK_U = 0.1f;
+    // share of red its white flickers to
+    private const float CRESCENT_WARN_TINT = 0.45f;
 
     public void SetCrescentPart(SpiderKingCrescent crescent, int index,
         Vector3 from,
@@ -193,7 +207,7 @@ public sealed class SpiderKingShots {
         float radians = crescent.directionDeg * Mathf.Deg2Rad;
         float along = mu * Mathf.Cos(radians) + mv * Mathf.Sin(radians);
         float across = -mu * Mathf.Sin(radians) + mv * Mathf.Cos(radians);
-        float halfWidth = tuning.SlashWidthU * 0.5f;
+        float halfWidth = rig.SlashWidthNowU * 0.5f;
         if (Mathf.Abs(across) > halfWidth) {
             return false;
         }
@@ -319,9 +333,9 @@ public sealed class SpiderKingShots {
             // to the monkey's near edge, the side the bullet comes from
             float toMonkey = Vector3.Distance(at, rig.monkey.position)
                 - MONKEY_EDGE_U;
-            bool isGold = toMonkey <= tuning.WaveGoldU;
+            bool isGold = toMonkey <= rig.WaveGoldNowU;
             DrawWave(shot, at, isGold);
-            if (toMonkey <= tuning.ParryReachU && rig.Parry.IsParryArmed()) {
+            if (toMonkey <= rig.ParryReachNowU && rig.Parry.IsParryArmed()) {
                 rig.Parry.OnParry(shot, at);
                 continue;
             }

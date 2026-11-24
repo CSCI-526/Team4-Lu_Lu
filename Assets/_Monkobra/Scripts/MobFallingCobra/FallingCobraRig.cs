@@ -26,8 +26,11 @@ public sealed class FallingCobraRig {
     // Constants  #############################################################
     public const float NeckOverlapU = .006f;
     public const float HeadCollarBlendU = .4f;
-    public const int BodyRings = 257;
-    public const int BodySides = 32;
+    // the body tube's rings along it & sides round it: the mesh is made
+    // again on the CPU each frame a cobra moves, so kept low (was 257 x 32,
+    // about 4.6x the vertices)
+    public const int BodyRings = 96;
+    public const int BodySides = 16;
     public const int BodyStride = BodySides + 1;
     public const string PLAYER_TAG = "Player";
     public const float MIN_RING_RADIUS_U = 0.001f;
