@@ -270,6 +270,13 @@ public class SpiderKingBody: MonoBehaviour {
 
     // private methods  ########################################################
     private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
+        if (bodyMaterial == null) {
+            Debug.LogWarning(
+                "SpiderKingBody:\tmust assign Inspector Field: bodyMaterial",
+                this
+            );
+        }
         colorBlock = new MaterialPropertyBlock();
     }
 

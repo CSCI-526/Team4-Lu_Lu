@@ -41,9 +41,11 @@ public class CobraKingSfx: MonoBehaviour {
     private AudioClip crownHit;
 
     [SerializeField]
+    [Tooltip("the king breaking into cubes")]
     private AudioClip shatter;
 
     [SerializeField]
+    [Tooltip("call after the king is beaten, victoryDelayS later")]
     private AudioClip victory;
 
     [Header("Tuning")]

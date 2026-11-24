@@ -33,6 +33,7 @@ public class ProgressBarWidget: MonoBehaviour {
     private RectTransform distanceRoot;
 
     [SerializeField]
+    [Tooltip("text showing the climbed distance")]
     private TMP_Text distanceLabel;
 
     [SerializeField]

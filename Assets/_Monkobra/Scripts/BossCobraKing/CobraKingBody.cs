@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// The Cobra King, built at runtime from Unity primitives only, kept simple
@@ -34,11 +35,11 @@ public class CobraKingBody: MonoBehaviour {
         : transform.position;
 
     /// <returns>world y of the head's chin at rest</returns>
-    public float LowestY => restHeadPosition.y - headSize.y * 0.5f;
+    public float LowestY => restHeadPosition.y - headSizeU.y * 0.5f;
 
     /// <returns>how far the king reaches below its coil: the hanging neck
     /// and head; u</returns>
-    public float HangDepthU => headDropU + headSize.y;
+    public float HangDepthU => headDropU + headSizeU.y;
 
     /// <returns>lit material the king's primitives use, for other boss
     /// fight primitives to match</returns>
@@ -176,7 +177,7 @@ public class CobraKingBody: MonoBehaviour {
         Transform figureHead = new GameObject("Head").transform;
         figureHead.SetParent(shape, false);
         figureHead.localPosition = new Vector3(2.5f, 3.6f, 0f);
-        Vector3 skull = headSize * 0.8f;
+        Vector3 skull = headSizeU * 0.8f;
         CreatePart(
             PrimitiveType.Sphere, "Skull", figureHead, Vector3.zero, skull,
             bodyColor, false, true
@@ -325,8 +326,9 @@ public class CobraKingBody: MonoBehaviour {
     private float headOutU = 3f;
 
     [SerializeField]
+    [FormerlySerializedAs("headSize")]
     [Tooltip("head size: width, height, length; round for a cute look; u")]
-    private Vector3 headSize = new Vector3(2.8f, 2.4f, 2.6f);
+    private Vector3 headSizeU = new Vector3(2.8f, 2.4f, 2.6f);
 
     [SerializeField]
     [Tooltip("how fast the head turns round the trunk after the monkey; "
@@ -358,16 +360,20 @@ public class CobraKingBody: MonoBehaviour {
 
     [Header("Colors")]
     [SerializeField]
+    [Tooltip("tint of the coiled body & head")]
     private Color bodyColor = new Color(0.72f, 0.56f, 0.95f);
 
 
     [SerializeField]
+    [Tooltip("tint of the crown")]
     private Color crownColor = new Color(1f, 0.8f, 0.2f);
 
     [SerializeField]
+    [Tooltip("weak spot tint while resting")]
     private Color weakSpotDimColor = new Color(0.75f, 0.2f, 0.35f);
 
     [SerializeField]
+    [Tooltip("weak spot tint while lit")]
     private Color weakSpotLitColor = new Color(1f, 0.25f, 0.4f);
 
     [SerializeField]
@@ -432,7 +438,7 @@ public class CobraKingBody: MonoBehaviour {
         head.SetParent(root, false);
 
         skullRenderer = CreatePart(
-            PrimitiveType.Sphere, "Skull", head, Vector3.zero, headSize,
+            PrimitiveType.Sphere, "Skull", head, Vector3.zero, headSizeU,
             bodyColor, true, true
         );
         HeadCollider = skullRenderer.GetComponent<Collider>();
@@ -441,9 +447,9 @@ public class CobraKingBody: MonoBehaviour {
         pupils = new Transform[2];
         for (int side = -1; side <= 1; side += 2) {
             Vector3 eyeCenter = new Vector3(
-                side * headSize.x * 0.24f,
-                headSize.y * 0.1f,
-                headSize.z * 0.4f
+                side * headSizeU.x * 0.24f,
+                headSizeU.y * 0.1f,
+                headSizeU.z * 0.4f
             );
             CreatePart(
                 PrimitiveType.Sphere, side < 0 ? "EyeL" : "EyeR", head,
@@ -460,7 +466,7 @@ public class CobraKingBody: MonoBehaviour {
         // small crown: a gold band, 3 points & the jewel weak spot in front
         crown = new GameObject("Crown").transform;
         crown.SetParent(head, false);
-        crown.localPosition = new Vector3(0f, headSize.y * 0.47f, -0.05f);
+        crown.localPosition = new Vector3(0f, headSizeU.y * 0.47f, -0.05f);
         CreatePart(
             PrimitiveType.Cylinder, "Band", crown, Vector3.zero,
             new Vector3(1.4f, 0.16f, 1.4f), crownColor, false, true
@@ -520,9 +526,9 @@ public class CobraKingBody: MonoBehaviour {
             for (int i = 0; i < pupils.Length; i++) {
                 float side = i == 0 ? -1f : 1f;
                 pupils[i].localPosition = new Vector3(
-                    side * headSize.x * 0.24f + localLook.x * 0.12f,
-                    headSize.y * 0.12f + localLook.y * 0.12f,
-                    headSize.z * 0.4f + 0.3f
+                    side * headSizeU.x * 0.24f + localLook.x * 0.12f,
+                    headSizeU.y * 0.12f + localLook.y * 0.12f,
+                    headSizeU.z * 0.4f + 0.3f
                 );
             }
         }

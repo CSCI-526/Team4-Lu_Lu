@@ -10,7 +10,8 @@ using UnityEngine;
 /// panel's middle, y up; the timings below are the screen's own.
 /// </summary>
 [CreateAssetMenu(
-    fileName = "IntroComicConfig", menuName = "Monkobra/Intro Comic Config"
+    fileName = "IntroComicConfig",
+    menuName = "Scriptable Objects/IntroComicConfig"
 )]
 public class IntroComicConfig: ScriptableObject {
     // Public Members  #########################################################

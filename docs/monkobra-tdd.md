@@ -109,7 +109,7 @@ stateDiagram-v2
 | Tutorial | 0 | tutorial panel, only Space (a tap anywhere in touch mode) starts the run |
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
-| Lost | 0 | lose panel with Restart and Exit (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
+| Lost | 0 | lose panel with Restart and Exit (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelayS`, and so does a confirm press with nothing highlighted |
 | Won | 0 | a won run, time frozen, the same restart key reloads the scene |
 
 `LoseGame()` runs once, from StartingZone or Playing: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.

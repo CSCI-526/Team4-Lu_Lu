@@ -10,12 +10,16 @@ using UnityEngine.UI;
 public class LeaderboardNameEditor: MonoBehaviour {
     // Inspector Fields  #######################################################
     [SerializeField]
+    [Tooltip("board that stores the saved nickname")]
     private LeaderboardWidget leaderboard;
     [SerializeField]
+    [Tooltip("field the player types the nickname into")]
     private TMP_InputField nameInput;
     [SerializeField]
+    [Tooltip("saves the typed nickname")]
     private Button saveButton;
     [SerializeField]
+    [Tooltip("shows the nickname rules & the save result")]
     private TMP_Text hintLabel;
 
     // MonoBehaviour Lifecycle  ################################################

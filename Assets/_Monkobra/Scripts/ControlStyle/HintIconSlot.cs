@@ -102,11 +102,12 @@ public class HintIconSlot: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        isAwake = true;
+        // Inspector Assignment Guard  -----------------------------------------
         if (library == null) {
             Debug.LogWarning(
                 "HintIconSlot:\tmust assign Inspector Field: library", this);
         }
+        isAwake = true;
         if (keyboardController == null && touchController == null) {
             gameObject.SetActive(false);
             return;

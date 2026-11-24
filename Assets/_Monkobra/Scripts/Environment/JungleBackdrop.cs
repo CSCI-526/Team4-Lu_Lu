@@ -171,6 +171,7 @@ public class JungleBackdrop: MonoBehaviour {
 
     [SerializeField]
     [Min(1)]
+    [Tooltip("birds in each flock")]
     private int birdsPerFlock = 5;
 
     [SerializeField]
@@ -187,18 +188,23 @@ public class JungleBackdrop: MonoBehaviour {
 
     [Header("Look")]
     [SerializeField]
+    [Tooltip("sky overhead at the start of the climb")]
     private Color lowZenith = new Color(0.47f, 0.67f, 0.88f);
 
     [SerializeField]
+    [Tooltip("sky overhead high up")]
     private Color highZenith = new Color(0.36f, 0.58f, 0.88f);
 
     [SerializeField]
+    [Tooltip("sky at the horizon at the start of the climb")]
     private Color lowHorizon = new Color(0.80f, 0.87f, 0.91f);
 
     [SerializeField]
+    [Tooltip("sky at the horizon high up")]
     private Color highHorizon = new Color(0.85f, 0.90f, 0.94f);
 
     [SerializeField]
+    [Tooltip("tint of the distance haze")]
     private Color hazeColor = new Color(0.74f, 0.83f, 0.88f);
 
     [SerializeField]

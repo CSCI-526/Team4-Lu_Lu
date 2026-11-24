@@ -27,15 +27,19 @@ public class MonkeySfx: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Grabs")]
     [SerializeField]
+    [Tooltip("a banana grabbed")]
     private AudioClip bananaGrab;
 
     [SerializeField]
+    [Tooltip("a coconut grabbed")]
     private AudioClip coconutGrab;
 
     [SerializeField]
+    [Tooltip("a pineapple grabbed")]
     private AudioClip pineappleGrab;
 
     [SerializeField]
+    [Tooltip("a grab that misses its fruit")]
     private AudioClip grabMiss;
 
     [Header("Pineapple Leap")]
@@ -45,6 +49,7 @@ public class MonkeySfx: MonoBehaviour {
 
     [Header("Coconut")]
     [SerializeField]
+    [Tooltip("a coconut thrown")]
     private AudioClip coconutThrow;
 
     [SerializeField]
@@ -52,13 +57,13 @@ public class MonkeySfx: MonoBehaviour {
     private AudioClip cobraFreeze;
 
     [SerializeField]
+    [Tooltip("the cobra thawing out")]
     private AudioClip cobraThaw;
 
     [Header("Web")]
     [SerializeField]
     [Tooltip("each escape press while a web holds the monkey, a few takes "
-        + "cycled "
-        + "through; nothing as it is caught or breaks free")]
+        + "cycled through; nothing as it is caught or breaks free")]
     private AudioClip[] webStruggles;
 
     [SerializeField]
@@ -91,6 +96,7 @@ public class MonkeySfx: MonoBehaviour {
 
     [Header("Progress & Danger")]
     [SerializeField]
+    [Tooltip("a height marker touched")]
     private AudioClip markerReached;
 
     [SerializeField]

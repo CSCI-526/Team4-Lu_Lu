@@ -37,9 +37,11 @@ public class SpiderKingSfx: MonoBehaviour {
     private AudioClip spiderHit;
 
     [SerializeField]
+    [Tooltip("the spider breaking apart as it is beaten")]
     private AudioClip shatter;
 
     [SerializeField]
+    [Tooltip("call after the spider is beaten")]
     private AudioClip victory;
 
     [Header("Tuning")]

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 // one score bonus popup: a "+" text and a number text side by side
 // both texts take the colour of the reward kind; fonts come from the prefab
@@ -12,7 +13,7 @@ using UnityEngine;
 public class ScoreBonusItem: MonoBehaviour {
     // Public Members  #########################################################
     // if the popup has played all of its fade and rise
-    public bool IsFinished => age >= TotalSeconds;
+    public bool IsFinished => age >= TotalDurationS;
 
     // how far the popup has risen from its start, pushes included; UI units
     public float Rise => ExitRise() + push;
@@ -63,9 +64,10 @@ public class ScoreBonusItem: MonoBehaviour {
 
     [Header("Bang")]
     [SerializeField]
+    [FormerlySerializedAs("bangSeconds")]
     [Min(0.01f)]
-    [Tooltip("seconds the popup takes to pop and settle")]
-    private float bangSeconds = 0.25f;
+    [Tooltip("time the popup takes to pop and settle; s")]
+    private float bangDurationS = 0.25f;
 
     [SerializeField]
     [Min(0f)]
@@ -79,15 +81,17 @@ public class ScoreBonusItem: MonoBehaviour {
 
     [Header("Hold")]
     [SerializeField]
+    [FormerlySerializedAs("holdSeconds")]
     [Min(0f)]
-    [Tooltip("seconds the popup stays still at full size")]
-    private float holdSeconds = 0.45f;
+    [Tooltip("time the popup stays still at full size; s")]
+    private float holdDurationS = 0.45f;
 
     [Header("Exit")]
     [SerializeField]
+    [FormerlySerializedAs("exitSeconds")]
     [Min(0.01f)]
-    [Tooltip("seconds the popup floats up and fades out")]
-    private float exitSeconds = 0.4f;
+    [Tooltip("time the popup floats up and fades out; s")]
+    private float exitDurationS = 0.4f;
 
     [SerializeField]
     [Tooltip("UI units the popup rises while it exits")]
@@ -131,7 +135,8 @@ public class ScoreBonusItem: MonoBehaviour {
     // alpha is full this share of the way through the bang
     private const float BANG_ALPHA_SHARE = 0.25f;
 
-    private float TotalSeconds => bangSeconds + holdSeconds + exitSeconds;
+    private float TotalDurationS =>
+        bangDurationS + holdDurationS + exitDurationS;
 
     // private methods  ########################################################
     private void EnsureRefs() {
@@ -143,10 +148,10 @@ public class ScoreBonusItem: MonoBehaviour {
         }
     }
 
-    // 0 before the exit, then 0 to 1 over exitSeconds
+    // 0 before the exit, then 0 to 1 over exitDurationS
     private float ExitProgress() {
-        float exitAge = age - bangSeconds - holdSeconds;
-        return Mathf.Clamp01(exitAge / exitSeconds);
+        float exitAge = age - bangDurationS - holdDurationS;
+        return Mathf.Clamp01(exitAge / exitDurationS);
     }
 
     private float ExitRise() {
@@ -155,7 +160,7 @@ public class ScoreBonusItem: MonoBehaviour {
 
     // pops from the start scale to the peak, then settles at 1
     private float BangScale() {
-        float u = Mathf.Clamp01(age / bangSeconds);
+        float u = Mathf.Clamp01(age / bangDurationS);
         if (u < BANG_PEAK_SHARE) {
             float t = u / BANG_PEAK_SHARE;
             float eased = 1f - (1f - t) * (1f - t);
@@ -171,10 +176,10 @@ public class ScoreBonusItem: MonoBehaviour {
 
         float scale;
         float alpha;
-        if (age < bangSeconds) {
+        if (age < bangDurationS) {
             scale = BangScale();
-            alpha = Mathf.Clamp01(age / (bangSeconds * BANG_ALPHA_SHARE));
-        } else if (age < bangSeconds + holdSeconds) {
+            alpha = Mathf.Clamp01(age / (bangDurationS * BANG_ALPHA_SHARE));
+        } else if (age < bangDurationS + holdDurationS) {
             scale = 1f;
             alpha = 1f;
         } else {

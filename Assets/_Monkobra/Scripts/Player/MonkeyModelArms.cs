@@ -129,6 +129,7 @@ public class MonkeyModelArms: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
         if (modelRoot == null) {
             Debug.LogWarning(
                 "MonkeyModelArms:\tmust assign Inspector Field: modelRoot",

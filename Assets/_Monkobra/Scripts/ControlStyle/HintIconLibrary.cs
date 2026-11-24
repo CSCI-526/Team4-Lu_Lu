@@ -7,7 +7,9 @@ using UnityEngine;
 /// hints are 4 controllers of the same entity, see <see cref="HintIconSlot"/>.
 /// </summary>
 [CreateAssetMenu(
-    fileName = "HintIconLibrary", menuName = "Monkobra/Hint Icon Library")]
+    fileName = "HintIconLibrary",
+    menuName = "Scriptable Objects/HintIconLibrary"
+)]
 public class HintIconLibrary: ScriptableObject {
     // Public Members  #########################################################
     /// <returns>the keycap entity shown while a keyboard is in use</returns>

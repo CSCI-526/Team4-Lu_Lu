@@ -30,11 +30,13 @@ public class FirebaseLeaderboardConfig: ScriptableObject {
     [Tooltip("Enable only after publishing the Firestore rules.")]
     private bool useOnlineLeaderboard;
     [SerializeField]
+    [Tooltip("Firebase project ID")]
     private string projectId = "";
     [SerializeField]
     [Tooltip("Public Web API Key from Firebase project settings.")]
     private string webApiKey = "";
     [SerializeField, Range(5, 60)]
+    [Tooltip("time a leaderboard request waits before it gives up; s")]
     private int requestTimeoutS = 15;
 
 #if UNITY_EDITOR

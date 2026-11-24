@@ -61,6 +61,7 @@ public class LeaderboardWidget: MonoBehaviour {
     [Tooltip("rows in visual order; nine rivals plus this run's player")]
     private LeaderboardRowWidget[] rows;
     [SerializeField]
+    [Tooltip("text showing the player's own rank")]
     private TMP_Text playerRankLabel;
 
     [Header("Online Leaderboard (Optional)")]
