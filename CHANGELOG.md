@@ -1,6 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
+Bug failling monkey need separate animation
+Bug make leaderboard works
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
 Bug cobra camera: slow down, show more of the snake
 Fixme erik mpv tutorial for boss fight
