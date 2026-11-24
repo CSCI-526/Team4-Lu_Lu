@@ -19,7 +19,8 @@ public class SpiderKingBody: MonoBehaviour {
     public float Y { get; private set; }
 
     /// <returns>world center of the body</returns>
-    public Vector3 Position => root != null ? root.position : transform.position;
+    public Vector3 Position => root != null
+        ? root.position : transform.position;
 
     /// <returns>world point between the big eyes, where webs & silk start
     /// </returns>
@@ -123,7 +124,8 @@ public class SpiderKingBody: MonoBehaviour {
         AngleDeg = angleDeg;
         Y = y;
         float radians = angleDeg * Mathf.Deg2Rad;
-        Vector3 outward = new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
+        Vector3 outward =
+            new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
         Vector3 spot = new Vector3(trunkCenter.x, y, trunkCenter.z)
             + outward * (trunkRadiusU + bodyOutU);
         // a little bob while it walks or eats

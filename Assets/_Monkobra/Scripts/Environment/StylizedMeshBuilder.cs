@@ -8,7 +8,8 @@ using UnityEngine;
 /// <c>Monkobra/ToonBark</c> shader with vertex colours on.
 /// <para>
 /// Vertex colours steer the shader: R forces moss, G marks a leaf, B shifts
-/// a leaf's tint and turns bark into green vine, A scales the silhouette. Tube UV x runs 0 to 1 round the
+/// a leaf's tint and turns bark into green vine, A scales the silhouette. Tube
+/// UV x runs 0 to 1 round the
 /// tube and UV y is the distance along it; leaf UV x runs -1 to 1 across the
 /// leaf and UV y 0 to 1 along it.
 /// </para>
@@ -72,7 +73,8 @@ public class StylizedMeshBuilder {
                 float angle = s * Mathf.PI * 2f / sides;
                 float cos = Mathf.Cos(angle);
                 float sin = Mathf.Sin(angle);
-                Vector3 offset = up * (cos * radiiUp[r]) + side * (sin * radiiSide[r]);
+                Vector3 offset = up * (cos * radiiUp[r])
+                    + side * (sin * radiiSide[r]);
                 // an ellipse's normal leans toward its flatter side
                 Vector3 normal = (
                     up * (cos / Mathf.Max(radiiUp[r], 0.0001f))
@@ -173,7 +175,11 @@ public class StylizedMeshBuilder {
             centres.Add(top + Vector3.down * (lengthU * t) + wave);
             ups.Add(Vector3.forward);
             // full at the top, tapering to a point, a little lumpy
-            radii.Add(radiusU * (1f - 0.8f * t) * (0.85f + 0.3f * (float)random.NextDouble()));
+            radii.Add(
+                radiusU * (1f - 0.8f * t) * (
+                    0.85f + 0.3f * (float)random.NextDouble()
+                )
+            );
         }
         AddTube(centres, ups, radii, radii, 5, MOSS_STRAND, true);
     }
@@ -206,8 +212,10 @@ public class StylizedMeshBuilder {
         for (int i = 0; i < ROWS; i++) {
             float t = (float)i / (ROWS - 1);
             // round near the stalk, pointed at the tip
-            float halfWidth = widthU * 0.5f * Mathf.Sin(Mathf.PI * Mathf.Pow(t, 0.7f));
-            Vector3 centre = stalk + along * (lengthU * t) + up * (curl * lengthU * t * t);
+            float halfWidth =
+                widthU * 0.5f * Mathf.Sin(Mathf.PI * Mathf.Pow(t, 0.7f));
+            Vector3 centre =
+                stalk + along * (lengthU * t) + up * (curl * lengthU * t * t);
             Vector3 rowUp = (up - along * (2f * curl * t)).normalized;
             for (int k = 0; k < 3; k++) {
                 float across = k - 1f;
@@ -256,8 +264,11 @@ public class StylizedMeshBuilder {
                 + ((float)random.NextDouble() - 0.5f) * 0.5f;
             Vector3 flat = t1 * Mathf.Cos(angle) + t2 * Mathf.Sin(angle);
             // fan out, rising off the surface
-            Vector3 direction = (flat + n * (0.45f + 0.3f * (float)random.NextDouble())).normalized;
-            float length = lengthU * (0.75f + 0.5f * (float)random.NextDouble());
+            Vector3 direction = (
+                flat + n * (0.45f + 0.3f * (float)random.NextDouble())
+            ).normalized;
+            float length = lengthU
+                * (0.75f + 0.5f * (float)random.NextDouble());
             AddLeaf(
                 centre,
                 direction,
@@ -301,7 +312,9 @@ public class StylizedMeshBuilder {
     private readonly List<Color> colors = new List<Color>();
     private readonly List<int> triangles = new List<int>();
 
-    private int AddVertex(Vector3 position, Vector3 normal, Vector2 uv, Color color) {
+    private int AddVertex(
+        Vector3 position, Vector3 normal, Vector2 uv, Color color
+    ) {
         positions.Add(position);
         normals.Add(normal);
         uvs.Add(uv);
@@ -318,7 +331,9 @@ public class StylizedMeshBuilder {
     // winds the triangle so its face points along its vertices' normals:
     // Unity shows a triangle whose Cross(b - a, c - a) faces the viewer
     private void AddTriangleFacing(int a, int b, int c) {
-        Vector3 face = Vector3.Cross(positions[b] - positions[a], positions[c] - positions[a]);
+        Vector3 face = Vector3.Cross(
+            positions[b] - positions[a], positions[c] - positions[a]
+        );
         Vector3 normal = normals[a] + normals[b] + normals[c];
         if (Vector3.Dot(face, normal) >= 0f) {
             triangles.Add(a);

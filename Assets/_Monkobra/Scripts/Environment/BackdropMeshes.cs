@@ -45,10 +45,16 @@ public class BackdropMeshes {
             float seed = (float)random.NextDouble() * 100f;
             for (int i = 0; i < 4; i++) {
                 centres.Add(cloud);
-                corners.Add(new Vector2(i % 2 == 0 ? -1f : 1f, i < 2 ? -1f : 1f));
+                corners.Add(
+                    new Vector2(i % 2 == 0 ? -1f : 1f, i < 2 ? -1f : 1f)
+                );
                 sizeSeeds.Add(new Vector2(cloud.w, seed));
             }
-            quads.AddRange(new[] { start, start + 1, start + 2, start + 2, start + 1, start + 3 });
+            quads.AddRange(
+                new[] {
+                    start, start + 1, start + 2, start + 2, start + 1, start + 3
+                }
+            );
         }
         Mesh mesh = new Mesh { name = "BackdropClouds" };
         mesh.SetVertices(centres);
@@ -83,7 +89,11 @@ public class BackdropMeshes {
                 pathUvs.Add(paths[b]);
                 flapUvs.Add(flapSpans[b]);
             }
-            wings.AddRange(new[] { start, start + 1, start + 2, start, start + 3, start + 1 });
+            wings.AddRange(
+                new[] {
+                    start, start + 1, start + 2, start, start + 3, start + 1
+                }
+            );
         }
         Mesh mesh = new Mesh { name = "BackdropBirds" };
         mesh.SetVertices(positions);
@@ -100,16 +110,26 @@ public class BackdropMeshes {
     /// <paramref name="top"/>, its foot flared by
     /// <paramref name="flare"/> as rainforest giants' buttresses are.
     /// </summary>
-    public void AddTrunk(Vector3 bottom, Vector3 top, float radiusU, float flare, int sides, int rings, Color color) {
+    public void AddTrunk(
+        Vector3 bottom,
+        Vector3 top,
+        float radiusU,
+        float flare,
+        int sides,
+        int rings,
+        Color color
+    ) {
         int start = positions.Count;
         Vector3 axis = top - bottom;
         for (int j = 0; j <= rings; j++) {
             float t = (float)j / rings;
-            float radius = radiusU * (Mathf.Lerp(1f, 0.55f, t) + flare * Mathf.Pow(1f - t, 8f));
+            float radius = radiusU
+                * (Mathf.Lerp(1f, 0.55f, t) + flare * Mathf.Pow(1f - t, 8f));
             Vector3 centre = bottom + axis * t;
             for (int i = 0; i <= sides; i++) {
                 float angle = Mathf.PI * 2f * i / sides;
-                Vector3 outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+                Vector3 outward =
+                    new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
                 Add(centre + outward * radius, outward, color);
             }
         }
@@ -140,10 +160,15 @@ public class BackdropMeshes {
                     Mathf.Cos(polar),
                     Mathf.Sin(polar) * Mathf.Sin(azimuth)
                 );
-                float lump = 1f + 0.08f * Mathf.Sin(azimuth * lumps + phase) * Mathf.Sin(polar);
-                Vector3 offset = new Vector3(normal.x, normal.y * squash, normal.z) * (radiusU * lump);
+                float lump = 1f + 0.08f * Mathf.Sin(
+                    azimuth * lumps + phase
+                ) * Mathf.Sin(polar);
+                Vector3 offset = new Vector3(
+                    normal.x, normal.y * squash, normal.z
+                ) * (radiusU * lump);
                 // the shaded underside of a crown
-                Color shaded = color * Mathf.Lerp(0.55f, 0.95f, (normal.y + 1f) * 0.5f);
+                Color shaded = color
+                    * Mathf.Lerp(0.55f, 0.95f, (normal.y + 1f) * 0.5f);
                 Add(centre + offset, normal, shaded);
             }
         }
@@ -201,7 +226,9 @@ public class BackdropMeshes {
     }
 
     private void Facing(int a, int b, int c) {
-        Vector3 face = Vector3.Cross(positions[b] - positions[a], positions[c] - positions[a]);
+        Vector3 face = Vector3.Cross(
+            positions[b] - positions[a], positions[c] - positions[a]
+        );
         if (face.sqrMagnitude < 1e-12f) {
             return; // a pole's sliver
         }

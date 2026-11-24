@@ -119,7 +119,7 @@ public sealed class CobraKingArena {
         }
     }
 
-    // Endless Boss Rush  -------------------------------------------------------
+    // Endless Boss Rush -------------------------------------------------------
     // the world y range a boss of the endless run's rush keeps bare, from
     // under its guard to over its coil
     public Vector2 RushRange(float entryY) {

@@ -13,7 +13,9 @@ public class LeaderboardWidget: MonoBehaviour {
     // Public Methods  #########################################################
     public bool SavePlayerName(string name) {
         if (firebaseConfig == null || !firebaseConfig.IsConfigured
-            || !new FirebaseLeaderboardClient(firebaseConfig).RememberName(name)) {
+            || !new FirebaseLeaderboardClient(firebaseConfig).RememberName(
+                name
+            )) {
             return false;
         }
         ShowScore(lastShownScore);
@@ -142,10 +144,13 @@ public class LeaderboardWidget: MonoBehaviour {
         ShowPersonalBest(best);
         playerRankLabel.text = "CONNECTING...";
         try {
-            FirebaseLeaderboardClient.Result result = await client.SubmitAndLoad(
+            FirebaseLeaderboardClient.Result result =
+                await client.SubmitAndLoad(
                 board, score, rows.Length
             );
-            if (this == null || !isActiveAndEnabled || version != requestVersion) {
+            if (
+                this == null || !isActiveAndEnabled || version != requestVersion
+            ) {
                 return;
             }
             int playerRank = 0;
@@ -165,7 +170,9 @@ public class LeaderboardWidget: MonoBehaviour {
                     + "  |  OUTSIDE TOP " + Math.Min(10, rows.Length);
         }
         catch (Exception error) {
-            if (this == null || !isActiveAndEnabled || version != requestVersion) {
+            if (
+                this == null || !isActiveAndEnabled || version != requestVersion
+            ) {
                 return;
             }
             ShowPersonalBest(best);

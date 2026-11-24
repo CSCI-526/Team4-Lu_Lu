@@ -350,7 +350,8 @@ public sealed class SpiderKingTuning {
     [SerializeField]
     private Vector3Int slashesPerStage = new Vector3Int(1, 1, 1);
     [Tooltip("the most slashes in a row in stages 1, 2 & 3 in the endless "
-        + "run's boss rush: each later Spider King fight adds one, up to these")]
+        + "run's boss rush: each later Spider King fight adds one, up to "
+        + "these")]
     [SerializeField]
     private Vector3Int endlessSlashesPerStage = new Vector3Int(1, 2, 3);
     [Tooltip("scale on a slash's width in the endless run's boss rush, where "

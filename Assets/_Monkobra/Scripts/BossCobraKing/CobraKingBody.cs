@@ -5,7 +5,8 @@ using UnityEngine;
 /// The Cobra King, built at runtime from Unity primitives only, kept simple
 /// and cute: a round bead coil wrapped round the tree top (its nest), a neck
 /// hanging down the trunk toward the monkey, and a big round head with two
-/// eyes and a small gold crown; thrown bananas fly at the crown's front. The head
+/// eyes and a small gold crown; thrown bananas fly at the crown's front. The
+/// head
 /// turns round the trunk after the monkey and strikes down at a point:
 /// a butt or a bite. Once defeated it shatters into cubes and lets go of
 /// its crown.
@@ -71,7 +72,8 @@ public class CobraKingBody: MonoBehaviour {
         Rigidbody body = root.gameObject.AddComponent<Rigidbody>();
         body.isKinematic = true;
         body.useGravity = false;
-        CobraKingContact contact = root.gameObject.AddComponent<CobraKingContact>();
+        CobraKingContact contact =
+            root.gameObject.AddComponent<CobraKingContact>();
         contact.Touched += () => MonkeyTouched?.Invoke();
 
         BuildCoil();
@@ -488,7 +490,8 @@ public class CobraKingBody: MonoBehaviour {
     // the head, which hangs out from the trunk & looks at the monkey
     private void LayoutNeckAndHead() {
         float radians = headAngleDeg * Mathf.Deg2Rad;
-        Vector3 outward = new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
+        Vector3 outward =
+            new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
         float coilRadius = trunkRadiusU + beadRadiusU * 0.8f;
         Vector3 start = trunkCenter + outward * coilRadius
             + Vector3.up * coilBottomY;
@@ -570,7 +573,8 @@ public class CobraKingBody: MonoBehaviour {
             float pulse = 0.5f + 0.5f * Mathf.Sin(
                 Time.time * weakSpotPulseHz * 2f * Mathf.PI
             );
-            color = Color.Lerp(weakSpotLitColor * 0.7f, weakSpotLitColor, pulse);
+            color =
+                Color.Lerp(weakSpotLitColor * 0.7f, weakSpotLitColor, pulse);
             scale = Mathf.Lerp(0.55f, 0.72f, pulse);
         }
         weakSpot.transform.localScale = Vector3.one * scale;

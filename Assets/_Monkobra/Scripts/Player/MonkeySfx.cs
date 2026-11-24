@@ -56,13 +56,15 @@ public class MonkeySfx: MonoBehaviour {
 
     [Header("Web")]
     [SerializeField]
-    [Tooltip("each escape press while a web holds the monkey, a few takes cycled "
+    [Tooltip("each escape press while a web holds the monkey, a few takes "
+        + "cycled "
         + "through; nothing as it is caught or breaks free")]
     private AudioClip[] webStruggles;
 
     [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("how much higher a tug sounds as escape nears, 0.3 = 30% at the end")]
+    [Tooltip("how much higher a tug sounds as escape nears, 0.3 = 30% at the "
+        + "end")]
     private float struggleRisePitch = 0.3f;
 
     [Header("Happy Calls")]
@@ -121,7 +123,9 @@ public class MonkeySfx: MonoBehaviour {
             || grabMiss == null || leapRush == null
             || coconutThrow == null || cobraFreeze == null || cobraThaw == null
             || webStruggles == null || webStruggles.Length == 0
-            || happyCalls == null || happyCalls.Length == 0 || markerReached == null
+            || happyCalls == null
+                || happyCalls.Length == 0
+                || markerReached == null
             || staminaLow == null || hit == null || lose == null) {
             Debug.LogWarning(
                 "MonkeySfx:\tmust assign Inspector Fields: bananaGrab, "
@@ -238,7 +242,9 @@ public class MonkeySfx: MonoBehaviour {
     private int lastHappy = -1;
     private float lastHappyTime = float.NegativeInfinity;
 
-    private void Play(AudioClip clip, float share = 1f, float pitch = 1f, float delayS = 0f) {
+    private void Play(
+        AudioClip clip, float share = 1f, float pitch = 1f, float delayS = 0f
+    ) {
         if (sources == null || clip == null) {
             return;
         }
@@ -252,12 +258,17 @@ public class MonkeySfx: MonoBehaviour {
 
     // now & then a happy call, never the same one twice running
     private void MaybeCheer() {
-        if (Time.time - lastHappyTime < happyCooldownS || Random.value >= happyChance) {
+        if (
+            Time.time - lastHappyTime < happyCooldownS
+                || Random.value >= happyChance
+        ) {
             return;
         }
         int pick = Random.Range(0, happyCalls.Length);
         if (pick == lastHappy && happyCalls.Length > 1) {
-            pick = (pick + 1 + Random.Range(0, happyCalls.Length - 1)) % happyCalls.Length;
+            pick = (
+                pick + 1 + Random.Range(0, happyCalls.Length - 1)
+            ) % happyCalls.Length;
         }
         lastHappy = pick;
         lastHappyTime = Time.time;
@@ -273,7 +284,8 @@ public class MonkeySfx: MonoBehaviour {
             Play(pineappleGrab);
         } else {
             ScorePickup pickup = fruit.GetComponentInParent<ScorePickup>(true);
-            bool isCoconut = pickup != null && pickup.Kind == PickupKind.Coconut;
+            bool isCoconut = pickup != null
+                && pickup.Kind == PickupKind.Coconut;
             Play(isCoconut ? coconutGrab : bananaGrab);
         }
         MaybeCheer();
@@ -301,7 +313,9 @@ public class MonkeySfx: MonoBehaviour {
 
     // a tug sounds higher the nearer the monkey is to breaking free
     private void OnEscapePressed(float progress) {
-        Play(webStruggles[nextStruggle], 0.8f, 1f + struggleRisePitch * progress);
+        Play(
+            webStruggles[nextStruggle], 0.8f, 1f + struggleRisePitch * progress
+        );
         nextStruggle = (nextStruggle + 1) % webStruggles.Length;
     }
 

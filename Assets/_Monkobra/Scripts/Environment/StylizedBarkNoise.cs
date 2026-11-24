@@ -37,7 +37,8 @@ public static class StylizedBarkNoise {
         ));
         Vector3 p2 = Turn(p) * 2.03f + Vector3.one * 17.1f;
         Vector3 p3 = Turn(p2) * 2.01f + Vector3.one * 41.7f;
-        return ValueNoise3(p) * 0.6f + ValueNoise3(p2) * 0.28f + ValueNoise3(p3) * 0.12f;
+        return ValueNoise3(p) * 0.6f + ValueNoise3(p2) * 0.28f
+            + ValueNoise3(p3) * 0.12f;
     }
 
     /// <returns>mask value at which moss starts</returns>
@@ -66,7 +67,8 @@ public static class StylizedBarkNoise {
     }
 
     // private members  ########################################################
-    private static readonly int MOSS_SCALE_ID = Shader.PropertyToID("_MossScale");
+    private static readonly int MOSS_SCALE_ID =
+        Shader.PropertyToID("_MossScale");
     private static readonly int MOSS_STRETCH_ID =
         Shader.PropertyToID("_MossStretch");
     private static readonly int MOSS_COVERAGE_ID =
@@ -98,7 +100,8 @@ public static class StylizedBarkNoise {
     }
 
     private static float ValueNoise3(Vector3 p) {
-        Vector3 i = new Vector3(Mathf.Floor(p.x), Mathf.Floor(p.y), Mathf.Floor(p.z));
+        Vector3 i =
+            new Vector3(Mathf.Floor(p.x), Mathf.Floor(p.y), Mathf.Floor(p.z));
         Vector3 f = p - i;
         Vector3 u = new Vector3(
             f.x * f.x * (3f - 2f * f.x),
@@ -114,8 +117,12 @@ public static class StylizedBarkNoise {
         float n011 = Hash13(i + new Vector3(0, 1, 1));
         float n111 = Hash13(i + new Vector3(1, 1, 1));
         return Mathf.Lerp(
-            Mathf.Lerp(Mathf.Lerp(n000, n100, u.x), Mathf.Lerp(n010, n110, u.x), u.y),
-            Mathf.Lerp(Mathf.Lerp(n001, n101, u.x), Mathf.Lerp(n011, n111, u.x), u.y),
+            Mathf.Lerp(
+                Mathf.Lerp(n000, n100, u.x), Mathf.Lerp(n010, n110, u.x), u.y
+            ),
+            Mathf.Lerp(
+                Mathf.Lerp(n001, n101, u.x), Mathf.Lerp(n011, n111, u.x), u.y
+            ),
             u.z
         );
     }

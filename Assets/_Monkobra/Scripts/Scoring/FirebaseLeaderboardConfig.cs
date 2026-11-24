@@ -1,7 +1,8 @@
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-/// <summary>Public Firebase client settings; never a service account key.</summary>
+/// <summary>Public Firebase client settings; never a service account
+/// key.</summary>
 [CreateAssetMenu(
     fileName = "FirebaseLeaderboardConfig",
     menuName = "Scriptable Objects/FirebaseLeaderboardConfig"

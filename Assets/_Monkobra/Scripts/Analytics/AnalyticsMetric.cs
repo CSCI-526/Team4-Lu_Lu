@@ -77,7 +77,10 @@ public static class AnalyticsMetrics {
             { AnalyticsMetric.BossFight, new Info("Cobra Fight Start", true) },
             { AnalyticsMetric.BossArmorSaved, new Info("Armor Save", true) },
             { AnalyticsMetric.BossRevive, new Info("Cobra Revive", true) },
-            { AnalyticsMetric.SpiderFight, new Info("Spider Fight Start", true) },
+            {
+                AnalyticsMetric.SpiderFight,
+                new Info("Spider Fight Start", true)
+            },
             { AnalyticsMetric.SpiderRevive, new Info("Spider Revive", true) },
             { AnalyticsMetric.SpiderWin, new Info("Spider Win", true) }
         };

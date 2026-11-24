@@ -4,7 +4,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-/// <summary>Optional nickname for the anonymous player; never a login.</summary>
+/// <summary>Optional nickname for the anonymous player; never a
+/// login.</summary>
 [DefaultExecutionOrder(100)]
 public class LeaderboardNameEditor: MonoBehaviour {
     // Inspector Fields  #######################################################
@@ -105,7 +106,8 @@ public class LeaderboardNameEditor: MonoBehaviour {
             imeKeyboard = Keyboard.current;
             previousImeMode = imeInput != null
                 ? imeInput.imeCompositionMode : IMECompositionMode.Auto;
-            wasImeSelected = imeKeyboard != null && imeKeyboard.imeSelected.isPressed;
+            wasImeSelected = imeKeyboard != null
+                && imeKeyboard.imeSelected.isPressed;
             ownsIme = true;
         }
         TextInputFocus.ProtectThisFrame();

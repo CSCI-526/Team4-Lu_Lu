@@ -168,7 +168,8 @@ public class MonkeyModelArms: MonoBehaviour {
         // else the cycle; not through the leap's landing grace, when the
         // freed physics hand swings back on its joint & would fling the
         // model's arm out
-        bool followsPhysics = arm.IsReaching || arm.IsLeapReaching || animator == null;
+        bool followsPhysics =
+            arm.IsReaching || arm.IsLeapReaching || animator == null;
         arm.follow = Mathf.Lerp(
             arm.follow,
             followsPhysics ? 1f : 0f,
