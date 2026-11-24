@@ -171,10 +171,6 @@ public class SpiderKingFightController: MonoBehaviour {
     [Tooltip("every tuned value of the Spider King fight")]
     private SpiderKingConfig config;
 
-    [SerializeField]
-    [Tooltip("legacy tuning, read until the roles read config")]
-    private SpiderKingTuning tuning = new();
-
     // private members  ########################################################
     private SpiderKingRig rig;
     private SpiderKingArena arena;

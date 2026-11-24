@@ -372,10 +372,6 @@ public class CobraKingFightController: MonoBehaviour {
     [Tooltip("every tuned value of the Cobra King fight")]
     private CobraKingConfig config;
 
-    [SerializeField]
-    [Tooltip("legacy tuning, read until the roles read config")]
-    private CobraKingTuning tuning = new();
-
     // private members  ########################################################
     private CobraKingRig rig;
     private CobraKingArena arena;

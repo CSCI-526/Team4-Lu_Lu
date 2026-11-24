@@ -225,10 +225,6 @@ public class CobraMotor: MonoBehaviour {
     [Tooltip("every tuned value of the great cobra")]
     private CobraMotorConfig config;
 
-    [SerializeField]
-    [Tooltip("legacy tuning, read until the roles read config")]
-    private CobraMotorTuning tuning = new();
-
     // private members  ########################################################
     private CobraMotorRig rig;
     private CobraMotorChase chase;
@@ -394,11 +390,6 @@ public class CobraMotor: MonoBehaviour {
     private void OnDestroy() {
         rig.cartoonVisual?.Dispose();
         surge.StopListening();
-    }
-
-    // Editor Validation  ######################################################
-    private void OnValidate() {
-        tuning.Validate();
     }
 
     private void LateUpdate() {

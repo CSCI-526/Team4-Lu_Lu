@@ -81,10 +81,6 @@ public class FallingCobraController: MonoBehaviour {
     [Tooltip("every tuned value of a falling cobra")]
     private FallingCobraConfig config;
 
-    [SerializeField]
-    [Tooltip("legacy tuning, read until the roles read config")]
-    private FallingCobraTuning tuning = new();
-
     // private members  ########################################################
     private FallingCobraRig rig;
     private FallingCobraHeadMesh headMesh;
@@ -396,11 +392,6 @@ public class FallingCobraController: MonoBehaviour {
     // Enter/stay and the monkey sensor all share the same one-hit guard.
     private void OnTriggerStay(Collider other) {
         TryHit(other);
-    }
-
-    // Editor Validation  ######################################################
-    private void OnValidate() {
-        tuning.Validate();
     }
 
     private void TryWake() {

@@ -21,10 +21,6 @@ public class BossFightHud: MonoBehaviour {
     [Tooltip("every tuned value of the boss fight HUD")]
     private BossFightHudConfig config;
 
-    [SerializeField]
-    [Tooltip("legacy tuning, read until the roles read config")]
-    private BossFightHudTuning tuning = new();
-
     // private members  ########################################################
     private BossFightHudRig rig;
     private BossFightHudBuilder builder;
