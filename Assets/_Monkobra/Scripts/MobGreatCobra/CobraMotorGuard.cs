@@ -4,13 +4,13 @@ using static CobraMotorRig;
 /// <summary>The boss arena guard: the held height and the peeking
 /// head.</summary>
 public sealed class CobraMotorGuard {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
-    private readonly CobraMotorTuning tuning;
+    private readonly CobraMotorConfig config;
 
     public CobraMotorGuard(CobraMotorRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -18,9 +18,9 @@ public sealed class CobraMotorGuard {
     public void UpdateGuard() {
         float peek = 0f;
         float t = Time.time - rig.nextPeekTime;
-        float upS = tuning.PeekTimesS.x;
-        float holdS = tuning.PeekTimesS.y;
-        float downS = tuning.PeekTimesS.z;
+        float upS = config.PeekTimesS.x;
+        float holdS = config.PeekTimesS.y;
+        float downS = config.PeekTimesS.z;
         if (t >= 0f) {
             if (t < upS) {
                 // springs up, overshooting a little before it settles
@@ -33,7 +33,7 @@ public sealed class CobraMotorGuard {
                 peek = 1f - d * d * (3f - 2f * d);
             } else {
                 rig.nextPeekTime = Time.time + UnityEngine.Random.Range(
-                    tuning.PeekIntervalRangeS.x, tuning.PeekIntervalRangeS.y
+                    config.PeekIntervalRangeS.x, config.PeekIntervalRangeS.y
                 );
             }
         }
@@ -49,12 +49,12 @@ public sealed class CobraMotorGuard {
             return;
         }
         int anchor = Mathf.Clamp(
-            Mathf.CeilToInt(tuning.PeekNeckU / Mathf.Max(0.01f, arcStep)),
+            Mathf.CeilToInt(config.PeekNeckU / Mathf.Max(0.01f, arcStep)),
             1,
             rig.segmentPositions.Length - 1
         );
         Vector3 root = rig.segmentPositions[anchor];
-        Vector3 outward = root - tuning.PathCenter.position;
+        Vector3 outward = root - rig.pathCenter.position;
         outward.y = 0f;
         outward = outward.sqrMagnitude > 0.0001f
             ? outward.normalized
@@ -66,9 +66,9 @@ public sealed class CobraMotorGuard {
             float s = (anchor - i) / (float)anchor;
             // 0 at the coil, 1 head
             Vector3 raised = root
-                + Vector3.up * tuning.PeekRiseU * rig.guardPeek
+                + Vector3.up * config.PeekRiseU * rig.guardPeek
                     * Mathf.Pow(s, 1.15f)
-                + outward * tuning.PeekCurlU * rig.guardPeek
+                + outward * config.PeekCurlU * rig.guardPeek
                     * Mathf.Sin(s * Mathf.PI)
                 + side * sway * s * s;
             float blend =

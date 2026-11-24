@@ -35,7 +35,9 @@ public static class IntroComicBuilder {
             );
             return;
         }
-        if (UIStyleBuilder.SemiBold == null || UIStyleBuilder.ExtraBold == null) {
+        if (
+            UIStyleBuilder.SemiBold == null || UIStyleBuilder.ExtraBold == null
+        ) {
             Debug.LogError(
                 "IntroComicBuilder:\trun Monkobra/UI Style/1. Build Fonts first"
             );
@@ -225,7 +227,8 @@ public static class IntroComicBuilder {
             CanvasGroup hintGroup = hint.gameObject.AddComponent<CanvasGroup>();
             hintGroup.alpha = 0f;
             hintGroup.blocksRaycasts = false;
-            HintIconSlot slot = hint.gameObject.AddComponent<HintIconSlot>();
+            HintIconWidget slot =
+                hint.gameObject.AddComponent<HintIconWidget>();
             SerializedObject slotData = new SerializedObject(slot);
             slotData.FindProperty("library").objectReferenceValue =
                 Load<HintIconLibrary>(HINT_LIBRARY);
@@ -251,13 +254,15 @@ public static class IntroComicBuilder {
             screenData.FindProperty("inputActions").objectReferenceValue =
                 Load<InputActionAsset>(INPUT_ACTIONS);
             screenData.FindProperty("stage").objectReferenceValue = stage;
-            screenData.FindProperty("captionPlate").objectReferenceValue = plate;
+            screenData.FindProperty("captionPlate").objectReferenceValue =
+                plate;
             screenData.FindProperty("captionText").objectReferenceValue = words;
             screenData.FindProperty("captionGroup").objectReferenceValue =
                 captionGroup;
             screenData.FindProperty("captionPaddingY").floatValue =
                 CAPTION_PADDING_Y;
-            screenData.FindProperty("nextHint").objectReferenceValue = hintGroup;
+            screenData.FindProperty("nextHint").objectReferenceValue =
+                hintGroup;
             screenData.FindProperty("skipButton").objectReferenceValue = skip;
             screenData.ApplyModifiedPropertiesWithoutUndo();
 

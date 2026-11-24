@@ -22,6 +22,6 @@ public class MenuButtonHover: MonoBehaviour, IPointerEnterHandler {
         selectable = GetComponent<Selectable>();
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private Selectable selectable;
 }

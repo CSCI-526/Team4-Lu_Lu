@@ -50,7 +50,7 @@ public class LoseScreenDownloadWidget: MonoBehaviour {
     // sibling component, so no Inspector Field is needed
     private Button button;
 
-    // Private Helpers  ########################################################
+    // private helpers  ########################################################
     // whether the object was turned off, ie this is not a development build
     private bool HideOutsideDevBuild() {
         if (HackShortcutConfig.AreHintsShown) {

@@ -7,13 +7,13 @@ using static SpiderKingRig;
 /// <summary>The crescents and shots in flight, their waves, paths, and
 /// hits.</summary>
 public sealed class SpiderKingShots {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingShots(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -31,16 +31,16 @@ public sealed class SpiderKingShots {
         for (int i = 0; i < crescent.parts.Length; i++) {
             crescent.parts[i] =
                 rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
-                "SilkBlade", Vector3.one * 0.1f, tuning.SilkColor).transform;
+                "SilkBlade", Vector3.one * 0.1f, config.SilkColor).transform;
         }
         rig.crescents.Add(crescent);
-        rig.Parry.Burst(rig.body.HeadPosition, tuning.SilkColor, 6);
+        rig.Parry.Burst(rig.body.HeadPosition, config.SilkColor, 6);
     }
 
     public void UpdateCrescents() {
         for (int i = rig.crescents.Count - 1; i >= 0; i--) {
             SpiderKingCrescent crescent = rig.crescents[i];
-            float speedU = tuning.SlashSpeedU * rig.SpeedScale;
+            float speedU = config.SlashSpeedU * rig.SpeedScale;
             if (crescent.isReflected) {
                 // the clash: it slows into the tail, sparks, holds, then
                 // speeds off back to where it was slashed from, the spider
@@ -61,8 +61,8 @@ public sealed class SpiderKingShots {
                     if (outShare >= 1f) {
                         RemoveCrescent(crescent);
                         rig.Parry.Burst(rig.body.HeadPosition,
-                            tuning.GoldenColor, 14);
-                        rig.Damage.Hurt(tuning.SlashParryDamage);
+                            config.GoldenColor, 14);
+                        rig.Damage.Hurt(config.SlashParryDamage);
                         if (rig.phase != SpiderKingPhase.Fighting) {
                             break;
                         }
@@ -77,7 +77,7 @@ public sealed class SpiderKingShots {
             }
             float lastDistanceU = crescent.distanceU;
             crescent.distanceU += speedU * Time.deltaTime;
-            if (crescent.distanceU > tuning.SlashRangeU + 4f) {
+            if (crescent.distanceU > config.SlashRangeU + 4f) {
                 RemoveCrescent(crescent);
                 continue;
             }
@@ -117,7 +117,7 @@ public sealed class SpiderKingShots {
     public float CrescentAhead(SpiderKingCrescent crescent, out float across) {
         Vector3 at = rig.monkey.position;
         float mu = Mathf.DeltaAngle(crescent.originAngle, rig.AngleOf(at))
-            * Mathf.Deg2Rad * tuning.TrunkRadiusU;
+            * Mathf.Deg2Rad * config.TrunkRadiusU;
         float mv = at.y - crescent.originY;
         float radians = crescent.directionDeg * Mathf.Deg2Rad;
         float along = mu * Mathf.Cos(radians) + mv * Mathf.Sin(radians);
@@ -147,9 +147,9 @@ public sealed class SpiderKingShots {
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
         float flicker = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 14f);
         Color color = crescent.isReflected
-            ? tuning.GoldenColor
-            : isGold ? Color.Lerp(tuning.GoldenColor, Color.white, pulse)
-                : Color.Lerp(Color.white, tuning.WarnColor,
+            ? config.GoldenColor
+            : isGold ? Color.Lerp(config.GoldenColor, Color.white, pulse)
+                : Color.Lerp(Color.white, config.WarnColor,
                     CRESCENT_WARN_TINT * flicker);
         int index = 0;
         for (int strand = 0; strand < CRESCENT_STRANDS; strand++) {
@@ -202,7 +202,7 @@ public sealed class SpiderKingShots {
         float lastDistanceU) {
         Vector3 at = rig.monkey.position;
         float mu = Mathf.DeltaAngle(crescent.originAngle, rig.AngleOf(at))
-            * Mathf.Deg2Rad * tuning.TrunkRadiusU;
+            * Mathf.Deg2Rad * config.TrunkRadiusU;
         float mv = at.y - crescent.originY;
         float radians = crescent.directionDeg * Mathf.Deg2Rad;
         float along = mu * Mathf.Cos(radians) + mv * Mathf.Sin(radians);
@@ -239,7 +239,7 @@ public sealed class SpiderKingShots {
         // the ball is the charge orb at the head
         shot.ball =
             rig.Feedback.CreatePrimitive(PrimitiveType.Sphere, kind.ToString(),
-            Vector3.one * 0.4f, tuning.SilkColor).transform;
+            Vector3.one * 0.4f, config.SilkColor).transform;
         shot.wave = BuildWave();
         shot.wave.gameObject.SetActive(false);
         shot.length = PathLength(shot);
@@ -324,7 +324,7 @@ public sealed class SpiderKingShots {
                 continue;
             }
             shot.length = PathLength(shot);
-            float speedU = tuning.WebShotSpeedU * rig.SpeedScale;
+            float speedU = config.WebShotSpeedU * rig.SpeedScale;
             shot.t += speedU * Time.deltaTime / shot.length;
             shot.t = Mathf.Clamp01(shot.t);
             Vector3 at = PathPoint(shot, shot.t);
@@ -372,9 +372,9 @@ public sealed class SpiderKingShots {
                     1.5f);
             if (outShare >= 1f) {
                 RemoveShot(shot);
-                rig.Parry.Burst(rig.body.HeadPosition, tuning.GoldenColor, 14);
+                rig.Parry.Burst(rig.body.HeadPosition, config.GoldenColor, 14);
                 rig.Parry.WebTheSpider();
-                rig.Damage.Hurt(tuning.WebParryDamage);
+                rig.Damage.Hurt(config.WebParryDamage);
                 return;
             }
         }
@@ -389,7 +389,7 @@ public sealed class SpiderKingShots {
             shot.wave.position = at;
         }
         shot.wave.localScale = Vector3.one * 1.2f;
-        ColorWave(shot.wave, tuning.GoldenColor);
+        ColorWave(shot.wave, config.GoldenColor);
     }
 
     // the bullet flies along its length; white, gold & flashing once close
@@ -410,8 +410,8 @@ public sealed class SpiderKingShots {
         }
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
         Color color = shot.isReflected
-            ? tuning.GoldenColor
-            : isGold ? Color.Lerp(tuning.GoldenColor, Color.white, pulse)
+            ? config.GoldenColor
+            : isGold ? Color.Lerp(config.GoldenColor, Color.white, pulse)
                 : Color.white;
         shot.wave.localScale = Vector3.one * (isGold ? 1.25f : 1f);
         ColorWave(shot.wave, color);

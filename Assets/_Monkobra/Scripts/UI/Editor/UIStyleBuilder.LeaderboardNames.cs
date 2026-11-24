@@ -3,7 +3,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>Builds nickname controls with the shared font and button styles.</summary>
+/// <summary>Builds nickname controls with the shared font and button
+/// styles.</summary>
 public static partial class UIStyleBuilder {
     // Public Methods  #########################################################
     [MenuItem("Monkobra/UI Style/6. Build Leaderboard Name Input")]

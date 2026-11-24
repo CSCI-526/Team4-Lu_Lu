@@ -23,7 +23,7 @@ public class FruitGrabPrompt: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (playerBalanceConfig == null) {
             Debug.LogError(
-                "FruitGrabPrompt:	must assign Inspector Field: "
+                "FruitGrabPrompt:\tmust assign Inspector Field: "
                     + "playerBalanceConfig",
                 this
             );
@@ -34,7 +34,7 @@ public class FruitGrabPrompt: MonoBehaviour {
         sensor = UpwardFruitSensor.I;
         if (game == null || sensor == null) {
             Debug.LogError(
-                "FruitGrabPrompt:	no GameController or UpwardFruitSensor",
+                "FruitGrabPrompt:\tno GameController or UpwardFruitSensor",
                 this
             );
             enabled = false;

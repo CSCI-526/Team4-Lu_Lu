@@ -2,7 +2,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-/// <summary>Text entry consumes run shortcuts, including its final key frame.</summary>
+/// <summary>Text entry consumes run shortcuts, including its final key
+/// frame.</summary>
 public static class TextInputFocus {
     // Public Members  #########################################################
     public static bool BlocksShortcuts {
@@ -24,7 +25,9 @@ public static class TextInputFocus {
     }
 
     // Runtime Lifecycle  ######################################################
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    [RuntimeInitializeOnLoadMethod(
+        RuntimeInitializeLoadType.SubsystemRegistration
+    )]
     private static void Reset() {
         protectedThroughFrame = -1;
     }

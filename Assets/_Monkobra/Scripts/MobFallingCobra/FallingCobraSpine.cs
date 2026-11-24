@@ -7,9 +7,9 @@ using static FallingCobraMath;
 /// in named steps that hand their results forward through one reused frame
 /// state.</summary>
 public sealed class FallingCobraSpine {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
-    private readonly FallingCobraTuning tuning;
+    private readonly FallingCobraConfig config;
     private sealed class FrameState {
         public bool following;
         public float poseDelta;
@@ -39,7 +39,7 @@ public sealed class FallingCobraSpine {
 
     public FallingCobraSpine(FallingCobraRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -59,7 +59,7 @@ public sealed class FallingCobraSpine {
         ctx.following = rig.state == FallingCobraState.Falling;
         ctx.poseDelta = Mathf.Max(0f, Time.time - rig.lastHeadPoseTime);
         rig.lastHeadPoseTime = Time.time;
-        float gain = 1f - Mathf.Exp(-tuning.HeadPoseSharpness * ctx.poseDelta);
+        float gain = 1f - Mathf.Exp(-config.HeadPoseSharpness * ctx.poseDelta);
         rig.waitingHeadBlend =
             Mathf.Lerp(rig.waitingHeadBlend,
                 rig.state == FallingCobraState.Warning ? 1f : 0f, gain);
@@ -67,11 +67,11 @@ public sealed class FallingCobraSpine {
             && rig.monkeyInHeadRange
             ?Mathf.SmoothStep(0f, 1f,
                 Mathf.InverseLerp(rig.fallStartTime
-                    - tuning.StrikeWindupDurationS, rig.fallStartTime,
+                    - config.StrikeWindupDurationS, rig.fallStartTime,
                         Time.time)):0f;
         rig.strikeWindupBlend =
             Mathf.Lerp(rig.strikeWindupBlend, windup,
-                1f - Mathf.Exp(-tuning.StrikePoseSharpness * ctx.poseDelta));
+                1f - Mathf.Exp(-config.StrikePoseSharpness * ctx.poseDelta));
         if (!ctx.following && rig.monkeyInHeadRange) {
             rig.BranchCoil.UpdatePerchedAim(ctx.poseDelta);
         }
@@ -81,7 +81,7 @@ public sealed class FallingCobraSpine {
     }
     private void BuildBodyPath() {
         ctx.phase =
-            Time.time * tuning.BodyWaveSpeedHz * .3f * Mathf.PI * 2f
+            Time.time * config.BodyWaveSpeedHz * .3f * Mathf.PI * 2f
                 + rig.swimPhaseOffset;
         ctx.toWorld = rig.referenceVisual.localToWorldMatrix;
         ctx.toLocal = rig.referenceVisual.worldToLocalMatrix;
@@ -97,13 +97,13 @@ public sealed class FallingCobraSpine {
             float taper =
                 1f - Mathf.SmoothStep(0f, 1f,
                     Mathf.InverseLerp(.55f, 1f, along));
-            float neckAlong = along * tuning.SmoothBodyLengthU;
+            float neckAlong = along * config.SmoothBodyLengthU;
             float neckWaist =
-                Mathf.Lerp(tuning.NeckWaistScale, 1f,
+                Mathf.Lerp(config.NeckWaistScale, 1f,
                     Mathf.SmoothStep(0f, 1f,
                         Mathf.InverseLerp(.35f, 1.25f, neckAlong)));
             rig.spineRadii[ring] =
-                Mathf.Max(.001f, tuning.SmoothBodyRadiusU * taper * neckWaist);
+                Mathf.Max(.001f, config.SmoothBodyRadiusU * taper * neckWaist);
             Vector3 contact;
             if (ctx.following) {
                 contact =
@@ -112,13 +112,13 @@ public sealed class FallingCobraSpine {
             }
             else {
                 float angle =
-                    Mathf.Sin(ctx.phase - along * tuning.BodyWaveCycles
+                    Mathf.Sin(ctx.phase - along * config.BodyWaveCycles
                         * Mathf.PI
-                        * 2f) * tuning.BodyBendDegrees * .3f * Mathf.Deg2Rad
+                        * 2f) * config.BodyBendDeg * .3f * Mathf.Deg2Rad
                     * Mathf.SmoothStep(0f, 1f, along / .3f);
                 if (ring > 0) {
                     idle += new Vector3(Mathf.Sin(angle), Mathf.Cos(angle), 0f)
-                        * (tuning.SmoothBodyLengthU / (BodyRings - 1));
+                        * (config.SmoothBodyLengthU / (BodyRings - 1));
                 }
                 contact =
                     rig.GetTreeSurfacePoint(ctx.toWorld.MultiplyPoint3x4(idle));
@@ -149,7 +149,7 @@ public sealed class FallingCobraSpine {
                 Vector3.ProjectOnPlane(-rig.trailHeading, headOut).normalized;
             crawlTail =
                 Vector3.Slerp(actual, nominal,
-                    tuning.HeadGazeStabilization).normalized;
+                    config.HeadGazeStabilization).normalized;
         }
         if (crawlTail.sqrMagnitude < .00001f) {
             crawlTail = rig.host.up;
@@ -162,12 +162,12 @@ public sealed class FallingCobraSpine {
             Vector3 watchPoint = ctx.following?rig.ThreatPosition
                 :rig.supportBranch != null
                     ?rig.BranchCoil.BranchCoilPoint(0f,
-                        tuning.SmoothBodyRadiusU)
+                        config.SmoothBodyRadiusU)
                         + Vector3.up
-                            * (tuning.StandingFaceHeightU
-                                - tuning.StandingBaseHeightU)
-                +ctx.rootOut * tuning.BranchHeadForwardU + rig.branchSide
-                    * (tuning.BranchHeadSideU
+                            * (config.StandingFaceHeightU
+                                - config.StandingBaseHeightU)
+                +ctx.rootOut * config.BranchHeadForwardU + rig.branchSide
+                    * (config.BranchHeadSideU
                         * rig.perchedAimSide):rig.ThreatPosition;
             if (!ctx.following) {
                 watchPoint += rig.strikeWindupOffset;
@@ -177,7 +177,7 @@ public sealed class FallingCobraSpine {
                 && watchDelta.sqrMagnitude > .00001f
                 ? watchDelta.normalized
                     : (ctx.rootOut + Vector3.down
-                        * Mathf.Tan(tuning.WaitingLookDownDegrees
+                        * Mathf.Tan(config.WaitingLookDownDeg
                             * Mathf.Deg2Rad)).normalized;
             Vector3 faceUp =
                 Vector3.ProjectOnPlane(Vector3.up, direction).normalized;
@@ -199,7 +199,7 @@ public sealed class FallingCobraSpine {
                 Mathf.InverseLerp(.15f, .85f, rig.waitingHeadBlend));
         ctx.risingClearance =
             4f * rig.waitingHeadBlend * (1f - rig.waitingHeadBlend)
-                * tuning.RisingFaceClearanceU;
+                * config.RisingFaceClearanceU;
         ctx.departure = ctx.following?rig.HeadDeparture(crawlHead):0f;
         ctx.headRotation = ctx.following
             ? Quaternion.Slerp(rig.standingHeadRotation, crawlRotation,
@@ -208,24 +208,24 @@ public sealed class FallingCobraSpine {
                 turnBlend);
         Vector3 desiredFace =
             new Vector3(rig.axisXZ.x,
-                rig.body.position.y + tuning.StandingFaceHeightU, rig.axisXZ.y)
+                rig.body.position.y + config.StandingFaceHeightU, rig.axisXZ.y)
             + ctx.rootOut
-                * (tuning.TreeSurfaceRadiusU + tuning.TreeSurfaceClearanceU
-                    + tuning.WaitingHeadLiftU);
+                * (config.TreeSurfaceRadiusU + config.TreeSurfaceClearanceU
+                    + config.WaitingHeadLiftU);
         if (rig.supportBranch != null) desiredFace =
-            rig.BranchCoil.BranchCoilPoint(0f, tuning.SmoothBodyRadiusU)
+            rig.BranchCoil.BranchCoilPoint(0f, config.SmoothBodyRadiusU)
             + Vector3.up
-                * (tuning.StandingFaceHeightU - tuning.StandingBaseHeightU)
-                    + ctx.rootOut * tuning.BranchHeadForwardU + rig.branchSide
-                        * (tuning.BranchHeadSideU * rig.perchedAimSide);
+                * (config.StandingFaceHeightU - config.StandingBaseHeightU)
+                    + ctx.rootOut * config.BranchHeadForwardU + rig.branchSide
+                        * (config.BranchHeadSideU * rig.perchedAimSide);
         if (!ctx.following) {
             Vector3 toward = rig.Tracking.MonkeyAimPosition() - desiredFace;
             if (toward.sqrMagnitude<.00001f) {
                 toward = ctx.rootOut;
             }
             rig.strikeWindupOffset =
-                (-toward.normalized * tuning.StrikePullbackU - Vector3.up
-                    * tuning.StrikeCompressionU) * rig.strikeWindupBlend;
+                (-toward.normalized * config.StrikePullbackU - Vector3.up
+                    * config.StrikeCompressionU) * rig.strikeWindupBlend;
             desiredFace += rig.strikeWindupOffset;
         }
         Vector3 restFace = rig.supportBranch != null
@@ -244,7 +244,7 @@ public sealed class FallingCobraSpine {
             ctx.headRotation =
                 Quaternion.RotateTowards(rig.shownHeadRotation,
                     ctx.headRotation,
-                    tuning.HeadLookTurnSpeedDegrees * ctx.poseDelta);
+                    config.HeadLookTurnSpeedDegPerS * ctx.poseDelta);
         }
         rig.shownHeadRotation = ctx.headRotation;
         rig.headRotationReady = true;
@@ -257,15 +257,15 @@ public sealed class FallingCobraSpine {
     }
     private void FitNeckCurve() {
         ctx.raisedLength =
-            Mathf.Min(tuning.StandingNeckLengthU,
-                tuning.SmoothBodyLengthU * .7f);
+            Mathf.Min(config.StandingNeckLengthU,
+                config.SmoothBodyLengthU * .7f);
         ctx.curveLength = ctx.following
-            ? Mathf.Lerp(ctx.raisedLength, tuning.NeckFollowLengthU,
+            ? Mathf.Lerp(ctx.raisedLength, config.NeckFollowLengthU,
                 ctx.departure)
                 + .8f * Mathf.Sin(Mathf.PI * ctx.departure) : ctx.raisedLength;
         ctx.endRing =
             Mathf.Clamp(Mathf.RoundToInt(ctx.curveLength
-                / tuning.SmoothBodyLengthU
+                / config.SmoothBodyLengthU
                 * (BodyRings - 1)), 1, BodyRings - 2);
         ctx.continuousFreeNeck = false;
         ctx.curveRingSpan = ctx.endRing;
@@ -284,8 +284,8 @@ public sealed class FallingCobraSpine {
                 float transition = .5f - Mathf.Sin(Mathf.Asin(.96f) / 3f);
                 float boundary =
                     rig.launchTrailDistance - rig.launchNeckArc
-                        + Mathf.Lerp(-tuning.UncoilSupportBlendU,
-                            tuning.UncoilSupportBlendU, transition);
+                        + Mathf.Lerp(-config.UncoilSupportBlendU,
+                            config.UncoilSupportBlendU, transition);
                 ctx.freeSpanDistance =
                     rig.swimTrail[rig.swimTrail.Count - 1].distance - boundary;
                 float lowDistance = rig.BodyTrailDistance(lower),
@@ -314,7 +314,7 @@ public sealed class FallingCobraSpine {
             }
         }
         ctx.curveLength = ctx.continuousFreeNeck?ctx.freeSpanDistance
-            :ctx.curveRingSpan * tuning.SmoothBodyLengthU / (BodyRings - 1);
+            :ctx.curveRingSpan * config.SmoothBodyLengthU / (BodyRings - 1);
         ctx.curveEnd = ctx.continuousFreeNeck?ctx.continuousAnchor
             :rig.spineCenters[ctx.endRing];
         ctx.curveEndDirection = ctx.continuousFreeNeck
@@ -339,7 +339,7 @@ public sealed class FallingCobraSpine {
                     - standBaseContact).normalized;
             for (int ring = ctx.endRing; ring < BodyRings; ring++) {
                 float behind =
-                    (ring - ctx.endRing) * tuning.SmoothBodyLengthU
+                    (ring - ctx.endRing) * config.SmoothBodyLengthU
                         / (BodyRings - 1);
                 Vector3 contact =
                     rig.BranchCoil.StandingTailPoint(behind, ctx.rootOut,
@@ -378,8 +378,8 @@ public sealed class FallingCobraSpine {
                 Vector3 outwards = rawRadius>.0001f?radial / rawRadius
                     :ctx.rootOut;
                 float barkRadius =
-                    tuning.TreeSurfaceRadiusU + tuning.TreeSurfaceClearanceU
-                        + rig.spineRadii[ring] * .9f - tuning.BellyPressDepthU;
+                    config.TreeSurfaceRadiusU + config.TreeSurfaceClearanceU
+                        + rig.spineRadii[ring] * .9f - config.BellyPressDepthU;
                 float belowWood =
                     Vector3.Dot(rig.branchCenter + rig.branchUp
                         * rig.branchHalfHeight - ctx.headCenter, rig.branchUp);
@@ -387,21 +387,21 @@ public sealed class FallingCobraSpine {
                     SmoothVisual01(t / .2f)
                         * (1f - SmoothVisual01(Mathf.InverseLerp(.6f, 1f, t)))
                             * SmoothVisual01(belowWood
-                                / tuning.BodyBarkSettleDropU);
+                                / config.BodyBarkSettleDropU);
                 float radius = Mathf.Lerp(rawRadius, barkRadius, contact);
                 float gap = radius - barkRadius;
                 float softRadius =
                     barkRadius
                         + (gap + Mathf.Sqrt(gap * gap
-                            + tuning.BodyBarkContactFeatherU
-                                * tuning.BodyBarkContactFeatherU)) * .5f;
+                            + config.BodyBarkContactFeatherU
+                                * config.BodyBarkContactFeatherU)) * .5f;
                 radius = Mathf.Lerp(radius, softRadius,
                     SmoothVisual01(t / .05f));
                 Vector3 side = Vector3.Cross(Vector3.up, outwards);
                 point = new Vector3(rig.axisXZ.x, point.y, rig.axisXZ.y)
                     + outwards * radius;
                 point += side
-                    * (tuning.FreeNeckSwayU
+                    * (config.FreeNeckSwayU
                         * Mathf.Sin(ctx.phase + t * Mathf.PI * 2f)
                             * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 4f));
                 rig.spineCenters[ring] = point;
@@ -410,16 +410,16 @@ public sealed class FallingCobraSpine {
                 float arch = Mathf.Sin(Mathf.PI * t);
                 rig.spineCenters[ring] +=
                     ctx.rootOut
-                        * (tuning.StandingChestLiftU * rig.waitingHeadBlend
+                        * (config.StandingChestLiftU * rig.waitingHeadBlend
                         * arch * arch);
                 float nearHood =
                     Mathf.Sin(Mathf.PI
-                        * Mathf.Clamp01(ring * tuning.SmoothBodyLengthU
+                        * Mathf.Clamp01(ring * config.SmoothBodyLengthU
                             / (BodyRings - 1)
-                                / tuning.HoodNeckClearanceLengthU));
+                                / config.HoodNeckClearanceLengthU));
                 rig.spineCenters[ring] -=
                     ctx.rootOut
-                        * (tuning.HoodNeckSetbackU * rig.waitingHeadBlend
+                        * (config.HoodNeckSetbackU * rig.waitingHeadBlend
                         * nearHood * nearHood);
                 Vector3 faceForward =
                     ctx.headRotation * rig.originalHeadFaceBasis
@@ -429,7 +429,7 @@ public sealed class FallingCobraSpine {
             }
         }
         for (int ring = 1; ring < BodyRings; ring++) {
-            float behind = ring * tuning.SmoothBodyLengthU / (BodyRings - 1);
+            float behind = ring * config.SmoothBodyLengthU / (BodyRings - 1);
             float radius =
                 Mathf.Lerp(rig.headNeckRadiusU, rig.spineRadii[ring],
                     Mathf.SmoothStep(0f, 1f, behind / .4f));
@@ -450,17 +450,17 @@ public sealed class FallingCobraSpine {
 
     }
     private void BuildTubeMesh() {
-        float collarLoftU = tuning.NeckCollarLengthU;
+        float collarLoftU = config.NeckCollarLengthU;
         Vector3 headOutward =
             new Vector3(ctx.headCenter.x - rig.axisXZ.x, 0f,
                 ctx.headCenter.z - rig.axisXZ.y).normalized;
         ctx.headBelly = rig.BranchCoil.SupportedPaintBelly(headOutward, 0f);
         Quaternion frame = ctx.headRotation;
         float surface =
-            tuning.TreeSurfaceRadiusU + tuning.TreeSurfaceClearanceU
-                - tuning.BellyPressDepthU;
+            config.TreeSurfaceRadiusU + config.TreeSurfaceClearanceU
+                - config.BellyPressDepthU;
         for (int ring = 0; ring < BodyRings; ring++) {
-            float behind = ring * tuning.SmoothBodyLengthU / (BodyRings - 1);
+            float behind = ring * config.SmoothBodyLengthU / (BodyRings - 1);
             Vector3 tangent = ring == 0 ? ctx.headRotation * Vector3.up
                 : (rig.spineCenters[Mathf.Min(BodyRings - 1, ring + 1)]
                     - rig.spineCenters[ring - 1]).normalized;
@@ -567,18 +567,18 @@ public sealed class FallingCobraSpine {
             new Vector4(rig.axisXZ.x, 0f, rig.axisXZ.y, 0f));
         rig.surfaceBlock.SetFloat("_HeadBellyPhase", palettePhase);
         rig.surfaceBlock.SetVector("_HeadBellyDirection", ctx.headBelly);
-        rig.surfaceBlock.SetFloat("_CollarLength", tuning.NeckCollarLengthU);
+        rig.surfaceBlock.SetFloat("_CollarLength", config.NeckCollarLengthU);
         rig.surfaceBlock.SetFloat("_HeadWatch", ctx.following
             ? 1f - ctx.departure
             : 1f);
-        rig.surfaceBlock.SetFloat("_BodyLength", tuning.SmoothBodyLengthU);
+        rig.surfaceBlock.SetFloat("_BodyLength", config.SmoothBodyLengthU);
         rig.referenceRenderer.SetPropertyBlock(rig.surfaceBlock);
         rig.referenceHeadRenderer.GetPropertyBlock(rig.surfaceBlock);
         rig.surfaceBlock.SetVector("_TreeAxis",
             new Vector4(rig.axisXZ.x, 0f, rig.axisXZ.y, 0f));
         rig.surfaceBlock.SetFloat("_HeadBellyPhase", palettePhase);
         rig.surfaceBlock.SetVector("_HeadBellyDirection", ctx.headBelly);
-        rig.surfaceBlock.SetFloat("_CollarLength", tuning.NeckCollarLengthU);
+        rig.surfaceBlock.SetFloat("_CollarLength", config.NeckCollarLengthU);
         rig.surfaceBlock.SetFloat("_HeadWatch", ctx.following
             ? rig.waitingHeadBlend : 1f);
         rig.surfaceBlock.SetFloat("_HeadWatch", 1f);
@@ -600,12 +600,12 @@ public sealed class FallingCobraSpine {
         }
         System.Array.Copy(rig.referenceWaveVertices, rig.neckSurfaceOriginal,
             rig.referenceWaveVertices.Length);
-        float step = tuning.SmoothBodyLengthU / (BodyRings - 1);
+        float step = config.SmoothBodyLengthU / (BodyRings - 1);
         int end =
-            Mathf.Clamp(Mathf.CeilToInt(tuning.RoundedNeckLengthU / step), 3,
+            Mathf.Clamp(Mathf.CeilToInt(config.RoundedNeckLengthU / step), 3,
                 Mathf.Min(BodyRings - 2, neckEnd + 4));
         float roundLength = end * step;
-        for (int pass = 0; pass<tuning.RoundedNeckPasses; pass++) {
+        for (int pass = 0; pass<config.RoundedNeckPasses; pass++) {
             System.Array.Copy(rig.referenceWaveVertices, rig.neckSurfaceBuffer,
                 rig.referenceWaveVertices.Length);
             for (int ring = 1; ring<end; ring++) {
@@ -627,7 +627,7 @@ public sealed class FallingCobraSpine {
                         rig.neckSurfaceOriginal[i]
                             + Vector3.ClampMagnitude(rounded
                                 - rig.neckSurfaceOriginal[i],
-                                    tuning.RoundedNeckMaxOffsetU);
+                                    config.RoundedNeckMaxOffsetU);
                 }
             }
             Vector3[] swap = rig.referenceWaveVertices;
@@ -661,9 +661,9 @@ public sealed class FallingCobraSpine {
             axis = Vector3.Slerp(headAxis, axis,
                 Mathf.SmoothStep(0f, 1f,
                     Mathf.Clamp01(behind
-                        / tuning.NeckCollarLengthU))).normalized;
+                        / config.NeckCollarLengthU))).normalized;
             float thicknessFloor =
-                tuning.SmoothBodyRadiusU * tuning.MinimumNeckThicknessShare
+                config.SmoothBodyRadiusU * config.MinimumNeckThicknessShare
                     * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(behind / .35f));
             Vector3 transported =
                 Vector3.ProjectOnPlane(previousRight, axis).normalized;
@@ -681,8 +681,8 @@ public sealed class FallingCobraSpine {
             float roll = Vector3.SignedAngle(transported, targetRight, axis);
             Vector3 right =
                 Quaternion.AngleAxis(Mathf.Clamp(roll,
-                    -tuning.BodyTwistDegreesPerU * step,
-                        tuning.BodyTwistDegreesPerU * step), axis)
+                    -config.BodyTwistDegPerU * step,
+                        config.BodyTwistDegPerU * step), axis)
                             * transported;
             Vector3 forward = Vector3.Cross(right, axis).normalized;
             previousRight = right;
@@ -712,7 +712,7 @@ public sealed class FallingCobraSpine {
             }
             rig.roundedRingCenters[ring] = center / BodySides;
         }
-        float step = tuning.SmoothBodyLengthU / (BodyRings - 1);
+        float step = config.SmoothBodyLengthU / (BodyRings - 1);
         for (int ring = 1; ring<BodyRings; ring++)for (int side =
             0; side <= BodySides; side++) {
             int i = ring * BodyStride + side, s = side%BodySides;
@@ -744,7 +744,7 @@ public sealed class FallingCobraSpine {
             rig.relaxedNeck = new Vector3[BodyRings];
         }
         System.Array.Copy(rig.spineCenters, rig.relaxedNeck, BodyRings);
-        float step = tuning.SmoothBodyLengthU / (BodyRings - 1),
+        float step = config.SmoothBodyLengthU / (BodyRings - 1),
             newest = rig.swimTrail[rig.swimTrail.Count - 1].distance;
         int reach = Mathf.Max(1, Mathf.RoundToInt(.4f / step));
         float phase =

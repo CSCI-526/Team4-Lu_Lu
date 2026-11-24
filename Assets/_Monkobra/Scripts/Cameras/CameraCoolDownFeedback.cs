@@ -8,7 +8,7 @@ using UnityEngine.Rendering.Universal;
 /// a moving field of view reads as motion and tires the eye. Two steps: a
 /// lighter one while stamina is low, a stronger one once the bar is empty,
 /// both tuned in <see cref="CameraConfig"/>. Shares the screen edge with the
-/// cobra proximity vignette through <see cref="ScreenVignetteArbiter"/>.
+/// cobra proximity vignette through <see cref="ScreenVignetteManager"/>.
 /// Sits on the main camera. Pulses
 /// on every <see cref="StaminaBarController.LowStaminaMoveAttempted"/>, and
 /// the vignette returns to rest when the pulse ends or this component is
@@ -39,8 +39,8 @@ public class CameraCoolDownFeedback: MonoBehaviour {
         // then, and the ask lets the cobra vignette yield next time
         if (
             !isPulsing
-            && ScreenVignetteArbiter.I != null
-            && !ScreenVignetteArbiter.I.TryAcquire(VignetteOwner.Stamina)
+            && ScreenVignetteManager.I != null
+            && !ScreenVignetteManager.I.TryAcquire(VignetteOwner.Stamina)
         ) {
             return;
         }
@@ -194,8 +194,8 @@ public class CameraCoolDownFeedback: MonoBehaviour {
         }
         isPulsing = false;
 
-        if (ScreenVignetteArbiter.I != null) {
-            ScreenVignetteArbiter.I.Release(VignetteOwner.Stamina);
+        if (ScreenVignetteManager.I != null) {
+            ScreenVignetteManager.I.Release(VignetteOwner.Stamina);
         }
     }
 

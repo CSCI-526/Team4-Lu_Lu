@@ -7,7 +7,9 @@ using UnityEngine;
 /// add an id and a definition here, never a prefab.
 /// </summary>
 [CreateAssetMenu(
-    fileName = "PopUpCatalog", menuName = "Monkobra/PopUp Catalog")]
+    fileName = "PopUpCatalog",
+    menuName = "Scriptable Objects/PopUpCatalog"
+)]
 public class PopUpCatalog: ScriptableObject {
     // Public Members  #########################################################
     /// <returns>every definition, in the order authored</returns>

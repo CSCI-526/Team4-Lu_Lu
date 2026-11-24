@@ -5,13 +5,13 @@ using static CobraKingRig;
 
 /// <summary>The minion waves and streams of the finale.</summary>
 public sealed class CobraKingMinions {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
-    private readonly CobraKingTuning tuning;
+    private readonly CobraKingConfig config;
 
     public CobraKingMinions(CobraKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -21,7 +21,7 @@ public sealed class CobraKingMinions {
         // the king calls its minions once a game, the first time they come
         if (!rig.hasCalledMinions) {
             rig.hasCalledMinions = true;
-            rig.Feedback.SayNow(tuning.MinionCallLine,
+            rig.Feedback.SayNow(config.MinionCallLine,
                 CobraKingLinePriority.Key);
         }
         rig.waveIndex = 0;
@@ -38,16 +38,16 @@ public sealed class CobraKingMinions {
         rig.minionLockY = rig.monkey.position.y;
 
         // a gap never at either end, & the sweep runs either way
-        int gap = Random.Range(1, Mathf.Max(2, tuning.MinionCount - 1));
+        int gap = Random.Range(1, Mathf.Max(2, config.MinionCount - 1));
         float direction = Random.value < 0.5f ? -1f : 1f;
-        float warn = tuning.MinionWarnS * rig.WarnScale;
-        int signAt = tuning.MinionCount / 2 == gap ? gap + 1
-            : tuning.MinionCount / 2;
+        float warn = config.MinionWarnS * rig.WarnScale;
+        int signAt = config.MinionCount / 2 == gap ? gap + 1
+            : config.MinionCount / 2;
         int order = 0;
-        for (int i = 0; i < tuning.MinionCount; i++) {
+        for (int i = 0; i < config.MinionCount; i++) {
             float angle = rig.minionLockAngle
-                + direction * (i - (tuning.MinionCount - 1) * 0.5f)
-                    * tuning.MinionSpreadDeg;
+                + direction * (i - (config.MinionCount - 1) * 0.5f)
+                    * config.MinionSpreadDeg;
             bool isGap = i == gap;
             if (!isGap) {
                 // the same filling danger zone as the first version; one
@@ -58,7 +58,7 @@ public sealed class CobraKingMinions {
                     angle,
                     rig.coilBottomY,
                     rig.MinionEndY,
-                    tuning.MinionHitRadiusU * 1.4f,
+                    config.MinionHitRadiusU * 1.4f,
                     i == signAt ? "LOOK UP!" : null
                 );
             }
@@ -66,7 +66,7 @@ public sealed class CobraKingMinions {
                 angle = angle,
                 root = null,
                 isDone = isGap,
-                dropDelayS = warn + order * tuning.MinionStaggerS
+                dropDelayS = warn + order * config.MinionStaggerS
             });
             if (!isGap) {
                 order++;
@@ -82,7 +82,7 @@ public sealed class CobraKingMinions {
             rig.isMinionStreaming = true;
             if (!rig.hasCalledMinions) {
                 rig.hasCalledMinions = true;
-                rig.Feedback.SayNow(tuning.MinionCallLine,
+                rig.Feedback.SayNow(config.MinionCallLine,
                     CobraKingLinePriority.Key);
             }
             StartWave();
@@ -92,7 +92,7 @@ public sealed class CobraKingMinions {
             UpdateMinions();
         } else if (
             Time.time >= rig.nextWaveTime
-            && rig.Attacks.AttackDangerLeftS() <= tuning.FinaleOverlapS
+            && rig.Attacks.AttackDangerLeftS() <= config.FinaleOverlapS
         ) {
             // likewise a wave waits for a bite or sweep to near its end
             StartWave();
@@ -102,7 +102,7 @@ public sealed class CobraKingMinions {
     public void UpdateMinions() {
         float lastWaveTimeS = rig.waveTimeS;
         rig.waveTimeS += Time.deltaTime;
-        float warn = tuning.MinionWarnS * rig.WarnScale;
+        float warn = config.MinionWarnS * rig.WarnScale;
         // its sound as the first minion drops, not at the warning
         if (lastWaveTimeS < warn && rig.waveTimeS >= warn) {
             rig.onAttackStruck?.Invoke();
@@ -127,9 +127,9 @@ public sealed class CobraKingMinions {
                 );
             }
             minion.root.position += Vector3.down
-                * tuning.MinionFallSpeedU * Time.deltaTime;
+                * config.MinionFallSpeedU * Time.deltaTime;
             bool hasHit = (minion.root.position - rig.monkey.position).magnitude
-                < tuning.MinionHitRadiusU;
+                < config.MinionHitRadiusU;
             if (hasHit) {
                 // a minion is a snake too: its touch is fatal, unless the
                 // gold shield takes it
@@ -149,7 +149,7 @@ public sealed class CobraKingMinions {
         rig.Feedback.ClearStripMarkers();
         // the finale's stream starts its next wave after a short gap
         if (rig.isMinionStreaming) {
-            rig.nextWaveTime = Time.time + tuning.MinionStreamGapS;
+            rig.nextWaveTime = Time.time + config.MinionStreamGapS;
             return;
         }
         rig.waveIndex++;
@@ -167,7 +167,7 @@ public sealed class CobraKingMinions {
         for (int i = 0; i < 3; i++) {
             Transform bead = rig.Feedback.CreatePrimitive(
                 PrimitiveType.Sphere, "Bead" + i,
-                Vector3.one * (0.7f - i * 0.12f), tuning.MinionColor
+                Vector3.one * (0.7f - i * 0.12f), config.MinionColor
             ).transform;
             bead.SetParent(root, false);
             bead.localPosition = Vector3.up * i * 0.55f;

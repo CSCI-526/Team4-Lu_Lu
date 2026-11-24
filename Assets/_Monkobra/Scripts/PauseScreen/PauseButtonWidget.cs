@@ -14,7 +14,7 @@ using UnityEngine.UI;
 /// </para>
 /// </summary>
 [RequireComponent(typeof(Button), typeof(CanvasGroup))]
-public class PauseButton: MonoBehaviour {
+public class PauseButtonWidget: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         button = GetComponent<Button>();
@@ -25,7 +25,7 @@ public class PauseButton: MonoBehaviour {
         game = GameController.I;
         if (game == null) {
             Debug.LogError(
-                "PauseButton:\tGameController instance not found",
+                "PauseButtonWidget:\tGameController instance not found",
                 this
             );
             enabled = false;
@@ -48,7 +48,7 @@ public class PauseButton: MonoBehaviour {
         }
     }
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     private void OnClick() {
         // a selected button would take the next Space (the grab) as a confirm
         if (EventSystem.current != null) {
@@ -73,7 +73,7 @@ public class PauseButton: MonoBehaviour {
         group.blocksRaycasts = isShown;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private Button button;
     private CanvasGroup group;
     private GameController game;

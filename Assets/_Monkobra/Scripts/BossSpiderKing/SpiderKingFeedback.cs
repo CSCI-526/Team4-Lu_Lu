@@ -7,13 +7,13 @@ using static SpiderKingRig;
 /// <summary>Camera, decor, primitive and color helpers, and static fight
 /// helpers.</summary>
 public sealed class SpiderKingFeedback {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingFeedback(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -28,7 +28,7 @@ public sealed class SpiderKingFeedback {
         }
         float focus =
             Mathf.Clamp((rig.spiderY - rig.monkey.position.y) * 0.3f, 0f, 3f);
-        rig.cameraFraming.SetBossFraming(focus, tuning.CameraDistanceScale);
+        rig.cameraFraming.SetBossFraming(focus, config.CameraDistanceScale);
     }
 
     // if the action is wired & went down this frame; it is shared, so it is

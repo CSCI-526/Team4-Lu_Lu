@@ -23,7 +23,8 @@ public class BossMarkerFigure: MonoBehaviour {
     /// </summary>
     /// <param name="material">the boss body's lit material</param>
     /// <param name="bodyColor">its body</param>
-    /// <param name="accentColor">the cobra's crown, the spider's red mark</param>
+    /// <param name="accentColor">the cobra's crown, the spider's red
+    /// mark</param>
     /// <param name="eyeColor">the spider's glowing eyes; unused by the cobra
     /// </param>
     public static Transform Create(
@@ -106,7 +107,8 @@ public class BossMarkerFigure: MonoBehaviour {
         Transform skull = Part(PrimitiveType.Sphere, "Skull", head, bodyColor);
         skull.localScale = new Vector3(1f, 0.85f, 0.9f);
         for (int side = -1; side <= 1; side += 2) {
-            Transform eye = Part(PrimitiveType.Sphere, "Eye", head, Color.white);
+            Transform eye =
+                Part(PrimitiveType.Sphere, "Eye", head, Color.white);
             eye.localPosition = new Vector3(side * 0.26f, 0.12f, -0.36f);
             eye.localScale = Vector3.one * 0.32f;
             Transform pupil = Part(PrimitiveType.Sphere, "Pupil", head,

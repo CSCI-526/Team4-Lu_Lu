@@ -7,9 +7,9 @@ using static BossFightHudRig;
 /// <summary>Builds the HUD elements in code: the quiet bar, the revive panel,
 /// the reward panel, the armor badge, and the UI factory helpers.</summary>
 public sealed class BossFightHudBuilder {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly BossFightHudRig rig;
-    private readonly BossFightHudTuning tuning;
+    private readonly BossFightHudConfig config;
     private readonly System.Action onWatchAdClicked;
     private readonly System.Action onGiveUpClicked;
     private readonly System.Action onCoursePageClicked;
@@ -23,7 +23,7 @@ public sealed class BossFightHudBuilder {
             System.Action onCoursePageClicked, System.Action onContinueClicked,
                 System.Action onSkipAdClicked) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
         this.onWatchAdClicked = onWatchAdClicked;
         this.onGiveUpClicked = onGiveUpClicked;
         this.onCoursePageClicked = onCoursePageClicked;
@@ -66,7 +66,7 @@ public sealed class BossFightHudBuilder {
         rig.healthFill.offsetMin = new Vector2(3f, 3f);
         rig.healthFill.offsetMax = new Vector2(-3f, -3f);
         rig.healthFill.anchorMax = new Vector2(1f, 1f);
-        AddImage(rig.healthFill, tuning.HealthColor);
+        AddImage(rig.healthFill, config.HealthColor);
         CreateHeart(bar);
         rig.nameLabel =
             CreateLabel("Name", rig.rootRect, "", 28f, UIStyle.Cream);
@@ -87,9 +87,9 @@ public sealed class BossFightHudBuilder {
 
         // animated hold-and-release icon, one per control style
         rig.keyPrompt = KeyPromptWidget.Create(
-            rig.rootRect, tuning.HintIconLibrary,
-                tuning.PromptKeyboardController,
-            tuning.PromptTouchController
+            rig.rootRect, config.HintIconLibrary,
+                config.PromptKeyboardController,
+            config.PromptTouchController
         );
 
         // banner, screen center
@@ -101,9 +101,9 @@ public sealed class BossFightHudBuilder {
         rig.bannerLabel.gameObject.SetActive(false);
 
         // animated double tap icon under the low banner, shown by a lesson
-        rig.doubleTapIcon = HintIconSlot.Create(
-            rig.rootRect, tuning.HintIconLibrary,
-            tuning.DoubleKeyboardController, tuning.DoubleTouchController,
+        rig.doubleTapIcon = HintIconWidget.Create(
+            rig.rootRect, config.HintIconLibrary,
+            config.DoubleKeyboardController, config.DoubleTouchController,
             DOUBLE_TAP_ICON_SIZE
         );
         if (rig.doubleTapIcon != null) {
@@ -139,7 +139,7 @@ public sealed class BossFightHudBuilder {
         float inset = HEART_SIZE * HEART_RIM_SHARE;
         fill.offsetMin = new Vector2(inset, inset);
         fill.offsetMax = new Vector2(-inset, -inset);
-        Image fillImage = AddImage(fill, tuning.HealthColor);
+        Image fillImage = AddImage(fill, config.HealthColor);
         fillImage.sprite = sprite;
         fillImage.preserveAspect = true;
         rig.heartLabel = CreateLabel("Count", rig.heart, "", HEART_FONT_SIZE,

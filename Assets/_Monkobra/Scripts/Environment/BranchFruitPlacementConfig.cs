@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Shared tuning for how Branch With Fruit prefabs are placed on a tree
@@ -11,7 +12,7 @@ using UnityEngine;
 public class BranchFruitPlacementConfig: ScriptableObject {
     // Public Members  #########################################################
     /// <returns>branch distance from the trunk axis; u</returns>
-    public float BranchRadius => branchRadius;
+    public float BranchRadiusU => branchRadiusU;
 
     /// <returns>min distance between branches; u</returns>
     public float MinBranchSeparation => minBranchSeparation;
@@ -23,8 +24,9 @@ public class BranchFruitPlacementConfig: ScriptableObject {
     // Inspector Fields  #######################################################
     [Header("Branch Position")]
     [SerializeField]
+    [FormerlySerializedAs("branchRadius")]
     [Tooltip("branch distance fr trunk axis; u")]
-    private float branchRadius = 6.6f;
+    private float branchRadiusU = 6.6f;
 
     [SerializeField]
     [Tooltip("min distance b/t branches; u")]
@@ -36,7 +38,7 @@ public class BranchFruitPlacementConfig: ScriptableObject {
 
     // Editor Validation  ######################################################
     private void OnValidate() {
-        branchRadius = Mathf.Max(0f, branchRadius);
+        branchRadiusU = Mathf.Max(0f, branchRadiusU);
         minBranchSeparation = Mathf.Max(0f, minBranchSeparation);
         maxPlacementAttempts = Mathf.Max(1, maxPlacementAttempts);
     }

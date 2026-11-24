@@ -10,7 +10,8 @@ public static class FirebaseLeaderboardSetup {
         FirebaseLeaderboardConfig config =
             AssetDatabase.LoadAssetAtPath<FirebaseLeaderboardConfig>(CONFIG);
         if (config == null) {
-            config = ScriptableObject.CreateInstance<FirebaseLeaderboardConfig>();
+            config =
+                ScriptableObject.CreateInstance<FirebaseLeaderboardConfig>();
             AssetDatabase.CreateAsset(config, CONFIG);
         }
         GameObject root = PrefabUtility.LoadPrefabContents(PREFAB);
@@ -18,7 +19,9 @@ public static class FirebaseLeaderboardSetup {
             LeaderboardWidget widget =
                 root.GetComponentInChildren<LeaderboardWidget>(true);
             if (widget == null) {
-                throw new InvalidOperationException("LeaderboardWidget missing.");
+                throw new InvalidOperationException(
+                    "LeaderboardWidget missing."
+                );
             }
             SerializedObject serialized = new SerializedObject(widget);
             serialized.FindProperty("firebaseConfig").objectReferenceValue =
@@ -36,7 +39,8 @@ public static class FirebaseLeaderboardSetup {
             + "and enable it after publishing tools/firebase/firestore.rules.");
     }
 
-    /// <summary>Batch-mode integration check against the demo emulators.</summary>
+    /// <summary>Batch-mode integration check against the demo
+    /// emulators.</summary>
     public static async void VerifyEmulator() {
         FirebaseLeaderboardConfig config =
             ScriptableObject.CreateInstance<FirebaseLeaderboardConfig>();
@@ -51,7 +55,9 @@ public static class FirebaseLeaderboardSetup {
             foreach (string invalid in new[] {
                 "", "   ", "<b>Monkey</b>", "Monkey\nKing", "12345678901234567"
             }) {
-                if (FirebaseLeaderboardClient.TryNormalizeName(invalid, out _)) {
+                if (
+                    FirebaseLeaderboardClient.TryNormalizeName(invalid, out _)
+                ) {
                     throw new Exception("Invalid nickname accepted.");
                 }
             }
@@ -102,11 +108,14 @@ public static class FirebaseLeaderboardSetup {
     public static void ResetEmulatorIdentity() {
         // Emulator Auth is empty after a restart unless explicitly exported.
         // Keep pending bests, but never reuse a vanished demo identity.
-        PlayerPrefs.DeleteKey("Monkobra.Firebase.Emulator.demo-monkobra.refresh");
+        PlayerPrefs.DeleteKey(
+            "Monkobra.Firebase.Emulator.demo-monkobra.refresh"
+        );
         PlayerPrefs.Save();
     }
 
-    /// <summary>Offline visual check: renders sample rows without contacting Firebase.</summary>
+    /// <summary>Offline visual check: renders sample rows without contacting
+    /// Firebase.</summary>
     public static void RenderPreview() {
         UnityEngine.SceneManagement.Scene scene =
             UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
@@ -122,7 +131,8 @@ public static class FirebaseLeaderboardSetup {
             canvas.renderMode = RenderMode.WorldSpace;
             canvasObject.GetComponent<RectTransform>().sizeDelta =
                 new Vector2(720f, 620f);
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PREFAB);
+            GameObject prefab =
+                AssetDatabase.LoadAssetAtPath<GameObject>(PREFAB);
             GameObject boardObject =
                 (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
             boardObject.transform.SetParent(canvasObject.transform, false);
@@ -146,7 +156,8 @@ public static class FirebaseLeaderboardSetup {
                 }
             }
             boardObject.transform.Find("PlayerRank")
-                .GetComponent<TMPro.TMP_Text>().text = "YOUR RANK  #" + playerRank;
+                .GetComponent<TMPro.TMP_Text>().text = "YOUR RANK  #"
+                    + playerRank;
             boardObject.GetComponentInChildren<TMPro.TMP_InputField>(true)
                 .SetTextWithoutNotify("Belle");
 
@@ -188,7 +199,9 @@ public static class FirebaseLeaderboardSetup {
             if (image != null) {
                 UnityEngine.Object.DestroyImmediate(image);
             }
-            UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(scene);
+            UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(
+                scene
+            );
         }
     }
 
@@ -212,8 +225,12 @@ public static class FirebaseLeaderboardSetup {
             foreach (string field in new[] {
                 "leaderboard", "nameInput", "saveButton", "hintLabel"
             }) {
-                if (nameFields.FindProperty(field).objectReferenceValue == null) {
-                    throw new Exception("Missing name editor reference: " + field);
+                if (
+                    nameFields.FindProperty(field).objectReferenceValue == null
+                ) {
+                    throw new Exception(
+                        "Missing name editor reference: " + field
+                    );
                 }
             }
             SerializedObject serialized = new SerializedObject(widget);

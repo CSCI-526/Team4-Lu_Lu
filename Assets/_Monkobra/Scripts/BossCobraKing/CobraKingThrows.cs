@@ -6,13 +6,13 @@ using static CobraKingRig;
 /// <summary>Thrown bananas in flight, their trail and sparks, the jewel hit,
 /// and the first throw hint.</summary>
 public sealed class CobraKingThrows {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
-    private readonly CobraKingTuning tuning;
+    private readonly CobraKingConfig config;
 
     public CobraKingThrows(CobraKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -26,9 +26,9 @@ public sealed class CobraKingThrows {
                 continue;
             }
             thrown.ageS += Time.deltaTime;
-            float t = Mathf.Clamp01(thrown.ageS / tuning.ThrowTimeS);
+            float t = Mathf.Clamp01(thrown.ageS / config.ThrowTimeS);
             Vector3 position = Vector3.Lerp(thrown.start, target, t)
-                + Vector3.up * Mathf.Sin(t * Mathf.PI) * tuning.ThrowArcU;
+                + Vector3.up * Mathf.Sin(t * Mathf.PI) * config.ThrowArcU;
             thrown.transform.position = position;
             thrown.transform.Rotate(Vector3.forward, 900f * Time.deltaTime);
 
@@ -43,7 +43,7 @@ public sealed class CobraKingThrows {
             }
             UnityEngine.Object.Destroy(thrown.transform.gameObject);
             rig.projectiles.RemoveAt(i);
-            BurstAt(target, tuning.TrailColor);
+            BurstAt(target, config.TrailColor);
             OnJewelHit();
         }
         UpdateSparks();
@@ -52,7 +52,7 @@ public sealed class CobraKingThrows {
     public void AddTrailDot(Vector3 position) {
         Transform dot = rig.Feedback.CreatePrimitive(
             PrimitiveType.Sphere, "TrailDot", Vector3.one * 0.22f,
-                tuning.TrailColor
+                config.TrailColor
         ).transform;
         dot.position = position;
         rig.sparks.Add(new CobraKingSpark {
@@ -108,7 +108,7 @@ public sealed class CobraKingThrows {
         }
 
         int lastThird = rig.Third;
-        int damage = tuning.WorldBalanceConfig.BossBananaDamage;
+        int damage = rig.worldBalanceConfig.BossBananaDamage;
         rig.health = Mathf.Max(0, rig.health - damage);
         rig.body.FlashHit();
         rig.onJewelHit?.Invoke();
@@ -121,13 +121,13 @@ public sealed class CobraKingThrows {
         }
         if (!rig.hasHit) {
             rig.hasHit = true;
-            rig.Feedback.Say(tuning.FirstHitLine);
-            rig.nextGoldenTime = Time.time + tuning.GoldenFirstDelayS;
+            rig.Feedback.Say(config.FirstHitLine);
+            rig.nextGoldenTime = Time.time + config.GoldenFirstDelayS;
             rig.Attacks.StartRest();
         } else if (rig.Third > lastThird) {
             // each lost third: more bananas to throw & more webs
-            rig.Arena.AddBananas(tuning.BananasPerThird);
-            rig.Arena.SpawnWebs(tuning.WebsPerThird);
+            rig.Arena.AddBananas(config.BananasPerThird);
+            rig.Arena.SpawnWebs(config.WebsPerThird);
         }
     }
 
@@ -174,7 +174,7 @@ public sealed class CobraKingThrows {
                 u * u * from + 2f * u * t * control + t * t * to;
             // a pulse runs along the line toward the king
             float pulse = Mathf.Repeat(t - wave, 1f);
-            rig.dots[i].localScale = Vector3.one * tuning.DotRadiusU * 2f
+            rig.dots[i].localScale = Vector3.one * config.DotRadiusU * 2f
                 * Mathf.Lerp(1.6f, 0.8f, pulse);
         }
     }

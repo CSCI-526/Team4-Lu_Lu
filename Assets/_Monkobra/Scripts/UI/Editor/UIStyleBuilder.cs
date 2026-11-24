@@ -15,7 +15,7 @@ using UnityEngine.UI;
 /// keeps what it already made.
 /// </summary>
 public static partial class UIStyleBuilder {
-    // public members  #########################################################
+    // Public Members  #########################################################
     internal static TMP_FontAsset SemiBold => Load<TMP_FontAsset>(SEMIBOLD_SDF);
     internal static TMP_FontAsset ExtraBold =>
         Load<TMP_FontAsset>(EXTRABOLD_SDF);

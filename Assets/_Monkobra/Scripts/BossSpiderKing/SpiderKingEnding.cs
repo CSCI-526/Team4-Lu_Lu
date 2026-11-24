@@ -7,16 +7,16 @@ using static SpiderKingRig;
 /// <summary>The finisher, the revive offer, the defeat, and the reward
 /// flow.</summary>
 public sealed class SpiderKingEnding {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
     private readonly System.Action onRevived;
     private readonly System.Action onFightEnded;
 
     public SpiderKingEnding(SpiderKingRig rig, System.Action onRevived,
         System.Action onFightEnded) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
         this.onRevived = onRevived;
         this.onFightEnded = onFightEnded;
     }
@@ -38,7 +38,7 @@ public sealed class SpiderKingEnding {
         rig.parrySlowEndTime = 0f;
         rig.isDashing = false;
         rig.Attacks.ClearSlash();
-        Time.timeScale = tuning.FinisherTimeScale;
+        Time.timeScale = config.FinisherTimeScale;
         if (isWin) {
             rig.hud.Flash(Color.white);
             return;
@@ -67,7 +67,7 @@ public sealed class SpiderKingEnding {
         if (!rig.isFinisherWin) {
             rig.monkey.Rotate(Vector3.up, 900f * Time.unscaledDeltaTime);
         }
-        if (rig.finisherTimeS < tuning.FinisherRealS) {
+        if (rig.finisherTimeS < config.FinisherRealS) {
             return;
         }
         Time.timeScale = 1f;
@@ -80,7 +80,7 @@ public sealed class SpiderKingEnding {
 
     public void OfferRevive() {
         rig.phase = SpiderKingPhase.ReviveOffer;
-        rig.reviveLeftS = tuning.ReviveOfferS;
+        rig.reviveLeftS = config.ReviveOfferS;
         Time.timeScale = 0f;
         rig.hud.HideBanner();
         rig.hud.ShowReviveOffer();
@@ -95,10 +95,10 @@ public sealed class SpiderKingEnding {
         float stepS = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
         if (rig.phase == SpiderKingPhase.WatchingAd) {
             rig.adElapsedS += stepS;
-            bool canSkip = rig.adElapsedS >= tuning.AdSkipAfterS;
+            bool canSkip = rig.adElapsedS >= config.AdSkipAfterS;
             rig.hud.SetAdSkippable(canSkip);
             if (canSkip
-                && SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
+                && SpiderKingFeedback.WasPressed(config.ConfirmAction)) {
                 SkipAd();
             }
             return;
@@ -106,9 +106,9 @@ public sealed class SpiderKingEnding {
         rig.reviveLeftS -= stepS;
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(Mathf.Max(0f,
             rig.reviveLeftS)));
-        if (SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
+        if (SpiderKingFeedback.WasPressed(config.ConfirmAction)) {
             WatchAd();
-        } else if (SpiderKingFeedback.WasPressed(tuning.GiveUpAction)
+        } else if (SpiderKingFeedback.WasPressed(config.GiveUpAction)
             || rig.reviveLeftS <= 0f) {
             GiveUp();
         }
@@ -139,7 +139,7 @@ public sealed class SpiderKingEnding {
 
     public void SkipAd() {
         if (rig.phase != SpiderKingPhase.WatchingAd
-            || rig.adElapsedS < tuning.AdSkipAfterS) {
+            || rig.adElapsedS < config.AdSkipAfterS) {
             return;
         }
         RestartFight();
@@ -147,8 +147,8 @@ public sealed class SpiderKingEnding {
 
     public void OpenCoursePage() {
         if (rig.phase == SpiderKingPhase.WatchingAd
-            && !string.IsNullOrEmpty(tuning.CourseUrl)) {
-            Application.OpenURL(tuning.CourseUrl);
+            && !string.IsNullOrEmpty(config.CourseUrl)) {
+            Application.OpenURL(config.CourseUrl);
         }
     }
 
@@ -208,12 +208,12 @@ public sealed class SpiderKingEnding {
             rig.struggle.ForceRelease();
         }
         SpiderKingFeedback.SetUntouchable(true);
-        rig.monkeyController.SetHeightCeiling(rig.entryY + tuning.ArenaHeightU);
+        rig.monkeyController.SetHeightCeiling(rig.entryY + config.ArenaHeightU);
         rig.monkeyController.ClearStun();
         rig.monkeyController.IsHeld = true;
         rig.returnTarget = rig.entryPosition;
         rig.monkeyController.PullTo(rig.returnTarget,
-            tuning.ReviveReturnSpeedU);
+            config.ReviveReturnSpeedU);
         rig.isReturningToStart = true;
     }
 
@@ -242,7 +242,7 @@ public sealed class SpiderKingEnding {
         rig.Shots.ClearShots();
         rig.Melons.ClearThrows();
         rig.Arena.ClearStickyWebs();
-        rig.Parry.Burst(rig.body.Position, tuning.SilkColor, 20);
+        rig.Parry.Burst(rig.body.Position, config.SilkColor, 20);
         rig.hud.Say("My beautiful web...");
         if (Debug.isDebugBuild) {
             Debug.Log("SpiderKingFightController:\tSpider King defeated",
@@ -253,20 +253,20 @@ public sealed class SpiderKingEnding {
     public void UpdateDefeat() {
         rig.defeatTimeS += Time.deltaTime;
         rig.body.Fall(rig.defeatTimeS);
-        if (rig.defeatTimeS < tuning.DefeatFallS) {
+        if (rig.defeatTimeS < config.DefeatFallS) {
             return;
         }
         rig.body.Clear();
         rig.phase = SpiderKingPhase.Rewarding;
         // the gloves: every web from now on breaks twice as fast
         if (rig.struggle != null) {
-            rig.struggle.EscapeGainScale = tuning.GlovesEscapeGainScale;
+            rig.struggle.EscapeGainScale = config.GlovesEscapeGainScale;
         }
         rig.hud.HideBossBar();
         // the gloves are only their effect, nothing worn: straight to the
         // reward panel
-        rig.hud.ShowRewardPanel(tuning.WinTitle, tuning.WinLine,
-            tuning.WinDetailLine);
+        rig.hud.ShowRewardPanel(config.WinTitle, config.WinLine,
+            config.WinDetailLine);
     }
 
     // time stops on the reward panel till the player goes on
@@ -278,7 +278,7 @@ public sealed class SpiderKingEnding {
         // only once the win has played in, so a Space mashed in the fight
         // never skips it
         if (rig.hud.IsRewardReady
-            && SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
+            && SpiderKingFeedback.WasPressed(config.ConfirmAction)) {
             ContinueAfterReward();
         }
     }
@@ -296,7 +296,7 @@ public sealed class SpiderKingEnding {
         rig.Arena.EndBareArena();
         if (rig.greatCobra != null) {
             rig.greatCobra.StopGuard();
-            rig.greatCobra.KnockBack(tuning.WinCobraDropU);
+            rig.greatCobra.KnockBack(config.WinCobraDropU);
         }
         if (rig.monkeyController != null) {
             rig.monkeyController.ClearHeightCeiling();

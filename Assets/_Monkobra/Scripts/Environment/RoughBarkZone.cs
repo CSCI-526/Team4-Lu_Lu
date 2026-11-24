@@ -69,7 +69,7 @@ public class RoughBarkZone: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Start() {
-        monkey = FindFirstObjectByType<MonkeyController>();
+        monkey = MonkeyController.I;
     }
 
     private void FixedUpdate() {

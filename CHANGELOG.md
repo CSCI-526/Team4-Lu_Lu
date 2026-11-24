@@ -5,6 +5,7 @@ BUG outline more uniformed: for both monkey and food
 BUG erik boss make energy bar gone, better ways to indicate 1 kill
 FIXME erik mpv tutorial for boss fight
 FIXME erik b/t boss fight, better randomization
+Bug cobra camera: slow down, show more of the snake
 Fixme erik size of the rough bark need to improve
 
 Todo upd weekly devlog
@@ -111,6 +112,20 @@ todo todo add 3x fruit
   stutters: the body tube 96 x 16 instead of 257 x 32 (about 4.6x fewer
   vertices made again each frame), and a dormant one skips that rebuild while
   off screen or beyond its wake range (+4 u, was twice that range)
+
+##### Erik
+
+- scripts refactored to the `u3d` skill: banners, log tags, tooltips, units in
+  field names, 80-column wrap; player & singleton lookups through `I`
+- great cobra, falling cobra, both bosses & boss HUD read tuned values from
+  Config assets (`CobraMotorConfig`, `FallingCobraConfig`, `CobraKingConfig`,
+  `SpiderKingConfig`, `BossFightHudConfig`, one HUD asset per boss) in place of
+  prefab-stored `*Tuning` objects; values unchanged
+- 11 scripts renamed to role suffixes: `MonkeySfxListener`,
+  `CobraKingSfxListener`, `SpiderKingSfxListener`, `CobraFreezeTintListener`,
+  `CobraKingContactSensor`, `HeightMarkerRelay`, `ScreenVignetteManager`,
+  `HintIconWidget`, `PauseButtonWidget`, `LoseScreenCountRowWidget`,
+  `PersistentBootstrapLoader`; prefabs keep their scripts
 
 ### Deprecated
 

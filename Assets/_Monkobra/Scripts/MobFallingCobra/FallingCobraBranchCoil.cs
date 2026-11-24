@@ -6,13 +6,13 @@ using static FallingCobraMath;
 /// <summary>Frames the supporting branch and places the coil, perch, and head
 /// against it.</summary>
 public sealed class FallingCobraBranchCoil {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
-    private readonly FallingCobraTuning tuning;
+    private readonly FallingCobraConfig config;
 
     public FallingCobraBranchCoil(FallingCobraRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -43,41 +43,41 @@ public sealed class FallingCobraBranchCoil {
         float along =
             Mathf.Clamp01(behind
                 / Mathf.Max(.1f,
-                    tuning.SmoothBodyLengthU - tuning.StandingNeckLengthU));
+                    config.SmoothBodyLengthU - config.StandingNeckLengthU));
         float phase =
-            along * tuning.BranchCoilTurns * Mathf.PI * 2f
+            along * config.BranchCoilTurns * Mathf.PI * 2f
                 + rig.perchedCoilPhaseDegrees * Mathf.Deg2Rad;
         float baseStart =
             Mathf.Max(.01f,
-                (tuning.BranchCoilTurns - 1f)
-                    / Mathf.Max(1f, tuning.BranchCoilTurns));
+                (config.BranchCoilTurns - 1f)
+                    / Mathf.Max(1f, config.BranchCoilTurns));
         float radiusScale = along <= baseStart
             ? Mathf.Lerp(.55f, 1f,
                 Mathf.Sin(Mathf.Clamp01(along / baseStart) * Mathf.PI * .5f))
-            : Mathf.Lerp(1f, tuning.SittingCoilInnerScale,
+            : Mathf.Lerp(1f, config.SittingCoilInnerScale,
                 Mathf.SmoothStep(0f, 1f,
                     Mathf.InverseLerp(baseStart, 1f, along)));
         float baseProgress =
-            (tuning.StandingNeckLengthU
-                + (tuning.SmoothBodyLengthU - tuning.StandingNeckLengthU)
-                    * baseStart) / tuning.SmoothBodyLengthU;
+            (config.StandingNeckLengthU
+                + (config.SmoothBodyLengthU - config.StandingNeckLengthU)
+                    * baseStart) / config.SmoothBodyLengthU;
         float baseRadius =
-            tuning.SmoothBodyRadiusU
+            config.SmoothBodyRadiusU
                 * (1f - Mathf.SmoothStep(0f, 1f,
                     Mathf.InverseLerp(.55f, 1f, baseProgress)));
         // The last turn lies flat on the branch; its taper curls inward
         // underneath the upper body.
         float stackHeight = along < baseStart
-            ? baseRadius + tuning.SittingCoilLayerRiseU
-                * tuning.BranchCoilTurns * (baseStart - along) : tubeRadius;
+            ? baseRadius + config.SittingCoilLayerRiseU
+                * config.BranchCoilTurns * (baseStart - along) : tubeRadius;
         float height =
             rig.branchHalfHeight + Mathf.Max(tubeRadius, stackHeight)
-                + tuning.BranchSkinClearanceU;
+                + config.BranchSkinClearanceU;
         return rig.branchCenter + rig.branchAxis
-            * (rig.branchAnchorAlong + tuning.SittingCoilRadiusAlongU
+            * (rig.branchAnchorAlong + config.SittingCoilRadiusAlongU
                 * radiusScale * Mathf.Cos(phase))
             + rig.branchSide
-                * (tuning.SittingCoilRadiusAcrossU * radiusScale
+                * (config.SittingCoilRadiusAcrossU * radiusScale
                     * Mathf.Sin(phase)) + rig.branchUp * height;
     }
 
@@ -122,7 +122,7 @@ public sealed class FallingCobraBranchCoil {
                         rig.branchSide)) < rig.branchHalfWidth;
         Vector3 away = inside ? closest - point : point - closest;
         float distance = away.magnitude,
-            clearance = radius + tuning.BranchSkinClearanceU;
+            clearance = radius + config.BranchSkinClearanceU;
         if (!inside && distance >= clearance) {
             return point;
         }
@@ -140,10 +140,10 @@ public sealed class FallingCobraBranchCoil {
         float height = Vector3.Dot(delta, rig.branchUp) - rig.branchHalfHeight;
         float alongEdge =
             Mathf.Abs(Vector3.Dot(delta, rig.branchAxis))
-                - tuning.SittingCoilRadiusAlongU - tubeRadius;
+                - config.SittingCoilRadiusAlongU - tubeRadius;
         float sideEdge =
             Mathf.Abs(Vector3.Dot(delta, rig.branchSide))
-                - tuning.SittingCoilRadiusAcrossU - tubeRadius;
+                - config.SittingCoilRadiusAcrossU - tubeRadius;
         float pileSupport =
             Mathf.SmoothStep(0f, 1f,
                 Mathf.InverseLerp(-tubeRadius, .05f, height))
@@ -173,14 +173,14 @@ public sealed class FallingCobraBranchCoil {
                 - rig.branchAxis * rig.branchAnchorAlong;
         float side = Vector3.Dot(toward, rig.branchSide),
             along = Vector3.Dot(toward, rig.branchAxis);
-        float gain = 1f - Mathf.Exp(-tuning.PerchedAimSharpness * deltaTime);
+        float gain = 1f - Mathf.Exp(-config.PerchedAimSharpness * deltaTime);
         rig.perchedAimSide =
             Mathf.Lerp(rig.perchedAimSide,
-                Mathf.Clamp(side / Mathf.Max(.5f, tuning.BranchHeadSideU), -1f,
+                Mathf.Clamp(side / Mathf.Max(.5f, config.BranchHeadSideU), -1f,
                     1f), gain);
         float phase =
-            Mathf.Atan2(side / Mathf.Max(.1f, tuning.SittingCoilRadiusAcrossU),
-                along / Mathf.Max(.1f, tuning.SittingCoilRadiusAlongU))
+            Mathf.Atan2(side / Mathf.Max(.1f, config.SittingCoilRadiusAcrossU),
+                along / Mathf.Max(.1f, config.SittingCoilRadiusAlongU))
                     * Mathf.Rad2Deg;
         rig.perchedCoilPhaseDegrees =
             Mathf.LerpAngle(rig.perchedCoilPhaseDegrees, phase, gain);
@@ -223,11 +223,11 @@ public sealed class FallingCobraBranchCoil {
             // Exit outside the supported pile, rather than diving through the
             // remaining body.
             protectedTop +=
-                tuning.SmoothBodyRadiusU * 2f + tuning.SittingCoilLayerRiseU
-                    * tuning.BranchCoilTurns;
+                config.SmoothBodyRadiusU * 2f + config.SittingCoilLayerRiseU
+                    * config.BranchCoilTurns;
             protectedSide =
                 Mathf.Max(protectedSide,
-                    tuning.SittingCoilRadiusAcrossU + tuning.SmoothBodyRadiusU);
+                    config.SittingCoilRadiusAcrossU + config.SmoothBodyRadiusU);
         }
         float protectedCenter = (protectedTop - rig.branchHalfHeight) * .5f;
         float protectedHalfHeight = (protectedTop + rig.branchHalfHeight) * .5f;
@@ -270,26 +270,26 @@ public sealed class FallingCobraBranchCoil {
             new Vector3(rig.branchCenter.x - rig.axisXZ.x, 0f,
                 rig.branchCenter.z - rig.axisXZ.y).normalized;
         return woodTop + rig.branchUp * (-bottom + .025f) + outwards
-            * tuning.BranchHeadForwardU + rig.branchSide
-                * (tuning.BranchHeadSideU * rig.perchedAimSide);
+            * config.BranchHeadForwardU + rig.branchSide
+                * (config.BranchHeadSideU * rig.perchedAimSide);
     }
 
     public Vector3 StandingTailPoint(float behind, Vector3 outward,
         Vector3 side) {
         float length =
             Mathf.Max(.1f,
-                tuning.SmoothBodyLengthU - tuning.StandingNeckLengthU);
+                config.SmoothBodyLengthU - config.StandingNeckLengthU);
         float along = Mathf.Clamp01(behind / length);
         float radius =
-            Mathf.Lerp(tuning.StandingCoilOuterRadiusU,
-                tuning.StandingCoilInnerRadiusU, along);
-        float theta = along * tuning.StandingCoilTurns * Mathf.PI * 2f;
+            Mathf.Lerp(config.StandingCoilOuterRadiusU,
+                config.StandingCoilInnerRadiusU, along);
+        float theta = along * config.StandingCoilTurns * Mathf.PI * 2f;
         float horizontal = radius * Mathf.Sin(theta);
         float height =
-            tuning.StandingBaseHeightU + radius * Mathf.Cos(theta)
-                - tuning.StandingCoilOuterRadiusU;
+            config.StandingBaseHeightU + radius * Mathf.Cos(theta)
+                - config.StandingCoilOuterRadiusU;
         float skinRadius =
-            tuning.TreeSurfaceRadiusU + tuning.TreeSurfaceClearanceU;
+            config.TreeSurfaceRadiusU + config.TreeSurfaceClearanceU;
         float angle = horizontal / skinRadius;
         Vector3 radial = outward * Mathf.Cos(angle) + side * Mathf.Sin(angle);
         return new Vector3(rig.axisXZ.x + radial.x * skinRadius,
