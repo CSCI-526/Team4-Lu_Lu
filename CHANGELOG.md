@@ -1,16 +1,14 @@
 # Monkobra CHANGELOG
 
 <!--
-Fixme wenhai during boss fight
-
-Bug erik boss make energy bar gone, better ways to indicate 1 kill
-Todo erik lighting
-Fixme erik mpv tutorial for boss fight
-Fixme erik b/t boss fight, better randomization
+BUG erik boss make energy bar gone, better ways to indicate 1 kill
+FIXME erik mpv tutorial for boss fight
+FIXME erik b/t boss fight, better randomization
 Fixme erik size of the rough bark need to improve
 
 Todo upd weekly devlog
 
+todo erik lighting
 todo todo vertical version adpation
 todo todo chinese version
 todo todo add 3x fruit
