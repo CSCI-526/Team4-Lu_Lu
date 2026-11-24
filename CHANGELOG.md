@@ -1,6 +1,7 @@
 # Monkobra CHANGELOG
 
 <!--
+Fixme tutorial zone: manageable amount of banana
 Bug failling monkey need separate animation
 Bug force encounter spider
 Bug make leaderboard works
