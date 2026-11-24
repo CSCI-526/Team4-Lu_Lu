@@ -20,111 +20,7 @@ todo todo add 3x fruit
 
 ### Added
 
-##### Yuqing Lu
-
-- intro comic as its own scene between the title and the level selection: five
-  motion-comic panels (the drought, the hungry sister, the rainforest tale, the
-  hero setting off, the cobra under the fruit tree) with captions; a press lets
-  a panel finish, then turns the page, Esc or Skip leaves; once a launch; the
-  art is drawn by `tools/comic` and brought in by `Monkobra > Build Intro Comic`
-
-##### Belle Dai
-
-- optional Firebase leaderboard prototype on the existing lose screen: anonymous
-  players, persistent per-mode personal bests, top ten and offline pending scores;
-  Editor setup, Spark deployment instructions and local emulator verification
-  with a blank configuration template for local Firebase setup
-- editable web-playtest nicknames on the leaderboard, saved per device while
-  keeping the same anonymous UID and personal best; shared-style input and SAVE
-  button, with run/menu/hack shortcuts suppressed during text entry
-
-##### Houdong Pan
-
-- cartoon tree: the `ToonBark` shader paints trunk & branches w/ soft 2 tone light, grain strokes, painterly mottle, mossy patches & a thin dark outline
-- cartoon branches (`StylizedBranchArt`): a flared, arched log w/ a twig, leaf rosettes & hanging moss, the fruit on a green leafy stalk; trunk segments grow hanging moss & leaf rosettes (`TrunkDecor`), rebuilt when a pooled segment moves up; colliders, hits & grabs unchanged
-- jungle backdrop (`JungleBackdrop`) that changes w/ height: round crowned forest all round & layered hills at the start, the forest dropping into a carpet of crowns w/ the river showing as the monkey climbs, clouds gathering, small clouds & flocks of birds from about 500 m; painted by sky, tree, cloud & bird shaders w/ textures from `tools/backdrop/make_backdrop.py`; clear of the trunk, no colliders, so it never blocks the camera
-- sound effects in the music's ukulele & djembe palette, made by `tools/sfx/make_sfx.py` w/o samples: the monkey's fruit grabs, miss, branch hit, leap, coconut throw, freeze & thaw, 3 web struggle takes, height marker chime, low stamina heartbeat, cobra bite & 5 happy calls; the Cobra King's entrance gong, attack warning, armor clang, fruit splat, shatter & victory
-
 ### Changed
-
-##### Wenhai Dong
-
-- endless run is a boss rush: every 300 u a boss waits, the Cobra King and the
-  Spider King taking turns, each later one harder (more health, shorter wind
-  ups, warnings & rests, faster spider shots); the spider's rows of 2 or 3
-  slashes only come in its later endless fights; the monkey and the great
-  cobra keep their normal speed (tunable, `endlessSpeedScale`); each coming
-  arena is kept bare and marked
-- Spider King's health bar red as the Cobra King's (was purple); shorter
-  rests b/t its attacks (`restS` 3.2 s, down to 1.4 s), so more slashes a
-  fight
-- Spider King's parry clash w/o its few white sparks
-- the web round a stuck Spider King no longer logs "Can't remove BoxCollider
-  because SpiderWebTrap depends on it": its decor copy drops scripts b4
-  colliders
-- both kings' health bars show the health left on a heart at their left (the
-  bar's red w/ a brown rim, the count in cream, popping as it drops), in
-  normal & endless fights alike
-- endless bosses aligned w/ the normal fights: each king's first fight is
-  exactly its normal one (Spider King 15 health, no faster), each later
-  fight of the same king harder (+40% health, 12% shorter times, 10% faster
-  per round; Cobra King 12 / 17 / 22 / 26, Spider King 15 / 21 / 27 / 33)
-- Spider King normal play: slashes one at a time, the curve kept by volleys
-- both kings' revive: a plain difficulty card, EASY or NORMAL, time stopped,
-  picked w/ A / D and Space or a tap, instead of choice fruit and the armor
-  words
-- Spider King's laid webs are copies of one light template, the web prefab's
-  157 strand cubes merged into 1 mesh, so a fight laying several a second no
-  longer stutters
-- boss fight effect parts drop their collider at the frame's end, never
-  immediately, so a burst made in a physics callback (the armor's save on the
-  great cobra's bite) no longer logs an error each time
-- both kings' fight controllers skip unhooking roles they never made (a
-  duplicate, or a script reload in Play), so no ArgumentException then
-- boss fight extra bare zones are kept per boss
-  (`RampedDifficultyManager.SetExtraBossZone(owner, ...)`)
-- a double-tap in a boss fight no longer throws a coconut
-- the gold armor's words show only the first time it is ever got
-  (`ProgressStore.ARMOR_INTRO`, kept across runs & modes); the boss lessons
-  are taught every fight as before
-- Spider King fight sounds, as the Cobra King's & w/ its clips
-  (`SpiderKingSfx`): a gong as it begins, a hiss as each bullet, slash & dash
-  strikes, a splat as it is hurt, a shatter & victory call as it falls
-- Spider King's slash crescents slower, 26 → 18 u/s (`slashSpeedU`)
-- Silk Gloves no longer worn on the monkey: only their effect, webs broken 2x
-  faster, the win going straight to the reward panel
-- Cobra King's attack hiss plays as each attack strikes (the bite landing,
-  the sweep coming round, the minions dropping), not at its warning
-  (`AttackStruck`)
-- Spider King easier, its moves kept: 15 health, slower crawl (4.8 u/s) &
-  web bullets (20 u/s), rests 3.2 s (never under 1.4 s), rarer
-  dashes, at most 2 bullets a volley, a gentler late speed up, a quicker tail
-  after a whiff; easy mode much softer still (0.45 health, 1.7x slower times,
-  0.7x speed, 1.3x wider parry reach, `easyReachScale`)
-- Spider King's slash crescents drawn thicker & flickering red-white, so they
-  read from afar; their width & hit unchanged
-- Spider King starts right above the monkey, never across the trunk; while
-  waiting it crawls round to stay above it
-- first-grab popup line points at the nearest fruit the player can see (on
-  screen, trunk's near side), not a farther or hidden one
-- falling cobras much lighter, so the climb after the Cobra King no longer
-  stutters: the body tube 96 x 16 instead of 257 x 32 (about 4.6x fewer
-  vertices made again each frame), and a dormant one skips that rebuild while
-  off screen or beyond its wake range (+4 u, was twice that range)
-
-##### Erik
-
-- scripts refactored to the `u3d` skill: banners, log tags, tooltips, units in
-  field names, 80-column wrap; player & singleton lookups through `I`
-- great cobra, falling cobra, both bosses & boss HUD read tuned values from
-  Config assets (`CobraMotorConfig`, `FallingCobraConfig`, `CobraKingConfig`,
-  `SpiderKingConfig`, `BossFightHudConfig`, one HUD asset per boss) in place of
-  prefab-stored `*Tuning` objects; values unchanged
-- 11 scripts renamed to role suffixes: `MonkeySfxListener`,
-  `CobraKingSfxListener`, `SpiderKingSfxListener`, `CobraFreezeTintListener`,
-  `CobraKingContactSensor`, `HeightMarkerRelay`, `ScreenVignetteManager`,
-  `HintIconWidget`, `PauseButtonWidget`, `LoseScreenCountRowWidget`,
-  `PersistentBootstrapLoader`; prefabs keep their scripts
 
 ### Deprecated
 
@@ -132,27 +28,74 @@ todo todo add 3x fruit
 
 ### Fixed
 
-##### Belle Dai
-
-- keep the English nickname field out of IME composition while focused and
-  restore the previous mode afterwards; hovering buttons no longer steals text
-  focus during nickname entry
-
 ### Security
 
-[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.4...dev
+[unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.5...dev
 
+## [1.0.0-beta.5] - 2026-11-24
 
+### Added
 
+##### Yuqing Lu
 
+- intro comic scene between the title and the level selection: five captioned
+  motion-comic panels, shown once per launch, skippable with Esc or Skip
 
+##### Belle Dai
 
+- optional Firebase leaderboard on the lose screen: anonymous players,
+  persistent per-mode personal bests, top ten, offline pending scores
+- editable leaderboard nicknames, saved per device, keeping the same anonymous
+  player and personal best
 
+##### Houdong Pan
 
+- cartoon tree: stylized trunk and branches with soft lighting, grain, moss,
+  leaves and an outline; colliders, hits and grabs unchanged
+- jungle backdrop that changes with height: forest, river, clouds and birds
+- synthesized sound effects for the monkey, the Cobra King and the Spider King
 
+### Changed
 
+##### Wenhai Dong
 
+- endless run is a boss rush: the Cobra King and the Spider King take turns every
+  300 u, each fight harder than the last of its king
+- Spider King easier and fairer: 15 health, slower crawl, bullets and slashes,
+  longer rests, starts above the monkey; easy mode much softer
+- Spider King slashes thicker and easier to read; web laying no longer stutters
+- both kings' health bars show remaining health on a heart; the Spider King's is
+  red
+- both kings' revive is a plain EASY or NORMAL difficulty card
+- Spider King fights gain their own sound effects; Cobra King attack hisses play
+  as each attack strikes
+- gold armor intro words show only the first time it is gained
+- Silk Gloves no longer worn on the monkey; their effect is unchanged
+- first-grab popup points at the nearest visible fruit
+- falling cobras much lighter, so the climb after the Cobra King no longer
+  stutters
+- a double-tap in a boss fight no longer throws a coconut
 
+##### Erik
+
+- scripts refactored to the `u3d` conventions; 11 scripts renamed to role
+  suffixes, prefabs keep their scripts
+- cobras, bosses and boss HUDs read tuned values from Config assets; values
+  unchanged
+
+### Fixed
+
+##### Belle Dai
+
+- nickname field no longer triggers IME composition; hovering buttons no longer
+  steals text focus
+
+##### Wenhai Dong
+
+- boss fights no longer log collider, `BoxCollider` and `ArgumentException`
+  errors
+
+[1.0.0-beta.5]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.4...v1.0.0-beta.5
 
 ## [1.0.0-beta.4] - 2026-11-17
 

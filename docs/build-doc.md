@@ -5,7 +5,7 @@ Unity `6000.3.22f1`. Every build uses its own Build Profile in `Assets/Settings/
 ## GitHub Pages
 
 Profile: `GithubPages` (WebGL)
-Location: `builds/Monkobra v1.0.0-beta.4+GitHub`
+Location: `builds/Monkobra v1.0.0-beta.5+GitHub`
 
 Profile settings (Pages cannot set response headers):
 
@@ -25,13 +25,13 @@ Steps:
 2. Test, since WebGL will not run from `file://`:
 
 ```bash
-python3 -m http.server 8000 --directory "builds/Monkobra v1.0.0-beta.4+GitHub"
+python3 -m http.server 8000 --directory "builds/Monkobra v1.0.0-beta.5+GitHub"
 ```
 
 ## itch.io
 
 Profile: `ItchIO` (WebGL)
-Location: `builds/Monkobra v1.0.0-beta.4+Itch`
+Location: `builds/Monkobra v1.0.0-beta.5+Itch`
 
 Profile settings: same as GitHub Pages, Development Build on included (`Disabled` works; gzip is the fallback, avoid Brotli).
 
@@ -68,7 +68,7 @@ The hack keys (F1~F3 cheats, 1~2 jumps, 3~6 spawns, F8~F10 analytics, F12 turns 
 
 ## Windows
 
-Location: `builds/Monkobra v1.0.0-beta.4+Win`
+Location: `builds/Monkobra v1.0.0-beta.5+Win`
 
 1. `File > Build Profiles`, select Windows, click Build, choose the location
 2. Run the `.exe`
