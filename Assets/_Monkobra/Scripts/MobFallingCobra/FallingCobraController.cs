@@ -78,6 +78,11 @@ public class FallingCobraController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
+    [Tooltip("every tuned value of a falling cobra")]
+    private FallingCobraConfig config;
+
+    [SerializeField]
+    [Tooltip("legacy tuning, read until the roles read config")]
     private FallingCobraTuning tuning = new();
 
     // private members  ########################################################

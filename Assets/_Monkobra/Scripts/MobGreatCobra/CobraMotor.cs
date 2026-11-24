@@ -195,7 +195,38 @@ public class CobraMotor: MonoBehaviour {
     }
 
     // Inspector Fields  #######################################################
+    [Header("References")]
     [SerializeField]
+    [Tooltip("trunk axis the cobra orbits, its y is the path's zero height")]
+    private Transform pathCenter;
+
+    [SerializeField]
+    [Tooltip("body segments, head first; missing ones are cloned from the last "
+        + "to fill the coil")]
+    private Transform[] bodySegments;
+
+    [SerializeField]
+    [Tooltip("cobra balance tuning; catch-up when the monkey is far ahead, "
+        + "none if unset")]
+    private CobraBalanceConfig cobraBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("player balance tuning; hit stun length, so one hit counts once; "
+        + "none if unset")]
+    private PlayerBalanceConfig playerBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("monkey climb tuning; its top up speed is what the base speed "
+        + "multipliers scale; inspector climb speed if unset")]
+    private MonkeyClimbConfig monkeyClimbConfig;
+
+    [Header("Tuning")]
+    [SerializeField]
+    [Tooltip("every tuned value of the great cobra")]
+    private CobraMotorConfig config;
+
+    [SerializeField]
+    [Tooltip("legacy tuning, read until the roles read config")]
     private CobraMotorTuning tuning = new();
 
     // private members  ########################################################
