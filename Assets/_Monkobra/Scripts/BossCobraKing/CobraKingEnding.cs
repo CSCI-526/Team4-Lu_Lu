@@ -185,7 +185,7 @@ public sealed class CobraKingEnding {
         rig.isEasy = false;
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.hasShield = true;
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
@@ -282,7 +282,7 @@ public sealed class CobraKingEnding {
             rig.monkeyController.ClearHeightCeiling();
         }
         rig.hud.SetPrompt(false, Vector3.zero);
-        rig.hud.SetHealth(0f);
+        rig.hud.SetHealth(0, rig.maxHealth);
 
         // a later boss of the endless run's rush: the last crown makes way
         if (rig.crown != null) {

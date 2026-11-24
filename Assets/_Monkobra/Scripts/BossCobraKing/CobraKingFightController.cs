@@ -702,6 +702,7 @@ public class CobraKingFightController: MonoBehaviour {
         }
 
         rig.hud.Show(tuning.BossName);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.hud.Flash();
         // the monkey starts in the gold armor, a spare life against the
         // king; the golden banana brings it back once lost

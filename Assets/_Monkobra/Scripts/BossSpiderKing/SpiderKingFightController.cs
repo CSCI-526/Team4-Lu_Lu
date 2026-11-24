@@ -516,7 +516,7 @@ public class SpiderKingFightController: MonoBehaviour {
         movement.ResetSpiderState();
 
         rig.hud.Show(tuning.BossName);
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         // flashes as the Cobra King's: at the start, the last blow & a
         // spent armor; never on a revive or a reward
         rig.hud.Flash();

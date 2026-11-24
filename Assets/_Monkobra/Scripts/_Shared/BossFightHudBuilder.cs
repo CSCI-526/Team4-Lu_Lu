@@ -67,6 +67,7 @@ public sealed class BossFightHudBuilder {
         rig.healthFill.offsetMax = new Vector2(-3f, -3f);
         rig.healthFill.anchorMax = new Vector2(1f, 1f);
         AddImage(rig.healthFill, tuning.HealthColor);
+        CreateHeart(bar);
         rig.nameLabel =
             CreateLabel("Name", rig.rootRect, "", 28f, UIStyle.Cream);
         RectTransform nameRect = rig.nameLabel.rectTransform;
@@ -120,6 +121,90 @@ public sealed class BossFightHudBuilder {
         rig.flashImage = AddImage(flash, new Color(1f, 1f, 1f, 0f));
         return true;
     }
+
+    // a heart just left of the bar, in its color w/ a dark brown rim, the
+    // health left in cream on it; under the bar, so it hides w/ it
+    private void CreateHeart(RectTransform bar) {
+        rig.heart = CreateRect("Heart", bar);
+        rig.heart.anchorMin = rig.heart.anchorMax = new Vector2(0f, 0.5f);
+        rig.heart.pivot = new Vector2(1f, 0.5f);
+        rig.heart.anchoredPosition = new Vector2(-HEART_GAP, 0f);
+        rig.heart.sizeDelta = new Vector2(HEART_SIZE, HEART_SIZE);
+        Sprite sprite = HeartSprite();
+        Image rim = AddImage(rig.heart, UIStyle.Brown);
+        rim.sprite = sprite;
+        rim.preserveAspect = true;
+        RectTransform fill = CreateRect("Fill", rig.heart);
+        Stretch(fill);
+        float inset = HEART_SIZE * HEART_RIM_SHARE;
+        fill.offsetMin = new Vector2(inset, inset);
+        fill.offsetMax = new Vector2(-inset, -inset);
+        Image fillImage = AddImage(fill, tuning.HealthColor);
+        fillImage.sprite = sprite;
+        fillImage.preserveAspect = true;
+        rig.heartLabel = CreateLabel("Count", rig.heart, "", HEART_FONT_SIZE,
+            UIStyle.Cream);
+        rig.heartLabel.fontStyle = FontStyles.Bold;
+        RectTransform count = rig.heartLabel.rectTransform;
+        Stretch(count);
+        // a heart's middle sits a little above its box's
+        count.offsetMin = new Vector2(0f, HEART_SIZE * 0.06f);
+        count.offsetMax = new Vector2(0f, HEART_SIZE * 0.06f);
+        rig.heartLabel.outlineColor = UIStyle.Brown;
+        rig.heartLabel.outlineWidth = 0.25f;
+    }
+
+    // one white heart, its edge smoothed, made once: (x² + y² - 1)³ - x²y³
+    // <= 0, 4 x 4 samples a pixel
+    private static Sprite HeartSprite() {
+        if (heartSprite != null) {
+            return heartSprite;
+        }
+        const int size = 128;
+        const int samples = 4;
+        Color32[] pixels = new Color32[size * size];
+        for (int py = 0; py < size; py++) {
+            for (int px = 0; px < size; px++) {
+                int inside = 0;
+                for (int sy = 0; sy < samples; sy++) {
+                    for (int sx = 0; sx < samples; sx++) {
+                        float x = ((px + (sx + 0.5f) / samples) / size
+                            - 0.5f) * 2.6f;
+                        float y = ((py + (sy + 0.5f) / samples) / size
+                            - 0.5f) * 2.6f + 0.1f;
+                        float a = x * x + y * y - 1f;
+                        if (a * a * a - x * x * y * y * y <= 0f) {
+                            inside++;
+                        }
+                    }
+                }
+                pixels[py * size + px] = new Color32(255, 255, 255,
+                    (byte)(255 * inside / (samples * samples)));
+            }
+        }
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32,
+            false) {
+            name = "Monkobra UI Heart",
+            hideFlags = HideFlags.DontSave,
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Bilinear,
+        };
+        texture.SetPixels32(pixels);
+        texture.Apply(false, true);
+        heartSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size),
+            new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        heartSprite.name = "Monkobra UI Heart";
+        heartSprite.hideFlags = HideFlags.DontSave;
+        return heartSprite;
+    }
+
+    private static Sprite heartSprite;
+    // the heart's size & gap to the bar, its rim's share of its size, the
+    // count's size; canvas units
+    private const float HEART_SIZE = 56f;
+    private const float HEART_GAP = 6f;
+    private const float HEART_RIM_SHARE = 0.08f;
+    private const float HEART_FONT_SIZE = 26f;
 
     public static Canvas FindRootCanvas() {
         foreach (Canvas canvas in UnityEngine.Object.FindObjectsByType<Canvas>(

@@ -77,7 +77,7 @@ MonoBehaviour:
     promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
     doubleKeyboardController: {fileID: 9100000, guid: f7c5a6d8e9fa6b52c3a4b5c6d7e8f9a0, type: 2}
     doubleTouchController: {fileID: 9100000, guid: a8d6b7e9fa0b7c63d4b5c6d7e8f9a0b1, type: 2}
-    healthColor: {r: 0.55, g: 0.2, b: 0.75, a: 1}
+    healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
     damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
     warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
     warningOffset: {x: 0, y: 70}
@@ -136,8 +136,8 @@ MonoBehaviour:
     rushSpeedU: 9
     stalkDistanceU: 4.8
     dashStartU: 5
-    restS: 3.7
-    minRestShare: 0.4
+    restS: 3.2
+    minRestShare: 0.4375
     webShotWindUpS: 0.8
     webShotSpeedU: 20
     dashCooldownS: 4.2

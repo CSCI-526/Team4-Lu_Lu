@@ -52,6 +52,7 @@ public class BossFightHud: MonoBehaviour {
         rig.nameLabel.gameObject.SetActive(true);
         rig.nameLabel.text = bossName;
         SetHealth(1f);
+        rig.heartHealth = -1;
     }
 
     /// <summary>
@@ -110,6 +111,39 @@ public class BossFightHud: MonoBehaviour {
             return;
         }
         rig.healthFill.anchorMax = new Vector2(Mathf.Clamp01(fraction), 1f);
+    }
+
+    /// <summary>
+    /// Sets the health bar to <paramref name="health"/> of
+    /// <paramref name="maxHealth"/>, its count shown on the heart left of
+    /// the bar; the heart pops as the count drops.
+    /// </summary>
+    public void SetHealth(int health, int maxHealth) {
+        SetHealth(maxHealth > 0 ? health / (float)maxHealth : 0f);
+        if (rig.heartLabel == null) {
+            return;
+        }
+        health = Mathf.Max(0, health);
+        if (rig.heartHealth >= 0 && health < rig.heartHealth) {
+            rig.heartPopLeftS = HEART_POP_S;
+        }
+        rig.heartHealth = health;
+        rig.heartLabel.text = health.ToString();
+    }
+
+    // the heart's pop as the count drops: real s, its biggest scale
+    private const float HEART_POP_S = 0.3f;
+    private const float HEART_POP_SCALE = 1.35f;
+
+    private void UpdateHeart() {
+        if (rig.heart == null) {
+            return;
+        }
+        rig.heartPopLeftS = Mathf.Max(0f,
+            rig.heartPopLeftS - Time.unscaledDeltaTime);
+        float t = rig.heartPopLeftS / HEART_POP_S;
+        rig.heart.localScale =
+            Vector3.one * Mathf.Lerp(1f, HEART_POP_SCALE, t * t);
     }
 
     /// <summary>Flashes the whole screen white, fading out.</summary>
@@ -563,6 +597,7 @@ public class BossFightHud: MonoBehaviour {
         motion.UpdatePops();
         motion.UpdateWarnings();
         motion.UpdateCallOut();
+        UpdateHeart();
         UpdateModeChoice();
     }
 

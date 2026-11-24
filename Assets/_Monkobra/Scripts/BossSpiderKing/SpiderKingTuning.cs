@@ -292,11 +292,11 @@ public sealed class SpiderKingTuning {
     [Tooltip("seconds between attacks at full health")]
     [SerializeField]
     [Min(0.3f)]
-    private float restS = 3.7f;
+    private float restS = 3.2f;
     [Tooltip("share of that rest left at no health: weaker, faster")]
     [SerializeField]
     [Range(0.1f, 1f)]
-    private float minRestShare = 0.4f;
+    private float minRestShare = 0.4375f;
     [Header("Web Wave")]
     [Tooltip("the charge b4 a web wave: the spider rears up, its body swells "
         + "& a white orb gathers at its head; s")]

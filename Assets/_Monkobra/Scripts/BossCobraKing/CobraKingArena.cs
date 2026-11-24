@@ -248,7 +248,7 @@ public sealed class CobraKingArena {
             )
             : rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         foreach (CobraKingArenaFruit choice in rig.choices) {
             RemoveBranch(choice.branch);
         }

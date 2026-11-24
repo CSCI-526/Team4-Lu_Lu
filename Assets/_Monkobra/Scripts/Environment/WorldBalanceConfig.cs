@@ -143,20 +143,20 @@ public class WorldBalanceConfig: ScriptableObject {
     /// endless run, outside a boss fight</returns>
     public float EndlessSpeedScale => endlessSpeedScale;
 
-    /// <returns>a boss's extra health per earlier boss in the endless run, a
-    /// share of its base health</returns>
+    /// <returns>a boss's extra health per earlier fight of the same king in
+    /// the endless run, a share of its base health</returns>
     public float EndlessHealthStep => endlessHealthStep;
 
     /// <returns>how much shorter a boss's wind ups, warnings & rests get per
-    /// earlier boss in the endless run, a share</returns>
+    /// earlier fight of the same king in the endless run, a share</returns>
     public float EndlessTimeStep => endlessTimeStep;
 
     /// <returns>the shortest those times get in the endless run, a share
     /// </returns>
     public float EndlessMinTimeScale => endlessMinTimeScale;
 
-    /// <returns>how much faster a boss's shots & dashes get per earlier boss
-    /// in the endless run, a share</returns>
+    /// <returns>how much faster a boss's shots & dashes get per earlier
+    /// fight of the same king in the endless run, a share</returns>
     public float EndlessSpeedStep => endlessSpeedStep;
 
     /// <returns>the fastest they get in the endless run, a scale</returns>
@@ -415,14 +415,15 @@ public class WorldBalanceConfig: ScriptableObject {
     private float endlessSpeedScale = 1f;
 
     [SerializeField]
-    [Tooltip("a boss's extra health per earlier boss in the endless run, a "
-        + "share of its base health")]
-    private float endlessHealthStep = 0.2f;
+    [Tooltip("a boss's extra health per earlier fight of the same king in "
+        + "the endless run, a share of its base health; each king's first "
+        + "fight is as its normal one")]
+    private float endlessHealthStep = 0.4f;
 
     [SerializeField]
     [Tooltip("how much shorter a boss's wind ups, warnings & rests get per "
-        + "earlier boss in the endless run, a share")]
-    private float endlessTimeStep = 0.06f;
+        + "earlier fight of the same king in the endless run, a share")]
+    private float endlessTimeStep = 0.12f;
 
     [SerializeField]
     [Tooltip("the shortest a boss's wind ups, warnings & rests get in the "
@@ -430,9 +431,9 @@ public class WorldBalanceConfig: ScriptableObject {
     private float endlessMinTimeScale = 0.6f;
 
     [SerializeField]
-    [Tooltip("how much faster a boss's shots & dashes get per earlier boss in "
-        + "the endless run, a share")]
-    private float endlessSpeedStep = 0.05f;
+    [Tooltip("how much faster a boss's shots & dashes get per earlier fight "
+        + "of the same king in the endless run, a share")]
+    private float endlessSpeedStep = 0.1f;
 
     [SerializeField]
     [Tooltip("the fastest a boss's shots & dashes get in the endless run, a "

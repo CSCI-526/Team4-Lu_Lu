@@ -162,7 +162,7 @@ public sealed class SpiderKingEnding {
         SpiderKingDamage.GiveArmor();
         rig.Melons.ClearThrows();
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         foreach (SpiderKingMelon melon in rig.melons) {
             if (melon.root != null) {
                 melon.root.SetActive(true);
@@ -237,7 +237,7 @@ public sealed class SpiderKingEnding {
         rig.phase = SpiderKingPhase.Defeated;
         rig.onDefeated?.Invoke();
         rig.defeatTimeS = 0f;
-        rig.hud.SetHealth(0f);
+        rig.hud.SetHealth(0, rig.maxHealth);
         rig.hud.ClearWarnings();
         rig.Shots.ClearShots();
         rig.Melons.ClearThrows();

@@ -58,6 +58,11 @@ public sealed class BossFightHudRig {
     // null for an overlay canvas
     public RectTransform rootRect;
     public RectTransform healthFill;
+    // the heart left of the health bar & its count of the health left
+    public RectTransform heart;
+    public TextMeshProUGUI heartLabel;
+    public int heartHealth = -1;
+    public float heartPopLeftS;
     public TextMeshProUGUI nameLabel;
     public RectTransform speechRect;
     public TextMeshProUGUI speechLabel;

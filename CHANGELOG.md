@@ -53,6 +53,20 @@ todo todo add 3x fruit
   slashes only come in its later endless fights; the monkey and the great
   cobra keep their normal speed (tunable, `endlessSpeedScale`); each coming
   arena is kept bare and marked
+- Spider King's health bar red as the Cobra King's (was purple); shorter
+  rests b/t its attacks (`restS` 3.2 s, down to 1.4 s), so more slashes a
+  fight
+- Spider King's parry clash w/o its few white sparks
+- the web round a stuck Spider King no longer logs "Can't remove BoxCollider
+  because SpiderWebTrap depends on it": its decor copy drops scripts b4
+  colliders
+- both kings' health bars show the health left on a heart at their left (the
+  bar's red w/ a brown rim, the count in cream, popping as it drops), in
+  normal & endless fights alike
+- endless bosses aligned w/ the normal fights: each king's first fight is
+  exactly its normal one (Spider King 15 health, no faster), each later
+  fight of the same king harder (+40% health, 12% shorter times, 10% faster
+  per round; Cobra King 12 / 17 / 22 / 26, Spider King 15 / 21 / 27 / 33)
 - Spider King normal play: slashes one at a time, the curve kept by volleys,
   shorter rests and faster late attacks (`lateSpeedScale` 1.4)
 - both kings' revive: a plain difficulty card, EASY or NORMAL, time stopped,
@@ -82,7 +96,7 @@ todo todo add 3x fruit
   the sweep coming round, the minions dropping), not at its warning
   (`AttackStruck`)
 - Spider King easier, its moves kept: 15 health, slower crawl (4.8 u/s) &
-  web bullets (20 u/s), longer rests (3.7 s, never under 0.4 of it), rarer
+  web bullets (20 u/s), rests 3.2 s (never under 1.4 s), rarer
   dashes, at most 2 bullets a volley, a gentler late speed up, a quicker tail
   after a whiff; easy mode much softer still (0.45 health, 1.7x slower times,
   0.7x speed, 1.3x wider parry reach, `easyReachScale`)

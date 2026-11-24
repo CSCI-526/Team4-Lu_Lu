@@ -52,33 +52,41 @@ public static class EndlessBossRush {
         return intervalU * (encounter + 1);
     }
 
+    /// <param name="encounter">the boss's encounter</param>
+    /// <returns>how many times that same king was met before in the run: 0
+    /// for each king's first fight, which is just as its normal mode's
+    /// fight, 1 for its second, ...</returns>
+    public static int Round(int encounter) {
+        return Mathf.Max(0, encounter) / 2;
+    }
+
     /// <returns>scale on that boss's health: the fight scale, more for
-    /// each earlier boss</returns>
+    /// each earlier fight of the same king</returns>
     public static float HealthScale(int encounter) {
         WorldBalanceConfig config = Config;
         return config == null ? 1f
             : config.EndlessFightHealthScale
-                * (1f + config.EndlessHealthStep * Mathf.Max(0, encounter));
+                * (1f + config.EndlessHealthStep * Round(encounter));
     }
 
     /// <returns>scale on that boss's wind ups, warnings & rests: the fight
-    /// scale, shorter for each earlier boss</returns>
+    /// scale, shorter for each earlier fight of the same king</returns>
     public static float TimeScale(int encounter) {
         WorldBalanceConfig config = Config;
         return config == null ? 1f
             : config.EndlessFightTimeScale
                 * Mathf.Max(config.EndlessMinTimeScale,
-                    1f - config.EndlessTimeStep * Mathf.Max(0, encounter));
+                    1f - config.EndlessTimeStep * Round(encounter));
     }
 
     /// <returns>scale on that boss's crawl, shot, slash & dash speeds: the
-    /// fight scale, faster for each earlier boss</returns>
+    /// fight scale, faster for each earlier fight of the same king</returns>
     public static float SpeedScale(int encounter) {
         WorldBalanceConfig config = Config;
         return config == null ? 1f
             : config.EndlessFightSpeedScale
                 * Mathf.Min(config.EndlessMaxSpeedScale,
-                    1f + config.EndlessSpeedStep * Mathf.Max(0, encounter));
+                    1f + config.EndlessSpeedStep * Round(encounter));
     }
 
     /// <param name="encounter">the boss's encounter</param>

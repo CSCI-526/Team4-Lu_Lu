@@ -632,7 +632,7 @@ public sealed class SpiderKingArena {
                 Mathf.RoundToInt(rig.BaseMaxHealth * tuning.EasyHealthScale))
             : rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.lastStage = 0;
         // the parry lesson again if it was never passed
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Ready
