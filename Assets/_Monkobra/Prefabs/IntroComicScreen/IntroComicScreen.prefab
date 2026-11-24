@@ -620,7 +620,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c3a1d90b5e24f81a6d2c8e04b9f7a15, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HintIconSlot
+  m_EditorClassIdentifier: Assembly-CSharp::HintIconWidget
   library: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
   keyboardController: {fileID: 9100000, guid: c72483b875a46b543bb0609d0cea41c8, type: 2}
   touchController: {fileID: 9100000, guid: 9c63ea814364f8c4a9737d1f4cf8aafc, type: 2}

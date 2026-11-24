@@ -14,7 +14,7 @@ using UnityEngine.UI;
 /// </para>
 /// </summary>
 [RequireComponent(typeof(Button), typeof(CanvasGroup))]
-public class PauseButton: MonoBehaviour {
+public class PauseButtonWidget: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         button = GetComponent<Button>();
@@ -25,7 +25,7 @@ public class PauseButton: MonoBehaviour {
         game = GameController.I;
         if (game == null) {
             Debug.LogError(
-                "PauseButton:\tGameController instance not found",
+                "PauseButtonWidget:\tGameController instance not found",
                 this
             );
             enabled = false;

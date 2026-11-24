@@ -379,7 +379,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5ac04e38b184f69bbb3a5acefb690cb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PauseButton
+  m_EditorClassIdentifier: Assembly-CSharp::PauseButtonWidget
 --- !u!114 &78429360468324583
 MonoBehaviour:
   m_ObjectHideFlags: 0

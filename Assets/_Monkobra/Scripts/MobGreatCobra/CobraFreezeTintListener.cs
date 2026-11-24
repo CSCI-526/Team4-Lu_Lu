@@ -13,7 +13,7 @@ using UnityEngine;
 /// </para>
 /// </summary>
 [RequireComponent(typeof(CobraMotor))]
-public class CobraFreezeTint: MonoBehaviour {
+public class CobraFreezeTintListener: MonoBehaviour {
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("color mixed into the body while frozen")]

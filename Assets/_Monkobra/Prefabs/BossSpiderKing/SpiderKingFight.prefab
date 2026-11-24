@@ -93,7 +93,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf29393f90034a8a8af86d75e7ec6949, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpiderKingSfx
+  m_EditorClassIdentifier: Assembly-CSharp::SpiderKingSfxListener
   entrance: {fileID: 8300000, guid: 078a087aa163458a9dde73f3c47d71e6, type: 3}
   attack: {fileID: 8300000, guid: 6e4f1b13303a43ddb108cc6b3e7267d7, type: 3}
   spiderHit: {fileID: 8300000, guid: 77de4b4be7074bf38a9252289a86cf1a, type: 3}

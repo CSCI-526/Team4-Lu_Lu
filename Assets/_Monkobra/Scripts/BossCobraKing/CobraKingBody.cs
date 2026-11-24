@@ -13,7 +13,7 @@ using UnityEngine.Serialization;
 /// its crown.
 /// <para>
 /// Every bead and the head are triggers reporting to a
-/// <see cref="CobraKingContact"/> on the root, which raises
+/// <see cref="CobraKingContactSensor"/> on the root, which raises
 /// <see cref="MonkeyTouched"/>; touching the king is not fatal by itself.
 /// </para>
 /// </summary>
@@ -73,8 +73,8 @@ public class CobraKingBody: MonoBehaviour {
         Rigidbody body = root.gameObject.AddComponent<Rigidbody>();
         body.isKinematic = true;
         body.useGravity = false;
-        CobraKingContact contact =
-            root.gameObject.AddComponent<CobraKingContact>();
+        CobraKingContactSensor contact =
+            root.gameObject.AddComponent<CobraKingContactSensor>();
         contact.Touched += () => MonkeyTouched?.Invoke();
 
         BuildCoil();

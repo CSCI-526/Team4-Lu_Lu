@@ -107,7 +107,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00d29c892625413387879953b81c8b36, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CobraKingSfx
+  m_EditorClassIdentifier: Assembly-CSharp::CobraKingSfxListener
   entrance: {fileID: 8300000, guid: 078a087aa163458a9dde73f3c47d71e6, type: 3}
   attackWarn: {fileID: 8300000, guid: 6e4f1b13303a43ddb108cc6b3e7267d7, type: 3}
   armorBlock: {fileID: 8300000, guid: fcb974d247cc4faa9f460385f6db747d, type: 3}

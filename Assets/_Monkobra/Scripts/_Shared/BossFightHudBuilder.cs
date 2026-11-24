@@ -101,7 +101,7 @@ public sealed class BossFightHudBuilder {
         rig.bannerLabel.gameObject.SetActive(false);
 
         // animated double tap icon under the low banner, shown by a lesson
-        rig.doubleTapIcon = HintIconSlot.Create(
+        rig.doubleTapIcon = HintIconWidget.Create(
             rig.rootRect, config.HintIconLibrary,
             config.DoubleKeyboardController, config.DoubleTouchController,
             DOUBLE_TAP_ICON_SIZE

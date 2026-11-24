@@ -16,7 +16,7 @@ using UnityEngine;
 /// </para>
 /// </summary>
 [RequireComponent(typeof(Collider))]
-public class HeightMarkerTrigger: MonoBehaviour {
+public class HeightMarkerRelay: MonoBehaviour {
     // Public Members  #########################################################
     /// <returns>where the marker's visual sits, a fixed way above this
     /// root</returns>
@@ -33,7 +33,7 @@ public class HeightMarkerTrigger: MonoBehaviour {
     /// Raised whenever a part of the monkey enters the slab, so more than
     /// once per pass; the listener must ignore repeats.
     /// </summary>
-    public event Action<HeightMarkerTrigger> Passed;
+    public event Action<HeightMarkerRelay> Passed;
 
     // Inspector Fields  #######################################################
     [Tooltip("child holding the marker's visual spot, above this root")]
@@ -45,7 +45,7 @@ public class HeightMarkerTrigger: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (labelAnchor == null) {
             Debug.LogWarning(
-                "HeightMarkerTrigger:\tmust assign Inspector Field: "
+                "HeightMarkerRelay:\tmust assign Inspector Field: "
                     + "labelAnchor, the label falls back to this root",
                 this
             );
@@ -55,7 +55,7 @@ public class HeightMarkerTrigger: MonoBehaviour {
         Collider slab = GetComponent<Collider>();
         if (!slab.isTrigger) {
             Debug.LogWarning(
-                "HeightMarkerTrigger:\tcollider must be a trigger",
+                "HeightMarkerRelay:\tcollider must be a trigger",
                 this
             );
         }

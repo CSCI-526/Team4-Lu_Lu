@@ -1314,7 +1314,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 50d23fb90cfc24dd4ae177fad96919e3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CobraFreezeTint
+  m_EditorClassIdentifier: Assembly-CSharp::CobraFreezeTintListener
   frozenColor: {r: 0.6, g: 0.85, b: 1, a: 1}
   tintStrength: 0.75
   endingWarnS: 3

@@ -23,7 +23,7 @@ using UnityEngine;
 /// The clips are made by <c>tools/sfx/make_sfx.py</c>.
 /// </para>
 /// </summary>
-public class MonkeySfx: MonoBehaviour {
+public class MonkeySfxListener: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Grabs")]
     [SerializeField]
@@ -134,7 +134,7 @@ public class MonkeySfx: MonoBehaviour {
                 || markerReached == null
             || staminaLow == null || hit == null || lose == null) {
             Debug.LogWarning(
-                "MonkeySfx:\tmust assign Inspector Fields: bananaGrab, "
+                "MonkeySfxListener:\tmust assign Inspector Fields: bananaGrab, "
                     + "coconutGrab, pineappleGrab, grabMiss, leapRush, "
                     + "coconutThrow, cobraFreeze, cobraThaw, webStruggles, "
                     + "happyCalls, markerReached, staminaLow, hit, lose",

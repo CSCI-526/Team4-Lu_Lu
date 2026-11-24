@@ -4,7 +4,8 @@ using UnityEngine;
 /// The 2 icon entities every hint shows: a keycap for a keyboard, a finger
 /// for touch. A hint holds no icon prefab of its own, only the Animator
 /// controller that animates the entity, so the press, double, hold, and rapid
-/// hints are 4 controllers of the same entity, see <see cref="HintIconSlot"/>.
+/// hints are 4 controllers of the same entity, see
+/// <see cref="HintIconWidget"/>.
 /// </summary>
 [CreateAssetMenu(
     fileName = "HintIconLibrary",

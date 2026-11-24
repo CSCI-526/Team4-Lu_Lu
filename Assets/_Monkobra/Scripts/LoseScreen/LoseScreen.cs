@@ -26,15 +26,15 @@ public class LoseScreen: MonoBehaviour {
 
     [SerializeField]
     [Tooltip("icon and count row for the bananas collected")]
-    private LoseScreenCountRow bananaRow;
+    private LoseScreenCountRowWidget bananaRow;
 
     [SerializeField]
     [Tooltip("icon and count row for the pineapples collected")]
-    private LoseScreenCountRow pineappleRow;
+    private LoseScreenCountRowWidget pineappleRow;
 
     [SerializeField]
     [Tooltip("icon and count row for the coconuts collected")]
-    private LoseScreenCountRow coconutRow;
+    private LoseScreenCountRowWidget coconutRow;
 
     [SerializeField]
     [Tooltip("text before the final height number")]

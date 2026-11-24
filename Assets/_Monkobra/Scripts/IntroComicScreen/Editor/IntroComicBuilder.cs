@@ -227,7 +227,8 @@ public static class IntroComicBuilder {
             CanvasGroup hintGroup = hint.gameObject.AddComponent<CanvasGroup>();
             hintGroup.alpha = 0f;
             hintGroup.blocksRaycasts = false;
-            HintIconSlot slot = hint.gameObject.AddComponent<HintIconSlot>();
+            HintIconWidget slot =
+                hint.gameObject.AddComponent<HintIconWidget>();
             SerializedObject slotData = new SerializedObject(slot);
             slotData.FindProperty("library").objectReferenceValue =
                 Load<HintIconLibrary>(HINT_LIBRARY);

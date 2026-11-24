@@ -25,9 +25,9 @@ public enum VignetteOwner {
 /// before.
 /// </para>
 /// </summary>
-public class ScreenVignetteArbiter: MonoBehaviour {
+public class ScreenVignetteManager: MonoBehaviour {
     // Public Members  #########################################################
-    public static ScreenVignetteArbiter I {
+    public static ScreenVignetteManager I {
         get; private set;
     }
 
@@ -80,7 +80,7 @@ public class ScreenVignetteArbiter: MonoBehaviour {
     private void Awake() {
         if (I != null && I != this) {
             Debug.LogWarning(
-                "ScreenVignetteArbiter:\tduplicate instance, destroying this",
+                "ScreenVignetteManager:\tduplicate instance, destroying this",
                 this
             );
             Destroy(this);

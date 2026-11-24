@@ -15,7 +15,7 @@ using UnityEngine;
 /// <see cref="Create"/>.
 /// </para>
 /// </summary>
-public class HintIconSlot: MonoBehaviour {
+public class HintIconWidget: MonoBehaviour {
     // Public Methods  #########################################################
     /// <summary>
     /// Builds a slot at runtime under a parent, for a hint made in code. The
@@ -39,7 +39,7 @@ public class HintIconSlot: MonoBehaviour {
         RectTransform rect = (RectTransform)go.transform;
         rect.SetParent(parent, false);
 
-        HintIconSlot slot = go.AddComponent<HintIconSlot>();
+        HintIconWidget slot = go.AddComponent<HintIconWidget>();
         slot.library = library;
         slot.keyboardController = keyboardController;
         slot.touchController = touchController;
@@ -105,7 +105,7 @@ public class HintIconSlot: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (library == null) {
             Debug.LogWarning(
-                "HintIconSlot:\tmust assign Inspector Field: library", this);
+                "HintIconWidget:\tmust assign Inspector Field: library", this);
         }
         isAwake = true;
         if (keyboardController == null && touchController == null) {

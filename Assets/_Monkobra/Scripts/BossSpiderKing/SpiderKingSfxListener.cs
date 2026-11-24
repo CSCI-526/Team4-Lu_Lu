@@ -2,25 +2,26 @@ using UnityEngine;
 
 
 /// <summary>
-/// The Cobra King fight's sound effects: a gong & hiss as it begins, a
-/// hiss as each warned attack strikes, a clang when
-/// the gold armor takes a hit, a watermelon bursting as a thrown fruit hits
-/// the crown, the beaten king shattering, and a short victory call a moment
-/// later.
+/// The Spider King fight's sound effects, as the Cobra King's: a gong &
+/// hiss as it begins, a hiss as each attack strikes (a web bullet fired, a
+/// slash flying, a dash going; never at its charge), a watermelon bursting
+/// as the spider is hurt, the beaten spider shattering, and a short victory
+/// call a moment later. The gold armor's clang is the Cobra King's, as the
+/// armor is his.
 /// <para>
-/// Next to <see cref="CobraKingFightController"/> on the
-/// <c>CobraKingFight</c> prefab. It only listens to the controller's
+/// Next to <see cref="SpiderKingFightController"/> on the
+/// <c>SpiderKingFight</c> prefab. It only listens to the controller's
 /// events; nothing calls it and it changes nothing. Plain 2D sound through
 /// a few sources taken in turn; they follow
-/// <see cref="AudioListener.pause"/>, never the time scale, so the
-/// finisher's slow motion & the reward panel never bend or stop them.
+/// <see cref="AudioListener.pause"/>, never the time scale, so the slow
+/// motions & the reward panel never bend or stop them.
 /// </para>
 /// <para>
-/// The clips are made by <c>tools/sfx/make_sfx.py</c>.
+/// The clips are the Cobra King's, made by <c>tools/sfx/make_sfx.py</c>.
 /// </para>
 /// </summary>
-[RequireComponent(typeof(CobraKingFightController))]
-public class CobraKingSfx: MonoBehaviour {
+[RequireComponent(typeof(SpiderKingFightController))]
+public class SpiderKingSfxListener: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Clips")]
     [SerializeField]
@@ -28,24 +29,19 @@ public class CobraKingSfx: MonoBehaviour {
     private AudioClip entrance;
 
     [SerializeField]
-    [Tooltip("as each bite, tail sweep & minion wave strikes, after its "
-        + "warning")]
-    private AudioClip attackWarn;
+    [Tooltip("as each web bullet, slash & dash strikes, after its charge")]
+    private AudioClip attack;
 
     [SerializeField]
-    [Tooltip("the gold armor takes a fatal hit")]
-    private AudioClip armorBlock;
+    [Tooltip("the spider hurt by a melon or a parried slash")]
+    private AudioClip spiderHit;
 
     [SerializeField]
-    [Tooltip("a thrown fruit smashing on the crown")]
-    private AudioClip crownHit;
-
-    [SerializeField]
-    [Tooltip("the king breaking into cubes")]
+    [Tooltip("the spider breaking apart as it is beaten")]
     private AudioClip shatter;
 
     [SerializeField]
-    [Tooltip("call after the king is beaten, victoryDelayS later")]
+    [Tooltip("call after the spider is beaten")]
     private AudioClip victory;
 
     [Header("Tuning")]
@@ -55,6 +51,11 @@ public class CobraKingSfx: MonoBehaviour {
     private float volume = 0.55f;
 
     [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip("the attack hiss's loudness share, as a volley fires often")]
+    private float attackVolumeShare = 0.7f;
+
+    [SerializeField]
     [Min(0f)]
     [Tooltip("time from the shatter to the victory call; s")]
     private float victoryDelayS = 1f;
@@ -62,16 +63,16 @@ public class CobraKingSfx: MonoBehaviour {
     [SerializeField]
     [Range(0f, 0.2f)]
     [Tooltip("random pitch change of each play, so repeats never sound alike")]
-    private float pitchJitter = 0.04f;
+    private float pitchJitter = 0.06f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (entrance == null || attackWarn == null || armorBlock == null
-            || crownHit == null || shatter == null || victory == null) {
+        if (entrance == null || attack == null || spiderHit == null
+            || shatter == null || victory == null) {
             Debug.LogWarning(
-                "CobraKingSfx:\tmust assign Inspector Fields: entrance, "
-                    + "attackWarn, armorBlock, crownHit, shatter, victory",
+                "SpiderKingSfxListener:\tmust assign Inspector Fields: "
+                    + "entrance, attack, spiderHit, shatter, victory",
                 this
             );
             enabled = false;
@@ -85,7 +86,7 @@ public class CobraKingSfx: MonoBehaviour {
             // plain stereo, never placed in the world
             sources[i].spatialBlend = 0f;
         }
-        fight = GetComponent<CobraKingFightController>();
+        fight = GetComponent<SpiderKingFightController>();
     }
 
     private void OnEnable() {
@@ -94,9 +95,8 @@ public class CobraKingSfx: MonoBehaviour {
         }
         fight.FightStarted += OnFightStarted;
         fight.AttackStruck += OnAttackStruck;
-        fight.ArmorAbsorbed += OnArmorAbsorbed;
-        fight.JewelHit += OnJewelHit;
-        fight.KingShattered += OnKingShattered;
+        fight.SpiderHit += OnSpiderHit;
+        fight.Defeated += OnDefeated;
     }
 
     private void OnDisable() {
@@ -105,9 +105,8 @@ public class CobraKingSfx: MonoBehaviour {
         }
         fight.FightStarted -= OnFightStarted;
         fight.AttackStruck -= OnAttackStruck;
-        fight.ArmorAbsorbed -= OnArmorAbsorbed;
-        fight.JewelHit -= OnJewelHit;
-        fight.KingShattered -= OnKingShattered;
+        fight.SpiderHit -= OnSpiderHit;
+        fight.Defeated -= OnDefeated;
     }
 
     // private members  ########################################################
@@ -116,16 +115,16 @@ public class CobraKingSfx: MonoBehaviour {
 
     private AudioSource[] sources;
     private int nextVoice;
-    private CobraKingFightController fight;
+    private SpiderKingFightController fight;
 
-    private void Play(AudioClip clip, float delayS = 0f) {
+    private void Play(AudioClip clip, float share = 1f, float delayS = 0f) {
         if (sources == null || clip == null) {
             return;
         }
         AudioSource voice = sources[nextVoice];
         nextVoice = (nextVoice + 1) % VOICES;
         voice.clip = clip;
-        voice.volume = volume;
+        voice.volume = volume * share;
         voice.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
         // audio time, so a frozen or slowed game still keeps the delay
         voice.PlayDelayed(delayS);
@@ -137,19 +136,15 @@ public class CobraKingSfx: MonoBehaviour {
     }
 
     private void OnAttackStruck() {
-        Play(attackWarn);
+        Play(attack, attackVolumeShare);
     }
 
-    private void OnArmorAbsorbed() {
-        Play(armorBlock);
+    private void OnSpiderHit() {
+        Play(spiderHit);
     }
 
-    private void OnJewelHit() {
-        Play(crownHit);
-    }
-
-    private void OnKingShattered() {
+    private void OnDefeated() {
         Play(shatter);
-        Play(victory, victoryDelayS);
+        Play(victory, 1f, victoryDelayS);
     }
 }

@@ -95,7 +95,7 @@ While the monkey moves across rough bark (`MonkeyController.RoughBarkSpeedScale`
 - During: mistakes add no surge and raise no `CatchUpStarted`, so no warning shows; the base speed and the slow-down near the monkey resume at the thaw
 - Refused: a freeze while one runs is refused and spends nothing, so freezes never stack or reset
 - Contact: unchanged, a frozen coil is as fatal as a moving one
-- Look: `CobraFreezeTint` beside `CobraMotor` tints the body light blue, blinking back in the last seconds, and leaves the eyes black; the coconut counter shows the countdown
+- Look: `CobraFreezeTintListener` beside `CobraMotor` tints the body light blue, blinking back in the last seconds, and leaves the eyes black; the coconut counter shows the countdown
 - Events: `Frozen` (with the length) and `Thawed`; falling cobras are never frozen
 
 ### Contact
@@ -196,7 +196,7 @@ Code: `CobraKingFightController` is the Coordinator (the public API, the lifecyc
 | Bite | a dark red disc on the trunk at the monkey's spot whose bright center fills it, and a red "!" sign reading BITE!, `biteWarnS` | fatal within `biteRadiusU` of the spot | orbit or climb off the disc |
 | Tail Sweep | a red band round the trunk at the monkey's height, growing to the swept height, and a "!" sign reading TAIL!, `sweepWarnS` | the tail loops the trunk in `sweepTimeS`, fatal within `sweepBandHalfU` of the ring | climb above or below the ring |
 | Minions | `minionWaves` waves, each re-aimed at the monkey: a vertical danger strip down the trunk for each of `minionCount` - 1 fall lines spread `minionSpreadDeg` apart, covering the minion's whole fall path, from the king's coil down to where minions are gone (`guardDepthU` below the entry), all red from the start and beating faster and brighter as the drop nears, one inner line left empty as the gap, and one "!" sign reading LOOK UP! on a middle strip just above the monkey, `minionWarnS`; the first minion attack of a game holds "Minions, help me!" in the bubble | green minions appear under the king's coil and fall one after another (`minionStaggerS`) down their lines; their touch is fatal, unless the gold shield takes it | orbit into the gap |
-| Head Butt | the head rears back, `pushWindUpS` | a knock-down; a monkey at the ceiling or touching the resting king (`CobraKingContact`; a striking head's touch is ignored, as it reaches far below the rest pose) gets it any time, at most once per `pushCooldownS`, with "Stay away from me!"; while the head is busy with a bite the shove lands at once | stay below the ceiling |
+| Head Butt | the head rears back, `pushWindUpS` | a knock-down; a monkey at the ceiling or touching the resting king (`CobraKingContactSensor`; a striking head's touch is ignored, as it reaches far below the rest pose) gets it any time, at most once per `pushCooldownS`, with "Stay away from me!"; while the head is busy with a bite the shove lands at once | stay below the ceiling |
 
 Every warning sign is a red diamond with a white "!" and a word, built by `BossFightHud.AddWarning`, beating faster and growing as the hit nears. A knock-down is the usual stun and drop with the heavier shake (`HitBranchSensor.ReportHit`).
 
