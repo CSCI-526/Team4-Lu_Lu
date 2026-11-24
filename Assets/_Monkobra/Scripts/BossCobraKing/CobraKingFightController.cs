@@ -45,6 +45,10 @@ public class CobraKingFightController: MonoBehaviour {
     public bool IsInArena => rig.phase != CobraKingPhase.Waiting
         && !rig.isEndlessStart;
 
+    /// <returns>if the fight is on, from its start to its reward; not once
+    /// done & the climb goes on</returns>
+    public bool IsFighting => IsInArena && rig.phase != CobraKingPhase.Done;
+
     /// <summary>
     /// Builds a small look-alike of the Cobra King for the trunk height
     /// marker at the fight's height, its face toward the parent's -z.
@@ -52,13 +56,13 @@ public class CobraKingFightController: MonoBehaviour {
     /// <returns>the figure's root, unparented, or null</returns>
     public Transform BuildMarkerFigure() {
         return rig.body != null
-            ? rig.body.BuildFigure(tuning.MarkerFigureScale) : null;
+            ? rig.body.BuildFigure(config.MarkerFigureScale) : null;
     }
 
     /// <returns>climbed height the fight starts at, eg for its trunk height
     /// marker; u, -1 when unknown</returns>
-    public float TriggerHeightU => tuning.WorldBalanceConfig != null
-        ? tuning.WorldBalanceConfig.BossTriggerHeightU
+    public float TriggerHeightU => worldBalanceConfig != null
+        ? rig.TriggerClimbU
         : -1f;
 
     /// <summary>raised when the monkey enters the arena & the fight begins
@@ -75,6 +79,19 @@ public class CobraKingFightController: MonoBehaviour {
     /// <summary>raised when a revive restarts the fight</summary>
     public event System.Action Revived;
 
+    /// <summary>raised as each warned attack strikes, after its warning: a
+    /// bite's head landing, a tail sweep coming round, a minion wave's first
+    /// drop</summary>
+    public event System.Action AttackStruck;
+
+    /// <summary>raised each time a thrown banana hits the crown & hurts the
+    /// king</summary>
+    public event System.Action JewelHit;
+
+    /// <summary>raised when the beaten king shatters, before its crown flies
+    /// onto the monkey</summary>
+    public event System.Action KingShattered;
+
     /// <returns>highest world y a pineapple leap may carry the monkey to:
     /// the fight's start height before the fight, so a leap stops at the
     /// arena instead of flying past it, the ceiling under the king during
@@ -87,9 +104,9 @@ public class CobraKingFightController: MonoBehaviour {
             if (rig.phase == CobraKingPhase.Waiting) {
                 RampedDifficultyManager ramp = RampedDifficultyManager.I;
                 // a hair over, so landing there surely starts the fight
-                return ramp != null && tuning.WorldBalanceConfig != null
+                return ramp != null && worldBalanceConfig != null
                     ? ramp.PlayerGameStartYPosition
-                        + tuning.WorldBalanceConfig.BossTriggerHeightU + 0.05f
+                        + rig.TriggerClimbU + 0.05f
                     : float.PositiveInfinity;
             }
             bool isOver = rig.phase == CobraKingPhase.Defeated
@@ -98,7 +115,7 @@ public class CobraKingFightController: MonoBehaviour {
                 || rig.phase == CobraKingPhase.Over;
             return isOver
                 ? float.PositiveInfinity
-                : rig.body.LowestY - tuning.CeilingGapU;
+                : rig.body.LowestY - config.CeilingGapU;
         }
     }
 
@@ -112,7 +129,7 @@ public class CobraKingFightController: MonoBehaviour {
     /// boss fight loss that offers a revive</returns>
     /// <returns>scale on each web escape press in the arena, also used by the
     /// Spider King's, so both shake a web off in as many presses</returns>
-    public float WebEscapeGainScale => tuning.WebEscapeGainScale;
+    public float WebEscapeGainScale => config.WebEscapeGainScale;
 
     /// <returns>if the Cobra King is beaten (or skipped) & the climb is on
     /// past it, eg so the Spider King may start</returns>
@@ -141,7 +158,7 @@ public class CobraKingFightController: MonoBehaviour {
             return false;
         }
         if (rig.monkey == null) {
-            MonkeyController found = FindFirstObjectByType<MonkeyController>();
+            MonkeyController found = MonkeyController.I;
             if (found == null || found.transform.parent == null) {
                 return false;
             }
@@ -170,12 +187,12 @@ public class CobraKingFightController: MonoBehaviour {
         rig.hasShield = false;
         ArmorAbsorbed?.Invoke();
         rig.hud.ShowArmorBadge(false);
-        rig.hud.PopText("Saved!", rig.monkey.position, tuning.GoldenColor);
-        rig.hud.Flash(tuning.GoldenColor);
+        rig.hud.PopText("Saved!", rig.monkey.position, config.GoldenColor);
+        rig.hud.Flash(config.GoldenColor);
         // the armor shatters off at once, never left hanging where it was
         if (rig.armor != null) {
             foreach (Transform piece in rig.armor) {
-                throws.BurstAt(piece.position, tuning.GoldenColor);
+                throws.BurstAt(piece.position, config.GoldenColor);
                 piece.gameObject.SetActive(false);
             }
         }
@@ -209,10 +226,14 @@ public class CobraKingFightController: MonoBehaviour {
         ) {
             return true;
         }
+        // waiting for the next boss of the endless run's rush, the won armor
+        // saves on the climb b/t as after a win
         bool canSave = rig.phase == CobraKingPhase.Fighting
             || rig.phase == CobraKingPhase.Defeated
             || rig.phase == CobraKingPhase.Rewarding
-            || rig.phase == CobraKingPhase.Done;
+            || rig.phase == CobraKingPhase.Done
+            || (rig.phase == CobraKingPhase.Waiting && rig.IsRush
+                && rig.hasShield);
         if (!canSave) {
             return false;
         }
@@ -229,8 +250,8 @@ public class CobraKingFightController: MonoBehaviour {
         ArmorAbsorbed?.Invoke();
         rig.hud.ShowArmorBadge(false);
         rig.cobraSaveGraceEndTime = Time.time + 1f;
-        rig.hud.PopText("Saved!", rig.monkey.position, tuning.GoldenColor);
-        rig.hud.Flash(tuning.GoldenColor);
+        rig.hud.PopText("Saved!", rig.monkey.position, config.GoldenColor);
+        rig.hud.Flash(config.GoldenColor);
         // in the fight that is the guard below: its peek ends & the monkey
         // flies back up to where the fight began, never left under the guard,
         // where it could not climb back alive; no freeze, as in the fight
@@ -252,13 +273,13 @@ public class CobraKingFightController: MonoBehaviour {
         // coconut does
         if (rig.armor != null) {
             foreach (Transform piece in rig.armor) {
-                throws.BurstAt(piece.position, tuning.GoldenColor);
+                throws.BurstAt(piece.position, config.GoldenColor);
                 piece.gameObject.SetActive(false);
             }
         }
         if (rig.greatCobra != null) {
-            rig.greatCobra.KnockBack(tuning.ArmorKnockBackU);
-            rig.greatCobra.TryFreeze(tuning.ArmorCobraFreezeS);
+            rig.greatCobra.KnockBack(config.ArmorKnockBackU);
+            rig.greatCobra.TryFreeze(config.ArmorCobraFreezeS);
         }
         return true;
     }
@@ -294,12 +315,12 @@ public class CobraKingFightController: MonoBehaviour {
             CobraKingArenaFruit picked = rig.fruits[index];
             if (picked.isGolden) {
                 armor.HideGolden();
-                rig.nextGoldenTime = Time.time + tuning.GoldenIntervalS;
+                rig.nextGoldenTime = Time.time + config.GoldenIntervalS;
                 armor.TakeGoldenBanana();
                 return true;
             }
             picked.respawnTime = Time.time
-                + tuning.BananaRespawnS * rig.BananaRespawnScale;
+                + config.BananaRespawnS * rig.BananaRespawnScale;
             rig.fruits[index] = picked;
         }
 
@@ -332,7 +353,7 @@ public class CobraKingFightController: MonoBehaviour {
         }
         copy.transform.position = from;
         copy.transform.localScale = source.transform.lossyScale
-            * tuning.ThrownBananaScale;
+            * config.ThrownBananaScale;
         copy.SetActive(true);
         rig.projectiles.Add(new CobraKingProjectile {
             transform = copy.transform,
@@ -344,9 +365,14 @@ public class CobraKingFightController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    private CobraKingTuning tuning = new();
+    [Tooltip("balance numbers: trigger height, king health, banana damage")]
+    private WorldBalanceConfig worldBalanceConfig;
 
-    // Private Members  ########################################################
+    [SerializeField]
+    [Tooltip("every tuned value of the Cobra King fight")]
+    private CobraKingConfig config;
+
+    // private members  ########################################################
     private CobraKingRig rig;
     private CobraKingArena arena;
     private CobraKingArmor armor;
@@ -357,7 +383,21 @@ public class CobraKingFightController: MonoBehaviour {
     private CobraKingFeedback feedback;
 
     private void Awake() {
-        rig = new CobraKingRig(this, tuning);
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogError(
+                "CobraKingFightController:\tmust assign Inspector Field: config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        rig = new CobraKingRig(this, config);
+        rig.worldBalanceConfig = worldBalanceConfig;
+        rig.onAttackStruck = () => AttackStruck?.Invoke();
+        rig.onJewelHit = () => JewelHit?.Invoke();
+        rig.onShattered = () => KingShattered?.Invoke();
         arena = new CobraKingArena(rig);
         armor = new CobraKingArmor(rig);
         throws = new CobraKingThrows(rig);
@@ -373,8 +413,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.Minions = minions;
         rig.Ending = ending;
         rig.Feedback = feedback;
-        // Inspector Assignment Guard  -----------------------------------------
-        if (tuning.WorldBalanceConfig == null) {
+        if (worldBalanceConfig == null) {
             Debug.LogError(
                 "CobraKingFightController:\tmust assign Inspector Field: "
                     + "worldBalanceConfig",
@@ -384,7 +423,7 @@ public class CobraKingFightController: MonoBehaviour {
             return;
         }
 
-        if (tuning.BananaBranchPrefab == null) {
+        if (config.BananaBranchPrefab == null) {
             Debug.LogError(
                 "CobraKingFightController:\tmust assign Inspector Field: "
                     + "bananaBranchPrefab",
@@ -407,11 +446,11 @@ public class CobraKingFightController: MonoBehaviour {
         bool hasSpiderFight = FindFirstObjectByType<SpiderKingFightController>(
             FindObjectsInactive.Include
         ) != null;
-        if (tuning.SpiderFightPrefab != null && !hasSpiderFight) {
-            Instantiate(tuning.SpiderFightPrefab);
+        if (config.SpiderFightPrefab != null && !hasSpiderFight) {
+            Instantiate(config.SpiderFightPrefab);
         }
 
-        if (tuning.ConfirmAction == null || tuning.GiveUpAction == null) {
+        if (config.ConfirmAction == null || config.GiveUpAction == null) {
             Debug.LogWarning(
                 "CobraKingFightController:\tmust assign Inspector Fields: "
                     + "confirmAction, giveUpAction",
@@ -427,14 +466,29 @@ public class CobraKingFightController: MonoBehaviour {
         rig.hud.CoursePageClicked += ending.OpenCoursePage;
         rig.hud.ContinueClicked += ending.ContinueAfterReward;
         rig.hud.SkipAdClicked += ending.SkipAd;
+        rig.hud.ModeChosen += OnModeChosen;
         rig.colorBlock = new MaterialPropertyBlock();
     }
 
-    // the endless run has no fight: it starts in the state right after one
+    // the revive's difficulty card picked: time runs again & the fight goes
+    // on in that mode
+    private void OnModeChosen(bool isEasy) {
+        if (!rig.isChoosing || rig.phase != CobraKingPhase.Fighting) {
+            return;
+        }
+        Time.timeScale = 1f;
+        arena.ChooseMode(isEasy);
+    }
+
+    // the endless run starts in the armor, the boss rush's first fight, the
+    // king's, waiting a boss interval up
     private void Start() {
         if (I == this && GameController.I != null
             && GameController.I.Mode == RunMode.Endless) {
             StartAsDone();
+            rig.isEndlessStart = false;
+            rig.rushEncounter = 0;
+            rig.phase = CobraKingPhase.Waiting;
         }
     }
 
@@ -442,17 +496,24 @@ public class CobraKingFightController: MonoBehaviour {
         if (I == this) {
             I = null;
         }
-        TreeSegmentController.BranchesGenerated -= arena.OnBranchesGenerated;
+        // a duplicate or a domain reload in Play leaves no roles to unhook
+        if (arena != null) {
+            TreeSegmentController.BranchesGenerated -=
+                arena.OnBranchesGenerated;
+        }
     }
 
     // the actions are shared with other scripts, so they are only switched
     // on here, never off
     private void OnEnable() {
-        tuning.ConfirmAction?.action.Enable();
-        tuning.GiveUpAction?.action.Enable();
+        config.ConfirmAction?.action.Enable();
+        config.GiveUpAction?.action.Enable();
     }
 
     private void OnDisable() {
+        if (rig == null) {
+            return;
+        }
         if (
             rig.phase == CobraKingPhase.Finishing
             || rig.phase == CobraKingPhase.ReviveOffer
@@ -478,6 +539,9 @@ public class CobraKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == CobraKingPhase.Waiting) {
+            // the endless run's rush keeps the coming arena bare; kept up
+            // every frame, as the run's start y is only known after a Start
+            arena.ReserveRushRange();
             // armor lent to the Spider King test fight b4 this one; the
             // ring update also hides it once spent
             if (rig.monkey != null && rig.armor != null) {
@@ -490,6 +554,12 @@ public class CobraKingFightController: MonoBehaviour {
             return;
         }
         if (!game.IsRunLive || rig.monkey == null) {
+            return;
+        }
+        // the revive's difficulty card holds time still till a pick
+        if (rig.phase == CobraKingPhase.Fighting && rig.isChoosing
+            && rig.hud.IsChoosingMode) {
+            Time.timeScale = 0f;
             return;
         }
         // after a win only the reward armor is left to follow the monkey
@@ -541,15 +611,13 @@ public class CobraKingFightController: MonoBehaviour {
     private bool HasReachedTrigger() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         return ramp != null
-            && ramp.CurrentPlayerClimbedYDistance
-                >= tuning.WorldBalanceConfig.BossTriggerHeightU;
+            && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
     }
 
     // the endless start: the armor worn, hazards on, the fight already over;
     // no arena, no FightStarted, and never marks the king beaten
     private void StartAsDone() {
-        MonkeyController monkeyController =
-            FindFirstObjectByType<MonkeyController>();
+        MonkeyController monkeyController = MonkeyController.I;
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(
@@ -583,8 +651,7 @@ public class CobraKingFightController: MonoBehaviour {
     }
 
     private void BeginFight() {
-        MonkeyController monkeyController =
-            FindFirstObjectByType<MonkeyController>();
+        MonkeyController monkeyController = MonkeyController.I;
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(
@@ -601,14 +668,18 @@ public class CobraKingFightController: MonoBehaviour {
         rig.entryY = rig.monkey.position.y;
         rig.entryPosition = rig.monkey.position;
         rig.entryRotation = rig.monkey.rotation;
-        rig.coilBottomY = rig.entryY + tuning.NestHeightU;
-        rig.maxHealth = tuning.WorldBalanceConfig.BossMaxHealth;
+        rig.coilBottomY = rig.entryY + config.NestHeightU;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.phase = CobraKingPhase.Fighting;
         FightStarted?.Invoke();
         rig.loop = CobraKingLoop.Intro;
 
         arena.WarnIfArenaLeavesZone();
+        // the endless tree grew here b4 the rush reserved it: cleared
+        if (rig.IsRush) {
+            arena.ClearRushArena();
+        }
         // the boss zone grows nothing but the fight; only a branch of a
         // segment reaching past the zone end can hang near the nest
         arena.ClearBranchesNearNest(
@@ -619,7 +690,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         rig.greatCobra = FindFirstObjectByType<CobraMotor>();
         if (rig.greatCobra != null) {
-            rig.greatCobra.StartGuard(rig.entryY - tuning.GuardDepthU);
+            rig.greatCobra.StartGuard(rig.entryY - config.GuardDepthU);
         }
 
         rig.body.Build(rig.trunkCenter, rig.coilBottomY,
@@ -628,23 +699,39 @@ public class CobraKingFightController: MonoBehaviour {
         // the first try is normal mode; the mode choice comes w/ a revive
         arena.SpawnFruits();
         arena.SpawnArenaBranches();
-        arena.SpawnWebs(tuning.WebCount);
+        arena.SpawnWebs(config.WebCount);
         arena.SpawnLowWebs();
         arena.SpawnRoughBark();
         rig.struggle = FindFirstObjectByType<SpiderWebStruggle>();
         if (rig.struggle != null) {
-            rig.struggle.EscapeGainScale = tuning.WebEscapeGainScale;
+            rig.struggle.EscapeGainScale = config.WebEscapeGainScale;
         }
-        armor.BuildDots();
-        armor.BuildShieldRing();
+        // a later fight of the endless run's rush keeps the ones it has
+        if (rig.dots == null) {
+            armor.BuildDots();
+        }
+        if (rig.armor == null) {
+            armor.BuildShieldRing();
+        }
 
-        rig.hud.Show(tuning.BossName);
+        rig.hud.Show(config.BossName);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.hud.Flash();
         // the monkey starts in the gold armor, a spare life against the
         // king; the golden banana brings it back once lost
         rig.hasShield = true;
-        rig.hud.ShowBannerFor(tuning.ArmorIntroTitle, tuning.ArmorIntroLine,
-            tuning.GoldenColor, 0f);
+        // the armor's words only the first time the player ever gets it, in
+        // any run of either mode; after that, or at a later boss of the
+        // endless run's rush, the king only names itself
+        if (rig.rushEncounter <= 0
+            && !ProgressStore.HasSeen(ProgressStore.ARMOR_INTRO)) {
+            ProgressStore.MarkSeen(ProgressStore.ARMOR_INTRO);
+            rig.hud.ShowBannerFor(config.ArmorIntroTitle,
+                config.ArmorIntroLine, config.GoldenColor, 0f);
+        } else {
+            rig.hud.ShowBannerFor(config.BossName, "",
+                config.GoldenColor, 2f);
+        }
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CobraKingFightController:\tboss fight begins at y "

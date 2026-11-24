@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using static BossFightHudRig;
 
@@ -15,16 +18,27 @@ public class BossFightHud: MonoBehaviour {
     public const float CALL_OUT_S = BossFightHudRig.CALL_OUT_S;
     // Inspector Fields  #######################################################
     [SerializeField]
-    private BossFightHudTuning tuning = new();
+    [Tooltip("every tuned value of the boss fight HUD")]
+    private BossFightHudConfig config;
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private BossFightHudRig rig;
     private BossFightHudBuilder builder;
     private BossFightHudMotion motion;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        rig = new BossFightHudRig(this, tuning);
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogError(
+                "BossFightHud:\tmust assign Inspector Field: config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        rig = new BossFightHudRig(this, config);
         builder =
             new BossFightHudBuilder(rig, () => WatchAdClicked?.Invoke(),
                 () => GiveUpClicked?.Invoke(),
@@ -42,8 +56,51 @@ public class BossFightHud: MonoBehaviour {
             return;
         }
         rig.rootRect.gameObject.SetActive(true);
+        // a fight after a won one: its bar was hidden at that win
+        if (rig.healthFill != null && rig.healthFill.parent != null) {
+            rig.healthFill.parent.gameObject.SetActive(true);
+        }
+        rig.nameLabel.gameObject.SetActive(true);
         rig.nameLabel.text = bossName;
         SetHealth(1f);
+        rig.heartHealth = -1;
+    }
+
+    /// <summary>
+    /// Raised when a difficulty is picked on the choice card: true for EASY,
+    /// false for NORMAL.
+    /// </summary>
+    public event System.Action<bool> ModeChosen;
+
+    /// <returns>if the difficulty choice card is up</returns>
+    public bool IsChoosingMode => rig.modePanel != null
+        && rig.modePanel.activeSelf;
+
+    /// <summary>
+    /// Shows the difficulty choice after a revive over a dimmed screen: a
+    /// short title & two big buttons, EASY & NORMAL, NORMAL picked first;
+    /// A / D (or the arrows) move the pick, Space (or Enter) takes it, a tap
+    /// or click takes a button at once. <see cref="ModeChosen"/> tells which.
+    /// </summary>
+    public void ShowModeChoice() {
+        if (!builder.TryBuild()) {
+            return;
+        }
+        if (rig.modePanel == null) {
+            rig.modePanel = builder.CreateModeChoice(PickMode);
+        }
+        rig.modePanel.SetActive(true);
+        rig.isModeEasy = false;
+        rig.modeAgeS = 0f;
+        rig.isModeMoveHeld = true;
+        ShowModePick();
+    }
+
+    /// <summary>Hides the difficulty choice.</summary>
+    public void HideModeChoice() {
+        if (rig.modePanel != null) {
+            rig.modePanel.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -67,6 +124,39 @@ public class BossFightHud: MonoBehaviour {
         rig.healthFill.anchorMax = new Vector2(Mathf.Clamp01(fraction), 1f);
     }
 
+    /// <summary>
+    /// Sets the health bar to <paramref name="health"/> of
+    /// <paramref name="maxHealth"/>, its count shown on the heart left of
+    /// the bar; the heart pops as the count drops.
+    /// </summary>
+    public void SetHealth(int health, int maxHealth) {
+        SetHealth(maxHealth > 0 ? health / (float)maxHealth : 0f);
+        if (rig.heartLabel == null) {
+            return;
+        }
+        health = Mathf.Max(0, health);
+        if (rig.heartHealth >= 0 && health < rig.heartHealth) {
+            rig.heartPopLeftS = HEART_POP_S;
+        }
+        rig.heartHealth = health;
+        rig.heartLabel.text = health.ToString();
+    }
+
+    // the heart's pop as the count drops: real s, its biggest scale
+    private const float HEART_POP_S = 0.3f;
+    private const float HEART_POP_SCALE = 1.35f;
+
+    private void UpdateHeart() {
+        if (rig.heart == null) {
+            return;
+        }
+        rig.heartPopLeftS = Mathf.Max(0f,
+            rig.heartPopLeftS - Time.unscaledDeltaTime);
+        float t = rig.heartPopLeftS / HEART_POP_S;
+        rig.heart.localScale =
+            Vector3.one * Mathf.Lerp(1f, HEART_POP_SCALE, t * t);
+    }
+
     /// <summary>Flashes the whole screen white, fading out.</summary>
     public void Flash() {
         Flash(Color.white);
@@ -76,7 +166,7 @@ public class BossFightHud: MonoBehaviour {
     /// </summary>
     public void Flash(Color color) {
         rig.flashColor = color;
-        rig.flashLeftS = tuning.FlashS;
+        rig.flashLeftS = config.FlashS;
     }
 
     /// <summary>Shows <paramref name="line"/> in a bubble over the head.
@@ -86,7 +176,7 @@ public class BossFightHud: MonoBehaviour {
             return;
         }
         rig.speechLabel.text = line;
-        rig.speechLeftS = tuning.SpeechShowS;
+        rig.speechLeftS = config.SpeechShowS;
         // the bubble fits its line
         rig.speechRect.sizeDelta = new Vector2(
             Mathf.Max(200f, rig.speechLabel.GetPreferredValues(line).x + 48f),
@@ -123,7 +213,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Pops a rising damage number at a world point.</summary>
     public void PopDamage(string text, Vector3 worldPosition) {
-        PopText(text, worldPosition, tuning.DamageColor);
+        PopText(text, worldPosition, config.DamageColor);
     }
 
     /// <summary>Pops a rising word at a world point, eg "Blocked!".
@@ -163,7 +253,7 @@ public class BossFightHud: MonoBehaviour {
         BossFightHudBuilder.AddImage(panel,
             BossFightHudBuilder.Tint(UIStyle.Background, 0.8f));
         BossFightHudBuilder.AddCenterLabel(panel, "Victory!", 90f,
-            tuning.DamageColor, 140f);
+            config.DamageColor, 140f);
         BossFightHudBuilder.AddCenterLabel(
             panel, "You defeated the Cobra King!", 36f, UIStyle.Cream, 50f
         );
@@ -177,7 +267,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Shows a big banner in the screen center.</summary>
     public void ShowBanner(string text) {
-        ShowBanner(text, tuning.DamageColor);
+        ShowBanner(text, config.DamageColor);
     }
 
     /// <summary>Shows a big banner in <paramref name="color"/>.</summary>
@@ -383,7 +473,7 @@ public class BossFightHud: MonoBehaviour {
     public void SetPrompt(bool isShown, Vector3 worldPosition) {
         if (rig.keyPrompt != null) {
             rig.keyPrompt.SetPrompt(isShown, worldPosition,
-                tuning.PromptOffset);
+                config.PromptOffset);
         }
     }
 
@@ -411,7 +501,7 @@ public class BossFightHud: MonoBehaviour {
         BossFightHudBuilder.Stretch(face);
         face.offsetMin = new Vector2(5f, 5f);
         face.offsetMax = new Vector2(-5f, -5f);
-        BossFightHudBuilder.AddImage(face, tuning.WarningColor);
+        BossFightHudBuilder.AddImage(face, config.WarningColor);
         TextMeshProUGUI mark =
             BossFightHudBuilder.CreateLabel("Mark", sign, "!", 56f,
                 Color.white);
@@ -419,7 +509,7 @@ public class BossFightHud: MonoBehaviour {
         mark.fontStyle = FontStyles.Bold;
 
         TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
-            "Word", sign, word, 30f, tuning.WarningColor
+            "Word", sign, word, 30f, config.WarningColor
         );
         label.fontStyle = FontStyles.Bold;
         label.outlineWidth = 0.25f;
@@ -518,6 +608,64 @@ public class BossFightHud: MonoBehaviour {
         motion.UpdatePops();
         motion.UpdateWarnings();
         motion.UpdateCallOut();
+        UpdateHeart();
+        UpdateModeChoice();
+    }
+
+    // the choice card reads the UI map the event system reads: Navigate
+    // moves the pick, Submit takes it; time stands still, so unscaled
+    private void UpdateModeChoice() {
+        if (!IsChoosingMode) {
+            return;
+        }
+        rig.modeAgeS += Time.unscaledDeltaTime;
+        ShowModePick();
+        GameController game = GameController.I;
+        if (game != null && game.IsPaused) {
+            return;
+        }
+        InputSystemUIInputModule module = EventSystem.current != null
+            ? EventSystem.current.currentInputModule as InputSystemUIInputModule
+            : null;
+        InputAction move = module != null && module.move != null
+            ? module.move.action : null;
+        InputAction submit = module != null && module.submit != null
+            ? module.submit.action : null;
+        float x = move != null ? move.ReadValue<Vector2>().x : 0f;
+        // a press held from b4 the card (eg moving) only counts once let go
+        if (Mathf.Abs(x) < 0.5f) {
+            rig.isModeMoveHeld = false;
+        } else if (!rig.isModeMoveHeld) {
+            rig.isModeMoveHeld = true;
+            rig.isModeEasy = x < 0f;
+        }
+        if (rig.modeAgeS >= MODE_READY_S && submit != null
+            && submit.WasPressedThisFrame()) {
+            PickMode(rig.isModeEasy);
+        }
+    }
+
+    // the picked choice grows a little inside its cream ring
+    private void ShowModePick() {
+        if (rig.easyRing == null) {
+            return;
+        }
+        rig.easyRing.gameObject.SetActive(rig.isModeEasy);
+        rig.normalRing.gameObject.SetActive(!rig.isModeEasy);
+        float beat = 1f + 0.03f * Mathf.Sin(Time.unscaledTime * 5f);
+        Vector3 picked = Vector3.one * 1.08f * beat;
+        rig.easyButton.localScale = rig.isModeEasy ? picked : Vector3.one;
+        rig.normalButton.localScale = rig.isModeEasy ? Vector3.one : picked;
+        rig.easyRing.localScale = rig.easyButton.localScale;
+        rig.normalRing.localScale = rig.normalButton.localScale;
+    }
+
+    private void PickMode(bool isEasy) {
+        if (!IsChoosingMode) {
+            return;
+        }
+        HideModeChoice();
+        ModeChosen?.Invoke(isEasy);
     }
 
     /// <summary>Takes the docked call out away.</summary>

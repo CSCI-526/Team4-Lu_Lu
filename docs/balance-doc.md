@@ -64,7 +64,7 @@ The boss fight owns a stretch of the trunk, set by 3 heights in `WorldBalanceCon
 - Flat Difficulty: the ramp reaches 1 at the Cobra King zone start and holds it through the zone, climbs to 2 by the Spider King zone start, holds 2 through that zone, then climbs above 2 after its end on its own curve
 - Why: the fight builds its arena at runtime and needs a clear, fair stage; keeping the stage clear by generation is simpler than sweeping hazards away when the fight begins
 - Marker Meters: the 3 heights are climbed heights, the same meters the trunk height markers show
-- Endless Mode: no boss zone and no flat stretch; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at 2, the level after the Spider King, and keeps climbing; climbed heights, score and markers stay real
+- Endless Mode: a boss rush every `endlessBossIntervalU` (300 u), each boss harder by encounter, the monkey & great cobra at normal speed (`endlessSpeedScale`, 1); no fixed boss zone and no flat stretch, only each coming arena kept bare; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at 2, the level after the Spider King, and keeps climbing; climbed heights, score and markers stay real
 
 ## Balance Lives In Three Assets
 
@@ -73,7 +73,7 @@ The balance numbers have 4 homes, split by what they tune: `ScoreConfig` for eve
 - Why Split By Concern: one asset had grown to a dozen unrelated groups, so a designer tuning the cobras scrolled past stamina and score; each question now has one obvious home, while every number still lives in exactly one asset, so there is no second, forgotten copy of it
 - Cross-System Questions: stamina drain, banana supply, and climb speed together decide how long a run lasts, and they sit in different assets; read `PlayerBalanceConfig` and `WorldBalanceConfig` side by side when tuning a run's length
 - Readers Hold The Reference: each consumer has a field for every slice it reads (`playerBalanceConfig`, `worldBalanceConfig`, `cobraBalanceConfig`) and no slice it does not, so there is no global to trip over, and a test scene can swap in another asset
-- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm stroke and reach in `MonkeyArmConfig`, climb and orbit in `MonkeyClimbConfig`, branch geometry in `BranchFruitPlacementConfig`, the pineapple leap's distance, speed curve, and timings in `PineappleLeapConfig`, web and falling cobra spawn geometry on their spawners
+- What Stays Out: tuning that is geometry or feel rather than balance stays with its owner: arm stroke and reach in `MonkeyArmConfig`, climb and orbit in `MonkeyClimbConfig`, branch geometry in `BranchFruitPlacementConfig`, the pineapple leap's distance, speed curve, and timings in `PineappleLeapConfig`, web and falling cobra spawn geometry on their spawners, the great cobra, falling cobra, both bosses and the boss HUD in `CobraMotorConfig`, `FallingCobraConfig`, `CobraKingConfig`, `SpiderKingConfig` and `BossFightHudConfig` (Config assets, not balance)
 
 ## The Stamina Loop
 

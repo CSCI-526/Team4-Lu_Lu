@@ -7,9 +7,9 @@ using static BossFightHudRig;
 /// <summary>Builds the HUD elements in code: the quiet bar, the revive panel,
 /// the reward panel, the armor badge, and the UI factory helpers.</summary>
 public sealed class BossFightHudBuilder {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly BossFightHudRig rig;
-    private readonly BossFightHudTuning tuning;
+    private readonly BossFightHudConfig config;
     private readonly System.Action onWatchAdClicked;
     private readonly System.Action onGiveUpClicked;
     private readonly System.Action onCoursePageClicked;
@@ -23,7 +23,7 @@ public sealed class BossFightHudBuilder {
             System.Action onCoursePageClicked, System.Action onContinueClicked,
                 System.Action onSkipAdClicked) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
         this.onWatchAdClicked = onWatchAdClicked;
         this.onGiveUpClicked = onGiveUpClicked;
         this.onCoursePageClicked = onCoursePageClicked;
@@ -66,7 +66,8 @@ public sealed class BossFightHudBuilder {
         rig.healthFill.offsetMin = new Vector2(3f, 3f);
         rig.healthFill.offsetMax = new Vector2(-3f, -3f);
         rig.healthFill.anchorMax = new Vector2(1f, 1f);
-        AddImage(rig.healthFill, tuning.HealthColor);
+        AddImage(rig.healthFill, config.HealthColor);
+        CreateHeart(bar);
         rig.nameLabel =
             CreateLabel("Name", rig.rootRect, "", 28f, UIStyle.Cream);
         RectTransform nameRect = rig.nameLabel.rectTransform;
@@ -86,9 +87,9 @@ public sealed class BossFightHudBuilder {
 
         // animated hold-and-release icon, one per control style
         rig.keyPrompt = KeyPromptWidget.Create(
-            rig.rootRect, tuning.HintIconLibrary,
-                tuning.PromptKeyboardController,
-            tuning.PromptTouchController
+            rig.rootRect, config.HintIconLibrary,
+                config.PromptKeyboardController,
+            config.PromptTouchController
         );
 
         // banner, screen center
@@ -100,9 +101,9 @@ public sealed class BossFightHudBuilder {
         rig.bannerLabel.gameObject.SetActive(false);
 
         // animated double tap icon under the low banner, shown by a lesson
-        rig.doubleTapIcon = HintIconSlot.Create(
-            rig.rootRect, tuning.HintIconLibrary,
-            tuning.DoubleKeyboardController, tuning.DoubleTouchController,
+        rig.doubleTapIcon = HintIconWidget.Create(
+            rig.rootRect, config.HintIconLibrary,
+            config.DoubleKeyboardController, config.DoubleTouchController,
             DOUBLE_TAP_ICON_SIZE
         );
         if (rig.doubleTapIcon != null) {
@@ -120,6 +121,90 @@ public sealed class BossFightHudBuilder {
         rig.flashImage = AddImage(flash, new Color(1f, 1f, 1f, 0f));
         return true;
     }
+
+    // a heart just left of the bar, in its color w/ a dark brown rim, the
+    // health left in cream on it; under the bar, so it hides w/ it
+    private void CreateHeart(RectTransform bar) {
+        rig.heart = CreateRect("Heart", bar);
+        rig.heart.anchorMin = rig.heart.anchorMax = new Vector2(0f, 0.5f);
+        rig.heart.pivot = new Vector2(1f, 0.5f);
+        rig.heart.anchoredPosition = new Vector2(-HEART_GAP, 0f);
+        rig.heart.sizeDelta = new Vector2(HEART_SIZE, HEART_SIZE);
+        Sprite sprite = HeartSprite();
+        Image rim = AddImage(rig.heart, UIStyle.Brown);
+        rim.sprite = sprite;
+        rim.preserveAspect = true;
+        RectTransform fill = CreateRect("Fill", rig.heart);
+        Stretch(fill);
+        float inset = HEART_SIZE * HEART_RIM_SHARE;
+        fill.offsetMin = new Vector2(inset, inset);
+        fill.offsetMax = new Vector2(-inset, -inset);
+        Image fillImage = AddImage(fill, config.HealthColor);
+        fillImage.sprite = sprite;
+        fillImage.preserveAspect = true;
+        rig.heartLabel = CreateLabel("Count", rig.heart, "", HEART_FONT_SIZE,
+            UIStyle.Cream);
+        rig.heartLabel.fontStyle = FontStyles.Bold;
+        RectTransform count = rig.heartLabel.rectTransform;
+        Stretch(count);
+        // a heart's middle sits a little above its box's
+        count.offsetMin = new Vector2(0f, HEART_SIZE * 0.06f);
+        count.offsetMax = new Vector2(0f, HEART_SIZE * 0.06f);
+        rig.heartLabel.outlineColor = UIStyle.Brown;
+        rig.heartLabel.outlineWidth = 0.25f;
+    }
+
+    // one white heart, its edge smoothed, made once: (x² + y² - 1)³ - x²y³
+    // <= 0, 4 x 4 samples a pixel
+    private static Sprite HeartSprite() {
+        if (heartSprite != null) {
+            return heartSprite;
+        }
+        const int size = 128;
+        const int samples = 4;
+        Color32[] pixels = new Color32[size * size];
+        for (int py = 0; py < size; py++) {
+            for (int px = 0; px < size; px++) {
+                int inside = 0;
+                for (int sy = 0; sy < samples; sy++) {
+                    for (int sx = 0; sx < samples; sx++) {
+                        float x = ((px + (sx + 0.5f) / samples) / size
+                            - 0.5f) * 2.6f;
+                        float y = ((py + (sy + 0.5f) / samples) / size
+                            - 0.5f) * 2.6f + 0.1f;
+                        float a = x * x + y * y - 1f;
+                        if (a * a * a - x * x * y * y * y <= 0f) {
+                            inside++;
+                        }
+                    }
+                }
+                pixels[py * size + px] = new Color32(255, 255, 255,
+                    (byte)(255 * inside / (samples * samples)));
+            }
+        }
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32,
+            false) {
+            name = "Monkobra UI Heart",
+            hideFlags = HideFlags.DontSave,
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Bilinear,
+        };
+        texture.SetPixels32(pixels);
+        texture.Apply(false, true);
+        heartSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size),
+            new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        heartSprite.name = "Monkobra UI Heart";
+        heartSprite.hideFlags = HideFlags.DontSave;
+        return heartSprite;
+    }
+
+    private static Sprite heartSprite;
+    // the heart's size & gap to the bar, its rim's share of its size, the
+    // count's size; canvas units
+    private const float HEART_SIZE = 56f;
+    private const float HEART_GAP = 6f;
+    private const float HEART_RIM_SHARE = 0.08f;
+    private const float HEART_FONT_SIZE = 26f;
 
     public static Canvas FindRootCanvas() {
         foreach (Canvas canvas in UnityEngine.Object.FindObjectsByType<Canvas>(
@@ -270,6 +355,58 @@ public sealed class BossFightHudBuilder {
         rig.rewardButton = (RectTransform)button.transform;
         panel.gameObject.SetActive(false);
         return panel.gameObject;
+    }
+
+    // the difficulty choice after a revive: a short title & two big
+    // buttons, EASY & NORMAL, side by side; the picked one rings in cream
+    public GameObject CreateModeChoice(System.Action<bool> onPick) {
+        RectTransform panel = CreateRect("ModeChoice", rig.rootRect);
+        Stretch(panel);
+        AddImage(panel, Tint(UIStyle.Background, 0.75f));
+        RectTransform card = CreateRect("Card", panel);
+        card.sizeDelta = new Vector2(620f, 320f);
+        AddImage(card, Tint(UIStyle.Panel, 0.96f));
+        TextMeshProUGUI title = CreateLabel("Title", card, "Difficulty", 56f,
+            UIStyle.Gold);
+        title.fontStyle = FontStyles.Bold;
+        PlaceLabel(title, new Vector2(0f, 100f), new Vector2(580f, 70f));
+        rig.easyRing = CreateRing("EasyRing", card, new Vector2(-140f, -5f));
+        rig.normalRing = CreateRing("NormalRing", card,
+            new Vector2(140f, -5f));
+        rig.easyButton = CreateChoiceButton("Easy", card,
+            new Vector2(-140f, -5f), EASY_COLOR, () => onPick(true));
+        rig.normalButton = CreateChoiceButton("Normal", card,
+            new Vector2(140f, -5f), UIStyle.Gold, () => onPick(false));
+        TextMeshProUGUI hint = CreateLabel("Hint", card, "", 24f,
+            Tint(UIStyle.Cream, 0.85f));
+        PlaceLabel(hint, new Vector2(0f, -110f), new Vector2(580f, 36f));
+        AddStyleText(hint, "A / D, then Space", "Tap one");
+        panel.gameObject.SetActive(false);
+        return panel.gameObject;
+    }
+
+    // the EASY signal green, as on the old choice tags
+    private static readonly Color EASY_COLOR = new Color(0.55f, 0.95f, 0.55f);
+
+    private static RectTransform CreateChoiceButton(string word,
+        Transform parent, Vector2 position, Color face, System.Action onClick) {
+        RectTransform rect = (RectTransform)CreateButton(word, parent, word,
+            face, position, onClick, word, UIStyle.Brown).transform;
+        rect.sizeDelta = new Vector2(240f, 96f);
+        TextMeshProUGUI label = rect.GetComponentInChildren<TextMeshProUGUI>();
+        label.fontSize = 40f;
+        label.fontStyle = FontStyles.Bold;
+        return rect;
+    }
+
+    // a cream ring behind a choice, shown while it is picked
+    private static RectTransform CreateRing(string ringName, Transform parent,
+        Vector2 position) {
+        RectTransform ring = CreateRect(ringName, parent);
+        ring.anchoredPosition = position;
+        ring.sizeDelta = new Vector2(256f, 112f);
+        AddImage(ring, UIStyle.Cream);
+        return ring;
     }
 
     // a dark plate w/ a gold diamond & GOLDEN ARMOR

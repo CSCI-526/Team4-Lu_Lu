@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="49" height="73" viewBox="-31 -21 49 73">
+<!-- pivot at (0, 0) in viewBox units -->
+<path d="M -12 -6 C -12 -17 12 -17 12 -6 L 11 30 L -11 30 Z" fill="#805033" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+<ellipse cx="-7" cy="35" rx="18" ry="11" fill="#E3AF66" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+</svg>

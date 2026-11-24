@@ -5,7 +5,7 @@ Unity `6000.3.22f1`. Every build uses its own Build Profile in `Assets/Settings/
 ## GitHub Pages
 
 Profile: `GithubPages` (WebGL)
-Location: `builds/Monkobra v1.0.0-beta.4+GitHub`
+Location: `builds/Monkobra v1.0.0-beta.5+GitHub`
 
 Profile settings (Pages cannot set response headers):
 
@@ -15,7 +15,7 @@ Profile settings (Pages cannot set response headers):
 - Splash Screen: "Show Splash Screen" off (Player Settings > Splash Image), so the loading page hands straight over to the title
 - Development Build: on, since the hack hints and dev-only UI need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
 - Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `GameplayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
-- Scenes: the global list, in order `TitleScene` (the startup scene), `LevelSelectScene`, `GameplayScene`
+- Scenes: the global list, in order `TitleScene` (the startup scene), `IntroComicScene`, `LevelSelectScene`, `GameplayScene`; `Monkobra > Build Intro Comic` puts the comic scene after the title
 
 Phones: iOS browsers (all WebKit) have no Fullscreen API for a canvas and cannot lock the orientation. The `FitWindow` template therefore hides the Fullscreen button there and shows an Add to Home Screen hint, links `manifest.webmanifest` for a chrome-less launch from the home screen, and, on a touch phone held in portrait, covers the page with a rotate message and calls `GameController.PauseFromBrowser`, so a live run waits behind the pause screen
 
@@ -25,13 +25,13 @@ Steps:
 2. Test, since WebGL will not run from `file://`:
 
 ```bash
-python3 -m http.server 8000 --directory "builds/Monkobra v1.0.0-beta.4+GitHub"
+python3 -m http.server 8000 --directory "builds/Monkobra v1.0.0-beta.5+GitHub"
 ```
 
 ## itch.io
 
 Profile: `ItchIO` (WebGL)
-Location: `builds/Monkobra v1.0.0-beta.4+Itch`
+Location: `builds/Monkobra v1.0.0-beta.5+Itch`
 
 Profile settings: same as GitHub Pages, Development Build on included (`Disabled` works; gzip is the fallback, avoid Brotli).
 
@@ -68,7 +68,7 @@ The hack keys (F1~F3 cheats, 1~2 jumps, 3~6 spawns, F8~F10 analytics, F12 turns 
 
 ## Windows
 
-Location: `builds/Monkobra v1.0.0-beta.4+Win`
+Location: `builds/Monkobra v1.0.0-beta.5+Win`
 
 1. `File > Build Profiles`, select Windows, click Build, choose the location
 2. Run the `.exe`

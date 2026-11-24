@@ -24,7 +24,7 @@ public static class WebDownload {
 #endif
     }
 
-    // Private Helpers  ########################################################
+    // private helpers  ########################################################
 #if UNITY_WEBGL && !UNITY_EDITOR
     // Plugins/WebGL/Download.jslib
     [DllImport("__Internal")]

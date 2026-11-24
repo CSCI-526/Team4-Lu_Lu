@@ -13,7 +13,7 @@ using UnityEngine;
 /// the template.
 /// </summary>
 public class WebGLLoaderArt: IPostprocessBuildWithReport {
-    // public members  #########################################################
+    // Public Members  #########################################################
     public int callbackOrder => 0;
 
     public void OnPostprocessBuild(BuildReport report) {

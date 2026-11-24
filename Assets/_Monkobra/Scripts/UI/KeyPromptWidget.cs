@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Runtime animated input icon and instruction of the boss HUD. Follows a
 /// world point on a screen-space Canvas; the icon is a <see
-/// cref="HintIconSlot"/>
+/// cref="HintIconWidget"/>
 /// that shows the keyboard or the touch prefab of the style in use.
 /// </summary>
 // Follow this frame's camera pose after CinemachineBrain (order 100).
@@ -113,7 +113,7 @@ public class KeyPromptWidget: MonoBehaviour {
         visibility.interactable = false;
         promptRect.sizeDelta = new Vector2(260f, ICON_SIZE + 46f);
 
-        RectTransform icon = HintIconSlot.Create(
+        RectTransform icon = HintIconWidget.Create(
             promptRect, library, keyboardController, touchController,
             ICON_SIZE
         );

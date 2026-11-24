@@ -102,4 +102,4 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 07eefc18f47441aba8b5dcc1bb8d55a9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScreenVignetteArbiter
+  m_EditorClassIdentifier: Assembly-CSharp::ScreenVignetteManager

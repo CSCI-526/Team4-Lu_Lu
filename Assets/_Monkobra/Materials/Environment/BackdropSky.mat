@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BackdropSky
+  m_Shader: {fileID: 4800000, guid: 49c7f17c5fc14a9f865bd16c474f4890, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FloorMap:
+        m_Texture: {fileID: 2800000, guid: ac10ed7816fe4ca89e64c819efe0b638, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMap:
+        m_Texture: {fileID: 2800000, guid: c60a6dab070b4db69c812cb4adf2df43, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MacroMap:
+        m_Texture: {fileID: 2800000, guid: daec524b7f334ffc9dd4038a2cf196ad, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RidgeMap:
+        m_Texture: {fileID: 2800000, guid: 7227818c9e65491da532a4238dec8743, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CloudDrift: 0.004
+    - _CloudScale: 0.7
+    - _DetailMeanLum: 0.162
+    - _DetailScale: 180
+    - _FloorScale: 60
+    - _MacroRadius: 2700
+    m_Colors:
+    - _CloudColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CloudShade: {r: 0.8, g: 0.86, b: 0.92, a: 1}
+    - _FloorTint: {r: 1.1, g: 1.2, b: 1.15, a: 1}
+    - _HillFar: {r: 0.56, g: 0.68, b: 0.74, a: 1}
+    - _HillNear: {r: 0.36, g: 0.52, b: 0.38, a: 1}
+    - _RidgeAmp: {r: 160, g: 300, b: 500, a: 800}
+    - _RidgeBase: {r: 40, g: 150, b: 350, a: 600}
+    - _RidgeDistance: {r: 2600, g: 3600, b: 5200, a: 7500}
+    - _RiverColor: {r: 0.26, g: 0.7, b: 0.8, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

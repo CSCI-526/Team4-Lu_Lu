@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class GameController: MonoBehaviour {
     // Public Members  #########################################################
@@ -77,7 +78,7 @@ public class GameController: MonoBehaviour {
     /// </summary>
     public bool CanRestartNow =>
         (State == GameState.Lost || State == GameState.Won)
-        && Time.unscaledTime - lostTime >= restartInputDelay;
+        && Time.unscaledTime - lostTime >= restartInputDelayS;
 
     // Public Methods  #########################################################
     /// <summary>starts a fresh run in the same scene</summary>
@@ -174,9 +175,10 @@ public class GameController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
+    [FormerlySerializedAs("restartInputDelay")]
     [Min(0f)]
-    [Tooltip("unscaled seconds the lose screen ignores restart input")]
-    private float restartInputDelay = 0.5f;
+    [Tooltip("unscaled time the lose screen ignores restart input; s")]
+    private float restartInputDelayS = 0.5f;
 
     [SerializeField]
     [Tooltip("starts the run from the tutorial screen, the Player/Jump "
@@ -271,6 +273,9 @@ public class GameController: MonoBehaviour {
     }
 
     private void Update() {
+        if (TextInputFocus.BlocksShortcuts) {
+            return;
+        }
         UpdateStartKey();
         UpdateNoClipKey();
         UpdatePauseKey();
@@ -280,7 +285,7 @@ public class GameController: MonoBehaviour {
             return;
         }
 
-        if (Time.unscaledTime - lostTime < restartInputDelay) {
+        if (Time.unscaledTime - lostTime < restartInputDelayS) {
             return;
         }
 

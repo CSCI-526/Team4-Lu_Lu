@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="126" viewBox="-54 -43 108 126">
+<!-- pivot at (0, 0) in viewBox units -->
+<path d="M 7.2 -2.4 C 16.8 -9.6 28.8 -24 26.4 -36 C 15.6 -38.4 2.4 -21.6 -4.8 -9.6 Z" fill="#EFB64D" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+<path d="M -7.2 -2.4 C -16.8 -9.6 -28.8 -24 -26.4 -36 C -15.6 -38.4 -2.4 -21.6 4.8 -9.6 Z" fill="#EFB64D" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+<path d="M -43.2 4.8 C -55.2 33.6 -45.6 74.4 0 76.8 C 45.6 74.4 55.2 33.6 43.2 4.8 C 31.2 -7.2 -31.2 -7.2 -43.2 4.8 Z" fill="#EFB64D" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+<path d="M -10.8 7.2 C -14.4 24 -19.2 38.4 -24 52.8" fill="none" stroke="#D99A35" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 12 7.2 C 15.6 21.6 19.2 33.6 21.6 45.6" fill="none" stroke="#D99A35" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="-28.8" cy="26.4" rx="5.04" ry="5.04" fill="#FFF2D2"/>
+<ellipse cx="0" cy="36" rx="5.04" ry="5.04" fill="#FFF2D2"/>
+<ellipse cx="28.8" cy="26.4" rx="5.04" ry="5.04" fill="#FFF2D2"/>
+<ellipse cx="-14.4" cy="57.6" rx="5.04" ry="5.04" fill="#FFF2D2"/>
+<ellipse cx="15.6" cy="60" rx="5.04" ry="5.04" fill="#FFF2D2"/>
+<ellipse cx="-36" cy="50.4" rx="5.04" ry="5.04" fill="#FFF2D2"/>
+<ellipse cx="36" cy="48" rx="5.04" ry="5.04" fill="#FFF2D2"/>
+<ellipse cx="0" cy="-3.6" rx="13.2" ry="9.6" fill="#EFB64D" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+</svg>

@@ -86,7 +86,7 @@ public class HackShortcutConfig: ScriptableObject {
         bool isGateOpen = action == HackAction.ToggleHints
             ? AreHintsShown
             : IsActive;
-        return isGateOpen
+        return !TextInputFocus.BlocksShortcuts && isGateOpen
             && keyboard != null
             && key != Key.None
             && keyboard[key].wasPressedThisFrame;
@@ -104,7 +104,7 @@ public class HackShortcutConfig: ScriptableObject {
         }
         isLayerOn = !isLayerOn;
         if (Debug.isDebugBuild) {
-            Debug.Log("HackShortcutConfig:	hack layer " + isLayerOn);
+            Debug.Log("HackShortcutConfig:\thack layer " + isLayerOn);
         }
         return true;
     }

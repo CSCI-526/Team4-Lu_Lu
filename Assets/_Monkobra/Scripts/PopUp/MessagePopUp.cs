@@ -101,7 +101,7 @@ public class MessagePopUp: MonoBehaviour {
 
     [SerializeField]
     [Tooltip("animated hint icon; none when the popup has no hint")]
-    private HintIconSlot hintSlot;
+    private HintIconWidget hintSlot;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {

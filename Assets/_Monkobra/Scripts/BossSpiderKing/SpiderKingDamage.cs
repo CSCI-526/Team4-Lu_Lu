@@ -6,13 +6,13 @@ using static SpiderKingRig;
 
 /// <summary>Hits, throw-offs, touch warnings, and the armor spent.</summary>
 public sealed class SpiderKingDamage {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingDamage(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -34,7 +34,8 @@ public sealed class SpiderKingDamage {
             return;
         }
         rig.health = Mathf.Max(0, rig.health - damage);
-        rig.hud.SetHealth(rig.health / (float)rig.maxHealth);
+        rig.onSpiderHit?.Invoke();
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.hud.PopDamage("-" + damage, rig.body.HeadPosition);
         rig.Parry.Burst(rig.body.HeadPosition, new Color(0.9f, 0.2f, 0.25f),
             10);
@@ -49,24 +50,24 @@ public sealed class SpiderKingDamage {
             // a stage of volleys opens w/ at least two of them, no slash
             // till then
             int volley =
-                SpiderKingMovement.PerStage(tuning.WebShotsPerStage, stage);
+                SpiderKingMovement.PerStage(config.WebShotsPerStage, stage);
             if (volley >= 2) {
                 rig.websBeforeSlash = VOLLEYS_FIRST;
             }
-            rig.Parry.AddRing(rig.body.HeadPosition, tuning.WarnColor, 0f);
-            rig.Parry.AddRing(rig.body.HeadPosition, tuning.WarnColor, 0.1f);
-            rig.Parry.AddRing(rig.body.HeadPosition, tuning.WarnColor, 0.2f);
+            rig.Parry.AddRing(rig.body.HeadPosition, config.WarnColor, 0f);
+            rig.Parry.AddRing(rig.body.HeadPosition, config.WarnColor, 0.1f);
+            rig.Parry.AddRing(rig.body.HeadPosition, config.WarnColor, 0.2f);
             // its volleys grow: called out once, from its head up to under
             // the health bar
             if (volley >= 2) {
                 rig.hud.CallOut(volley >= 3 ? "Triple fire ready!"
                     : "Rapid fire ready!", rig.body.HeadPosition,
-                        tuning.WarnColor);
+                        config.WarnColor);
                 rig.Movement.HoldForCallOut();
             } else {
                 rig.hud.Say(stage == 1 ? "You'll pay for that!" : "ENOUGH!");
             }
-            rig.Parry.BurstStreaks(rig.body.HeadPosition, tuning.WarnColor, 18,
+            rig.Parry.BurstStreaks(rig.body.HeadPosition, config.WarnColor, 18,
                 4f, 10f);
             return;
         }
@@ -114,12 +115,12 @@ public sealed class SpiderKingDamage {
     public void ShowTouchWarning(bool isSaved) {
         rig.biteEndTime = Time.unscaledTime + BITE_S;
         Vector3 at = rig.monkey.position;
-        rig.Parry.AddRing(at, tuning.WarnColor, 0f);
-        rig.Parry.AddRing(at, tuning.WarnColor, 0.08f);
-        rig.Parry.BurstStreaks(at, tuning.WarnColor, 16, 5f, 12f);
+        rig.Parry.AddRing(at, config.WarnColor, 0f);
+        rig.Parry.AddRing(at, config.WarnColor, 0.08f);
+        rig.Parry.BurstStreaks(at, config.WarnColor, 16, 5f, 12f);
         if (isSaved) {
             rig.hud.PopText("Don't touch it!", rig.body.HeadPosition,
-                tuning.WarnColor);
+                config.WarnColor);
         }
     }
 
@@ -135,16 +136,16 @@ public sealed class SpiderKingDamage {
         Vector3 at = rig.monkey.position;
         float awayDeg = Mathf.DeltaAngle(rig.spiderAngle, rig.AngleOf(at));
         float sign = awayDeg >= 0f ? 1f : -1f;
-        float throwDeg = TOUCH_THROW_U / tuning.TrunkRadiusU * Mathf.Rad2Deg;
+        float throwDeg = TOUCH_THROW_U / config.TrunkRadiusU * Mathf.Rad2Deg;
         float y = at.y + Mathf.Sign(at.y - rig.spiderY) * 2f;
         rig.returnTarget = rig.PointOnTrunk(rig.AngleOf(at) + sign * throwDeg,
-            Mathf.Clamp(y, rig.entryY, rig.entryY + tuning.ArenaHeightU),
+            Mathf.Clamp(y, rig.entryY, rig.entryY + config.ArenaHeightU),
             rig.HorizontalDistance(at));
         SpiderKingFeedback.SetUntouchable(true);
         rig.monkeyController.ClearStun();
         rig.monkeyController.IsHeld = true;
         rig.monkeyController.PullTo(rig.returnTarget,
-            tuning.ReviveReturnSpeedU);
+            config.ReviveReturnSpeedU);
         rig.isReturningToStart = true;
     }
 
@@ -160,11 +161,11 @@ public sealed class SpiderKingDamage {
         }
         Vector3 at = rig.monkey.position;
         float mu = Mathf.DeltaAngle(rig.dashStartAngle, rig.AngleOf(at))
-            * Mathf.Deg2Rad * tuning.TrunkRadiusU;
+            * Mathf.Deg2Rad * config.TrunkRadiusU;
         float mv = at.y - rig.dashStartY;
         float side = rig.dashWayU * mv - rig.dashWayV * mu >= 0f ? 1f : -1f;
         float lowY = rig.entryY;
-        float highY = rig.entryY + tuning.ArenaHeightU - 0.5f;
+        float highY = rig.entryY + config.ArenaHeightU - 0.5f;
         float sideY = at.y + side * rig.dashWayU * DASH_THROW_U;
         // too little room that way: the other side
         if (sideY < lowY || sideY > highY) {
@@ -176,14 +177,14 @@ public sealed class SpiderKingDamage {
         float throwU = -side * rig.dashWayV * DASH_THROW_U;
         float throwV = side * rig.dashWayU * DASH_THROW_U;
         rig.returnTarget = rig.PointOnTrunk(
-            rig.AngleOf(at) + throwU / tuning.TrunkRadiusU * Mathf.Rad2Deg,
+            rig.AngleOf(at) + throwU / config.TrunkRadiusU * Mathf.Rad2Deg,
             Mathf.Clamp(at.y + throwV, lowY, highY),
             rig.HorizontalDistance(at));
         SpiderKingFeedback.SetUntouchable(true);
         rig.monkeyController.ClearStun();
         rig.monkeyController.IsHeld = true;
         rig.monkeyController.PullTo(rig.returnTarget,
-            tuning.ReviveReturnSpeedU);
+            config.ReviveReturnSpeedU);
         rig.isReturningToStart = true;
     }
 
@@ -193,7 +194,7 @@ public sealed class SpiderKingDamage {
         if (cobraKing == null || !cobraKing.TrySpendArmor()) {
             return false;
         }
-        rig.saveGraceEndTime = Time.time + tuning.SaveGraceS;
+        rig.saveGraceEndTime = Time.time + config.SaveGraceS;
         // the golden melon waits a short while after the armor goes, so it
         // never pops up at once beside the monkey, eg back at the start;
         // after that, unpicked, its full interval

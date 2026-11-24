@@ -44,8 +44,8 @@ public class SpiderKingFightController: MonoBehaviour {
 
     /// <returns>climbed height the fight starts at, for its trunk height
     /// marker; u, -1 when unknown</returns>
-    public float TriggerHeightU => tuning.WorldBalanceConfig != null
-        ? tuning.WorldBalanceConfig.SpiderTriggerHeightU
+    public float TriggerHeightU => worldBalanceConfig != null
+        ? rig.TriggerClimbU
         : -1f;
 
     /// <returns>if its height marker is done w/: the fight has begun</returns>
@@ -65,6 +65,17 @@ public class SpiderKingFightController: MonoBehaviour {
 
     /// <summary>raised when the reward is taken & the climb goes on</summary>
     public event System.Action FightEnded;
+
+    /// <summary>raised as each attack strikes, after its charge or wind
+    /// up: a web bullet fired, a slash flying, a dash going</summary>
+    public event System.Action AttackStruck;
+
+    /// <summary>raised each time the spider is hurt: a melon, a parried
+    /// slash</summary>
+    public event System.Action SpiderHit;
+
+    /// <summary>raised when the beaten spider starts to fall</summary>
+    public event System.Action Defeated;
 
     /// <summary>
     /// Called by <see cref="CobraSensor"/> when the great cobra catches the
@@ -121,7 +132,7 @@ public class SpiderKingFightController: MonoBehaviour {
             || (rig.goldenTwin != null && rig.goldenTwin.trigger == fruit);
         if (isGoldenGrab) {
             arena.HideGoldenMelon();
-            rig.nextGoldenTime = Time.time + tuning.GoldenIntervalS;
+            rig.nextGoldenTime = Time.time + config.GoldenIntervalS;
             StaminaBarController full = StaminaBarController.I;
             if (full != null) {
                 full.AddStamina(full.MaxStamina);
@@ -141,7 +152,7 @@ public class SpiderKingFightController: MonoBehaviour {
         }
         int index = rig.melons.FindIndex(m => m.trigger == fruit);
         if (index >= 0) {
-            rig.melons[index].backTime = Time.time + tuning.MelonRespawnS;
+            rig.melons[index].backTime = Time.time + config.MelonRespawnS;
         }
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
@@ -153,9 +164,14 @@ public class SpiderKingFightController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    private SpiderKingTuning tuning = new();
+    [Tooltip("zone & trigger heights")]
+    private WorldBalanceConfig worldBalanceConfig;
 
-    // Private Members  ########################################################
+    [SerializeField]
+    [Tooltip("every tuned value of the Spider King fight")]
+    private SpiderKingConfig config;
+
+    // private members  ########################################################
     private SpiderKingRig rig;
     private SpiderKingArena arena;
     private SpiderKingMelons melons;
@@ -169,7 +185,19 @@ public class SpiderKingFightController: MonoBehaviour {
     private SpiderKingFeedback feedback;
 
     private void Awake() {
-        rig = new SpiderKingRig(this, tuning);
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogError(
+                "SpiderKingFightController:\tmust assign Inspector Field: "
+                    + "config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        rig = new SpiderKingRig(this, config);
+        rig.worldBalanceConfig = worldBalanceConfig;
         arena = new SpiderKingArena(rig);
         melons = new SpiderKingMelons(rig);
         movement = new SpiderKingMovement(rig);
@@ -191,9 +219,11 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.Damage = damage;
         rig.Ending = ending;
         rig.Feedback = feedback;
-        // Inspector Assignment Guard  -----------------------------------------
-        if (tuning.WorldBalanceConfig == null || tuning.WebPrefab == null
-            || tuning.BananaBranchPrefab == null) {
+        rig.onAttackStruck = () => AttackStruck?.Invoke();
+        rig.onSpiderHit = () => SpiderHit?.Invoke();
+        rig.onDefeated = () => Defeated?.Invoke();
+        if (worldBalanceConfig == null || config.WebPrefab == null
+            || config.BananaBranchPrefab == null) {
             Debug.LogError(
                 "SpiderKingFightController:\tmust assign Inspector Fields: "
                     + "worldBalanceConfig, webPrefab, bananaBranchPrefab",
@@ -211,7 +241,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         I = this;
-        if (tuning.ConfirmAction == null || tuning.GiveUpAction == null) {
+        if (config.ConfirmAction == null || config.GiveUpAction == null) {
             Debug.LogWarning(
                 "SpiderKingFightController:\tmust assign Inspector Fields: "
                     + "confirmAction, giveUpAction",
@@ -226,32 +256,63 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.hud.CoursePageClicked += ending.OpenCoursePage;
         rig.hud.ContinueClicked += ending.ContinueAfterReward;
         rig.hud.SkipAdClicked += ending.SkipAd;
+        rig.hud.ModeChosen += OnModeChosen;
         rig.colorBlock = new MaterialPropertyBlock();
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "SpiderKingFightController:\tready, test at start "
-                    + tuning.IsTestAtStart,
+                    + config.IsTestAtStart,
                 this
             );
         }
+    }
+
+    // the endless run: the boss rush's second fight, & every other one
+    // after, is the spider's
+    private void Start() {
+        if (I == this && EndlessBossRush.IsOn) {
+            rig.rushEncounter = 1;
+        }
+    }
+
+    // the revive's difficulty card picked: time runs again & the fight goes
+    // on in that mode
+    private void OnModeChosen(bool isEasy) {
+        if (rig.teach != SpiderKingTeachStep.Choose
+            || rig.phase != SpiderKingPhase.Fighting) {
+            return;
+        }
+        Time.timeScale = 1f;
+        arena.ChooseMode(isEasy);
     }
 
     private void OnDestroy() {
         if (I == this) {
             I = null;
         }
-        TreeSegmentController.BranchesGenerated -= arena.OnBranchesGenerated;
+        // a duplicate or a domain reload in Play leaves no roles to unhook
+        if (arena != null) {
+            TreeSegmentController.BranchesGenerated -=
+                arena.OnBranchesGenerated;
+        }
     }
 
     // the actions are shared, so only switched on here, never off
     private void OnEnable() {
-        tuning.ConfirmAction?.action.Enable();
-        tuning.GiveUpAction?.action.Enable();
+        config.ConfirmAction?.action.Enable();
+        config.GiveUpAction?.action.Enable();
+        // a domain reload in Play keeps the component but not its roles
+        if (parry == null) {
+            return;
+        }
         RenderPipelineManager.beginCameraRendering += parry.OnBeginCamera;
         RenderPipelineManager.endCameraRendering += parry.OnEndCamera;
     }
 
     private void OnDisable() {
+        if (parry == null || rig == null) {
+            return;
+        }
         RenderPipelineManager.beginCameraRendering -= parry.OnBeginCamera;
         RenderPipelineManager.endCameraRendering -= parry.OnEndCamera;
         rig.shotEndTime = 0f;
@@ -278,15 +339,14 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == SpiderKingPhase.Waiting) {
+            // the endless run's rush keeps the coming arena bare; kept up
+            // every frame, as the run's start y is only known after a Start
+            arena.ReserveRushRange();
             UpdatePreview(game);
             if (CanBegin(game)) {
                 BeginFight();
             }
             return;
-        }
-        // the won gloves keep shining on the climb after
-        if (rig.phase == SpiderKingPhase.Done) {
-            ending.UpdateGloveShine();
         }
         if (!game.IsRunLive || rig.monkey == null
             || rig.phase == SpiderKingPhase.Done
@@ -295,6 +355,13 @@ public class SpiderKingFightController: MonoBehaviour {
         }
         if (rig.phase == SpiderKingPhase.Rewarding) {
             ending.UpdateRewardPause(game);
+            return;
+        }
+        // the revive's difficulty card holds time still till a pick
+        if (rig.phase == SpiderKingPhase.Fighting
+            && rig.teach == SpiderKingTeachStep.Choose
+            && rig.hud.IsChoosingMode) {
+            Time.timeScale = 0f;
             return;
         }
 
@@ -325,16 +392,23 @@ public class SpiderKingFightController: MonoBehaviour {
     }
 
     // Setup  ------------------------------------------------------------------
-    // after the Cobra King, never in the endless run, never mid leap
+    // after the Cobra King, never mid leap; in the endless run at its turn
+    // of the boss rush
     private bool CanBegin(GameController game) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        if (!game.IsRunLive || game.IsLeaping || ramp == null
-            || game.Mode == RunMode.Endless) {
+        if (!game.IsRunLive || game.IsLeaping || ramp == null) {
             return false;
         }
-        if (tuning.IsTestAtStart) {
+        if (rig.IsRush) {
+            return game.State == GameState.Playing
+                && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
+        }
+        if (game.Mode == RunMode.Endless) {
+            return false;
+        }
+        if (config.IsTestAtStart) {
             return ramp.CurrentPlayerClimbedYDistance >=
-                tuning.TestStartHeightU;
+                config.TestStartHeightU;
         }
         CobraKingFightController cobraKing = CobraKingFightController.I;
         if (game.State != GameState.Playing
@@ -342,41 +416,58 @@ public class SpiderKingFightController: MonoBehaviour {
             return false;
         }
         return ramp.CurrentPlayerClimbedYDistance
-            >= tuning.WorldBalanceConfig.SpiderTriggerHeightU;
+            >= worldBalanceConfig.SpiderTriggerHeightU;
     }
 
     // from just below the spider jump height on, the Spider King already
     // waits idle above its trigger height, so the player sees the fight ahead
+    // the monkey the waiting spider keeps above, once it is seen
+    private Transform previewMonkey;
+    // how fast the waiting spider crawls round after it; deg/s
+    private const float PREVIEW_TURN_DEG_PER_S = 120f;
+
     private void UpdatePreview(GameController game) {
-        if (tuning.IsTestAtStart) {
+        if (config.IsTestAtStart) {
             return;
         }
         if (rig.body.IsBuilt) {
+            // the waiting spider crawls round to stay right above the
+            // climbing monkey, so the fight starts w/ it in plain view
+            if (previewMonkey != null) {
+                rig.previewAngle = Mathf.MoveTowardsAngle(rig.previewAngle,
+                    rig.AngleOf(previewMonkey.position) + START_TURN_DEG,
+                    PREVIEW_TURN_DEG_PER_S * Time.deltaTime);
+            }
             rig.body.Place(rig.previewAngle, rig.previewY, 0f);
             return;
         }
-        if (!game.IsRunLive || game.Mode == RunMode.Endless) {
+        if (!game.IsRunLive
+            || (game.Mode == RunMode.Endless && !rig.IsRush)) {
             return;
         }
+        // seen waiting from a bit below: the jump height, or 50 u below the
+        // fight in the endless run's rush
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        if (ramp == null || ramp.CurrentPlayerClimbedYDistance
-                < tuning.WorldBalanceConfig.SpiderJumpHeightU - 5f) {
+        float seenFromU = rig.IsRush ? rig.TriggerClimbU - 50f
+            : worldBalanceConfig.SpiderJumpHeightU - 5f;
+        if (ramp == null || ramp.CurrentPlayerClimbedYDistance < seenFromU) {
             return;
         }
-        MonkeyController found = FindFirstObjectByType<MonkeyController>();
+        MonkeyController found = MonkeyController.I;
         if (found == null || found.transform.parent == null) {
             return;
         }
         rig.trunkCenter = found.transform.parent.position;
+        previewMonkey = found.transform;
         rig.previewAngle =
             rig.AngleOf(found.transform.position) + START_TURN_DEG;
         rig.previewY = ramp.PlayerGameStartYPosition
-            + tuning.WorldBalanceConfig.SpiderTriggerHeightU + START_ABOVE_U;
+            + rig.TriggerClimbU + START_ABOVE_U;
         rig.body.Build(rig.trunkCenter, rig.previewAngle, rig.previewY);
     }
 
     private void BeginFight() {
-        rig.monkeyController = FindFirstObjectByType<MonkeyController>();
+        rig.monkeyController = MonkeyController.I;
         if (rig.monkeyController == null
             || rig.monkeyController.transform.parent == null) {
             Debug.LogError(
@@ -389,7 +480,7 @@ public class SpiderKingFightController: MonoBehaviour {
         }
         rig.monkey = rig.monkeyController.transform;
         // a bit quicker in the arena, to dodge & reach the melons
-        rig.monkeyController.ArenaSpeedScale = tuning.MonkeySpeedScale;
+        rig.monkeyController.ArenaSpeedScale = config.MonkeySpeedScale;
         GameController.I.EndStartingZone();
         rig.trunkCenter = rig.monkey.parent.position;
         rig.entryY = rig.monkey.position.y;
@@ -403,7 +494,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         rig.greatCobra = FindFirstObjectByType<CobraMotor>();
         if (rig.greatCobra != null) {
-            rig.greatCobra.StartGuard(rig.entryY - tuning.GuardDepthU);
+            rig.greatCobra.StartGuard(rig.entryY - config.GuardDepthU);
         }
         // a web breaks in as many presses as in the Cobra King's arena
         rig.struggle = FindFirstObjectByType<SpiderWebStruggle>();
@@ -413,7 +504,7 @@ public class SpiderKingFightController: MonoBehaviour {
                 ? cobraArena.WebEscapeGainScale
                 : 2f;
         }
-        rig.monkeyController.SetHeightCeiling(rig.entryY + tuning.ArenaHeightU);
+        rig.monkeyController.SetHeightCeiling(rig.entryY + config.ArenaHeightU);
         arena.BuildSkyWeb();
         rig.tail = SpiderKingFeedback.FindChild(rig.monkey, "Tail");
         if (rig.tail == null) {
@@ -425,22 +516,23 @@ public class SpiderKingFightController: MonoBehaviour {
             );
         }
 
-        rig.startAngle = rig.body.IsBuilt
-            ? rig.previewAngle
-            : rig.AngleOf(rig.monkey.position) + START_TURN_DEG;
+        // always right above the monkey as it enters, never across the trunk
+        rig.startAngle = rig.AngleOf(rig.monkey.position) + START_TURN_DEG;
         rig.startY = rig.entryY + START_ABOVE_U;
         rig.spiderAngle = rig.startAngle;
         rig.spiderY = rig.startY;
-        rig.maxHealth = tuning.WorldBalanceConfig.SpiderMaxHealth;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
+        rig.isEasy = false;
+        rig.lastStage = 0;
         rig.body.Build(rig.trunkCenter, rig.spiderAngle, rig.spiderY);
         // the whole arena is there from the start, melons too
         arena.SpawnMelons();
         arena.ClearStickyWebs();
         movement.ResetSpiderState();
 
-        rig.hud.Show(tuning.BossName);
-        rig.hud.SetHealth(1f);
+        rig.hud.Show(config.BossName);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         // flashes as the Cobra King's: at the start, the last blow & a
         // spent armor; never on a revive or a reward
         rig.hud.Flash();
@@ -448,7 +540,7 @@ public class SpiderKingFightController: MonoBehaviour {
         // first slash later teaches its own parry
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
             : SpiderKingTeachStep.Parry;
-        teaching.Teach(tuning.BossName, "", tuning.WarnColor, 2f);
+        teaching.Teach(config.BossName, "", config.WarnColor, 2f);
         // the gold armor, as in the Cobra King's arena: it swirls on, no
         // words; worn already, it stays
         SpiderKingDamage.GiveArmor();

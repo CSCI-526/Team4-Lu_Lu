@@ -1265,118 +1265,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9829221b635be4cfba4313900241db4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CobraClimb
-  tuning:
-    pathCenter: {fileID: 7335942435961454440}
-    bodySegments:
-    - {fileID: 4063569279546901762}
-    - {fileID: 8200612287081337590}
-    - {fileID: 1980693062751719723}
-    - {fileID: 1721931522515783602}
-    - {fileID: 5806219029489959205}
-    - {fileID: 5723352222877392496}
-    - {fileID: 7663785573373184699}
-    - {fileID: 8839392414918264803}
-    - {fileID: 2497250746448015323}
-    - {fileID: 6941576348691434800}
-    - {fileID: 3234009328530305621}
-    - {fileID: 2611354926040572187}
-    - {fileID: 314694077139660833}
-    - {fileID: 1634319500167080360}
-    - {fileID: 4368178624018231665}
-    - {fileID: 6966695551904149437}
-    - {fileID: 2697583977193151554}
-    - {fileID: 8817812591395748306}
-    - {fileID: 697809309729298994}
-    - {fileID: 8282021799308646717}
-    cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
-    playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
-    monkeyClimbConfig: {fileID: 11400000, guid: 5f758de8d78c4f6194921d44e5a0aab0, type: 2}
-    orbitRadius: 5.5
-    startHeight: -10
-    climbSpeed: 3
-    orbitSpeedDegrees: 45
-    clockwise: 1
-    coilTurns: 1.1
-    coilPitchU: 1.5
-    maxSegmentGapU: 0.4
-    maxThicknessU: 0.6
-    thicknessProfile:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0.8
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.05
-        value: 0.6
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.3
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 1
-        value: 0.15
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    segmentFill: 0.8
-    headLengthU: 0.9
-    headWidthRatio: 1.5
-    neckLengthU: 2
-    neckLiftU: 0.8
-    waveAmplitudeU: 0.12
-    waveLengthU: 2.5
-    waveSpeedHz: 1
-    cartoonAppearance:
-      enabled: 1
-      referenceHead: {fileID: 778248084479127927, guid: 00aa6109974b64c40ac781c2123cc387, type: 3}
-      referenceBody: {fileID: 0}
-      skin: {r: 0.25, g: 0.66, b: 0.055, a: 1}
-      belly: {r: 1, g: 0.83, b: 0.32, a: 1}
-      spots: {r: 0.52, g: 0.85, b: 0.16, a: 1}
-      smoothness: 0.38
-      headScale: 1
-    headFollowSharpness: 5
-    headTurnSpeedDegrees: 180
-    headRaiseStartDistanceU: 9
-    headRaiseFullDistanceU: 3.5
-    proximityHiss: {fileID: 8300000, guid: 34e7c832cfb4cd5448d8d365a2a9f4f9, type: 3}
-    hissStartDistanceU: 7
-    hissExitPaddingU: 1
-    hissIntervalS: 2.8
-    hissVolume: 0.75
-    hissPitch: 0.82
-    hissMinDistanceU: 3
-    hissMaxDistanceU: 35
-    eyeSizeU: 0.14
-    peekIntervalRangeS: {x: 4, y: 7}
-    peekRiseU: 3.5
-    peekNeckU: 3.5
-    peekCurlU: 0.8
-    peekTimesS: {x: 0.25, y: 0.4, z: 0.5}
+  pathCenter: {fileID: 7335942435961454440}
+  bodySegments:
+  - {fileID: 4063569279546901762}
+  - {fileID: 8200612287081337590}
+  - {fileID: 1980693062751719723}
+  - {fileID: 1721931522515783602}
+  - {fileID: 5806219029489959205}
+  - {fileID: 5723352222877392496}
+  - {fileID: 7663785573373184699}
+  - {fileID: 8839392414918264803}
+  - {fileID: 2497250746448015323}
+  - {fileID: 6941576348691434800}
+  - {fileID: 3234009328530305621}
+  - {fileID: 2611354926040572187}
+  - {fileID: 314694077139660833}
+  - {fileID: 1634319500167080360}
+  - {fileID: 4368178624018231665}
+  - {fileID: 6966695551904149437}
+  - {fileID: 2697583977193151554}
+  - {fileID: 8817812591395748306}
+  - {fileID: 697809309729298994}
+  - {fileID: 8282021799308646717}
+  cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
+  playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
+  monkeyClimbConfig: {fileID: 11400000, guid: 5f758de8d78c4f6194921d44e5a0aab0, type: 2}
+  config: {fileID: 11400000, guid: c2adf5c22135dc7478ab76bf419a5739, type: 2}
 --- !u!114 &260591372920793710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1400,7 +1314,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 50d23fb90cfc24dd4ae177fad96919e3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CobraFreezeTint
+  m_EditorClassIdentifier: Assembly-CSharp::CobraFreezeTintListener
   frozenColor: {r: 0.6, g: 0.85, b: 1, a: 1}
   tintStrength: 0.75
   endingWarnS: 3

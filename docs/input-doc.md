@@ -23,7 +23,8 @@ Four intents, the same in every screen. Each has one Preferred key and fixed Sup
 | Context | Confirm does |
 | --- | --- |
 | Menus | pick the highlighted option |
-| Title | open level select |
+| Title | open the intro comic the first time a launch, else level select |
+| Intro comic | let the panel finish, then turn the page; the last page opens level select |
 | Tutorial | start the run |
 | Climbing | hold, release: grab |
 | Climbing | double-tap: throw a coconut |
@@ -43,6 +44,7 @@ Four intents, the same in every screen. Each has one Preferred key and fixed Sup
 
 | Context | Back, Pause | Restart |
 | --- | --- | --- |
+| Intro comic | skip to level select (or the Skip button) | ➖ |
 | Level select | back to title | ➖ |
 | Climbing | pause | ➖ |
 | Pause screen | resume | restart run |
@@ -52,6 +54,13 @@ Four intents, the same in every screen. Each has one Preferred key and fixed Sup
 - Mouse: click presses any button; never moves the character, never switches the control style
 - Lose screen: Confirm with nothing highlighted also restarts
 - Course page: button only (click or tap), so Enter stays a plain Confirm
+- Leaderboard nickname: click/tap its field to type; Enter or SAVE saves the name.
+  While it has focus, text entry consumes letters, spaces and editing keys;
+  run/menu shortcuts and hack keys are suppressed through the frame after editing
+  ends. It never auto-focuses or changes gameplay action bindings.
+  The English-name field temporarily suspends IME composition while focused and
+  restores the previous mode when editing ends. Hovering a menu button does not
+  steal text focus; clicking a button still works.
 
 ## Touch Style
 

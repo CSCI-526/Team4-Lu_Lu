@@ -55,7 +55,7 @@ Two prefabs in `Prefabs/UI/`: `MenuButton` (a long button with a label) and `Ico
 
 ## Plate
 
-A panel that shows what is behind it: `Sprites/UI/Plate_Fill`, tinted Panel at alpha 0.55, with a child `Rim` drawing `Sprites/UI/Plate_Rim` in Gold (both 9-sliced, one shape, radius 22). The rim is its own Image, never an `Outline` component: an Outline repeats the whole fill under it in its color, which shows through a see-through plate and tints it gold. `UIStyleBuilder.MakePlate` builds one on an existing Image. Used by the popups and the score.
+A panel that shows what is behind it: `Sprites/UI/Plate_Fill`, tinted Panel at alpha 0.55, with a child `Rim` drawing `Sprites/UI/Plate_Rim` in Gold (both 9-sliced, one shape, radius 22). The rim is its own Image, never an `Outline` component: an Outline repeats the whole fill under it in its color, which shows through a see-through plate and tints it gold. `UIStyleBuilder.MakePlate` builds one on an existing Image. Used by the popups and the score. The intro comic's caption plate is the one opaque plate: its fill is the olive `#353D23` the see-through plate shows over the comic's dry ground, so the words read the same on the sunny panels and in the dark jungle (`UIStyleBuilder.StyleIntroCaption`).
 
 ## Key Icons
 
@@ -79,6 +79,10 @@ All of it is built by Editor menus, never by editing prefab YAML:
 4. `Monkobra > UI Style > 4. Style HUD`: the input icons, the HUD prefabs, the popups, the tutorial, and the font overrides of both gameplay scenes
 5. `Monkobra > UI Style > 5. Style Pause and Lose Screens`: the pause screen, the lose screen, and the leaderboard
 6. `Monkobra > Build Title Screen`: the title picture, whose start prompt words take the loading page's font
+7. `Monkobra > UI Style > 6. Build Leaderboard Name Input`: the Baloo 2 nickname
+   field and gold MenuButton SAVE control; the screen and Firebase setup builders
+   apply it too. The same ten rows use 27-unit spacing to leave room for the input
+   and a small-print hint inside the existing plate.
 
 `Build All` runs steps 1 to 3. To change the character set, cut the fonts again from the Google Fonts variable `Baloo2[wght].ttf` with fontTools (instance at weight 600 and 800, then subset), delete the two SDF assets, and run step 1.
 

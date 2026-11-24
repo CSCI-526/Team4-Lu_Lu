@@ -368,9 +368,9 @@ public class AnalyticsManager: MonoBehaviour {
         Observe(
             InScene(GameController.I, scene),
             InScene(ScoreManager.I, scene),
-            InScene(FindFirstObjectByType<HitBranchSensor>(), scene),
+            InScene(HitBranchSensor.I, scene),
             InScene(CoconutManager.I, scene),
-            InScene(FindFirstObjectByType<MonkeyController>(), scene),
+            InScene(MonkeyController.I, scene),
             InScene(CobraKingFightController.I, scene),
             InScene(SpiderKingFightController.I, scene)
         );

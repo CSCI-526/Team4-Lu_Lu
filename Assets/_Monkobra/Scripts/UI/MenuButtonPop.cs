@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// the feel of a logo-style button, next to a Button whose Sprite Swap uses the
@@ -35,9 +36,10 @@ public class MenuButtonPop: MonoBehaviour, ISelectHandler, IDeselectHandler,
     private float selectedScale = 1.08f;
 
     [SerializeField]
+    [FormerlySerializedAs("scaleSpeed")]
     [Min(0.01f)]
-    [Tooltip("how fast the scale follows the selection, per unscaled second")]
-    private float scaleSpeed = 18f;
+    [Tooltip("how fast the scale follows the selection, unscaled; 1/s")]
+    private float scaleSpeedPerS = 18f;
 
     [SerializeField]
     [Tooltip("how far the content sinks while pressed, the sprite's shadow "
@@ -78,7 +80,7 @@ public class MenuButtonPop: MonoBehaviour, ISelectHandler, IDeselectHandler,
     private void Update() {
         bool isInteractable = selectable.IsInteractable();
         float target = isInteractable && isSelected ? selectedScale : 1f;
-        float k = 1f - Mathf.Exp(-scaleSpeed * Time.unscaledDeltaTime);
+        float k = 1f - Mathf.Exp(-scaleSpeedPerS * Time.unscaledDeltaTime);
         float scale = Mathf.Lerp(transform.localScale.x, target, k);
         transform.localScale = new Vector3(scale, scale, 1f);
 
@@ -145,7 +147,7 @@ public class MenuButtonPop: MonoBehaviour, ISelectHandler, IDeselectHandler,
         label.rectTransform.anchoredPosition = labelHome + shift + sink;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private Selectable selectable;
     private Vector2 contentHome;
     private Vector2 labelHome;

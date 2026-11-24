@@ -23,6 +23,11 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class MonkeyController: MonoBehaviour {
     // Public Members  #########################################################
+    /// <summary>The one monkey of the scene, null while it has none.</summary>
+    public static MonkeyController I {
+        get; private set;
+    }
+
     /// <summary>
     /// While true the body stays exactly where it is, ignoring input and any
     /// branch-hit fall. Set by <see cref="SpiderWebStruggle"/> while the
@@ -59,6 +64,12 @@ public class MonkeyController: MonoBehaviour {
     public float ArenaSpeedScale { get; set; } = 1f;
 
     // Public Methods  #########################################################
+    /// <returns>the monkey's root object, null while the scene has no
+    /// monkey</returns>
+    public static GameObject GetRootOrNull() {
+        return I != null ? I.gameObject : null;
+    }
+
     public float RoughBarkSpeedScale => roughBarkSpeedScale;
 
     /// <summary>Tracks actual surface contact; overlap never stacks
@@ -187,7 +198,7 @@ public class MonkeyController: MonoBehaviour {
 
         if (playerBalanceConfig == null) {
             Debug.LogWarning(
-                "MonkeyController:	must assign Inspector Field: "
+                "MonkeyController:\tmust assign Inspector Field: "
                     + "playerBalanceConfig",
                 this
             );
@@ -238,6 +249,7 @@ public class MonkeyController: MonoBehaviour {
                 "MonkeyController:\tready, orbit radius " + $"{orbitRadius}"
             );
         }
+        I = this;
     }
 
     private void OnEnable() {
@@ -255,6 +267,12 @@ public class MonkeyController: MonoBehaviour {
         }
         if (hitBranchDetection != null) {
             hitBranchDetection.BranchHit -= OnBranchHit;
+        }
+    }
+
+    private void OnDestroy() {
+        if (I == this) {
+            I = null;
         }
     }
 
@@ -327,9 +345,10 @@ public class MonkeyController: MonoBehaviour {
             : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
-        // rough bark slows the body, a boss arena & the dev speed buff
-        // multiply it
+        // rough bark slows the body, a boss arena, the endless run's boss
+        // rush (outside a fight) & the dev speed buff multiply it
         float moveScale = roughBarkSpeedScale * ArenaSpeedScale
+            * EndlessBossRush.ClimbSpeedScale
             * (IsSpeedBuff ? SPEED_BUFF_SCALE : 1f);
 
         orbitAngleDeg -= directionalInput.x
@@ -556,8 +575,9 @@ public class MonkeyController: MonoBehaviour {
 
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         bool isLive = GameController.I != null && GameController.I.IsRunLive;
+        // the endless run's boss rush brings its own Spider King fights
         if (ramp == null || worldBalanceConfig == null || body == null
-            || !isLive || IsHeld) {
+            || !isLive || IsHeld || EndlessBossRush.IsOn) {
             return;
         }
         // not in the middle of a boss fight

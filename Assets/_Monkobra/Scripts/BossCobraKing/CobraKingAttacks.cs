@@ -6,13 +6,13 @@ using static CobraKingRig;
 /// <summary>The fight loop and the king's attacks: bite, sweep, push, and the
 /// warnings before each.</summary>
 public sealed class CobraKingAttacks {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
-    private readonly CobraKingTuning tuning;
+    private readonly CobraKingConfig config;
 
     public CobraKingAttacks(CobraKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -28,7 +28,7 @@ public sealed class CobraKingAttacks {
                 // in the finale a round waits for a running wave to near its
                 // end, so the two only overlap a little
                 bool isWaveClear = !rig.isMinionStreaming
-                    || WaveDangerLeftS() <= tuning.FinaleOverlapS;
+                    || WaveDangerLeftS() <= config.FinaleOverlapS;
                 if (rig.loopTimeS <= 0f && isWaveClear) {
                     StartRound();
                 }
@@ -41,9 +41,10 @@ public sealed class CobraKingAttacks {
 
     public void StartRest() {
         rig.loop = CobraKingLoop.Rest;
-        rig.loopTimeS = rig.isEasy
-            ? (rig.Third >= 2 ? tuning.EasyRestFinalS : tuning.EasyRestS)
-            : (rig.Third >= 2 ? tuning.RestFinalS : tuning.RestS);
+        rig.loopTimeS = (rig.isEasy
+            ? (rig.Third >= 2 ? config.EasyRestFinalS : config.EasyRestS)
+            : (rig.Third >= 2 ? config.RestFinalS : config.RestS))
+            * rig.RushTimeScale;
         rig.body.SetWeakSpotLit(true);
     }
 
@@ -66,7 +67,7 @@ public sealed class CobraKingAttacks {
         }
         rig.attackQueue.Enqueue(CobraKingAttack.Bite);
         // the tail joins a little b4 the first third is lost
-        if (rig.LostShare >= tuning.SweepFromLostShare) {
+        if (rig.LostShare >= config.SweepFromLostShare) {
             rig.attackQueue.Enqueue(CobraKingAttack.Sweep);
         }
         rig.attackQueue.Enqueue(CobraKingAttack.Bite);
@@ -116,7 +117,7 @@ public sealed class CobraKingAttacks {
         rig.biteSpot =
             rig.PointOnTrunk(rig.lockAngle, rig.lockY, rig.MonkeyRadius());
         rig.Arena.AddTrunkZone(rig.lockAngle, rig.lockY,
-            tuning.BiteRadiusU * 2f, "BITE!", true);
+            config.BiteRadiusU * 2f, "BITE!", true);
         rig.biteStarted = false;
     }
 
@@ -125,7 +126,7 @@ public sealed class CobraKingAttacks {
     public void UpdateBite() {
         rig.Feedback.UpdateMarkers(
             rig.attackTimeS
-                / Mathf.Max(0.01f, tuning.BiteWarnS * rig.WarnScale), false,
+                / Mathf.Max(0.01f, config.BiteWarnS * rig.WarnScale), false,
                     false
         );
         if (!rig.biteStarted) {
@@ -135,12 +136,14 @@ public sealed class CobraKingAttacks {
             rig.biteStarted = true;
             float windUp = Mathf.Max(
                 0.3f,
-                tuning.BiteWarnS * rig.WarnScale - rig.attackTimeS
+                config.BiteWarnS * rig.WarnScale - rig.attackTimeS
             );
             Vector3 spot = rig.biteSpot;
             rig.body.StartStrike(spot, windUp, () => {
+                // its sound as the head lands, not at the warning
+                rig.onAttackStruck?.Invoke();
                 if ((rig.monkey.position
-                    - spot).magnitude < tuning.BiteRadiusU) {
+                    - spot).magnitude < config.BiteRadiusU) {
                     LethalHit();
                 }
             });
@@ -158,11 +161,11 @@ public sealed class CobraKingAttacks {
         GameObject band = rig.Feedback.CreatePrimitive(
             PrimitiveType.Cylinder, "SweepBand",
             new Vector3(
-                (tuning.TrunkRadiusU + 0.08f) * 2f,
+                (config.TrunkRadiusU + 0.08f) * 2f,
                 0.01f,
-                (tuning.TrunkRadiusU + 0.08f) * 2f
+                (config.TrunkRadiusU + 0.08f) * 2f
             ),
-            tuning.WarningColor
+            config.WarningColor
         );
         band.transform.position = new Vector3(
             rig.trunkCenter.x, rig.lockY, rig.trunkCenter.z
@@ -179,36 +182,38 @@ public sealed class CobraKingAttacks {
     // the band's sign follows the monkey round the trunk, so it stays in view
     public Vector3 SweepSignPoint() {
         return rig.PointOnTrunk(
-            rig.AngleOf(rig.monkey.position), rig.lockY + tuning.SweepBandHalfU,
+            rig.AngleOf(rig.monkey.position), rig.lockY + config.SweepBandHalfU,
                 rig.MonkeyRadius()
         );
     }
 
     public void UpdateSweep() {
-        float warn = tuning.SweepWarnS * rig.WarnScale;
+        float warn = config.SweepWarnS * rig.WarnScale;
         if (rig.attackTimeS < warn) {
             rig.Feedback.UpdateMarkers(rig.attackTimeS / warn, true, false);
             return;
         }
         rig.Feedback.ClearAttackMarkers();
         if (rig.tail == null) {
-            rig.tail = new Transform[tuning.TailBeadCount];
-            for (int i = 0; i < tuning.TailBeadCount; i++) {
+            // its sound as the tail comes round, not at the warning
+            rig.onAttackStruck?.Invoke();
+            rig.tail = new Transform[config.TailBeadCount];
+            for (int i = 0; i < config.TailBeadCount; i++) {
                 rig.tail[i] = rig.Feedback.CreatePrimitive(
                     PrimitiveType.Sphere, "Tail" + i,
                     Vector3.one * Mathf.Lerp(1.6f, 0.8f,
-                        i / Mathf.Max(1f, tuning.TailBeadCount - 1f)),
-                    tuning.TailColor
+                        i / Mathf.Max(1f, config.TailBeadCount - 1f)),
+                    config.TailColor
                 ).transform;
             }
         }
 
         // starts across the trunk & loops round once
-        float t = (rig.attackTimeS - warn) / tuning.SweepTimeS;
+        float t = (rig.attackTimeS - warn) / config.SweepTimeS;
         float headAngle = rig.lockAngle + 180f + t * 360f;
         for (int i = 0; i < rig.tail.Length; i++) {
             rig.tail[i].position = rig.PointOnTrunk(
-                headAngle - i * 9f, rig.lockY, tuning.TrunkRadiusU + 1.1f
+                headAngle - i * 9f, rig.lockY, config.TrunkRadiusU + 1.1f
             );
         }
 
@@ -217,7 +222,7 @@ public sealed class CobraKingAttacks {
         ));
         if (!rig.tailHit && gap < 14f
             && Mathf.Abs(rig.monkey.position.y
-                - rig.lockY) < tuning.SweepBandHalfU) {
+                - rig.lockY) < config.SweepBandHalfU) {
             rig.tailHit = true;
             LethalHit();
         }
@@ -240,11 +245,11 @@ public sealed class CobraKingAttacks {
             case CobraKingAttack.Bite:
                 // the warning, then a short dive
                 return Mathf.Max(0f,
-                    tuning.BiteWarnS * rig.WarnScale - rig.attackTimeS)
+                    config.BiteWarnS * rig.WarnScale - rig.attackTimeS)
                     + 0.3f;
             case CobraKingAttack.Sweep:
                 return Mathf.Max(
-                    0f, tuning.SweepWarnS * rig.WarnScale + tuning.SweepTimeS
+                    0f, config.SweepWarnS * rig.WarnScale + config.SweepTimeS
                         - rig.attackTimeS
                 );
             default:
@@ -258,10 +263,10 @@ public sealed class CobraKingAttacks {
         if (!rig.isWaveRunning) {
             return 0f;
         }
-        float lastDropS = tuning.MinionWarnS * rig.WarnScale
-            + Mathf.Max(0, tuning.MinionCount - 2) * tuning.MinionStaggerS;
+        float lastDropS = config.MinionWarnS * rig.WarnScale
+            + Mathf.Max(0, config.MinionCount - 2) * config.MinionStaggerS;
         float fallS = Mathf.Max(0f, rig.coilBottomY - rig.minionLockY)
-            / Mathf.Max(0.1f, tuning.MinionFallSpeedU);
+            / Mathf.Max(0.1f, config.MinionFallSpeedU);
         return Mathf.Max(0f, lastDropS + fallS + 0.3f - rig.waveTimeS);
     }
 
@@ -273,7 +278,7 @@ public sealed class CobraKingAttacks {
         }
         if (rig.hasShield) {
             rig.hasShield = false;
-            rig.hud.PopText("Saved!", rig.monkey.position, tuning.GoldenColor);
+            rig.hud.PopText("Saved!", rig.monkey.position, config.GoldenColor);
             KnockDown(rig.body.HeadCollider);
             return;
         }
@@ -300,14 +305,14 @@ public sealed class CobraKingAttacks {
     // the climb is capped below the king, & a monkey at the cap is butted
     // down; too low, the king taunts
     public void UpdateWarnings() {
-        float ceilingY = rig.body.LowestY - tuning.CeilingGapU;
+        float ceilingY = rig.body.LowestY - config.CeilingGapU;
         if (rig.monkeyController != null) {
             rig.monkeyController.SetHeightCeiling(ceilingY);
         }
         float y = rig.monkey.position.y;
-        if (y < rig.entryY - tuning.RetreatLimitU) {
-            rig.Feedback.Say(tuning.RetreatLine);
-        } else if (y > ceilingY - tuning.PushRangeU) {
+        if (y < rig.entryY - config.RetreatLimitU) {
+            rig.Feedback.Say(config.RetreatLine);
+        } else if (y > ceilingY - config.PushRangeU) {
             StartPush();
         }
     }
@@ -326,14 +331,14 @@ public sealed class CobraKingAttacks {
         if (Time.time < rig.nextPushTime) {
             return;
         }
-        rig.nextPushTime = Time.time + tuning.PushCooldownS;
-        rig.Feedback.SayNow(tuning.ApproachLine, CobraKingLinePriority.Urgent);
+        rig.nextPushTime = Time.time + config.PushCooldownS;
+        rig.Feedback.SayNow(config.ApproachLine, CobraKingLinePriority.Urgent);
         if (rig.body.IsStriking) {
             KnockDown(rig.body.HeadCollider);
             return;
         }
-        rig.body.StartStrike(rig.monkey.position, tuning.PushWindUpS, () => {
-            if (rig.monkey.position.y > rig.body.LowestY - tuning.PushRangeU
+        rig.body.StartStrike(rig.monkey.position, config.PushWindUpS, () => {
+            if (rig.monkey.position.y > rig.body.LowestY - config.PushRangeU
                 - 1.5f) {
                 KnockDown(rig.body.HeadCollider);
             }

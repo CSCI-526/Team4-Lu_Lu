@@ -22,9 +22,12 @@ The pillars and mechanics are in the [Game Design Document](docs/monkobra-gdd.md
 | Esc or P; pause button, top right (click or tap) | pause or resume the run |
 | R (while paused) | restart the run |
 | R (lose screen) | restart the run |
+| Nickname field (lose screen): type, then Enter or SAVE | save a display nickname without changing player identity |
 | W, S or Up, Down; mouse hover (pause and lose screens) | move the highlight over Resume, Restart, Exit (back to the level selection) |
 | Space, E, Enter or click (pause and lose screens) | confirm the highlighted option; on the lose screen with nothing highlighted, restart |
-| Space, E, Enter, click or tap (title) | open the level selection |
+| Space, E, Enter, click or tap (title) | open the intro comic the first time, then the level selection |
+| Space, E, Enter, click or tap (intro comic) | finish the panel, then turn the page |
+| Esc or P; Skip button (intro comic) | skip to the level selection |
 | W, S or Up, Down; mouse hover (menus) | move the highlight |
 | Space, E, Enter or click (menus) | confirm |
 | Esc or P (level selection) | back to the title |
@@ -48,6 +51,23 @@ Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6,
 Coconuts appear only high on the tree and are rare, so a normal run meets few of them. For a quick check, press 4 during Play to spawn a coconut branch above the monkey, grab it, then double-tap Space to throw it and freeze the cobra.
 
 The real values live in the Coconut group of `Settings/Player/PlayerBalanceConfig.asset`, see the [Grab System](docs/grab-doc.md#coconut).
+
+### Optional Online Leaderboard
+
+The lose screen supports Firebase's Spark free plan for persistent top scores.
+Run `Monkobra > Leaderboard > Prepare Firebase Leaderboard`, then follow
+[Firebase Leaderboard](docs/leaderboard-doc.md) to enable Anonymous Auth, publish
+the rules and enter the public client settings. Until configured it shows the
+original simulated **PRACTICE** board. Local emulators allow testing without a
+Firebase account; no paid services are required by this integration.
+
+On the lose screen, click or tap the name field and enter 1–16 English letters,
+numbers, spaces, hyphens or underscores (start with a letter or number), then
+press SAVE or Enter. The nickname is remembered on this device; changing it keeps
+the same player and highest score. Names may repeat without sharing scores.
+While typing, run/menu shortcuts and hack keys are suppressed. Different browsers,
+devices or cleared site data can create a new anonymous player; account login is
+not part of the web playtest yet.
 
 ## Contributing
 

@@ -340,10 +340,12 @@ public class CameraConfig: ScriptableObject {
 
     [Header("Shot: Coconut Track")]
     [SerializeField]
+    [Tooltip("coconut shot timing & priority; s")]
     private ShotSettings coconutShot = new ShotSettings(1.2f, 0f, 0.2f, 30);
 
     [Header("Shot: Cobra Alert")]
     [SerializeField]
+    [Tooltip("cobra alert shot timing & priority; s")]
     private ShotSettings cobraAlertShot = new ShotSettings(1.5f, 0.8f, 4f, 20);
 
     [SerializeField]
@@ -377,6 +379,7 @@ public class CameraConfig: ScriptableObject {
 
     [Header("Shot: Pineapple Leap")]
     [SerializeField]
+    [Tooltip("pineapple leap shot timing & priority; s")]
     private ShotSettings leapShot = new ShotSettings(5f, 0f, 0f, 40);
 
     [SerializeField]

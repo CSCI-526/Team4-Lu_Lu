@@ -103,7 +103,7 @@ public class TutorialTouchCutout: MonoBehaviour {
         Layout();
     }
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     private void Tint(RectTransform strip) {
         Image image = strip.GetComponent<Image>();
         if (image != null) {
@@ -174,7 +174,7 @@ public class TutorialTouchCutout: MonoBehaviour {
         moveCaption.position = world;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly Vector3[] corners = new Vector3[4];
 
     // cached references  ------------------------------------------------------

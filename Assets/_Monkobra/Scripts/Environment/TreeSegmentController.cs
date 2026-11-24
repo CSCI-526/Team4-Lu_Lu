@@ -117,7 +117,7 @@ public class TreeSegmentController: MonoBehaviour {
 
         if (worldBalanceConfig == null) {
             Debug.LogWarning(
-                "TreeSegmentController:	"
+                "TreeSegmentController:\t"
                     + "must assign Inspector Field: worldBalanceConfig",
                 this
             );
@@ -322,7 +322,7 @@ public class TreeSegmentController: MonoBehaviour {
                 ? Random.Range(0f, segmentHeight)
                 : fixedLocalHeight;
             branchPosition =
-                branchRotation * Vector3.forward * placementConfig.BranchRadius
+                branchRotation * Vector3.forward * placementConfig.BranchRadiusU
                 + Vector3.up * branchHeight;
 
             // a spot in the boss zone is never clear: only the fight grows

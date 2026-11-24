@@ -4,19 +4,19 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using static SpiderKingRig;
 
-/// <summary>The finisher, the revive offer, the defeat, and the glove reward
+/// <summary>The finisher, the revive offer, the defeat, and the reward
 /// flow.</summary>
 public sealed class SpiderKingEnding {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
     private readonly System.Action onRevived;
     private readonly System.Action onFightEnded;
 
     public SpiderKingEnding(SpiderKingRig rig, System.Action onRevived,
         System.Action onFightEnded) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
         this.onRevived = onRevived;
         this.onFightEnded = onFightEnded;
     }
@@ -38,7 +38,7 @@ public sealed class SpiderKingEnding {
         rig.parrySlowEndTime = 0f;
         rig.isDashing = false;
         rig.Attacks.ClearSlash();
-        Time.timeScale = tuning.FinisherTimeScale;
+        Time.timeScale = config.FinisherTimeScale;
         if (isWin) {
             rig.hud.Flash(Color.white);
             return;
@@ -67,7 +67,7 @@ public sealed class SpiderKingEnding {
         if (!rig.isFinisherWin) {
             rig.monkey.Rotate(Vector3.up, 900f * Time.unscaledDeltaTime);
         }
-        if (rig.finisherTimeS < tuning.FinisherRealS) {
+        if (rig.finisherTimeS < config.FinisherRealS) {
             return;
         }
         Time.timeScale = 1f;
@@ -80,7 +80,7 @@ public sealed class SpiderKingEnding {
 
     public void OfferRevive() {
         rig.phase = SpiderKingPhase.ReviveOffer;
-        rig.reviveLeftS = tuning.ReviveOfferS;
+        rig.reviveLeftS = config.ReviveOfferS;
         Time.timeScale = 0f;
         rig.hud.HideBanner();
         rig.hud.ShowReviveOffer();
@@ -95,10 +95,10 @@ public sealed class SpiderKingEnding {
         float stepS = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
         if (rig.phase == SpiderKingPhase.WatchingAd) {
             rig.adElapsedS += stepS;
-            bool canSkip = rig.adElapsedS >= tuning.AdSkipAfterS;
+            bool canSkip = rig.adElapsedS >= config.AdSkipAfterS;
             rig.hud.SetAdSkippable(canSkip);
             if (canSkip
-                && SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
+                && SpiderKingFeedback.WasPressed(config.ConfirmAction)) {
                 SkipAd();
             }
             return;
@@ -106,9 +106,9 @@ public sealed class SpiderKingEnding {
         rig.reviveLeftS -= stepS;
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(Mathf.Max(0f,
             rig.reviveLeftS)));
-        if (SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
+        if (SpiderKingFeedback.WasPressed(config.ConfirmAction)) {
             WatchAd();
-        } else if (SpiderKingFeedback.WasPressed(tuning.GiveUpAction)
+        } else if (SpiderKingFeedback.WasPressed(config.GiveUpAction)
             || rig.reviveLeftS <= 0f) {
             GiveUp();
         }
@@ -139,7 +139,7 @@ public sealed class SpiderKingEnding {
 
     public void SkipAd() {
         if (rig.phase != SpiderKingPhase.WatchingAd
-            || rig.adElapsedS < tuning.AdSkipAfterS) {
+            || rig.adElapsedS < config.AdSkipAfterS) {
             return;
         }
         RestartFight();
@@ -147,8 +147,8 @@ public sealed class SpiderKingEnding {
 
     public void OpenCoursePage() {
         if (rig.phase == SpiderKingPhase.WatchingAd
-            && !string.IsNullOrEmpty(tuning.CourseUrl)) {
-            Application.OpenURL(tuning.CourseUrl);
+            && !string.IsNullOrEmpty(config.CourseUrl)) {
+            Application.OpenURL(config.CourseUrl);
         }
     }
 
@@ -162,7 +162,7 @@ public sealed class SpiderKingEnding {
         SpiderKingDamage.GiveArmor();
         rig.Melons.ClearThrows();
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         foreach (SpiderKingMelon melon in rig.melons) {
             if (melon.root != null) {
                 melon.root.SetActive(true);
@@ -180,11 +180,13 @@ public sealed class SpiderKingEnding {
         // as in the Cobra King's arena: two melons, a plain EASY & a golden
         // NORMAL; the first grabbed picks, & the fight waits till then
         rig.isEasy = false;
-        rig.maxHealth = tuning.WorldBalanceConfig.SpiderMaxHealth;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
+        // a plain difficulty card, time stopped till a pick; the spider
+        // waits meanwhile
         rig.teach = SpiderKingTeachStep.Choose;
-        rig.Arena.SpawnChoices();
-        rig.Teaching.Teach("Easy or Normal?", "Grab a melon", UIStyle.Gold, 0f);
+        rig.hud.HideBanner();
+        rig.hud.ShowModeChoice();
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
             stamina.AddStamina(stamina.MaxStamina);
@@ -206,12 +208,12 @@ public sealed class SpiderKingEnding {
             rig.struggle.ForceRelease();
         }
         SpiderKingFeedback.SetUntouchable(true);
-        rig.monkeyController.SetHeightCeiling(rig.entryY + tuning.ArenaHeightU);
+        rig.monkeyController.SetHeightCeiling(rig.entryY + config.ArenaHeightU);
         rig.monkeyController.ClearStun();
         rig.monkeyController.IsHeld = true;
         rig.returnTarget = rig.entryPosition;
         rig.monkeyController.PullTo(rig.returnTarget,
-            tuning.ReviveReturnSpeedU);
+            config.ReviveReturnSpeedU);
         rig.isReturningToStart = true;
     }
 
@@ -233,13 +235,14 @@ public sealed class SpiderKingEnding {
     // Win  --------------------------------------------------------------------
     public void Defeat() {
         rig.phase = SpiderKingPhase.Defeated;
+        rig.onDefeated?.Invoke();
         rig.defeatTimeS = 0f;
-        rig.hud.SetHealth(0f);
+        rig.hud.SetHealth(0, rig.maxHealth);
         rig.hud.ClearWarnings();
         rig.Shots.ClearShots();
         rig.Melons.ClearThrows();
         rig.Arena.ClearStickyWebs();
-        rig.Parry.Burst(rig.body.Position, tuning.SilkColor, 20);
+        rig.Parry.Burst(rig.body.Position, config.SilkColor, 20);
         rig.hud.Say("My beautiful web...");
         if (Debug.isDebugBuild) {
             Debug.Log("SpiderKingFightController:\tSpider King defeated",
@@ -250,193 +253,24 @@ public sealed class SpiderKingEnding {
     public void UpdateDefeat() {
         rig.defeatTimeS += Time.deltaTime;
         rig.body.Fall(rig.defeatTimeS);
-        if (rig.defeatTimeS < tuning.DefeatFallS) {
+        if (rig.defeatTimeS < config.DefeatFallS) {
             return;
         }
         rig.body.Clear();
         rig.phase = SpiderKingPhase.Rewarding;
         // the gloves: every web from now on breaks twice as fast
         if (rig.struggle != null) {
-            rig.struggle.EscapeGainScale = tuning.GlovesEscapeGainScale;
+            rig.struggle.EscapeGainScale = config.GlovesEscapeGainScale;
         }
         rig.hud.HideBossBar();
-        // as the Cobra King's armor: the silk gloves swirl in & snap onto
-        // the monkey's hands, then the reward panel
-        StartGloveReward();
-    }
-
-    // Silk Gloves  ------------------------------------------------------------
-    // two plain silver silk gloves, as simple as the armor, spiral in from
-    // around the monkey, shrinking as they near, snap onto its hands w/ a
-    // silk burst, a sleeve grows up each arm, they pulse bright, & stay on
-    // for good, softly shining as the armor does
-    public void StartGloveReward() {
-        ArmController[] hands =
-            UnityEngine.Object.FindObjectsByType<ArmController>(
-            FindObjectsSortMode.None);
-        rig.gloveHands = hands;
-        rig.gloves = new Transform[hands.Length];
-        rig.sleeves = new Transform[hands.Length];
-        rig.gloveSizes = new float[hands.Length];
-        for (int i = 0; i < hands.Length; i++) {
-            Collider grip = hands[i].GetComponentInChildren<Collider>(true);
-            float size = grip != null
-                ? Mathf.Max(grip.bounds.extents.x, grip.bounds.extents.y,
-                    grip.bounds.extents.z) * 2.3f
-                : 0.45f;
-            rig.gloveSizes[i] = Mathf.Clamp(size * 1.5f, 0.4f, 1.3f);
-            rig.gloves[i] = BuildGlove();
-        }
-        rig.gloveRewardTimeS = 0f;
-        rig.hasGloveLanded = false;
-    }
-
-    // a plain sleeve over the whole arm, from the glove to the shoulder, a
-    // bit wider than the arm; it lives on the arm's stretched cube, so it
-    // stretches w/ it
-    public Transform BuildSleeve(Transform arm) {
-        Transform sleeve = new GameObject("SilkSleeve").transform;
-        sleeve.SetParent(arm, false);
-        AddSleevePart(sleeve, PrimitiveType.Cube, Vector3.zero,
-            new Vector3(1.3f, 1.3f, 1.02f), gloveColor);
-        return sleeve;
-    }
-
-    public void AddSleevePart(Transform sleeve, PrimitiveType type,
-        Vector3 at, Vector3 scale, Color color) {
-        Transform part =
-            rig.Feedback.CreatePrimitive(type, "SleevePart", Vector3.one,
-            color).transform;
-        part.SetParent(sleeve, false);
-        part.localPosition = at;
-        part.localRotation = Quaternion.identity;
-        part.localScale = scale;
-    }
-
-    public Transform BuildGlove() {
-        Transform glove = new GameObject("SilkGlove").transform;
-        glove.SetParent(rig.host, false);
-        AddSleevePart(glove, PrimitiveType.Sphere, Vector3.zero,
-            new Vector3(1f, 0.85f, 1f), gloveColor);
-        return glove;
-    }
-
-    // the swirl in, then the panel; time runs till the panel shows
-    public void UpdateGloveReward() {
-        rig.gloveRewardTimeS += Time.unscaledDeltaTime;
-        float t = Mathf.Clamp01(rig.gloveRewardTimeS / GLOVE_REWARD_S);
-        Vector3 outward = rig.monkey.position - rig.trunkCenter;
-        outward.y = 0f;
-        outward = outward.sqrMagnitude > 0.001f ? outward.normalized
-            : Vector3.forward;
-        Vector3 side = Vector3.Cross(Vector3.up, outward);
-        for (int i = 0; i < rig.gloves.Length; i++) {
-            Transform glove = rig.gloves[i];
-            Transform hand = rig.gloveHands[i] != null
-                ? rig.gloveHands[i].transform
-                : null;
-            if (glove == null || hand == null) {
-                continue;
-            }
-            float size = rig.gloveSizes[i];
-            if (t < GLOVE_LAND_SHARE) {
-                float fly = t / GLOVE_LAND_SHARE;
-                float ease = 1f - Mathf.Pow(1f - fly, 3f);
-                float radius = Mathf.Lerp(GLOVE_SWIRL_U, 0f, ease);
-                float spin = (i * 180f + fly * 540f) * Mathf.Deg2Rad;
-                glove.position = hand.position
-                    + (outward * Mathf.Cos(spin) + side * Mathf.Sin(spin))
-                        * radius
-                    + Vector3.up * radius * 0.7f;
-                glove.rotation = Quaternion.LookRotation(outward, Vector3.up)
-                    * Quaternion.Euler(0f, fly * 720f, 0f);
-                glove.localScale = Vector3.one * size * Mathf.Lerp(1.8f, 1f,
-                    ease);
-                continue;
-            }
-            if (!rig.hasGloveLanded) {
-                // on: held by the hand from now on, for good, & its sleeve
-                // grows up the arm
-                glove.SetParent(hand, false);
-                glove.localPosition = Vector3.zero;
-                glove.localRotation = Quaternion.identity;
-                Transform arm = rig.gloveHands[i].ArmVisual;
-                if (arm != null) {
-                    rig.sleeves[i] = BuildSleeve(arm);
-                }
-            }
-            // the sleeve grows from the hand end up to the shoulder
-            if (rig.sleeves[i] != null) {
-                float grow = Mathf.Clamp01((t - GLOVE_LAND_SHARE) / 0.15f);
-                grow = 1f - (1f - grow) * (1f - grow);
-                rig.sleeves[i].localScale = new Vector3(1f, 1f,
-                    Mathf.Max(0.01f, grow));
-                rig.sleeves[i].localPosition = new Vector3(0f, 0f,
-                    -0.5f + 0.5f * grow);
-            }
-            float pulse = Mathf.Sin((t - GLOVE_LAND_SHARE)
-                / (1f - GLOVE_LAND_SHARE) * Mathf.PI);
-            SetWorldScale(glove, size * (1f + 0.35f * pulse));
-        }
-        if (!rig.hasGloveLanded && t >= GLOVE_LAND_SHARE) {
-            rig.hasGloveLanded = true;
-            foreach (Transform glove in rig.gloves) {
-                if (glove != null) {
-                    rig.Parry.Burst(glove.position, tuning.SilkColor, 12);
-                    rig.Parry.Burst(glove.position, tuning.GoldenColor, 6);
-                }
-            }
-        }
-        rig.Parry.UpdateSparks();
-        UpdateGloveShine();
-        if (t >= 1f) {
-            rig.gloveRewardTimeS = -1f;
-            rig.hud.ShowRewardPanel(tuning.WinTitle, tuning.WinLine,
-                tuning.WinDetailLine);
-        }
-    }
-
-    // the gloves & sleeves shine softly, as the armor does
-    public void UpdateGloveShine() {
-        if (rig.gloves == null) {
-            return;
-        }
-        float shine = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f);
-        Color color = Color.Lerp(gloveColor, Color.white, shine * 0.35f);
-        for (int i = 0; i < rig.gloves.Length; i++) {
-            TintAll(rig.gloves[i], color);
-            if (rig.sleeves != null) {
-                TintAll(rig.sleeves[i], color);
-            }
-        }
-    }
-
-    public void TintAll(Transform root, Color color) {
-        if (root == null) {
-            return;
-        }
-        foreach (Renderer part in root.GetComponentsInChildren<Renderer>()) {
-            rig.Feedback.SetColor(part, color);
-        }
-    }
-
-    // a world size kept whatever the hand's own scale
-    public static void SetWorldScale(Transform target, float size) {
-        Transform parent = target.parent;
-        Vector3 lossy = parent != null ? parent.lossyScale : Vector3.one;
-        target.localScale = new Vector3(
-            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.x)),
-            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.y)),
-            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.z)));
+        // the gloves are only their effect, nothing worn: straight to the
+        // reward panel
+        rig.hud.ShowRewardPanel(config.WinTitle, config.WinLine,
+            config.WinDetailLine);
     }
 
     // time stops on the reward panel till the player goes on
     public void UpdateRewardPause(GameController game) {
-        // the gloves swirl on first, time running
-        if (rig.gloveRewardTimeS >= 0f) {
-            UpdateGloveReward();
-            return;
-        }
         Time.timeScale = 0f;
         if (game.IsPaused) {
             return;
@@ -444,7 +278,7 @@ public sealed class SpiderKingEnding {
         // only once the win has played in, so a Space mashed in the fight
         // never skips it
         if (rig.hud.IsRewardReady
-            && SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
+            && SpiderKingFeedback.WasPressed(config.ConfirmAction)) {
             ContinueAfterReward();
         }
     }
@@ -462,7 +296,7 @@ public sealed class SpiderKingEnding {
         rig.Arena.EndBareArena();
         if (rig.greatCobra != null) {
             rig.greatCobra.StopGuard();
-            rig.greatCobra.KnockBack(tuning.WinCobraDropU);
+            rig.greatCobra.KnockBack(config.WinCobraDropU);
         }
         if (rig.monkeyController != null) {
             rig.monkeyController.ClearHeightCeiling();
@@ -476,6 +310,28 @@ public sealed class SpiderKingEnding {
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "SpiderKingFightController:\twon, silk gloves given, climb on",
+                rig.owner
+            );
+        }
+        if (rig.IsRush) {
+            ArmNextRush();
+        }
+    }
+
+    // Endless Boss Rush  ------------------------------------------------------
+    // the spider waits again two bosses on, the Cobra King's in b/t, harder;
+    // the gloves' effect stays on
+    public void ArmNextRush() {
+        rig.rushEncounter += 2;
+        rig.phase = SpiderKingPhase.Waiting;
+        rig.hud.ClearCallOut();
+        rig.isEasy = false;
+        rig.lastStage = 0;
+        rig.Arena.ReserveRushRange();
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "SpiderKingFightController:\tnext rush fight at "
+                    + rig.TriggerClimbU + " u",
                 rig.owner
             );
         }

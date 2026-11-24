@@ -36,6 +36,10 @@ public class SpiderWebStruggle: MonoBehaviour {
     /// <summary>Raised once the monkey breaks free.</summary>
     public event Action Escaped;
 
+    /// <summary>Raised on each escape press that counts, with the progress
+    /// it brought, 0~1, eg for its sound.</summary>
+    public event Action<float> EscapePressed;
+
     /// <returns>if a web holds the monkey right now</returns>
     public bool IsTrapped => isTrapped;
 
@@ -222,6 +226,7 @@ public class SpiderWebStruggle: MonoBehaviour {
             trapWeb.Pulse();
         }
         ProgressChanged?.Invoke(escapeProgress);
+        EscapePressed?.Invoke(escapeProgress);
 
         if (escapeProgress >= 1f) {
             BreakFree();

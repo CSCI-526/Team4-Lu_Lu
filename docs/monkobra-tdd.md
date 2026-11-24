@@ -30,19 +30,22 @@ A system gets its own document when it spans several scripts and carries rules a
 | Camera | Cinemachine 3.1.7 (event shots, impulse shake, noise) |
 | UI | uGUI 2.0.0 with TextMesh Pro |
 | Target | WebGL on GitHub Pages, built from the Editor |
-| Tests | none yet, `com.unity.test-framework` is installed |
+| Tests | Firebase emulator REST/rules test and C# integration check; see [Leaderboard](leaderboard-doc.md#local-testing-without-a-firebase-account); `com.unity.test-framework` is installed |
 
 ## Scenes
 
 | Scene | Purpose |
 | --- | --- |
-| `TitleScene` | the startup scene of every build: Space, a click or a tap opens the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
+| `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
+| `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build Intro Comic` from `tools/comic/panels/` |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
 | `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `GameController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
 graph LR
-  Title[TitleScene] -->|Space, click, tap| Select[LevelSelectScene]
+  Title[TitleScene] -->|Space, click, tap, first time| Comic[IntroComicScene]
+  Title -->|Space, click, tap, later| Select[LevelSelectScene]
+  Comic -->|last page, Esc, Skip| Select
   Select -->|Normal Play| Play[GameplayScene, Full]
   Select -->|Endless Mode, unlocked| Play2[GameplayScene, Endless]
   Select -->|Back, Esc| Title
@@ -54,7 +57,7 @@ graph LR
 
 Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`EventSystem_Menu`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `StartPress` (Space, left click, a touch, gamepad start) serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
 
-Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the boss fight is skipped (`CobraKingFightController` starts in its done state, gold armor worn), `RampedDifficultyManager` reads the post boss curve from the starting zone exit on and has no boss zone, and `HeightMarkerSystem` draws no boss marker.
+Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the run is a boss rush (`EndlessBossRush`, see [Mobs](mob-doc.md#endless-boss-rush)): the Cobra King and the Spider King take turns every `endlessBossIntervalU` (300 u), each harder than the last, starting in the gold armor; the monkey and the great cobra climb at normal speed (`endlessSpeedScale`, 1); `RampedDifficultyManager` reads the post boss curve from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
 
 Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Unlock Endless` and `Monkobra/Reset Progress` flip it for testing.
 
@@ -106,7 +109,7 @@ stateDiagram-v2
 | Tutorial | 0 | tutorial panel, only Space (a tap anywhere in touch mode) starts the run |
 | StartingZone | 1 | none, run is live, `LoseGame` works, until `EndStartingZone()`, called by `StartingZoneExitRelay` when the monkey enters its trigger |
 | Playing | 1 | none, never paused |
-| Lost | 0 | lose panel with Restart and Exit (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelay`, and so does a confirm press with nothing highlighted |
+| Lost | 0 | lose panel with Restart and Exit (`RunScreenMenu`); `RestartAfterLose` (R) reloads the scene after `restartInputDelayS`, and so does a confirm press with nothing highlighted |
 | Won | 0 | a won run, time frozen, the same restart key reloads the scene |
 
 `LoseGame()` runs once, from StartingZone or Playing: the cobra touches the monkey ([Mobs](mob-doc.md#contact)). It carries no cause: analytics infers one itself (`DeathCauseResolver`): a branch hit or web encounter w/i `AnalyticsConfig.DeathCauseWindowS` before the loss names the cause, otherwise it is the great cobra. `LoseGame` calls `ScoreManager.EndRun` so the score settles, then enters Lost. `ScreensManager` owns the panels: they start deactivated, and it shows the current state's panel in `Start` and on every `StateChanged`.
@@ -135,7 +138,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 3 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
 | 1 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
-| 2 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight | `MonkeyController` |
+| 2 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight, never in the endless run (its boss rush brings the Spider King itself) | `MonkeyController` |
 | 3 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
 | 4 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | 5 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
@@ -251,7 +254,7 @@ graph LR
 - Rough bark shake: `CameraRoughBarkShake` drives the Perlin noise gains of every camera while the monkey moves on rough bark, easing in and out; standing still on the bark stays calm
 - Cool-down: `CameraCoolDownFeedback` listens to `StaminaBarController.LowStaminaMoveAttempted` and pulses a URP Vignette on a global Volume, easing it back to rest, in two steps (below the low fraction, and empty). There is no zoom, since a moving field of view reads as motion. A running pulse ignores repeats and a short cooldown follows
 - Cobra proximity: `CobraProximityVignette` (HUD, the first HUD part of `UI`) draws a green UI overlay, since the URP Vignette is black and round only. The height gap to the great cobra's head picks the stage: bottom half, then full ring, each kept a little past its distance so a gap on the edge does not flicker. The overlay beats at a rate per stage, a step and never a ramp. It never shows in the starting zone, nor while the cobra is frozen or guarding, nor during a leap or outside a live run. Distances, rates, color and alpha are in `CameraConfig`
-- Vignette slot: `ScreenVignetteArbiter` holds one slot for both vignettes. A stamina pulse or a cobra beat starts only with the slot and frees it at its end; a refused ask is remembered, and the owner that played last yields to a waiting other, so the two alternate. Without an arbiter in the scene both run unchecked
+- Vignette slot: `ScreenVignetteManager` holds one slot for both vignettes. A stamina pulse or a cobra beat starts only with the slot and frees it at its end; a refused ask is remembered, and the owner that played last yields to a waiting other, so the two alternate. Without an arbiter in the scene both run unchecked
 - Comfort: one switch in the config silences the shake and the noise, and drops the lead and the pull-back; a global shake scale also scales every shake
 
 The grab shift is in the [Grab System](grab-doc.md#camera), the hit trigger in [Mobs](mob-doc.md#hit-penalty).
@@ -272,16 +275,34 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 
 ### Control Style
 
-`ControlStyleManager` (prefab `ControlStyleManager`, kept in every scene and also created by `PersistentBootstrap` from `Resources/` before the first scene when none exists; the first instance is kept across loads, and a later copy destroys itself with a warning that is expected) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
+`ControlStyleManager` (prefab `ControlStyleManager`, kept in every scene and also created by `PersistentBootstrapLoader` from `Resources/` before the first scene when none exists; the first instance is kept across loads, and a later copy destroys itself with a warning that is expected) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
 
 - `ControlStyleLabel`: one text under a keyboard and a touch wording, blank hides it; `Configure` sets both from code
 - `ControlStyleSwitch`: shows a keyboard group or a touch group of objects, eg the tutorial's keyboard icons and its touch guide, or a key icon that only a keyboard needs
-- `HintIconSlot`: shows the animated icon of a hint, one Animator controller per style (`Animations/InputIcons/`: `SpacePress`, `TouchTap`, each with a `_Double`, `_Hold`, and `_Rapid` controller, plus the keyboard-only `SpacePress` still `SpaceStill`) on the 2 icon entities of the `HintIconLibrary` (`Prefabs/InputIcons/InputIcon_Key`, `InputIcon_Touch`), scaled to a fit height under a holder, since the icon's Animator owns its root scale. An icon Animator uses Unscaled Time so it plays while a popup or the pause screen freezes time. `HintIconSlot.Create` builds one from code (it takes the library and the 2 controllers), as `KeyPromptWidget` does; popups, `CoconutHUD` and the boss prompt hold one
+- `HintIconWidget`: shows the animated icon of a hint, one Animator controller per style (`Animations/InputIcons/`: `SpacePress`, `TouchTap`, each with a `_Double`, `_Hold`, and `_Rapid` controller, plus the keyboard-only `SpacePress` still `SpaceStill`) on the 2 icon entities of the `HintIconLibrary` (`Prefabs/InputIcons/InputIcon_Key`, `InputIcon_Touch`), scaled to a fit height under a holder, since the icon's Animator owns its root scale. An icon Animator uses Unscaled Time so it plays while a popup or the pause screen freezes time. `HintIconWidget.Create` builds one from code (it takes the library and the 2 controllers), as `KeyPromptWidget` does; popups, `CoconutHUD` and the boss prompt hold one
 - `TutorialTouchCutout`: the touch tutorial's blue action area, 4 strips around a hole over the live `OnScreenStick`, found at runtime and laid out every frame; hides the tutorial's white overlay while shown
 - Scripts with their own wording subscribe themselves: `CoconutWidget` (`useHintText`, `useHintTouchText`), `MessagePopUp` (`touchMessage`, re-worded while a held popup shows), `KeyPromptWidget`; `BossFightHud` gives its runtime labels a `ControlStyleLabel`
 - `TouchControlsPanel` shows the touch controls only in Touch mode while the run is playable (tutorial, starting zone, playing; not paused, lost or won). `TouchControls` is the first child of the `UI` canvas, so every HUD element, popup and screen draws above it and takes its taps first
 
 ## UI
+
+The lose-screen leaderboard optionally uses Firebase Anonymous Auth and Firestore
+REST. `FirebaseLeaderboardConfig` enables it without a native SDK; the existing
+practice board remains when unconfigured. `FirebaseLeaderboardClient` persists a
+pending best before uploading, uses an atomic maximum to preserve high scores,
+and loads the top ten separately for normal and endless modes. Setup, failure
+behaviour, identity limits and emulator verification are in
+[Firebase Leaderboard](leaderboard-doc.md).
+
+`LeaderboardNameEditor` saves a display nickname in project-scoped PlayerPrefs
+and requests a resubmission through `LeaderboardWidget`. Identity remains the
+anonymous UID, including across name changes. `UIStyleBuilder.LeaderboardNames`
+builds the field/button through Editor APIs. `TextInputFocus` guards
+`GameController`, `RunScreenMenu` and the centralized hack-key reader during text
+entry so a typed shortcut cannot restart a run or trigger a hack.
+The nickname editor runs after TMP's LateUpdate to suspend IME composition for
+this Latin-only field, restoring the prior mode on deselection/disable;
+`MenuButtonHover` leaves text selection alone during entry.
 
 | Element | Script | Shows |
 | --- | --- | --- |
@@ -296,7 +317,7 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 | Web Prompt | `MobSpiderWeb/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
 | Low Stamina Prompt | `Stamina/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
 | PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
-| Pause Button | `PauseScreen/PauseButton` | square `IconButton` top right of `UI` inside the 24 safe margin (Sprite Swap, `IconButton_*`, the `Icon_Pause` glyph), with its Esc key hint and the coconut counter laid out leftward from it ([UI Style](ui-style-doc.md#hud)), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
+| Pause Button | `PauseScreen/PauseButtonWidget` | square `IconButton` top right of `UI` inside the 24 safe margin (Sprite Swap, `IconButton_*`, the `Icon_Pause` glyph), with its Esc key hint and the coconut counter laid out leftward from it ([UI Style](ui-style-doc.md#hud)), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
 | Touch Controls | `UI/TouchControlsPanel` | the joystick and full-screen action zone of the `TouchControls` prefab, shown only in Touch mode ([Input](#input)) |
 | Pause Screen | `PauseScreen/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit `IconButton`s as 3-column rows (keycap, button, text label; the keycaps show in Keyboard style only, [UI Style](ui-style-doc.md#run-screens)) while `GameController.IsPaused`; on the always-active `PauseScreen` root under `UI`, it toggles its `Panel` child on `PauseChanged` |
 
@@ -309,7 +330,7 @@ The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Env
 - Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
 - Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette, one on each side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
 - Boss Marker: the marker at or just below `CobraKingFightController.TriggerHeightU` (the trigger height rarely lands on a marker, so it snaps down to the interval) gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `CobraKingFightController.BuildMarkerFigure` holding it, kept on whichever pooled label shows it; once `CobraKingFightController.IsInArena` it is no longer shown. The Spider King's marker (`SpiderKingFightController.TriggerHeightU`, 1,050 m) gets the same plate and a spider look-alike from `SpiderKingFightController.BuildMarkerFigure`, gone once `IsMarkerDone`. A look-alike is a `BossMarkerFigure`, primitives in the label's space that the marker system fits to the plate each frame (`Fit`): the cobra coils round both ends & drapes along the top, the spider perches on the top edge gripping the face & sides; both animate
-- Passing: a collision, not a height poll. Each label pair has one pooled `HeightMarkerTrigger` (the `HeightMarker` prefab, `markerPrefab` field) standing at the marker's exact height on the trunk axis, a thin trigger slab wider than the monkey's orbit ring; the plates are drawn at the height of its `LabelAnchor` child, a fixed way above, so a marker is drawn above the height at which it counts as passed. Only the monkey's physical parts trigger it (`CobraSensor.IsMonkeyPart`)
+- Passing: a collision, not a height poll. Each label pair has one pooled `HeightMarkerRelay` (the `HeightMarker` prefab, `markerPrefab` field) standing at the marker's exact height on the trunk axis, a thin trigger slab wider than the monkey's orbit ring; the plates are drawn at the height of its `LabelAnchor` child, a fixed way above, so a marker is drawn above the height at which it counts as passed. Only the monkey's physical parts trigger it (`CobraSensor.IsMonkeyPart`)
 - Pulse: the first time the monkey touches a marker's trigger, the label grows to `pulseScale` and its plate brightens for `pulseDurationS`; re-climbing after a drop does not repeat it
 - Physics: neither label nor plate has a collider, so no spawner's overlap check or grab sees them
 - Testing: Use Test Override swaps `intervalU` for `testIntervalU` (5); tick it in Play mode, so it never gets saved

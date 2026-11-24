@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f1d923a2423212548a5639471fcb91dc, type: 2}
+  - {fileID: 2100000, guid: ec081a4407584dc2b5a27b97b55db5d2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -352,6 +352,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2922262912236010432}
   - component: {fileID: 8590656666692874066}
+  - component: {fileID: 6127440958312087513}
   m_Layer: 0
   m_Name: _BranchBase
   m_TagString: Untagged
@@ -484,3 +485,18 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6127440958312087513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7489113642335787035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e42c305bcff04487b560b50fdaf7b9a7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::StylizedBranchArt
+  branchBox: {fileID: 496954062815779889}
+  fruitStem: {fileID: 5088038646071703649}
+  artMaterial: {fileID: 2100000, guid: 426742231c764ad28ec845947437a62c, type: 2}

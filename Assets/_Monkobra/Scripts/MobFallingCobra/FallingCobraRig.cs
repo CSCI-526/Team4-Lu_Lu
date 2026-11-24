@@ -23,18 +23,21 @@ public enum FallingCobraState {
 /// queries more than one role asks of it.
 /// </summary>
 public sealed class FallingCobraRig {
-    // Constants  #############################################################
+    // constants  #############################################################
     public const float NeckOverlapU = .006f;
     public const float HeadCollarBlendU = .4f;
-    public const int BodyRings = 257;
-    public const int BodySides = 32;
+    // the body tube's rings along it & sides round it: the mesh is made
+    // again on the CPU each frame a cobra moves, so kept low (was 257 x 32,
+    // about 4.6x the vertices)
+    public const int BodyRings = 96;
+    public const int BodySides = 16;
     public const int BodyStride = BodySides + 1;
     public const string PLAYER_TAG = "Player";
     public const float MIN_RING_RADIUS_U = 0.001f;
 
     // Shared State  ##########################################################
     public readonly Transform host;
-    public readonly FallingCobraTuning tuning;
+    public readonly FallingCobraConfig config;
     public FallingCobraHeadMesh HeadMesh;
     public FallingCobraBranchCoil BranchCoil;
     public FallingCobraTracking Tracking;
@@ -160,9 +163,9 @@ public sealed class FallingCobraRig {
     public ArmController[] playerArms;  // the monkey's arms, read for a reach
     public HitBranchSensor playerSensor;  // applies the drop
 
-    public FallingCobraRig(Transform host, FallingCobraTuning tuning) {
+    public FallingCobraRig(Transform host, FallingCobraConfig config) {
         this.host = host;
-        this.tuning = tuning;
+        this.config = config;
     }
 
     // Public Methods  #########################################################
@@ -173,7 +176,7 @@ public sealed class FallingCobraRig {
             outward = -host.forward;
         }
         outward.Normalize();
-        float radius = tuning.TreeSurfaceRadiusU + tuning.TreeSurfaceClearanceU;
+        float radius = config.TreeSurfaceRadiusU + config.TreeSurfaceClearanceU;
         return new Vector3(axisXZ.x + outward.x * radius, position.y,
             axisXZ.y + outward.z * radius);
     }
@@ -182,7 +185,7 @@ public sealed class FallingCobraRig {
         Vector3 outward =
             new Vector3(point.x - axisXZ.x, 0f, point.z - axisXZ.y);
         float radius = outward.magnitude,
-            minimum = tuning.TreeSurfaceRadiusU + tuning.TreeSurfaceClearanceU;
+            minimum = config.TreeSurfaceRadiusU + config.TreeSurfaceClearanceU;
         if (radius < minimum) {
             outward = radius > .00001f ? outward / radius : -host.forward;
             point.x = axisXZ.x + outward.x * minimum;
@@ -192,16 +195,16 @@ public sealed class FallingCobraRig {
     }
 
     public float GroundSpineOffset(int ring) {
-        float behind = ring * tuning.SmoothBodyLengthU / (BodyRings - 1);
-        return Mathf.Lerp(Mathf.Max(tuning.SmoothBodyRadiusU * .9f,
+        float behind = ring * config.SmoothBodyLengthU / (BodyRings - 1);
+        return Mathf.Lerp(Mathf.Max(config.SmoothBodyRadiusU * .9f,
             originalHeadFront),
-            spineRadii[ring] * .9f - tuning.BellyPressDepthU,
+            spineRadii[ring] * .9f - config.BellyPressDepthU,
                 Mathf.SmoothStep(0f, 1f,
-                    behind / tuning.HeadContactBlendLengthU));
+                    behind / config.HeadContactBlendLengthU));
     }
 
     public float BodyTrailDistance(int ring) {
-        float nominal = ring * tuning.SmoothBodyLengthU / (BodyRings - 1);
+        float nominal = ring * config.SmoothBodyLengthU / (BodyRings - 1);
         if (launchBodyOffsets == null || !swimTrailReady) {
             return nominal;
         }
@@ -210,7 +213,7 @@ public sealed class FallingCobraRig {
         float released =
             Mathf.SmoothStep(0f, 1f,
                 Mathf.InverseLerp(launchBodyArc,
-                    launchBodyArc + tuning.NeckFollowLengthU, travel));
+                    launchBodyArc + config.NeckFollowLengthU, travel));
         return Mathf.Lerp(launchBodyOffsets[ring], nominal, released);
     }
 
@@ -224,29 +227,29 @@ public sealed class FallingCobraRig {
         return 1f
             - Mathf.SmoothStep(0f, 1f,
                 Mathf.InverseLerp(launchTrailDistance - launchNeckArc
-                    - tuning.UncoilSupportBlendU,
-            launchTrailDistance - launchNeckArc + tuning.UncoilSupportBlendU,
+                    - config.UncoilSupportBlendU,
+            launchTrailDistance - launchNeckArc + config.UncoilSupportBlendU,
                 distance));
     }
 
     public float HeadDeparture(Vector3 position) {
         return Mathf.SmoothStep(0f, 1f,
-            Mathf.InverseLerp(.2f, tuning.HeadTurnDropU,
+            Mathf.InverseLerp(.2f, config.HeadTurnDropU,
                 releaseHeadHeight - position.y));
     }
 
-    public Vector3 SourceEyeForward()=>tuning.EyeAnchorsReady
-        ?(tuning.LeftEyeNormalLocal + tuning.RightEyeNormalLocal).normalized
+    public Vector3 SourceEyeForward()=>config.EyeAnchorsReady
+        ?(config.LeftEyeNormalLocal + config.RightEyeNormalLocal).normalized
             :originalHeadFaceBasis * Vector3.forward;
 
     public Vector3 SourceEyeUp() {
-        if (!tuning.EyeAnchorsReady) {
+        if (!config.EyeAnchorsReady) {
             return originalHeadFaceBasis * Vector3.up;
         }
         Vector3 up =
             Vector3.Cross(SourceEyeForward(),
-                tuning.RightEyeSurfaceLocal
-                    - tuning.LeftEyeSurfaceLocal).normalized;
+                config.RightEyeSurfaceLocal
+                    - config.LeftEyeSurfaceLocal).normalized;
         return Vector3.Dot(up, Vector3.up)<0f?-up:up;
     }
 
@@ -258,8 +261,8 @@ public sealed class FallingCobraRig {
     // climbs.
     public Vector3 ThreatPosition => spinePoseReady
         && referenceHeadVisual != null
-        ? referenceHeadVisual.TransformPoint(tuning.EyeAnchorsReady
-            ?(tuning.LeftEyeSurfaceLocal + tuning.RightEyeSurfaceLocal) * .5f
+        ? referenceHeadVisual.TransformPoint(config.EyeAnchorsReady
+            ?(config.LeftEyeSurfaceLocal + config.RightEyeSurfaceLocal) * .5f
                 - SourceEyeUp() * .06f:originalHeadFaceCenter) : host.position;
 
 }

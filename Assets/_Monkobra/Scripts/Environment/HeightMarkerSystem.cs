@@ -31,7 +31,7 @@ using UnityEngine.Rendering;
 /// </para>
 /// <para>
 /// Passing is a collision, not a height poll. Each marker pair has one
-/// pooled <see cref="HeightMarkerTrigger"/> (the <c>HeightMarker</c> prefab)
+/// pooled <see cref="HeightMarkerRelay"/> (the <c>HeightMarker</c> prefab)
 /// standing at the marker's exact height on the trunk axis, and the plates
 /// are drawn at the height of its label anchor child, a fixed way above it.
 /// So a 50 m marker is drawn above 50 m, and counts as passed at exactly
@@ -66,7 +66,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         "HeightMarker prefab: the pass trigger at the marker's exact height, "
             + "with the label anchor above it"
     )]
-    private HeightMarkerTrigger markerPrefab;
+    private HeightMarkerRelay markerPrefab;
 
     [Header("Spacing")]
     [SerializeField]
@@ -255,13 +255,12 @@ public class HeightMarkerSystem: MonoBehaviour {
         int interval = IntervalU;
         // the boss fight's height gets its own look, no extra words
         CobraKingFightController bossFight = CobraKingFightController.I;
-        // the endless run has no boss, so no boss marker either
-        bool isEndless = GameController.I != null
-            && GameController.I.Mode == RunMode.Endless;
+        // the endless run marks the boss rush's next fights, the kings'
+        // own trigger heights following it
         // the trigger height rarely lands on a marker (525 vs. every 50), so
         // the boss look goes to the marker just below it, the 500 m one
         int bossHeightU = bossFight != null && bossFight.isActiveAndEnabled
-            && !isEndless && bossFight.TriggerHeightU > 0f
+            && bossFight.TriggerHeightU > 0f
             ? Mathf.FloorToInt(bossFight.TriggerHeightU / interval) * interval
             : int.MinValue;
         // once the fight has begun its marker is gone, the real king is there
@@ -271,7 +270,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         // height
         SpiderKingFightController spiderFight = SpiderKingFightController.I;
         int spiderHeightU = spiderFight != null
-            && spiderFight.isActiveAndEnabled && !isEndless
+            && spiderFight.isActiveAndEnabled
             && spiderFight.TriggerHeightU > 0f
             ? Mathf.FloorToInt(spiderFight.TriggerHeightU / interval) * interval
             : int.MinValue;
@@ -314,7 +313,7 @@ public class HeightMarkerSystem: MonoBehaviour {
             bool isBoss = heightU == bossHeightU || isSpider;
             // one trigger per pair, put at the marker's exact height on
             // the trunk axis; its label anchor is where the plates go
-            HeightMarkerTrigger trigger = triggers[i / SIDE_COUNT];
+            HeightMarkerRelay trigger = triggers[i / SIDE_COUNT];
             if (isRight) {
                 PlaceTrigger(trigger, difficulty, heightU, marker <= highest);
             }
@@ -421,7 +420,7 @@ public class HeightMarkerSystem: MonoBehaviour {
     }
 
     private void OnDestroy() {
-        foreach (HeightMarkerTrigger trigger in triggers) {
+        foreach (HeightMarkerRelay trigger in triggers) {
             if (trigger != null) {
                 trigger.Passed -= OnMarkerPassed;
             }
@@ -474,8 +473,8 @@ public class HeightMarkerSystem: MonoBehaviour {
     // private members  ########################################################
     private readonly List<TextMeshPro> labels = new();
     private readonly List<SpriteRenderer> plates = new(); // one per label
-    // one pass trigger per label pair, see HeightMarkerTrigger
-    private readonly List<HeightMarkerTrigger> triggers = new();
+    // one pass trigger per label pair, see HeightMarkerRelay
+    private readonly List<HeightMarkerRelay> triggers = new();
     private Transform bossFigure; // the king look-alike on the boss marker
     private Transform spiderFigure; // the Spider King's, on its marker
     // climbed height each label shows, int.MinValue while it shows none; u
@@ -580,7 +579,7 @@ public class HeightMarkerSystem: MonoBehaviour {
     // touched for the first time; touching it again after a drop does not
     // pulse again, like the height score. Several triggers touched at once,
     // e.g. in a leap, pulse in order, so only the top one is left pulsing
-    private void OnMarkerPassed(HeightMarkerTrigger trigger) {
+    private void OnMarkerPassed(HeightMarkerRelay trigger) {
         int interval = IntervalU;
         int marker = trigger.HeightU / interval;
         if (marker <= reachedMarker) {
@@ -618,7 +617,7 @@ public class HeightMarkerSystem: MonoBehaviour {
     // grows the trigger pool to at least count, one per marker pair
     private void EnsureTriggers(int count) {
         while (triggers.Count < count) {
-            HeightMarkerTrigger trigger = Instantiate(markerPrefab, transform);
+            HeightMarkerRelay trigger = Instantiate(markerPrefab, transform);
             trigger.gameObject.SetActive(false);
             trigger.Passed += OnMarkerPassed;
             triggers.Add(trigger);
@@ -628,7 +627,7 @@ public class HeightMarkerSystem: MonoBehaviour {
     // the trigger stands on the trunk axis at the marker's exact height, off
     // while its marker is out of view
     private void PlaceTrigger(
-        HeightMarkerTrigger trigger,
+        HeightMarkerRelay trigger,
         RampedDifficultyManager difficulty,
         int heightU,
         bool isShown
@@ -801,7 +800,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         foreach (TextMeshPro label in labels) {
             Hide(label);
         }
-        foreach (HeightMarkerTrigger trigger in triggers) {
+        foreach (HeightMarkerRelay trigger in triggers) {
             if (trigger.gameObject.activeSelf) {
                 trigger.gameObject.SetActive(false);
             }

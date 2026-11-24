@@ -135,6 +135,45 @@ public class WorldBalanceConfig: ScriptableObject {
     /// <returns>health of the Spider King</returns>
     public int SpiderMaxHealth => spiderMaxHealth;
 
+    /// <returns>climbed height b/t two bosses in the endless run's boss
+    /// rush; u</returns>
+    public float EndlessBossIntervalU => endlessBossIntervalU;
+
+    /// <returns>scale on the monkey's & the great cobra's climb in the
+    /// endless run, outside a boss fight</returns>
+    public float EndlessSpeedScale => endlessSpeedScale;
+
+    /// <returns>a boss's extra health per earlier fight of the same king in
+    /// the endless run, a share of its base health</returns>
+    public float EndlessHealthStep => endlessHealthStep;
+
+    /// <returns>how much shorter a boss's wind ups, warnings & rests get per
+    /// earlier fight of the same king in the endless run, a share</returns>
+    public float EndlessTimeStep => endlessTimeStep;
+
+    /// <returns>the shortest those times get in the endless run, a share
+    /// </returns>
+    public float EndlessMinTimeScale => endlessMinTimeScale;
+
+    /// <returns>how much faster a boss's shots & dashes get per earlier
+    /// fight of the same king in the endless run, a share</returns>
+    public float EndlessSpeedStep => endlessSpeedStep;
+
+    /// <returns>the fastest they get in the endless run, a scale</returns>
+    public float EndlessMaxSpeedScale => endlessMaxSpeedScale;
+
+    /// <returns>every endless boss's health, a scale, before the per boss
+    /// step: the monkey is 3x as fast in its fights too</returns>
+    public float EndlessFightHealthScale => endlessFightHealthScale;
+
+    /// <returns>every endless boss's wind ups, warnings & rests, a scale,
+    /// before the per boss step</returns>
+    public float EndlessFightTimeScale => endlessFightTimeScale;
+
+    /// <returns>every endless boss's crawl, shot, slash & dash speeds, a
+    /// scale, before the per boss step</returns>
+    public float EndlessFightSpeedScale => endlessFightSpeedScale;
+
     // Inspector Fields  #######################################################
     [Header("Ramped Difficulty")]
     [SerializeField]
@@ -364,6 +403,58 @@ public class WorldBalanceConfig: ScriptableObject {
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
     private int spiderMaxHealth = 15;
 
+    [Header("Endless Boss Rush")]
+    [SerializeField]
+    [Tooltip("climbed height b/t two bosses in the endless run: the Cobra "
+        + "King first, then the Spider King, taking turns; u")]
+    private float endlessBossIntervalU = 300f;
+
+    [SerializeField]
+    [Tooltip("scale on the monkey's & the great cobra's climb in the endless "
+        + "run, outside a boss fight")]
+    private float endlessSpeedScale = 1f;
+
+    [SerializeField]
+    [Tooltip("a boss's extra health per earlier fight of the same king in "
+        + "the endless run, a share of its base health; each king's first "
+        + "fight is as its normal one")]
+    private float endlessHealthStep = 0.4f;
+
+    [SerializeField]
+    [Tooltip("how much shorter a boss's wind ups, warnings & rests get per "
+        + "earlier fight of the same king in the endless run, a share")]
+    private float endlessTimeStep = 0.12f;
+
+    [SerializeField]
+    [Tooltip("the shortest a boss's wind ups, warnings & rests get in the "
+        + "endless run, a share of normal")]
+    private float endlessMinTimeScale = 0.6f;
+
+    [SerializeField]
+    [Tooltip("how much faster a boss's shots & dashes get per earlier fight "
+        + "of the same king in the endless run, a share")]
+    private float endlessSpeedStep = 0.1f;
+
+    [SerializeField]
+    [Tooltip("the fastest a boss's shots & dashes get in the endless run, a "
+        + "scale of normal")]
+    private float endlessMaxSpeedScale = 1.5f;
+
+    [SerializeField]
+    [Tooltip("every endless boss's health, a scale, before the per boss "
+        + "step: the monkey is as fast in its fights as on the climb")]
+    private float endlessFightHealthScale = 1f;
+
+    [SerializeField]
+    [Tooltip("every endless boss's wind ups, warnings & rests, a scale, "
+        + "before the per boss step")]
+    private float endlessFightTimeScale = 1f;
+
+    [SerializeField]
+    [Tooltip("every endless boss's crawl, shot, slash & dash speeds, a scale, "
+        + "before the per boss step")]
+    private float endlessFightSpeedScale = 1f;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         guaranteedBranchYawSpreadDeg = Mathf.Max(
@@ -397,5 +488,15 @@ public class WorldBalanceConfig: ScriptableObject {
             spiderJumpHeightU, bossZoneEndU, spiderTriggerHeightU
         );
         spiderMaxHealth = Mathf.Max(1, spiderMaxHealth);
+        endlessBossIntervalU = Mathf.Max(50f, endlessBossIntervalU);
+        endlessSpeedScale = Mathf.Max(0.1f, endlessSpeedScale);
+        endlessHealthStep = Mathf.Max(0f, endlessHealthStep);
+        endlessTimeStep = Mathf.Max(0f, endlessTimeStep);
+        endlessMinTimeScale = Mathf.Clamp(endlessMinTimeScale, 0.1f, 1f);
+        endlessSpeedStep = Mathf.Max(0f, endlessSpeedStep);
+        endlessMaxSpeedScale = Mathf.Max(1f, endlessMaxSpeedScale);
+        endlessFightHealthScale = Mathf.Max(0.1f, endlessFightHealthScale);
+        endlessFightTimeScale = Mathf.Clamp(endlessFightTimeScale, 0.1f, 2f);
+        endlessFightSpeedScale = Mathf.Max(0.1f, endlessFightSpeedScale);
     }
 }

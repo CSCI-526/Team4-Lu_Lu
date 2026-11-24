@@ -11,7 +11,11 @@ public class LeaderboardRowWidget: MonoBehaviour {
             return;
         }
         rankLabel.text = rank.ToString("D2");
+        if (rank <= 0) {
+            rankLabel.text = "--";
+        }
         nameLabel.text = entry.Name;
+        nameLabel.richText = false;
         scoreLabel.text = entry.Score.ToString("N0");
         Color textColor = entry.IsPlayer ? playerTextColor : normalTextColor;
         FontStyles style = entry.IsPlayer ? FontStyles.Bold : FontStyles.Normal;
@@ -28,24 +32,33 @@ public class LeaderboardRowWidget: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("References")]
     [SerializeField]
+    [Tooltip("rank number text")]
     private TMP_Text rankLabel;
     [SerializeField]
+    [Tooltip("player name text")]
     private TMP_Text nameLabel;
     [SerializeField]
+    [Tooltip("score text")]
     private TMP_Text scoreLabel;
     [SerializeField]
+    [Tooltip("row backdrop, tinted per row")]
     private Image background;
 
     [Header("Colors")]
     [SerializeField]
+    [Tooltip("text tint of a rival's row")]
     private Color normalTextColor = new Color(0.88f, 0.92f, 0.9f, 1f);
     [SerializeField]
+    [Tooltip("text tint of the player's own row")]
     private Color playerTextColor = new Color(1f, 0.81f, 0.35f, 1f);
     [SerializeField]
+    [Tooltip("backdrop tint of an odd rank row")]
     private Color normalBackground = new Color(1f, 1f, 1f, 0.025f);
     [SerializeField]
+    [Tooltip("backdrop tint of an even rank row")]
     private Color alternateBackground = new Color(1f, 1f, 1f, 0.055f);
     [SerializeField]
+    [Tooltip("backdrop tint of the player's own row")]
     private Color playerBackground = new Color(1f, 0.72f, 0.2f, 0.18f);
 
     // MonoBehaviour Lifecycle  ################################################

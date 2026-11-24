@@ -200,7 +200,7 @@ public class HackPineappleSpawner: MonoBehaviour {
 
         Vector3 position =
             axis
-            + outward.normalized * placementConfig.BranchRadius
+            + outward.normalized * placementConfig.BranchRadiusU
             + Vector3.up * (transform.position.y - axis.y + spawnAboveU);
         BranchController branch = Instantiate(
             prefab,

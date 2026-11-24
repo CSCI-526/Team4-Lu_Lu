@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="108" viewBox="-22 -21 48 108">
+<!-- pivot at (0, 0) in viewBox units -->
+<path d="M -13.42 -4.88 C -13.42 -18.3 13.42 -18.3 13.42 -4.88 L 10.98 53.68 L -10.98 53.68 Z" fill="#805033" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+<ellipse cx="12.2" cy="56.12" rx="7.32" ry="10.37" fill="#E3AF66" stroke="#352016" stroke-width="6" stroke-linejoin="round" transform="rotate(25 12.2 56.12)"/>
+<ellipse cx="0" cy="63.44" rx="15.86" ry="17.08" fill="#E3AF66" stroke="#352016" stroke-width="6" stroke-linejoin="round"/>
+</svg>

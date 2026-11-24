@@ -6,13 +6,13 @@ using static CobraKingRig;
 /// <summary>Builds and clears the arena: branches, fruit, webs, rough bark, and
 /// the trunk markers.</summary>
 public sealed class CobraKingArena {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
-    private readonly CobraKingTuning tuning;
+    private readonly CobraKingConfig config;
 
     public CobraKingArena(CobraKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -20,13 +20,13 @@ public sealed class CobraKingArena {
     // climb's own around it: the same count, spread & fruit, from the guard
     // up to the nest, grown here once & kept through a restart
     public void SpawnArenaBranches() {
-        if (tuning.BranchEmptyPrefab == null
-            || tuning.BananaBranchPrefab == null) {
+        if (config.BranchEmptyPrefab == null
+            || config.BananaBranchPrefab == null) {
             return;
         }
-        float bottomY = rig.entryY - tuning.GuardDepthU;
+        float bottomY = rig.entryY - config.GuardDepthU;
         float topY =
-            rig.coilBottomY - rig.body.HangDepthU - tuning.NestClearanceU;
+            rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
         List<Vector3> placed = new List<Vector3>();
         foreach (CobraKingArenaFruit fruit in rig.fruits) {
             if (fruit.branch != null) {
@@ -36,10 +36,10 @@ public sealed class CobraKingArena {
         for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
             float sliceTopY = Mathf.Min(topY, sliceY + 10f);
             int attempts = Mathf.RoundToInt(
-                tuning.ArenaBranchAttemptsPer10U * (sliceTopY - sliceY) / 10f
+                config.ArenaBranchAttemptsPer10U * (sliceTopY - sliceY) / 10f
             );
             for (int i = 0; i < attempts; i++) {
-                if (Random.value >= tuning.ArenaBranchChance) {
+                if (Random.value >= config.ArenaBranchChance) {
                     continue;
                 }
                 TryAddArenaBranch(sliceY, sliceTopY, placed);
@@ -53,16 +53,16 @@ public sealed class CobraKingArena {
         for (int attempt = 0; attempt < 30; attempt++) {
             float angle = Random.Range(0f, 360f);
             Vector3 position = rig.PointOnTrunk(
-                angle, Random.Range(minY, maxY), tuning.BranchRadiusU
+                angle, Random.Range(minY, maxY), config.BranchRadiusU
             );
             if (Vector3.Distance(position,
-                rig.entryPosition) < tuning.ArenaBranchStartClearU) {
+                rig.entryPosition) < config.ArenaBranchStartClearU) {
                 continue;
             }
             bool isClear = true;
             foreach (Vector3 other in placed) {
                 if (Vector3.Distance(position,
-                    other) < tuning.ArenaBranchSeparationU) {
+                    other) < config.ArenaBranchSeparationU) {
                     isClear = false;
                     break;
                 }
@@ -70,10 +70,10 @@ public sealed class CobraKingArena {
             if (!isClear) {
                 continue;
             }
-            bool hasFruit = Random.value < tuning.ArenaBranchFruitChance;
+            bool hasFruit = Random.value < config.ArenaBranchFruitChance;
             GameObject branch = UnityEngine.Object.Instantiate(
-                hasFruit ? tuning.BananaBranchPrefab
-                    : tuning.BranchEmptyPrefab, rig.host
+                hasFruit ? config.BananaBranchPrefab
+                    : config.BranchEmptyPrefab, rig.host
             );
             branch.transform.SetPositionAndRotation(
                 position, Quaternion.Euler(0f, 90f - angle, 0f)
@@ -93,7 +93,7 @@ public sealed class CobraKingArena {
             }
             placed.Add(position);
             rig.arenaBranchSpots.Add(rig.PointOnTrunk(angle, position.y,
-                tuning.TrunkRadiusU));
+                config.TrunkRadiusU));
             return;
         }
     }
@@ -102,12 +102,13 @@ public sealed class CobraKingArena {
     // zone, where nothing else is generated
     public void WarnIfArenaLeavesZone() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        if (ramp == null) {
+        // the endless run's rush keeps its own bare range
+        if (ramp == null || rig.IsRush) {
             return;
         }
         float zoneStartY = ramp.PlayerGameStartYPosition
-            + tuning.WorldBalanceConfig.BossZoneStartU;
-        if (rig.entryY - tuning.GuardDepthU < zoneStartY) {
+            + rig.worldBalanceConfig.BossZoneStartU;
+        if (rig.entryY - config.GuardDepthU < zoneStartY) {
             Debug.LogWarning(
                 "CobraKingFightController:\tthe guard cobra hangs below the "
                     + "boss "
@@ -116,6 +117,77 @@ public sealed class CobraKingArena {
                 rig.owner
             );
         }
+    }
+
+    // Endless Boss Rush -------------------------------------------------------
+    // the world y range a boss of the endless run's rush keeps bare, from
+    // under its guard to over its coil
+    public Vector2 RushRange(float entryY) {
+        return new Vector2(entryY - config.GuardDepthU - 4f,
+            entryY + config.NestHeightU + 10f);
+    }
+
+    // the coming fight's range is kept bare as the tree grows toward it
+    public void ReserveRushRange() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp == null || !rig.IsRush) {
+            return;
+        }
+        Vector2 range = RushRange(
+            EndlessBossRush.TriggerWorldY(rig.rushEncounter));
+        ramp.SetExtraBossZone(rig.owner, range.x, range.y);
+    }
+
+    public void ReleaseRushRange() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp != null) {
+            ramp.ClearExtraBossZone(rig.owner);
+        }
+    }
+
+    // what the endless tree grew in the arena b4 it was reserved goes:
+    // branches w/ their fruit, webs, falling cobras, rough bark
+    public void ClearRushArena() {
+        Vector2 range = RushRange(rig.entryY);
+        ReserveRushRangeAt(range);
+        foreach (BranchController branch in
+            UnityEngine.Object.FindObjectsByType<BranchController>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(branch.gameObject, range);
+        }
+        foreach (SpiderWebTrap web in
+            UnityEngine.Object.FindObjectsByType<SpiderWebTrap>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(web.gameObject, range);
+        }
+        foreach (FallingCobraController cobra in
+            UnityEngine.Object.FindObjectsByType<FallingCobraController>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(cobra.gameObject, range);
+        }
+        foreach (RoughBarkZone bark in
+            UnityEngine.Object.FindObjectsByType<RoughBarkZone>(
+                FindObjectsSortMode.None)) {
+            RemoveIfIn(bark.gameObject, range);
+        }
+    }
+
+    private void ReserveRushRangeAt(Vector2 range) {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp != null) {
+            ramp.SetExtraBossZone(rig.owner, range.x, range.y);
+        }
+    }
+
+    private static void RemoveIfIn(GameObject thing, Vector2 range) {
+        float y = thing.transform.position.y;
+        if (y < range.x || y > range.y) {
+            return;
+        }
+        ForgetFruits(thing);
+        // inactive first, Destroy only lands at the end of the frame
+        thing.SetActive(false);
+        UnityEngine.Object.Destroy(thing);
     }
 
     // a segment recycled over the top during the fight rolls new branches
@@ -127,9 +199,14 @@ public sealed class CobraKingArena {
 
     public void ClearBranchesNearNest(BranchController[] branches) {
         float minY =
-            rig.coilBottomY - rig.body.HangDepthU - tuning.NestClearanceU;
+            rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
+        // the endless run's rush: only up to its arena's top, the climb
+        // above keeps its branches
+        float maxY = rig.IsRush ? RushRange(rig.entryY).y
+            : float.PositiveInfinity;
         foreach (BranchController branch in branches) {
-            if (branch.transform.position.y > minY) {
+            float branchY = branch.transform.position.y;
+            if (branchY > minY && branchY <= maxY) {
                 ForgetFruits(branch.gameObject);
                 branch.gameObject.SetActive(false);
             }
@@ -139,7 +216,8 @@ public sealed class CobraKingArena {
         foreach (FallingCobraController cobra in
             UnityEngine.Object.FindObjectsByType<FallingCobraController>(
                 FindObjectsSortMode.None)) {
-            if (cobra.transform.position.y > minY) {
+            float cobraY = cobra.transform.position.y;
+            if (cobraY > minY && cobraY <= maxY) {
                 // inactive first, Destroy only lands at the end of the frame
                 cobra.gameObject.SetActive(false);
                 UnityEngine.Object.Destroy(cobra.gameObject);
@@ -151,9 +229,9 @@ public sealed class CobraKingArena {
     // picks easy or normal mode
     public void SpawnChoices() {
         float angle = rig.AngleOf(rig.entryPosition);
-        float y = rig.entryPosition.y + tuning.ChoiceAboveU;
-        AddFruit(angle - tuning.ChoiceSideDeg, y, false);
-        AddFruit(angle + tuning.ChoiceSideDeg, y, true);
+        float y = rig.entryPosition.y + config.ChoiceAboveU;
+        AddFruit(angle - config.ChoiceSideDeg, y, false);
+        AddFruit(angle + config.ChoiceSideDeg, y, true);
         rig.choices.Add(rig.fruits[rig.fruits.Count - 2]);
         rig.choices.Add(rig.fruits[rig.fruits.Count - 1]);
         rig.fruits.RemoveRange(rig.fruits.Count - 2, 2);
@@ -166,12 +244,11 @@ public sealed class CobraKingArena {
         rig.maxHealth = rig.isEasy
             ? Mathf.Max(
                 1,
-                Mathf.RoundToInt(tuning.WorldBalanceConfig.BossMaxHealth
-                    * tuning.EasyHealthScale)
+                Mathf.RoundToInt(rig.BaseMaxHealth * config.EasyHealthScale)
             )
-            : tuning.WorldBalanceConfig.BossMaxHealth;
+            : rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         foreach (CobraKingArenaFruit choice in rig.choices) {
             RemoveBranch(choice.branch);
         }
@@ -181,7 +258,7 @@ public sealed class CobraKingArena {
         rig.hud.PopText(
             rig.isEasy ? "Easy mode" : "Normal mode",
             rig.monkey.position,
-            rig.isEasy ? new Color(0.55f, 0.95f, 0.55f) : tuning.GoldenColor
+            rig.isEasy ? new Color(0.55f, 0.95f, 0.55f) : config.GoldenColor
         );
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -231,14 +308,14 @@ public sealed class CobraKingArena {
 
     public void SpawnFruits() {
         float startAngle = rig.AngleOf(rig.monkey.position);
-        for (int i = 0; i < tuning.BananaCount; i++) {
+        for (int i = 0; i < config.BananaCount; i++) {
             // spread round the trunk, the first one right above the monkey
-            float t = tuning.BananaCount > 1 ? i / (tuning.BananaCount - 1f)
+            float t = config.BananaCount > 1 ? i / (config.BananaCount - 1f)
                 : 0f;
             AddFruit(
-                startAngle + i * 360f / tuning.BananaCount,
+                startAngle + i * 360f / config.BananaCount,
                 rig.entryY + Mathf.Lerp(
-                    tuning.FruitHeightRangeU.x, tuning.FruitHeightRangeU.y, t
+                    config.FruitHeightRangeU.x, config.FruitHeightRangeU.y, t
                 ),
                 false
             );
@@ -254,8 +331,8 @@ public sealed class CobraKingArena {
             AddFruit(
                 Random.Range(0f, 360f),
                 rig.entryY
-                    + Random.Range(tuning.FruitHeightRangeU.x,
-                        tuning.FruitHeightRangeU.y),
+                    + Random.Range(config.FruitHeightRangeU.x,
+                        config.FruitHeightRangeU.y),
                 false
             );
         }
@@ -268,12 +345,12 @@ public sealed class CobraKingArena {
 
     // webs on the trunk in the arena, never on a fruit's branch line
     public void SpawnWebs(int count) {
-        if (tuning.WebPrefab == null) {
+        if (config.WebPrefab == null) {
             return;
         }
-        float topY = rig.body.LowestY - tuning.CeilingGapU - 1.5f;
+        float topY = rig.body.LowestY - config.CeilingGapU - 1.5f;
         for (int i = 0; i < count; i++) {
-            TryAddWeb(rig.entryY - tuning.WebBelowEntryU,
+            TryAddWeb(rig.entryY - config.WebBelowEntryU,
                 Mathf.Max(rig.entryY + 1f, topY));
         }
     }
@@ -282,18 +359,18 @@ public sealed class CobraKingArena {
     // boss zone: a few rolls per 10 u from the guard up to just under the
     // entry
     public void SpawnLowWebs() {
-        if (tuning.WebPrefab == null) {
+        if (config.WebPrefab == null) {
             return;
         }
-        float bottomY = rig.entryY - tuning.GuardDepthU;
+        float bottomY = rig.entryY - config.GuardDepthU;
         float topY = rig.entryY - 3f;
         for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
             float sliceTopY = Mathf.Min(topY, sliceY + 10f);
             int attempts = Mathf.RoundToInt(
-                tuning.LowWebAttemptsPer10U * (sliceTopY - sliceY) / 10f
+                config.LowWebAttemptsPer10U * (sliceTopY - sliceY) / 10f
             );
             for (int i = 0; i < attempts; i++) {
-                if (Random.value < tuning.LowWebChance) {
+                if (Random.value < config.LowWebChance) {
                     TryAddWeb(sliceY, sliceTopY);
                 }
             }
@@ -310,7 +387,7 @@ public sealed class CobraKingArena {
             }
             float y = Random.Range(minY, maxY);
             Vector3 spot =
-                rig.PointOnTrunk(angle, y, tuning.TrunkRadiusU + 0.02f);
+                rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.02f);
             if (IsWebCrowded(spot)) {
                 continue;
             }
@@ -324,8 +401,8 @@ public sealed class CobraKingArena {
             // as the segments' spawner: the web's face looks away from
             // the trunk
             SpiderWebTrap web = UnityEngine.Object.Instantiate(
-                tuning.WebPrefab,
-                rig.PointOnTrunk(angle, y, tuning.TrunkRadiusU + 0.02f),
+                config.WebPrefab,
+                rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.02f),
                 Quaternion.Euler(0f, -angle, 0f),
                 rig.host
             );
@@ -338,12 +415,12 @@ public sealed class CobraKingArena {
         foreach (SpiderWebTrap other in rig.webs) {
             if (other != null
                 && Vector3.Distance(other.transform.position, spot)
-                    < tuning.WebSeparationU) {
+                    < config.WebSeparationU) {
                 return true;
             }
         }
         foreach (Vector3 branch in rig.arenaBranchSpots) {
-            if (Vector3.Distance(branch, spot) < tuning.WebBranchGapU) {
+            if (Vector3.Distance(branch, spot) < config.WebBranchGapU) {
                 return true;
             }
         }
@@ -354,23 +431,23 @@ public sealed class CobraKingArena {
     // monkey while it touches them; kept off its start spot & the banana
     // branches, & kept through a restart
     public void SpawnRoughBark() {
-        if (tuning.RoughBarkMaterial == null
-            || tuning.RoughBarkAttemptsPer10U <= 0) {
+        if (config.RoughBarkMaterial == null
+            || config.RoughBarkAttemptsPer10U <= 0) {
             return;
         }
         // as the climb's spawner: per 10 u a few rolls, each patch kept
         // clear of the others' heights, of branches & webs, & here of the
         // monkey's start spot
-        float bottomY = rig.entryY - tuning.GuardDepthU;
+        float bottomY = rig.entryY - config.GuardDepthU;
         float topY =
-            rig.coilBottomY - rig.body.HangDepthU - tuning.NestClearanceU;
+            rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
         List<Vector3> patches = new List<Vector3>();
         // x angle, y y, z extent
         Physics.SyncTransforms();
         for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
             float sliceTopY = Mathf.Min(topY, sliceY + 10f);
-            for (int i = 0; i < tuning.RoughBarkAttemptsPer10U; i++) {
-                if (Random.value >= tuning.RoughBarkChance) {
+            for (int i = 0; i < config.RoughBarkAttemptsPer10U; i++) {
+                if (Random.value >= config.RoughBarkChance) {
                     continue;
                 }
                 TryAddRoughBark(sliceY, sliceTopY, patches);
@@ -395,10 +472,10 @@ public sealed class CobraKingArena {
     ) {
         for (int attempt = 0; attempt < 16; attempt++) {
             float height = Random.Range(
-                tuning.RoughBarkHeightRangeU.x, tuning.RoughBarkHeightRangeU.y
+                config.RoughBarkHeightRangeU.x, config.RoughBarkHeightRangeU.y
             );
             float arc = Random.Range(
-                tuning.RoughBarkArcRangeDeg.x, tuning.RoughBarkArcRangeDeg.y
+                config.RoughBarkArcRangeDeg.x, config.RoughBarkArcRangeDeg.y
             );
             float extent = RoughBarkZone.GetVerticalExtent(height);
             float y = Random.Range(minY, maxY);
@@ -434,7 +511,7 @@ public sealed class CobraKingArena {
 
     // the climb's check: no fruit or web on the patch's arc
     public bool IsArcBlocked(float angle, float y, float extent, float arc) {
-        float radius = tuning.TrunkRadiusU + 0.05f;
+        float radius = config.TrunkRadiusU + 0.05f;
         int steps = Mathf.Max(
             1, Mathf.CeilToInt(radius * arc * Mathf.Deg2Rad / 0.7f)
         );
@@ -467,8 +544,8 @@ public sealed class CobraKingArena {
         RoughBarkZone zone = patch.AddComponent<RoughBarkZone>();
         // the bark measures angles from +z toward +x, this fight from +x
         zone.Initialize(
-            tuning.TrunkRadiusU + 0.05f, height, 90f - angle, arc,
-            tuning.RoughBarkMaterial, true, Random.Range(0, 100000)
+            config.TrunkRadiusU + 0.05f, height, 90f - angle, arc,
+            config.RoughBarkMaterial, true, Random.Range(0, 100000)
         );
         patch.transform.SetParent(rig.host, true);
     }
@@ -495,7 +572,7 @@ public sealed class CobraKingArena {
             }
             float fruitAngle = rig.AngleOf(fruit.root.transform.position);
             if (Mathf.Abs(Mathf.DeltaAngle(angle,
-                fruitAngle)) < tuning.WebFruitGapDeg) {
+                fruitAngle)) < config.WebFruitGapDeg) {
                 return true;
             }
         }
@@ -507,7 +584,7 @@ public sealed class CobraKingArena {
     // golden one is the same banana tinted gold w/ a thick gold outline
     public int AddFruit(float angle, float y, bool isGolden) {
         GameObject branch =
-            UnityEngine.Object.Instantiate(tuning.BananaBranchPrefab, rig.host);
+            UnityEngine.Object.Instantiate(config.BananaBranchPrefab, rig.host);
         PlaceBranch(branch.transform, angle, y);
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
@@ -536,7 +613,7 @@ public sealed class CobraKingArena {
     public void PlaceBranch(Transform branch, float angle, float fruitY) {
         branch.SetPositionAndRotation(
             rig.PointOnTrunk(angle, fruitY + BANANA_HANG_U,
-                tuning.BranchRadiusU),
+                config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
         );
     }
@@ -544,15 +621,15 @@ public sealed class CobraKingArena {
     // the arena's fruit looks like a watermelon: the banana model's mesh is
     // swapped, its collider & scripts stay, so grab & throw work as before
     public void ApplyWatermelon(GameObject fruit) {
-        if (tuning.WatermelonMesh == null || fruit == null) {
+        if (config.WatermelonMesh == null || fruit == null) {
             return;
         }
         foreach (MeshFilter filter in
             fruit.GetComponentsInChildren<MeshFilter>(true)) {
-            filter.sharedMesh = tuning.WatermelonMesh;
+            filter.sharedMesh = config.WatermelonMesh;
             filter.transform.localRotation = Quaternion.identity;
-            filter.transform.localScale = tuning.WatermelonScale;
-            filter.transform.localPosition = tuning.WatermelonOffset;
+            filter.transform.localScale = config.WatermelonScale;
+            filter.transform.localPosition = config.WatermelonOffset;
         }
     }
 
@@ -620,18 +697,18 @@ public sealed class CobraKingArena {
 
         GameObject rim = rig.Feedback.CreatePrimitive(
             PrimitiveType.Cylinder, "ZoneRim",
-            new Vector3(size, 0.02f, size), tuning.WarningDimColor
+            new Vector3(size, 0.02f, size), config.WarningDimColor
         );
         rim.transform.position =
-            rig.PointOnTrunk(angle, y, tuning.TrunkRadiusU + 0.04f);
+            rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.04f);
         rim.transform.rotation = facing;
 
         GameObject fill = rig.Feedback.CreatePrimitive(
             PrimitiveType.Cylinder, "ZoneFill",
-            new Vector3(0.01f, 0.03f, 0.01f), tuning.WarningColor
+            new Vector3(0.01f, 0.03f, 0.01f), config.WarningColor
         );
         fill.transform.position =
-            rig.PointOnTrunk(angle, y, tuning.TrunkRadiusU + 0.07f);
+            rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.07f);
         fill.transform.rotation = facing;
 
         int warning = word != null
@@ -663,28 +740,28 @@ public sealed class CobraKingArena {
 
         GameObject rim = rig.Feedback.CreatePrimitive(
             PrimitiveType.Cube, "StripRim",
-            new Vector3(width, length, 0.04f), tuning.WarningDimColor
+            new Vector3(width, length, 0.04f), config.WarningDimColor
         );
         rim.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, topY - length * 0.5f,
-                tuning.TrunkRadiusU + 0.04f),
+                config.TrunkRadiusU + 0.04f),
             facing
         );
         // the whole line is red from the start, it only beats faster
         GameObject fill = rig.Feedback.CreatePrimitive(
             PrimitiveType.Cube, "StripFill",
-            new Vector3(width * 0.8f, length, 0.06f), tuning.WarningColor
+            new Vector3(width * 0.8f, length, 0.06f), config.WarningColor
         );
         fill.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, topY - length * 0.5f,
-                tuning.TrunkRadiusU + 0.07f),
+                config.TrunkRadiusU + 0.07f),
             facing
         );
 
         int warning = word != null
             ? rig.hud.AddWarning(
                 rig.PointOnTrunk(angle, rig.minionLockY + 2.5f,
-                    tuning.TrunkRadiusU),
+                    config.TrunkRadiusU),
                 word
             )
             : -1;

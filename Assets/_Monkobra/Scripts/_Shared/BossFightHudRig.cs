@@ -22,7 +22,7 @@ public struct BossFightHudWarning {
 /// more than one role asks of it.
 /// </summary>
 public sealed class BossFightHudRig {
-    // Constants  #############################################################
+    // constants  #############################################################
     /// <summary>Real s a call out takes from its head to its dock.</summary>
     public const float CALL_OUT_S = CALL_AT_HEAD_S + CALL_GLIDE_S;
     // a call out's beats, real s
@@ -37,7 +37,7 @@ public sealed class BossFightHudRig {
     // Shared State  ##########################################################
     public readonly MonoBehaviour owner;
     public readonly Transform host;
-    public readonly BossFightHudTuning tuning;
+    public readonly BossFightHudConfig config;
     public BossFightHudBuilder Builder;
     public BossFightHudMotion Motion;
     public RectTransform callOutRect;
@@ -58,6 +58,11 @@ public sealed class BossFightHudRig {
     // null for an overlay canvas
     public RectTransform rootRect;
     public RectTransform healthFill;
+    // the heart left of the health bar & its count of the health left
+    public RectTransform heart;
+    public TextMeshProUGUI heartLabel;
+    public int heartHealth = -1;
+    public float heartPopLeftS;
     public TextMeshProUGUI nameLabel;
     public RectTransform speechRect;
     public TextMeshProUGUI speechLabel;
@@ -79,6 +84,16 @@ public sealed class BossFightHudRig {
     public RectTransform rewardButton;
     public float armorBadgePopS;
     // pop-in time left; unscaled s
+    // the difficulty choice after a revive  ---------------------------------
+    public GameObject modePanel;
+    public RectTransform easyButton;
+    public RectTransform normalButton;
+    public RectTransform easyRing;
+    public RectTransform normalRing;
+    public bool isModeEasy; // the picked choice, NORMAL first
+    public float modeAgeS; // real s it has been up
+    public bool isModeMoveHeld; // a sideways press not let go yet
+    public const float MODE_READY_S = 0.4f; // b4 a key may pick
     public RectTransform easyTag;
     public RectTransform normalTag;
     public Vector3 easyTagWorld;
@@ -92,10 +107,10 @@ public sealed class BossFightHudRig {
     // unscaled time a timed banner goes
     public Image flashImage;
 
-    public BossFightHudRig(MonoBehaviour owner, BossFightHudTuning tuning) {
+    public BossFightHudRig(MonoBehaviour owner, BossFightHudConfig config) {
         this.owner = owner;
         host = owner.transform;
-        this.tuning = tuning;
+        this.config = config;
     }
 
     // Public Methods  #########################################################

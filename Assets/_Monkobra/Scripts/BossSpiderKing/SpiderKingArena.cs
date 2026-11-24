@@ -7,13 +7,13 @@ using static SpiderKingRig;
 /// <summary>Builds and clears the arena: the sky web, bare branches, melons,
 /// webs, and the mode choice.</summary>
 public sealed class SpiderKingArena {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingArena(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -25,10 +25,10 @@ public sealed class SpiderKingArena {
         ClearSkyWeb();
         rig.skyDisc =
             rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder, "AirWall",
-            Vector3.one, tuning.SilkColor).transform;
+            Vector3.one, config.SilkColor).transform;
         Renderer discRenderer = rig.skyDisc.GetComponent<Renderer>();
-        if (tuning.AirWallMaterial != null) {
-            rig.skyMaterial = new Material(tuning.AirWallMaterial);
+        if (config.AirWallMaterial != null) {
+            rig.skyMaterial = new Material(config.AirWallMaterial);
             // a plain sheet, no web picture on it
             if (rig.skyMaterial.HasProperty(BASE_MAP)) {
                 rig.skyMaterial.SetTexture(BASE_MAP, null);
@@ -41,7 +41,7 @@ public sealed class SpiderKingArena {
         // a clearer patch just round the monkey, so the far sheet stays thin
         rig.skyPatch =
             rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder, "AirWallPatch",
-            Vector3.one, tuning.SilkColor).transform;
+            Vector3.one, config.SilkColor).transform;
         Renderer patchRenderer = rig.skyPatch.GetComponent<Renderer>();
         if (rig.skyMaterial != null) {
             patchRenderer.sharedMaterial = rig.skyMaterial;
@@ -70,7 +70,7 @@ public sealed class SpiderKingArena {
         if (rig.skyDisc == null || rig.monkey == null) {
             return;
         }
-        float ceilingY = rig.entryY + tuning.ArenaHeightU;
+        float ceilingY = rig.entryY + config.ArenaHeightU;
         float wallY = ceilingY + 0.7f;
         float gap = ceilingY - rig.monkey.position.y;
         float near = Mathf.Clamp01(1f - gap / SKY_SHOW_U);
@@ -127,11 +127,11 @@ public sealed class SpiderKingArena {
     // cobras, rough bark
     public void MakeArenaBare() {
         // down past the guard: the whole boss area grows only the fight's
-        rig.bareBottomY = rig.entryY - tuning.GuardDepthU - 4f;
-        rig.bareTopY = rig.entryY + tuning.ArenaHeightU + 6f;
+        rig.bareBottomY = rig.entryY - config.GuardDepthU - 4f;
+        rig.bareTopY = rig.entryY + config.ArenaHeightU + 6f;
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
-            ramp.SetExtraBossZone(rig.bareBottomY, rig.bareTopY);
+            ramp.SetExtraBossZone(rig.owner, rig.bareBottomY, rig.bareTopY);
         }
         foreach (BranchController branch in
             UnityEngine.Object.FindObjectsByType<BranchController>(
@@ -158,6 +158,18 @@ public sealed class SpiderKingArena {
             RemoveIfInArena(bark.gameObject);
         }
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
+    }
+
+    // the endless run's rush: the coming fight's range is kept bare as the
+    // tree grows toward it, as the arena will be
+    public void ReserveRushRange() {
+        RampedDifficultyManager ramp = RampedDifficultyManager.I;
+        if (ramp == null || !rig.IsRush) {
+            return;
+        }
+        float entryY = EndlessBossRush.TriggerWorldY(rig.rushEncounter);
+        ramp.SetExtraBossZone(rig.owner, entryY - config.GuardDepthU - 4f,
+            entryY + config.ArenaHeightU + 6f);
     }
 
     public void RemoveIfInArena(GameObject thing) {
@@ -189,7 +201,7 @@ public sealed class SpiderKingArena {
         }
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
-            ramp.ClearExtraBossZone();
+            ramp.ClearExtraBossZone(rig.owner);
         }
     }
 
@@ -198,12 +210,12 @@ public sealed class SpiderKingArena {
     public void SpawnMelons() {
         ClearMelons();
         float baseAngle = rig.AngleOf(rig.monkey.position);
-        for (int i = 0; i < tuning.MelonCount; i++) {
-            float angle = baseAngle + 25f + i * 360f / tuning.MelonCount
+        for (int i = 0; i < config.MelonCount; i++) {
+            float angle = baseAngle + 25f + i * 360f / config.MelonCount
                 + Random.Range(-15f, 15f);
-            float y = rig.entryY + Mathf.Lerp(1.5f, tuning.ArenaHeightU - 3f,
-                tuning.MelonCount > 1
-                    ? (i * 2 % tuning.MelonCount) / (tuning.MelonCount - 1f)
+            float y = rig.entryY + Mathf.Lerp(1.5f, config.ArenaHeightU - 3f,
+                config.MelonCount > 1
+                    ? (i * 2 % config.MelonCount) / (config.MelonCount - 1f)
                         : 0.5f);
             SpiderKingMelon melon = AddMelon(angle, y);
             rig.melons.Add(melon);
@@ -223,9 +235,9 @@ public sealed class SpiderKingArena {
     // collider & scripts stay, so the grab works as on any fruit
     public SpiderKingMelon AddMelon(float angle, float y) {
         GameObject branch =
-            UnityEngine.Object.Instantiate(tuning.BananaBranchPrefab, rig.host);
+            UnityEngine.Object.Instantiate(config.BananaBranchPrefab, rig.host);
         branch.transform.SetPositionAndRotation(
-            rig.PointOnTrunk(angle, y + BANANA_HANG_U, tuning.BranchRadiusU),
+            rig.PointOnTrunk(angle, y + BANANA_HANG_U, config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
         );
         BranchController controller = branch.GetComponent<BranchController>();
@@ -235,13 +247,13 @@ public sealed class SpiderKingArena {
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject fruit = pickup != null ? pickup.gameObject : branch;
-        if (tuning.WatermelonMesh != null) {
+        if (config.WatermelonMesh != null) {
             foreach (MeshFilter filter in
                 fruit.GetComponentsInChildren<MeshFilter>(true)) {
-                filter.sharedMesh = tuning.WatermelonMesh;
+                filter.sharedMesh = config.WatermelonMesh;
                 filter.transform.localRotation = Quaternion.identity;
-                filter.transform.localScale = tuning.WatermelonScale;
-                filter.transform.localPosition = tuning.WatermelonOffset;
+                filter.transform.localScale = config.WatermelonScale;
+                filter.transform.localPosition = config.WatermelonOffset;
             }
         }
         Collider trigger = fruit.GetComponent<Collider>();
@@ -314,7 +326,7 @@ public sealed class SpiderKingArena {
                 HideGoldenMelon();
                 rig.goldenSinceArmor++;
                 rig.nextGoldenTime = Time.time + (rig.goldenSinceArmor == 1
-                    ? GOLDEN_AFTER_ARMOR_S : tuning.GoldenIntervalS);
+                    ? GOLDEN_AFTER_ARMOR_S : config.GoldenIntervalS);
             }
             return;
         }
@@ -327,9 +339,9 @@ public sealed class SpiderKingArena {
         float side = Random.value < 0.5f ? -1f : 1f;
         float angle = rig.AngleOf(rig.monkey.position) + side * 30f;
         float y = Mathf.Clamp(rig.monkey.position.y + 3f, rig.entryY + 1f,
-            rig.entryY + tuning.ArenaHeightU - 2f);
+            rig.entryY + config.ArenaHeightU - 2f);
         rig.goldenMelon.branch.transform.SetPositionAndRotation(
-            rig.PointOnTrunk(angle, y + BANANA_HANG_U, tuning.BranchRadiusU),
+            rig.PointOnTrunk(angle, y + BANANA_HANG_U, config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
         );
         rig.goldenMelon.branch.SetActive(true);
@@ -337,19 +349,19 @@ public sealed class SpiderKingArena {
         // its twin on the other side of the monkey, a little lower
         float twinAngle = rig.AngleOf(rig.monkey.position) - side * 30f;
         float twinY = Mathf.Clamp(rig.monkey.position.y + 1.5f, rig.entryY + 1f,
-            rig.entryY + tuning.ArenaHeightU - 2f);
+            rig.entryY + config.ArenaHeightU - 2f);
         rig.goldenTwin.branch.transform.SetPositionAndRotation(
             rig.PointOnTrunk(twinAngle, twinY + BANANA_HANG_U,
-                tuning.BranchRadiusU),
+                config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - twinAngle, 0f)
         );
         rig.goldenTwin.branch.SetActive(true);
         rig.goldenTwin.root.SetActive(true);
         rig.Parry.Burst(rig.goldenTwin.root.transform.position,
-            tuning.GoldenColor, 10);
-        rig.goldenHideTime = Time.time + tuning.GoldenShowS;
+            config.GoldenColor, 10);
+        rig.goldenHideTime = Time.time + config.GoldenShowS;
         rig.Parry.Burst(rig.goldenMelon.root.transform.position,
-            tuning.GoldenColor, 10);
+            config.GoldenColor, 10);
         rig.hud.PopText("Golden watermelon!",
             rig.goldenMelon.root.transform.position,
             UIStyle.Gold);
@@ -366,12 +378,12 @@ public sealed class SpiderKingArena {
             UnityEngine.Object.Destroy(listener);
         }
         Material outline = null;
-        if (tuning.GoldenOutlineMaterial != null) {
-            outline = new Material(tuning.GoldenOutlineMaterial);
-            outline.SetColor(OUTLINE_COLOR, tuning.GoldenOutlineColor);
+        if (config.GoldenOutlineMaterial != null) {
+            outline = new Material(config.GoldenOutlineMaterial);
+            outline.SetColor(OUTLINE_COLOR, config.GoldenOutlineColor);
             outline.SetFloat(OUTLINE_WIDTH,
-                tuning.GoldenOutlineMaterial.GetFloat(OUTLINE_WIDTH)
-                    * tuning.GoldenOutlineWidthScale);
+                config.GoldenOutlineMaterial.GetFloat(OUTLINE_WIDTH)
+                    * config.GoldenOutlineWidthScale);
         }
         foreach (Renderer part in
             melon.GetComponentsInChildren<Renderer>(true)) {
@@ -379,7 +391,7 @@ public sealed class SpiderKingArena {
             if (outline != null) {
                 part.sharedMaterials = new[] { baseMaterial, outline };
             }
-            rig.Feedback.SetColor(part, tuning.GoldenColor);
+            rig.Feedback.SetColor(part, config.GoldenColor);
         }
     }
 
@@ -421,12 +433,12 @@ public sealed class SpiderKingArena {
             return;
         }
         rig.layDistanceU += movedU;
-        if (rig.layDistanceU < tuning.WebLayEveryU) {
+        if (rig.layDistanceU < config.WebLayEveryU) {
             return;
         }
         Vector3 spot =
             rig.PointOnTrunk(rig.spiderAngle, rig.spiderY,
-                tuning.TrunkRadiusU + 0.02f);
+                config.TrunkRadiusU + 0.02f);
         if (IsWebSpotFree(spot)) {
             rig.layDistanceU = 0f;
             PlaceWeb(rig.spiderAngle, rig.spiderY);
@@ -461,13 +473,13 @@ public sealed class SpiderKingArena {
 
     public bool IsWebSpotFree(Vector3 spot) {
         if (Vector3.Distance(spot,
-            rig.monkey.position) < tuning.WebMonkeyGapU) {
+            rig.monkey.position) < config.WebMonkeyGapU) {
             return false;
         }
         foreach (SpiderKingLaidWeb laid in rig.stickyWebs) {
             if (laid.web != null
                 && Vector3.Distance(laid.web.transform.position,
-                    spot) < tuning.WebGapU) {
+                    spot) < config.WebGapU) {
                 return false;
             }
         }
@@ -481,20 +493,73 @@ public sealed class SpiderKingArena {
         return true;
     }
 
-    // as the segments' spawner: the web's face looks away from the trunk
+    // as the segments' spawner: the web's face looks away from the trunk; a
+    // copy of the light template, not the 158 object prefab, as the spider
+    // lays several a second
     public void PlaceWeb(float angle, float y) {
         SpiderWebTrap web = UnityEngine.Object.Instantiate(
-            tuning.WebPrefab,
-            rig.PointOnTrunk(angle, y, tuning.TrunkRadiusU + 0.02f),
+            LaidWebTemplate(),
+            rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.02f),
             Quaternion.Euler(0f, -angle, 0f),
             rig.host
         );
         rig.stickyWebs.Add(new SpiderKingLaidWeb {
             web = web,
-            endTime = Time.time + tuning.WebLifeS,
+            endTime = Time.time + config.WebLifeS,
             restScale = web.transform.localScale,
         });
     }
+
+    // the web prefab once, kept under an inactive holder (so nothing of it
+    // runs), its strand cubes merged into 1 mesh on its root: the same look
+    // & trap in 2 objects & 1 draw instead of 158 & 157
+    private SpiderWebTrap LaidWebTemplate() {
+        if (laidWebTemplate != null) {
+            return laidWebTemplate;
+        }
+        GameObject holder = new GameObject("LaidWebTemplate");
+        holder.SetActive(false);
+        holder.transform.SetParent(rig.host, false);
+        SpiderWebTrap template = UnityEngine.Object.Instantiate(
+            config.WebPrefab, holder.transform, false);
+        Transform root = template.transform;
+        MeshFilter[] strands = root.GetComponentsInChildren<MeshFilter>(true);
+        List<CombineInstance> parts = new List<CombineInstance>();
+        Material material = null;
+        foreach (MeshFilter strand in strands) {
+            if (strand.transform == root || strand.sharedMesh == null) {
+                continue;
+            }
+            Renderer strandRenderer = strand.GetComponent<Renderer>();
+            if (material == null && strandRenderer != null) {
+                material = strandRenderer.sharedMaterial;
+            }
+            parts.Add(new CombineInstance {
+                mesh = strand.sharedMesh,
+                transform = root.worldToLocalMatrix
+                    * strand.transform.localToWorldMatrix,
+            });
+        }
+        if (parts.Count == 0) {
+            laidWebTemplate = template;
+            return laidWebTemplate;
+        }
+        Mesh merged = new Mesh { name = "LaidWebStrands" };
+        merged.CombineMeshes(parts.ToArray(), true, true);
+        foreach (MeshFilter strand in strands) {
+            if (strand.transform != root) {
+                UnityEngine.Object.DestroyImmediate(strand.gameObject);
+            }
+        }
+        root.gameObject.AddComponent<MeshFilter>().sharedMesh = merged;
+        MeshRenderer look = root.gameObject.AddComponent<MeshRenderer>();
+        look.sharedMaterial = material;
+        look.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        laidWebTemplate = template;
+        return laidWebTemplate;
+    }
+
+    private SpiderWebTrap laidWebTemplate;
 
     public bool IsWebHoldingMonkey(SpiderWebTrap web) {
         return rig.struggle != null && rig.struggle.IsTrapped
@@ -523,9 +588,9 @@ public sealed class SpiderKingArena {
             }
         }
         float angle = rig.AngleOf(rig.entryPosition);
-        float y = rig.entryY + tuning.ChoiceAboveU;
-        rig.choiceEasy = AddMelon(angle - tuning.ChoiceSideDeg, y);
-        rig.choiceNormal = AddMelon(angle + tuning.ChoiceSideDeg, y);
+        float y = rig.entryY + config.ChoiceAboveU;
+        rig.choiceEasy = AddMelon(angle - config.ChoiceSideDeg, y);
+        rig.choiceNormal = AddMelon(angle + config.ChoiceSideDeg, y);
         MakeGolden(rig.choiceNormal.root);
     }
 
@@ -564,11 +629,10 @@ public sealed class SpiderKingArena {
         }
         rig.maxHealth = rig.isEasy
             ? Mathf.Max(1,
-                Mathf.RoundToInt(tuning.WorldBalanceConfig.SpiderMaxHealth
-                * tuning.EasyHealthScale))
-            : tuning.WorldBalanceConfig.SpiderMaxHealth;
+                Mathf.RoundToInt(rig.BaseMaxHealth * config.EasyHealthScale))
+            : rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.hud.SetHealth(1f);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.lastStage = 0;
         // the parry lesson again if it was never passed
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Ready
@@ -576,7 +640,7 @@ public sealed class SpiderKingArena {
         rig.teachTimeS = 0f;
         rig.Teaching.Teach(rig.isEasy ? "EASY" : "NORMAL", "", rig.isEasy
             ? new Color(0.55f, 0.95f, 0.55f)
-            : UIStyle.Gold, tuning.ReadyS);
+            : UIStyle.Gold, config.ReadyS);
     }
 
     public static void ForgetFruits(GameObject branch) {

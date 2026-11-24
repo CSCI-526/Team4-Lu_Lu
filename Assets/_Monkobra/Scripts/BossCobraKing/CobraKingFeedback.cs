@@ -6,13 +6,13 @@ using static CobraKingRig;
 /// <summary>Height markers, spoken lines, camera focus, and the primitive and
 /// color helpers.</summary>
 public sealed class CobraKingFeedback {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
-    private readonly CobraKingTuning tuning;
+    private readonly CobraKingConfig config;
 
     public CobraKingFeedback(CobraKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -26,9 +26,9 @@ public sealed class CobraKingFeedback {
         float focus = isFighting
             ? Mathf.Clamp(
                 (rig.body.HeadPosition.y - rig.monkey.position.y)
-                    * tuning.CameraFocusShare,
+                    * config.CameraFocusShare,
                 0f,
-                tuning.MaxCameraFocusU
+                config.MaxCameraFocusU
             )
             : 0f;
         // pulled back through the fight & the crown's flight
@@ -36,7 +36,7 @@ public sealed class CobraKingFeedback {
             focus,
             rig.phase != CobraKingPhase.Waiting
                 && rig.phase != CobraKingPhase.Done
-                ? tuning.CameraDistanceScale
+                ? config.CameraDistanceScale
                 : 1f
         );
     }
@@ -58,7 +58,7 @@ public sealed class CobraKingFeedback {
                 float glow = Mathf.Lerp(0.55f, 1f, Mathf.Max(beat, progress));
                 SetColor(
                     marker.fill.GetComponent<Renderer>(),
-                    Color.Lerp(tuning.WarningDimColor, tuning.WarningColor,
+                    Color.Lerp(config.WarningDimColor, config.WarningColor,
                         glow)
                 );
                 marker.fill.localScale = new Vector3(
@@ -72,7 +72,7 @@ public sealed class CobraKingFeedback {
                         rig.PointOnTrunk(
                             marker.angle,
                             rig.minionLockY + 2.5f,
-                            tuning.TrunkRadiusU
+                            config.TrunkRadiusU
                         ),
                         progress
                     );
@@ -81,9 +81,9 @@ public sealed class CobraKingFeedback {
             }
             if (marker.isBand) {
                 marker.fill.localScale = new Vector3(
-                    (tuning.TrunkRadiusU + 0.08f) * 2f,
-                    Mathf.Max(0.01f, progress * tuning.SweepBandHalfU),
-                    (tuning.TrunkRadiusU + 0.08f) * 2f
+                    (config.TrunkRadiusU + 0.08f) * 2f,
+                    Mathf.Max(0.01f, progress * config.SweepBandHalfU),
+                    (config.TrunkRadiusU + 0.08f) * 2f
                 );
             } else {
                 float size = marker.size * Mathf.Max(0.02f, progress);
@@ -186,10 +186,10 @@ public sealed class CobraKingFeedback {
             rig.pendingKeyLine = rig.lastLine;
         }
         rig.lastLine = line;
-        rig.nextSameLineTime = Time.time + tuning.SpeechCooldownS;
+        rig.nextSameLineTime = Time.time + config.SpeechCooldownS;
         rig.heldPriority = priority;
         rig.keyLineEndTime = priority > CobraKingLinePriority.Normal
-            ? Time.time + tuning.KeyLineHoldS
+            ? Time.time + config.KeyLineHoldS
             : 0f;
         rig.hud.Say(line);
     }
@@ -214,7 +214,12 @@ public sealed class CobraKingFeedback {
         part.name = objectName;
         part.transform.SetParent(rig.host, true);
         part.transform.localScale = scale;
-        UnityEngine.Object.DestroyImmediate(part.GetComponent<Collider>());
+        // off at once & removed at the frame's end: an immediate destroy is
+        // refused when a part is made in a physics callback, eg a save's
+        // burst on the great cobra's bite
+        Collider partCollider = part.GetComponent<Collider>();
+        partCollider.enabled = false;
+        UnityEngine.Object.Destroy(partCollider);
         Renderer partRenderer = part.GetComponent<Renderer>();
         if (rig.body.PrimitiveMaterial != null) {
             partRenderer.sharedMaterial = rig.body.PrimitiveMaterial;

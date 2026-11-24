@@ -137,7 +137,7 @@ public class SpiderKingRing {
 /// more than one role asks of it.
 /// </summary>
 public sealed class SpiderKingRig {
-    // Constants  #############################################################
+    // constants  #############################################################
     public const string FRUIT_TAG = "FruitCollider";
     public const int PATH_PARTS = 14;
     public const int RING_PARTS = 20;
@@ -185,11 +185,6 @@ public sealed class SpiderKingRig {
     public const float QUICK_SHOT_WEIGHT = 0.3f;
     public const int CRESCENT_STRANDS = 3;
     public const int SIGIL_PARTS = 9;
-    // the silk gloves' swirl on, real s; its share spent flying in; how far
-    // out it starts; u
-    public const float GLOVE_REWARD_S = 1.6f;
-    public const float GLOVE_LAND_SHARE = 0.7f;
-    public const float GLOVE_SWIRL_U = 2.5f;
     public const int CRESCENT_SPOKES = 5;
     // how far a crescent's middle runs ahead of its tips; u
     public const float CRESCENT_BULGE_U = 0.9f;
@@ -205,13 +200,12 @@ public sealed class SpiderKingRig {
     public static readonly int OUTLINE_WIDTH =
         Shader.PropertyToID("_Outline_Width");
     public static readonly int COLOR = Shader.PropertyToID("_Color");
-    // the silk gloves' silver
-    public static readonly Color gloveColor = new Color(0.82f, 0.86f, 0.95f);
 
     // Shared State  ##########################################################
     public readonly MonoBehaviour owner;
     public readonly Transform host;
-    public readonly SpiderKingTuning tuning;
+    public WorldBalanceConfig worldBalanceConfig;
+    public readonly SpiderKingConfig config;
     public SpiderKingArena Arena;
     public SpiderKingMelons Melons;
     public SpiderKingMovement Movement;
@@ -237,6 +231,9 @@ public sealed class SpiderKingRig {
     // where a fly back ends
     public Quaternion entryRotation;
     public SpiderKingPhase phase = SpiderKingPhase.Waiting;
+    // the endless run's boss rush: this fight's encounter (1, 3, 5, ...), -1
+    // outside the rush
+    public int rushEncounter = -1;
     public SpiderKingMode mode = SpiderKingMode.Idle;
     public float modeTimeS;
     public SpiderKingAttack attack = SpiderKingAttack.None;
@@ -312,14 +309,11 @@ public sealed class SpiderKingRig {
     public bool isVolleySlowFirst;
     public float nextVolleyTime;
     public int lastStage;
-    // the silk gloves' swirl on: -1 when none plays
-    public float gloveRewardTimeS = -1f;
-    public bool hasGloveLanded;
-    public Transform[] gloves;
-    public Transform[] sleeves;
-    // over the arms, once the gloves are on
-    public ArmController[] gloveHands;
-    public float[] gloveSizes;
+    // for listeners such as its sounds: each attack striking (a bullet
+    // fired, a slash flying, a dash going), the spider hurt, it beaten
+    public System.Action onAttackStruck;
+    public System.Action onSpiderHit;
+    public System.Action onDefeated;
     public SpiderKingShot volleyCharge;
     // a volley's next bullet, charging
     public float callOutEndTime;
@@ -400,10 +394,10 @@ public sealed class SpiderKingRig {
     public bool isReturningToStart;
     public float defeatTimeS;
 
-    public SpiderKingRig(MonoBehaviour owner, SpiderKingTuning tuning) {
+    public SpiderKingRig(MonoBehaviour owner, SpiderKingConfig config) {
         this.owner = owner;
         host = owner.transform;
-        this.tuning = tuning;
+        this.config = config;
     }
 
     // Public Methods  #########################################################
@@ -420,26 +414,85 @@ public sealed class SpiderKingRig {
 
     // 0, 1 or 2: the three stages of the fight
     public int Stage => Mathf.Min(isEasy ? 1 : 2,
-        Rage < tuning.StageLostShares.x ? 0 : Rage < tuning.StageLostShares.y
+        Rage < config.StageLostShares.x ? 0 : Rage < config.StageLostShares.y
             ? 1 : 2);
 
-    // its chase's speed scale, 1 at full health up to lateChaseScale at none
+    // its chase's speed scale, 1 at full health up to lateChaseScale at none;
+    // an endless boss keeps up w/ the faster monkey
     public float ChaseScale => teach == SpiderKingTeachStep.Done
-        ? Mathf.Lerp(1f, tuning.LateChaseScale, Rage)
-            * (isEasy ? tuning.EasySpeedScale : 1f)
-        : 1f;
+        ? Mathf.Lerp(1f, config.LateChaseScale, Rage)
+            * (isEasy ? config.EasySpeedScale : 1f) * RushSpeedScale
+        : RushSpeedScale;
 
-    // speed scale, 1 at full health up to lateSpeedScale at none
+    // an endless boss's bullets & slashes come faster, so their gold & parry
+    // reach grow w/ them: the time to bat one back stays the same
+    public float ReachScale => teach == SpiderKingTeachStep.Done
+        ? RushSpeedScale * (isEasy ? config.EasyReachScale : 1f) : 1f;
+
+    public float WaveGoldNowU => config.WaveGoldU * ReachScale;
+
+    public float ParryReachNowU => config.ParryReachU * ReachScale;
+
+    // an endless boss's blades are wider, as the monkey is quicker to step
+    // out of their way
+    public float SlashWidthNowU => config.SlashWidthU
+        * (IsRush ? config.EndlessSlashWidthScale : 1f);
+
+    // speed scale, 1 at full health up to lateSpeedScale at none; a later
+    // boss of the endless run's rush faster still
     public float SpeedScale => teach == SpiderKingTeachStep.Done
-        ? Mathf.Lerp(1f, tuning.LateSpeedScale, Rage)
-            * (isEasy ? tuning.EasySpeedScale : 1f)
+        ? Mathf.Lerp(1f, config.LateSpeedScale, Rage)
+            * (isEasy ? config.EasySpeedScale : 1f) * RushSpeedScale
         : 1f;
 
-    // wind up & gap scale, 1 at full health down to lateTimeScale at none
+    // wind up & gap scale, 1 at full health down to lateTimeScale at none; a
+    // later boss of the endless run's rush shorter still
     public float TimeScaleNow => teach == SpiderKingTeachStep.Done
-        ? Mathf.Lerp(1f, tuning.LateTimeScale, Rage)
-            * (isEasy ? tuning.EasyTimeScale : 1f)
+        ? Mathf.Lerp(1f, config.LateTimeScale, Rage)
+            * (isEasy ? config.EasyTimeScale : 1f) * RushTimeScale
         : 1f;
+
+    /// <returns>if this fight is a boss of the endless run's rush</returns>
+    public bool IsRush => rushEncounter >= 0;
+
+    /// <returns>scale on shot, slash & dash speeds of a boss of the endless
+    /// run's rush, 1 outside it</returns>
+    public float RushSpeedScale => IsRush
+        ? EndlessBossRush.SpeedScale(rushEncounter) : 1f;
+
+    /// <returns>scale on wind ups, gaps & rests of a boss of the endless
+    /// run's rush, 1 outside it</returns>
+    public float RushTimeScale => IsRush
+        ? EndlessBossRush.TimeScale(rushEncounter) : 1f;
+
+    /// <returns>the spider's full health on normal: more for a later boss of
+    /// the endless run's rush</returns>
+    public int BaseMaxHealth => Mathf.Max(1, Mathf.RoundToInt(
+        worldBalanceConfig.SpiderMaxHealth
+            * (IsRush ? EndlessBossRush.HealthScale(rushEncounter) : 1f)));
+
+    /// <returns>climbed height the fight begins at: the config's, or this
+    /// boss's in the endless run's rush; u</returns>
+    public float TriggerClimbU => IsRush
+        ? EndlessBossRush.TriggerU(rushEncounter)
+        : worldBalanceConfig.SpiderTriggerHeightU;
+
+    /// <returns>slashes in a row now: one at a time, except in the endless
+    /// run's rush, where each later Spider King fight adds one per stage, up
+    /// to the endless most</returns>
+    public int SlashesNow {
+        get {
+            int normal = SpiderKingMovement.PerStage(config.SlashesPerStage,
+                Stage);
+            if (!IsRush) {
+                return normal;
+            }
+            int most = SpiderKingMovement.PerStage(
+                config.EndlessSlashesPerStage, Stage);
+            int later = Mathf.Max(0, (rushEncounter - 1) / 2);
+            return Mathf.Min(most, normal + later);
+        }
+    }
 
     public bool HasLiveShots => shots.Exists(s => !s.isCharging)
         || volleyLeft > 0;
@@ -451,7 +504,7 @@ public sealed class SpiderKingRig {
     public float SurfaceDistance(float angleA, float yA, float angleB,
         float yB) {
         float arcU = Mathf.DeltaAngle(angleA, angleB) * Mathf.Deg2Rad
-            * tuning.TrunkRadiusU;
+            * config.TrunkRadiusU;
         float dy = yB - yA;
         return Mathf.Sqrt(arcU * arcU + dy * dy);
     }

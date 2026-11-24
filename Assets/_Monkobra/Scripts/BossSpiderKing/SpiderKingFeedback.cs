@@ -7,13 +7,13 @@ using static SpiderKingRig;
 /// <summary>Camera, decor, primitive and color helpers, and static fight
 /// helpers.</summary>
 public sealed class SpiderKingFeedback {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingFeedback(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -28,7 +28,7 @@ public sealed class SpiderKingFeedback {
         }
         float focus =
             Mathf.Clamp((rig.spiderY - rig.monkey.position.y) * 0.3f, 0f, 3f);
-        rig.cameraFraming.SetBossFraming(focus, tuning.CameraDistanceScale);
+        rig.cameraFraming.SetBossFraming(focus, config.CameraDistanceScale);
     }
 
     // if the action is wired & went down this frame; it is shared, so it is
@@ -70,7 +70,12 @@ public sealed class SpiderKingFeedback {
     ) {
         GameObject part = GameObject.CreatePrimitive(type);
         part.name = objectName;
-        UnityEngine.Object.DestroyImmediate(part.GetComponent<Collider>());
+        // off at once & removed at the frame's end: an immediate destroy is
+        // refused when a part is made in a physics callback, eg a save's
+        // burst on the great cobra's bite
+        Collider partCollider = part.GetComponent<Collider>();
+        partCollider.enabled = false;
+        UnityEngine.Object.Destroy(partCollider);
         part.transform.SetParent(rig.host, true);
         part.transform.localScale = scale;
         Renderer partRenderer = part.GetComponent<Renderer>();
@@ -116,16 +121,18 @@ public sealed class SpiderKingFeedback {
             thickness);
     }
 
-    // a prefab copy kept only as a picture: no collider, no script
+    // a prefab copy kept only as a picture: no script, no collider; the
+    // scripts go first, as one may require its collider (SpiderWebTrap's
+    // BoxCollider), which can't be removed while it is there
     public static void MakeDecor(GameObject decor) {
-        foreach (Collider part in
-            decor.GetComponentsInChildren<Collider>(true)) {
-            UnityEngine.Object.DestroyImmediate(part);
-        }
         // at once, so none wakes up when the copy is switched on
         foreach (MonoBehaviour script in
             decor.GetComponentsInChildren<MonoBehaviour>(true)) {
             UnityEngine.Object.DestroyImmediate(script);
+        }
+        foreach (Collider part in
+            decor.GetComponentsInChildren<Collider>(true)) {
+            UnityEngine.Object.DestroyImmediate(part);
         }
     }
 
