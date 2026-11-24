@@ -69,17 +69,20 @@ todo todo add 3x fruit
 - boss fight extra bare zones are kept per boss
   (`RampedDifficultyManager.SetExtraBossZone(owner, ...)`)
 - a double-tap in a boss fight no longer throws a coconut
-- boss lessons are learned once for good (`ProgressStore`): the Cobra King's
-  first throw and the Spider King's web & slash parries, once passed in any
-  run, the endless one included, are skipped in every later fight
+- the gold armor's words show only the first time it is ever got
+  (`ProgressStore.ARMOR_INTRO`, kept across runs & modes); the boss lessons
+  are taught every fight as before
+- Spider King fight sounds, as the Cobra King's & w/ its clips
+  (`SpiderKingSfx`): a gong as it begins, a hiss as each bullet, slash & dash
+  strikes, a splat as it is hurt, a shatter & victory call as it falls
 - Spider King's slash crescents slower, 26 → 18 u/s (`slashSpeedU`)
 - Silk Gloves no longer worn on the monkey: only their effect, webs broken 2x
   faster, the win going straight to the reward panel
 - Cobra King's attack hiss plays as each attack strikes (the bite landing,
   the sweep coming round, the minions dropping), not at its warning
   (`AttackStruck`)
-- Spider King easier, its moves kept: 12 health, slower crawl (4.8 u/s) &
-  web bullets (20 u/s), longer rests (4.2 s, never under 0.4 of it), rarer
+- Spider King easier, its moves kept: 15 health, slower crawl (4.8 u/s) &
+  web bullets (20 u/s), longer rests (3.7 s, never under 0.4 of it), rarer
   dashes, at most 2 bullets a volley, a gentler late speed up, a quicker tail
   after a whiff; easy mode much softer still (0.45 health, 1.7x slower times,
   0.7x speed, 1.3x wider parry reach, `easyReachScale`)
@@ -87,6 +90,10 @@ todo todo add 3x fruit
   read from afar; their width & hit unchanged
 - Spider King starts right above the monkey, never across the trunk; while
   waiting it crawls round to stay above it
+- falling cobras much lighter, so the climb after the Cobra King no longer
+  stutters: the body tube 96 x 16 instead of 257 x 32 (about 4.6x fewer
+  vertices made again each frame), and a dormant one skips that rebuild while
+  off screen or beyond its wake range (+4 u, was twice that range)
 
 ### Deprecated
 

@@ -66,6 +66,17 @@ public class SpiderKingFightController: MonoBehaviour {
     /// <summary>raised when the reward is taken & the climb goes on</summary>
     public event System.Action FightEnded;
 
+    /// <summary>raised as each attack strikes, after its charge or wind
+    /// up: a web bullet fired, a slash flying, a dash going</summary>
+    public event System.Action AttackStruck;
+
+    /// <summary>raised each time the spider is hurt: a melon, a parried
+    /// slash</summary>
+    public event System.Action SpiderHit;
+
+    /// <summary>raised when the beaten spider starts to fall</summary>
+    public event System.Action Defeated;
+
     /// <summary>
     /// Called by <see cref="CobraSensor"/> when the great cobra catches the
     /// monkey: in the fight it is a fatal hit, taken by the armor if worn.
@@ -191,6 +202,9 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.Damage = damage;
         rig.Ending = ending;
         rig.Feedback = feedback;
+        rig.onAttackStruck = () => AttackStruck?.Invoke();
+        rig.onSpiderHit = () => SpiderHit?.Invoke();
+        rig.onDefeated = () => Defeated?.Invoke();
         // Inspector Assignment Guard  -----------------------------------------
         if (tuning.WorldBalanceConfig == null || tuning.WebPrefab == null
             || tuning.BananaBranchPrefab == null) {
@@ -507,12 +521,7 @@ public class SpiderKingFightController: MonoBehaviour {
         // spent armor; never on a revive or a reward
         rig.hud.Flash();
         // only web bullets till the first parry is done, then the fight; the
-        // first slash later teaches its own parry; a lesson passed once, in
-        // any run of either mode, is not taught again
-        rig.hasTaughtWeb |=
-            ProgressStore.HasLearned(ProgressStore.SPIDER_KING_WEB_LESSON);
-        rig.hasTaughtSlash |=
-            ProgressStore.HasLearned(ProgressStore.SPIDER_KING_SLASH_LESSON);
+        // first slash later teaches its own parry
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
             : SpiderKingTeachStep.Parry;
         teaching.Teach(tuning.BossName, "", tuning.WarnColor, 2f);

@@ -235,6 +235,7 @@ public sealed class SpiderKingEnding {
     // Win  --------------------------------------------------------------------
     public void Defeat() {
         rig.phase = SpiderKingPhase.Defeated;
+        rig.onDefeated?.Invoke();
         rig.defeatTimeS = 0f;
         rig.hud.SetHealth(0f);
         rig.hud.ClearWarnings();

@@ -121,7 +121,6 @@ public sealed class CobraKingThrows {
         }
         if (!rig.hasHit) {
             rig.hasHit = true;
-            ProgressStore.MarkLearned(ProgressStore.COBRA_KING_THROW_LESSON);
             rig.Feedback.Say(tuning.FirstHitLine);
             rig.nextGoldenTime = Time.time + tuning.GoldenFirstDelayS;
             rig.Attacks.StartRest();

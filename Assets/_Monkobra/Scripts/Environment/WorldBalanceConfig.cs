@@ -401,7 +401,7 @@ public class WorldBalanceConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
-    private int spiderMaxHealth = 12;
+    private int spiderMaxHealth = 15;
 
     [Header("Endless Boss Rush")]
     [SerializeField]

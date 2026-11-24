@@ -299,7 +299,7 @@ public class FallingCobraController: MonoBehaviour {
             || rig.state == FallingCobraState.Done || !rig.perchBound) {
             return;
         }
-        if (IsDormantAndFarFromMonkey()) {
+        if (IsDormantAndIdle()) {
             return;
         }
         branchCoil.RefreshBranchFrame();
@@ -307,19 +307,30 @@ public class FallingCobraController: MonoBehaviour {
         spine.Update();
     }
 
-    // a perched cobra far beyond its tracking range holds its last pose, so
-    // skip the spine rebuild; the margin lets any head turn finish first
-    private bool IsDormantAndFarFromMonkey() {
+    // a perched cobra holds its last pose, so skip the spine rebuild, the
+    // costly part of a cobra (its whole body mesh made again on the CPU),
+    // while it is off screen or beyond its wake & tracking range; the
+    // margin lets any head turn finish first. Waking (Update) never waits
+    // on it, and an awake cobra always rebuilds
+    private bool IsDormantAndIdle() {
         if (rig.state != FallingCobraState.Dormant || !rig.spinePoseReady
             || rig.player == null) {
             return false;
         }
+        if (rig.referenceRenderer != null && !rig.referenceRenderer.isVisible) {
+            return true;
+        }
         float rangeU = Mathf.Max(tuning.HeadTrackingRangeU,
             tuning.TriggerDistanceU, rig.reachWakeDistanceU);
-        float gateU = (rangeU + tuning.HeadTrackingExitPaddingU) * 2f;
+        float gateU = rangeU + tuning.HeadTrackingExitPaddingU
+            + IDLE_MARGIN_U;
         return (rig.player.position - transform.position).sqrMagnitude
             > gateU * gateU;
     }
+
+    // past the wake & tracking range, how far a perched cobra still
+    // rebuilds its pose, so a head turn ends smoothly; u
+    private const float IDLE_MARGIN_U = 4f;
 
     private void Start() {
         GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYER_TAG);

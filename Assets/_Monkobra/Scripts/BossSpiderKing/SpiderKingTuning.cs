@@ -292,7 +292,7 @@ public sealed class SpiderKingTuning {
     [Tooltip("seconds between attacks at full health")]
     [SerializeField]
     [Min(0.3f)]
-    private float restS = 4.2f;
+    private float restS = 3.7f;
     [Tooltip("share of that rest left at no health: weaker, faster")]
     [SerializeField]
     [Range(0.1f, 1f)]

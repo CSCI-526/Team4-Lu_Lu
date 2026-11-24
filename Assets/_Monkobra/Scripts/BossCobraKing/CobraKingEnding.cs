@@ -186,8 +186,6 @@ public sealed class CobraKingEnding {
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(1f);
-        // the throw lesson again, unless learned
-        rig.Attacks.StartIntro();
         rig.hasShield = true;
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7364950612938475623}
   - component: {fileID: 8455061723049586734}
   - component: {fileID: 1546172834150697845}
+  - component: {fileID: 2958164037261849173}
   m_Layer: 0
   m_Name: SpiderKingFight
   m_TagString: Untagged
@@ -135,7 +136,7 @@ MonoBehaviour:
     rushSpeedU: 9
     stalkDistanceU: 4.8
     dashStartU: 5
-    restS: 4.2
+    restS: 3.7
     minRestShare: 0.4
     webShotWindUpS: 0.8
     webShotSpeedU: 20
@@ -201,3 +202,24 @@ MonoBehaviour:
     warnColor: {r: 0.95, g: 0.2, b: 0.15, a: 1}
     silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
     goldenColor: {r: 1, g: 0.8, b: 0.15, a: 1}
+--- !u!114 &2958164037261849173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5182736450918273641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf29393f90034a8a8af86d75e7ec6949, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SpiderKingSfx
+  entrance: {fileID: 8300000, guid: 078a087aa163458a9dde73f3c47d71e6, type: 3}
+  attack: {fileID: 8300000, guid: 6e4f1b13303a43ddb108cc6b3e7267d7, type: 3}
+  spiderHit: {fileID: 8300000, guid: 77de4b4be7074bf38a9252289a86cf1a, type: 3}
+  shatter: {fileID: 8300000, guid: baffc27557c64d468d30a1dbbb3744c9, type: 3}
+  victory: {fileID: 8300000, guid: 0b7eb70e3d394ecf8aabdf491d609ad0, type: 3}
+  volume: 0.55
+  attackVolumeShare: 0.7
+  victoryDelayS: 1
+  pitchJitter: 0.06

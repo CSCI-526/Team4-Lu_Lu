@@ -706,13 +706,12 @@ public class CobraKingFightController: MonoBehaviour {
         // the monkey starts in the gold armor, a spare life against the
         // king; the golden banana brings it back once lost
         rig.hasShield = true;
-        // the armor's words only at the first fight, & only till the throw
-        // is learned; a later boss of the endless run's rush, or one met
-        // after the lesson, only names itself
-        bool isLearned =
-            ProgressStore.HasLearned(ProgressStore.COBRA_KING_THROW_LESSON);
-        attacks.StartIntro();
-        if (rig.rushEncounter <= 0 && !isLearned) {
+        // the armor's words only the first time the player ever gets it, in
+        // any run of either mode; after that, or at a later boss of the
+        // endless run's rush, the king only names itself
+        if (rig.rushEncounter <= 0
+            && !ProgressStore.HasSeen(ProgressStore.ARMOR_INTRO)) {
+            ProgressStore.MarkSeen(ProgressStore.ARMOR_INTRO);
             rig.hud.ShowBannerFor(tuning.ArmorIntroTitle,
                 tuning.ArmorIntroLine, tuning.GoldenColor, 0f);
         } else {

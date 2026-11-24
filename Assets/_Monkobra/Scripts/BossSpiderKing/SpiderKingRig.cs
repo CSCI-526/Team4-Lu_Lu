@@ -308,6 +308,11 @@ public sealed class SpiderKingRig {
     public bool isVolleySlowFirst;
     public float nextVolleyTime;
     public int lastStage;
+    // for listeners such as its sounds: each attack striking (a bullet
+    // fired, a slash flying, a dash going), the spider hurt, it beaten
+    public System.Action onAttackStruck;
+    public System.Action onSpiderHit;
+    public System.Action onDefeated;
     public SpiderKingShot volleyCharge;
     // a volley's next bullet, charging
     public float callOutEndTime;

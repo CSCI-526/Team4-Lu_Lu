@@ -39,19 +39,6 @@ public sealed class CobraKingAttacks {
         }
     }
 
-    // a new try waits for the first hit, the throw lesson; once learned in
-    // an earlier fight or run, the fight starts w/ a rest as after a hit
-    public void StartIntro() {
-        if (!ProgressStore.HasLearned(ProgressStore.COBRA_KING_THROW_LESSON)) {
-            rig.loop = CobraKingLoop.Intro;
-            return;
-        }
-        rig.hasThrown = true;
-        rig.hasHit = true;
-        rig.nextGoldenTime = Time.time + tuning.GoldenFirstDelayS;
-        StartRest();
-    }
-
     public void StartRest() {
         rig.loop = CobraKingLoop.Rest;
         rig.loopTimeS = (rig.isEasy

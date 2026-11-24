@@ -960,7 +960,7 @@ MonoBehaviour:
   spiderTriggerHeightU: 1000
   spiderZoneEndU: 1050
   spiderJumpHeightU: 950
-  spiderMaxHealth: 12
+  spiderMaxHealth: 15
   endlessBossIntervalU: 300
   endlessSpeedScale: 1
   endlessHealthStep: 0.2
