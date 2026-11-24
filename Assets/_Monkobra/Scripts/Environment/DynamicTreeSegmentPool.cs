@@ -111,11 +111,11 @@ public class DynamicTreeSegmentPool: MonoBehaviour {
 
         // found once, then cached for every frame; needed now, the first
         // stack is laid out around the player
-        GameObject player = GameObject.FindGameObjectWithTag(PLAYER_TAG);
+        GameObject player = MonkeyController.GetRootOrNull();
         if (player == null) {
             Debug.LogWarning(
-                $"DynamicTreeSegmentPool:\tno object tagged {PLAYER_TAG} in "
-                    + "scene, pool idle",
+                "DynamicTreeSegmentPool:\tno MonkeyController in scene, "
+                    + "pool idle",
                 this
             );
             enabled = false;
@@ -152,7 +152,6 @@ public class DynamicTreeSegmentPool: MonoBehaviour {
     }
 
     // constants  ##############################################################
-    private const string PLAYER_TAG = "Player";
 
     // private members  ########################################################
     private Transform target; // cached player, set in Start

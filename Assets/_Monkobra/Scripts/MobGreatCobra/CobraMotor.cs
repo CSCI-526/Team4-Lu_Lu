@@ -267,9 +267,7 @@ public class CobraMotor: MonoBehaviour {
 
     private void Update() {
         if (rig.player == null) {
-            GameObject playerObject = GameObject.FindGameObjectWithTag(
-                "Player"
-            );
+            GameObject playerObject = MonkeyController.GetRootOrNull();
 
             if (playerObject != null) {
                 rig.player = playerObject.transform;

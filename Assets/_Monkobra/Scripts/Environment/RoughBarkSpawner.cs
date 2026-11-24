@@ -73,7 +73,7 @@ public class RoughBarkSpawner: MonoBehaviour {
     }
 
     private void Start() {
-        GameObject target = GameObject.FindGameObjectWithTag(PLAYER_TAG);
+        GameObject target = MonkeyController.GetRootOrNull();
         player = target != null ? target.transform : null;
         if (player == null) {
             Debug.LogError("RoughBarkSpawner:\tmissing player", this);
@@ -109,7 +109,6 @@ public class RoughBarkSpawner: MonoBehaviour {
     }
 
     // constants  ##############################################################
-    private const string PLAYER_TAG = "Player";
 
     // private members  ########################################################
     private readonly HashSet<TreeSegmentController> segments = new();

@@ -125,7 +125,6 @@ public class CobraProximityVignette: MonoBehaviour {
     }
 
     // constants  ##############################################################
-    private const string PLAYER_TAG = "Player";
     private const int SPRITE_SIZE = 256;
 
     // inner radius of the dark edge, 0 centre, 1 mid-edge of the screen
@@ -179,8 +178,7 @@ public class CobraProximityVignette: MonoBehaviour {
         }
 
         if (player == null) {
-            GameObject playerObject =
-                GameObject.FindGameObjectWithTag(PLAYER_TAG);
+            GameObject playerObject = MonkeyController.GetRootOrNull();
             if (playerObject == null) {
                 return false;
             }

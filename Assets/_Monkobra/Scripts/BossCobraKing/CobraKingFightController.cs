@@ -158,7 +158,7 @@ public class CobraKingFightController: MonoBehaviour {
             return false;
         }
         if (rig.monkey == null) {
-            MonkeyController found = FindFirstObjectByType<MonkeyController>();
+            MonkeyController found = MonkeyController.I;
             if (found == null || found.transform.parent == null) {
                 return false;
             }
@@ -602,8 +602,7 @@ public class CobraKingFightController: MonoBehaviour {
     // the endless start: the armor worn, hazards on, the fight already over;
     // no arena, no FightStarted, and never marks the king beaten
     private void StartAsDone() {
-        MonkeyController monkeyController =
-            FindFirstObjectByType<MonkeyController>();
+        MonkeyController monkeyController = MonkeyController.I;
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(
@@ -637,8 +636,7 @@ public class CobraKingFightController: MonoBehaviour {
     }
 
     private void BeginFight() {
-        MonkeyController monkeyController =
-            FindFirstObjectByType<MonkeyController>();
+        MonkeyController monkeyController = MonkeyController.I;
         if (monkeyController == null
             || monkeyController.transform.parent == null) {
             Debug.LogError(

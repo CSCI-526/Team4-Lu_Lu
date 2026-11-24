@@ -437,7 +437,7 @@ public class SpiderKingFightController: MonoBehaviour {
         if (ramp == null || ramp.CurrentPlayerClimbedYDistance < seenFromU) {
             return;
         }
-        MonkeyController found = FindFirstObjectByType<MonkeyController>();
+        MonkeyController found = MonkeyController.I;
         if (found == null || found.transform.parent == null) {
             return;
         }
@@ -451,7 +451,7 @@ public class SpiderKingFightController: MonoBehaviour {
     }
 
     private void BeginFight() {
-        rig.monkeyController = FindFirstObjectByType<MonkeyController>();
+        rig.monkeyController = MonkeyController.I;
         if (rig.monkeyController == null
             || rig.monkeyController.transform.parent == null) {
             Debug.LogError(

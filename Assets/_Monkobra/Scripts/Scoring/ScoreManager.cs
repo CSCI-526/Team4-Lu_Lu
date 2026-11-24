@@ -144,7 +144,7 @@ public class ScoreManager: MonoBehaviour {
         if (leapController != null) {
             leapController.Begun += OnPineappleLeapBegun;
         }
-        coconutManager = FindFirstObjectByType<CoconutManager>();
+        coconutManager = CoconutManager.I;
         if (coconutManager != null) {
             coconutManager.Frozen += OnCobraFrozen;
         }

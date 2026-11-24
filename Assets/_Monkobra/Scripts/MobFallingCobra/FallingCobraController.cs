@@ -274,7 +274,7 @@ public class FallingCobraController: MonoBehaviour {
         rig.body.position = root;
         transform.position = root;
         if (rig.player == null) {
-            GameObject monkey = GameObject.FindGameObjectWithTag(PLAYER_TAG);
+            GameObject monkey = MonkeyController.GetRootOrNull();
             if (monkey != null) {
                 rig.player = monkey.transform;
             }
@@ -333,7 +333,7 @@ public class FallingCobraController: MonoBehaviour {
     private const float IDLE_MARGIN_U = 4f;
 
     private void Start() {
-        GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYER_TAG);
+        GameObject playerObject = MonkeyController.GetRootOrNull();
         if (playerObject != null) {
             rig.player = playerObject.transform;
             rig.playerArms =

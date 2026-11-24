@@ -55,7 +55,7 @@ public class CameraRoughBarkShake: MonoBehaviour {
 
     // the monkey lives in another prefab, so it is read after every Awake ran
     private void Start() {
-        monkey = FindFirstObjectByType<MonkeyController>();
+        monkey = MonkeyController.I;
         if (monkey == null) {
             Debug.LogWarning(
                 "CameraRoughBarkShake:\tfail to find MonkeyController, "
