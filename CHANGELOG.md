@@ -67,8 +67,7 @@ todo todo add 3x fruit
   exactly its normal one (Spider King 15 health, no faster), each later
   fight of the same king harder (+40% health, 12% shorter times, 10% faster
   per round; Cobra King 12 / 17 / 22 / 26, Spider King 15 / 21 / 27 / 33)
-- Spider King normal play: slashes one at a time, the curve kept by volleys,
-  shorter rests and faster late attacks (`lateSpeedScale` 1.4)
+- Spider King normal play: slashes one at a time, the curve kept by volleys
 - both kings' revive: a plain difficulty card, EASY or NORMAL, time stopped,
   picked w/ A / D and Space or a tap, instead of choice fruit and the armor
   words
