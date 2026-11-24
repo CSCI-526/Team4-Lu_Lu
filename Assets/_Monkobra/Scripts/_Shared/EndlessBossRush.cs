@@ -29,13 +29,14 @@ public static class EndlessBossRush {
         }
     }
 
-    /// <returns>if either king's fight holds the monkey in its arena now
-    /// </returns>
+    /// <returns>if either king's fight is on now, from its start to its
+    /// reward, not once won & the climb goes on; in a normal or an endless
+    /// run alike</returns>
     public static bool IsFightOn {
         get {
             CobraKingFightController cobraKing = CobraKingFightController.I;
             SpiderKingFightController spiderKing = SpiderKingFightController.I;
-            return (cobraKing != null && cobraKing.IsInArena)
+            return (cobraKing != null && cobraKing.IsFighting)
                 || (spiderKing != null && spiderKing.IsInArena);
         }
     }

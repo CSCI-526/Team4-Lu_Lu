@@ -51,17 +51,42 @@ todo todo add 3x fruit
   Spider King taking turns, each later one harder (more health, shorter wind
   ups, warnings & rests, faster spider shots); the spider's rows of 2 or 3
   slashes only come in its later endless fights; the monkey and the great
-  cobra climb 2x as fast all run, fights included, so every endless boss has
-  1.3x health, 0.8x wind ups, warnings & rests, and the Spider King 1.4x
-  crawl, shot, slash & dash speed w/ its gold & parry reach grown to match and
-  1.3x wider blades; each coming arena is kept bare and marked
+  cobra keep their normal speed (tunable, `endlessSpeedScale`); each coming
+  arena is kept bare and marked
 - Spider King normal play: slashes one at a time, the curve kept by volleys,
   shorter rests and faster late attacks (`lateSpeedScale` 1.4)
 - both kings' revive: a plain difficulty card, EASY or NORMAL, time stopped,
   picked w/ A / D and Space or a tap, instead of choice fruit and the armor
   words
+- Spider King's laid webs are copies of one light template, the web prefab's
+  157 strand cubes merged into 1 mesh, so a fight laying several a second no
+  longer stutters
+- boss fight effect parts drop their collider at the frame's end, never
+  immediately, so a burst made in a physics callback (the armor's save on the
+  great cobra's bite) no longer logs an error each time
+- both kings' fight controllers skip unhooking roles they never made (a
+  duplicate, or a script reload in Play), so no ArgumentException then
 - boss fight extra bare zones are kept per boss
   (`RampedDifficultyManager.SetExtraBossZone(owner, ...)`)
+- a double-tap in a boss fight no longer throws a coconut
+- boss lessons are learned once for good (`ProgressStore`): the Cobra King's
+  first throw and the Spider King's web & slash parries, once passed in any
+  run, the endless one included, are skipped in every later fight
+- Spider King's slash crescents slower, 26 → 18 u/s (`slashSpeedU`)
+- Silk Gloves no longer worn on the monkey: only their effect, webs broken 2x
+  faster, the win going straight to the reward panel
+- Cobra King's attack hiss plays as each attack strikes (the bite landing,
+  the sweep coming round, the minions dropping), not at its warning
+  (`AttackStruck`)
+- Spider King easier, its moves kept: 12 health, slower crawl (4.8 u/s) &
+  web bullets (20 u/s), longer rests (4.2 s, never under 0.4 of it), rarer
+  dashes, at most 2 bullets a volley, a gentler late speed up, a quicker tail
+  after a whiff; easy mode much softer still (0.45 health, 1.7x slower times,
+  0.7x speed, 1.3x wider parry reach, `easyReachScale`)
+- Spider King's slash crescents drawn thicker & flickering red-white, so they
+  read from afar; their width & hit unchanged
+- Spider King starts right above the monkey, never across the trunk; while
+  waiting it crawls round to stay above it
 
 ### Deprecated
 

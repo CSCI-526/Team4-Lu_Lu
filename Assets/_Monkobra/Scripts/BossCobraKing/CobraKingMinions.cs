@@ -72,7 +72,6 @@ public sealed class CobraKingMinions {
                 order++;
             }
         }
-        rig.onAttackWarned?.Invoke();
     }
 
     public void UpdateMinionStream() {
@@ -101,8 +100,13 @@ public sealed class CobraKingMinions {
     }
 
     public void UpdateMinions() {
+        float lastWaveTimeS = rig.waveTimeS;
         rig.waveTimeS += Time.deltaTime;
         float warn = tuning.MinionWarnS * rig.WarnScale;
+        // its sound as the first minion drops, not at the warning
+        if (lastWaveTimeS < warn && rig.waveTimeS >= warn) {
+            rig.onAttackStruck?.Invoke();
+        }
         if (rig.waveTimeS < warn) {
             rig.Feedback.UpdateMarkers(rig.waveTimeS / warn, false, true);
         }

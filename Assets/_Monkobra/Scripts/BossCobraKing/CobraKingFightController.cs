@@ -45,6 +45,10 @@ public class CobraKingFightController: MonoBehaviour {
     public bool IsInArena => rig.phase != CobraKingPhase.Waiting
         && !rig.isEndlessStart;
 
+    /// <returns>if the fight is on, from its start to its reward; not once
+    /// done & the climb goes on</returns>
+    public bool IsFighting => IsInArena && rig.phase != CobraKingPhase.Done;
+
     /// <summary>
     /// Builds a small look-alike of the Cobra King for the trunk height
     /// marker at the fight's height, its face toward the parent's -z.
@@ -75,9 +79,10 @@ public class CobraKingFightController: MonoBehaviour {
     /// <summary>raised when a revive restarts the fight</summary>
     public event System.Action Revived;
 
-    /// <summary>raised as each warned attack begins: a bite, a tail sweep,
-    /// a minion wave; its warning shows from now</summary>
-    public event System.Action AttackWarned;
+    /// <summary>raised as each warned attack strikes, after its warning: a
+    /// bite's head landing, a tail sweep coming round, a minion wave's first
+    /// drop</summary>
+    public event System.Action AttackStruck;
 
     /// <summary>raised each time a thrown banana hits the crown & hurts the
     /// king</summary>
@@ -374,7 +379,7 @@ public class CobraKingFightController: MonoBehaviour {
 
     private void Awake() {
         rig = new CobraKingRig(this, tuning);
-        rig.onAttackWarned = () => AttackWarned?.Invoke();
+        rig.onAttackStruck = () => AttackStruck?.Invoke();
         rig.onJewelHit = () => JewelHit?.Invoke();
         rig.onShattered = () => KingShattered?.Invoke();
         arena = new CobraKingArena(rig);
@@ -476,7 +481,11 @@ public class CobraKingFightController: MonoBehaviour {
         if (I == this) {
             I = null;
         }
-        TreeSegmentController.BranchesGenerated -= arena.OnBranchesGenerated;
+        // a duplicate or a domain reload in Play leaves no roles to unhook
+        if (arena != null) {
+            TreeSegmentController.BranchesGenerated -=
+                arena.OnBranchesGenerated;
+        }
     }
 
     // the actions are shared with other scripts, so they are only switched
@@ -487,6 +496,9 @@ public class CobraKingFightController: MonoBehaviour {
     }
 
     private void OnDisable() {
+        if (rig == null) {
+            return;
+        }
         if (
             rig.phase == CobraKingPhase.Finishing
             || rig.phase == CobraKingPhase.ReviveOffer
@@ -694,9 +706,13 @@ public class CobraKingFightController: MonoBehaviour {
         // the monkey starts in the gold armor, a spare life against the
         // king; the golden banana brings it back once lost
         rig.hasShield = true;
-        // the armor's words only at the first fight; a later boss of the
-        // endless run's rush only names itself
-        if (rig.rushEncounter <= 0) {
+        // the armor's words only at the first fight, & only till the throw
+        // is learned; a later boss of the endless run's rush, or one met
+        // after the lesson, only names itself
+        bool isLearned =
+            ProgressStore.HasLearned(ProgressStore.COBRA_KING_THROW_LESSON);
+        attacks.StartIntro();
+        if (rig.rushEncounter <= 0 && !isLearned) {
             rig.hud.ShowBannerFor(tuning.ArmorIntroTitle,
                 tuning.ArmorIntroLine, tuning.GoldenColor, 0f);
         } else {

@@ -234,6 +234,7 @@ public sealed class SpiderKingParry {
         ParryEffect(rig.Shots.CrescentPoint(crescent, 0f));
         if (!rig.hasTaughtSlash) {
             rig.hasTaughtSlash = true;
+            ProgressStore.MarkLearned(ProgressStore.SPIDER_KING_SLASH_LESSON);
             rig.hud.HideBanner();
         }
     }
@@ -504,6 +505,7 @@ public sealed class SpiderKingParry {
         ParryEffect(at);
         if (!rig.hasTaughtWeb) {
             rig.hasTaughtWeb = true;
+            ProgressStore.MarkLearned(ProgressStore.SPIDER_KING_WEB_LESSON);
             rig.hud.HideBanner();
         }
         // the lesson passed: the fight is on once it breaks out

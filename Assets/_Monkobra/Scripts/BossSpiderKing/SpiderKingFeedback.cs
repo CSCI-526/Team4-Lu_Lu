@@ -70,7 +70,12 @@ public sealed class SpiderKingFeedback {
     ) {
         GameObject part = GameObject.CreatePrimitive(type);
         part.name = objectName;
-        UnityEngine.Object.DestroyImmediate(part.GetComponent<Collider>());
+        // off at once & removed at the frame's end: an immediate destroy is
+        // refused when a part is made in a physics callback, eg a save's
+        // burst on the great cobra's bite
+        Collider partCollider = part.GetComponent<Collider>();
+        partCollider.enabled = false;
+        UnityEngine.Object.Destroy(partCollider);
         part.transform.SetParent(rig.host, true);
         part.transform.localScale = scale;
         Renderer partRenderer = part.GetComponent<Renderer>();

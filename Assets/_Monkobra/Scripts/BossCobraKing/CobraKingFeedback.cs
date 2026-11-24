@@ -214,7 +214,12 @@ public sealed class CobraKingFeedback {
         part.name = objectName;
         part.transform.SetParent(rig.host, true);
         part.transform.localScale = scale;
-        UnityEngine.Object.DestroyImmediate(part.GetComponent<Collider>());
+        // off at once & removed at the frame's end: an immediate destroy is
+        // refused when a part is made in a physics callback, eg a save's
+        // burst on the great cobra's bite
+        Collider partCollider = part.GetComponent<Collider>();
+        partCollider.enabled = false;
+        UnityEngine.Object.Destroy(partCollider);
         Renderer partRenderer = part.GetComponent<Renderer>();
         if (rig.body.PrimitiveMaterial != null) {
             partRenderer.sharedMaterial = rig.body.PrimitiveMaterial;

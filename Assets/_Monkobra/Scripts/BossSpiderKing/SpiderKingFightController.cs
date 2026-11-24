@@ -260,18 +260,29 @@ public class SpiderKingFightController: MonoBehaviour {
         if (I == this) {
             I = null;
         }
-        TreeSegmentController.BranchesGenerated -= arena.OnBranchesGenerated;
+        // a duplicate or a domain reload in Play leaves no roles to unhook
+        if (arena != null) {
+            TreeSegmentController.BranchesGenerated -=
+                arena.OnBranchesGenerated;
+        }
     }
 
     // the actions are shared, so only switched on here, never off
     private void OnEnable() {
         tuning.ConfirmAction?.action.Enable();
         tuning.GiveUpAction?.action.Enable();
+        // a domain reload in Play keeps the component but not its roles
+        if (parry == null) {
+            return;
+        }
         RenderPipelineManager.beginCameraRendering += parry.OnBeginCamera;
         RenderPipelineManager.endCameraRendering += parry.OnEndCamera;
     }
 
     private void OnDisable() {
+        if (parry == null || rig == null) {
+            return;
+        }
         RenderPipelineManager.beginCameraRendering -= parry.OnBeginCamera;
         RenderPipelineManager.endCameraRendering -= parry.OnEndCamera;
         rig.shotEndTime = 0f;
@@ -306,10 +317,6 @@ public class SpiderKingFightController: MonoBehaviour {
                 BeginFight();
             }
             return;
-        }
-        // the won gloves keep shining on the climb after
-        if (rig.phase == SpiderKingPhase.Done) {
-            ending.UpdateGloveShine();
         }
         if (!game.IsRunLive || rig.monkey == null
             || rig.phase == SpiderKingPhase.Done
@@ -384,11 +391,23 @@ public class SpiderKingFightController: MonoBehaviour {
 
     // from just below the spider jump height on, the Spider King already
     // waits idle above its trigger height, so the player sees the fight ahead
+    // the monkey the waiting spider keeps above, once it is seen
+    private Transform previewMonkey;
+    // how fast the waiting spider crawls round after it; deg/s
+    private const float PREVIEW_TURN_DEG_PER_S = 120f;
+
     private void UpdatePreview(GameController game) {
         if (tuning.IsTestAtStart) {
             return;
         }
         if (rig.body.IsBuilt) {
+            // the waiting spider crawls round to stay right above the
+            // climbing monkey, so the fight starts w/ it in plain view
+            if (previewMonkey != null) {
+                rig.previewAngle = Mathf.MoveTowardsAngle(rig.previewAngle,
+                    rig.AngleOf(previewMonkey.position) + START_TURN_DEG,
+                    PREVIEW_TURN_DEG_PER_S * Time.deltaTime);
+            }
             rig.body.Place(rig.previewAngle, rig.previewY, 0f);
             return;
         }
@@ -409,6 +428,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         rig.trunkCenter = found.transform.parent.position;
+        previewMonkey = found.transform;
         rig.previewAngle =
             rig.AngleOf(found.transform.position) + START_TURN_DEG;
         rig.previewY = ramp.PlayerGameStartYPosition
@@ -466,9 +486,8 @@ public class SpiderKingFightController: MonoBehaviour {
             );
         }
 
-        rig.startAngle = rig.body.IsBuilt
-            ? rig.previewAngle
-            : rig.AngleOf(rig.monkey.position) + START_TURN_DEG;
+        // always right above the monkey as it enters, never across the trunk
+        rig.startAngle = rig.AngleOf(rig.monkey.position) + START_TURN_DEG;
         rig.startY = rig.entryY + START_ABOVE_U;
         rig.spiderAngle = rig.startAngle;
         rig.spiderY = rig.startY;
@@ -488,7 +507,12 @@ public class SpiderKingFightController: MonoBehaviour {
         // spent armor; never on a revive or a reward
         rig.hud.Flash();
         // only web bullets till the first parry is done, then the fight; the
-        // first slash later teaches its own parry
+        // first slash later teaches its own parry; a lesson passed once, in
+        // any run of either mode, is not taught again
+        rig.hasTaughtWeb |=
+            ProgressStore.HasLearned(ProgressStore.SPIDER_KING_WEB_LESSON);
+        rig.hasTaughtSlash |=
+            ProgressStore.HasLearned(ProgressStore.SPIDER_KING_SLASH_LESSON);
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
             : SpiderKingTeachStep.Parry;
         teaching.Teach(tuning.BossName, "", tuning.WarnColor, 2f);

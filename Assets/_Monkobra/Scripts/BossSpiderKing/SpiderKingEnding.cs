@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using static SpiderKingRig;
 
-/// <summary>The finisher, the revive offer, the defeat, and the glove reward
+/// <summary>The finisher, the revive offer, the defeat, and the reward
 /// flow.</summary>
 public sealed class SpiderKingEnding {
     // Private Members  ########################################################
@@ -262,190 +262,14 @@ public sealed class SpiderKingEnding {
             rig.struggle.EscapeGainScale = tuning.GlovesEscapeGainScale;
         }
         rig.hud.HideBossBar();
-        // as the Cobra King's armor: the silk gloves swirl in & snap onto
-        // the monkey's hands, then the reward panel; worn already (a later
-        // fight of the endless run's rush), straight to the panel
-        if (HasGloves()) {
-            rig.gloveRewardTimeS = -1f;
-            rig.hud.ShowRewardPanel(tuning.WinTitle, tuning.WinLine,
-                tuning.WinDetailLine);
-        } else {
-            StartGloveReward();
-        }
-    }
-
-    // Silk Gloves  ------------------------------------------------------------
-    // two plain silver silk gloves, as simple as the armor, spiral in from
-    // around the monkey, shrinking as they near, snap onto its hands w/ a
-    // silk burst, a sleeve grows up each arm, they pulse bright, & stay on
-    // for good, softly shining as the armor does
-    public void StartGloveReward() {
-        ArmController[] hands =
-            UnityEngine.Object.FindObjectsByType<ArmController>(
-            FindObjectsSortMode.None);
-        rig.gloveHands = hands;
-        rig.gloves = new Transform[hands.Length];
-        rig.sleeves = new Transform[hands.Length];
-        rig.gloveSizes = new float[hands.Length];
-        for (int i = 0; i < hands.Length; i++) {
-            Collider grip = hands[i].GetComponentInChildren<Collider>(true);
-            float size = grip != null
-                ? Mathf.Max(grip.bounds.extents.x, grip.bounds.extents.y,
-                    grip.bounds.extents.z) * 2.3f
-                : 0.45f;
-            rig.gloveSizes[i] = Mathf.Clamp(size * 1.5f, 0.4f, 1.3f);
-            rig.gloves[i] = BuildGlove();
-        }
-        rig.gloveRewardTimeS = 0f;
-        rig.hasGloveLanded = false;
-    }
-
-    // a plain sleeve over the whole arm, from the glove to the shoulder, a
-    // bit wider than the arm; it lives on the arm's stretched cube, so it
-    // stretches w/ it
-    public Transform BuildSleeve(Transform arm) {
-        Transform sleeve = new GameObject("SilkSleeve").transform;
-        sleeve.SetParent(arm, false);
-        AddSleevePart(sleeve, PrimitiveType.Cube, Vector3.zero,
-            new Vector3(1.3f, 1.3f, 1.02f), gloveColor);
-        return sleeve;
-    }
-
-    public void AddSleevePart(Transform sleeve, PrimitiveType type,
-        Vector3 at, Vector3 scale, Color color) {
-        Transform part =
-            rig.Feedback.CreatePrimitive(type, "SleevePart", Vector3.one,
-            color).transform;
-        part.SetParent(sleeve, false);
-        part.localPosition = at;
-        part.localRotation = Quaternion.identity;
-        part.localScale = scale;
-    }
-
-    public Transform BuildGlove() {
-        Transform glove = new GameObject("SilkGlove").transform;
-        glove.SetParent(rig.host, false);
-        AddSleevePart(glove, PrimitiveType.Sphere, Vector3.zero,
-            new Vector3(1f, 0.85f, 1f), gloveColor);
-        return glove;
-    }
-
-    // the swirl in, then the panel; time runs till the panel shows
-    public void UpdateGloveReward() {
-        rig.gloveRewardTimeS += Time.unscaledDeltaTime;
-        float t = Mathf.Clamp01(rig.gloveRewardTimeS / GLOVE_REWARD_S);
-        Vector3 outward = rig.monkey.position - rig.trunkCenter;
-        outward.y = 0f;
-        outward = outward.sqrMagnitude > 0.001f ? outward.normalized
-            : Vector3.forward;
-        Vector3 side = Vector3.Cross(Vector3.up, outward);
-        for (int i = 0; i < rig.gloves.Length; i++) {
-            Transform glove = rig.gloves[i];
-            Transform hand = rig.gloveHands[i] != null
-                ? rig.gloveHands[i].transform
-                : null;
-            if (glove == null || hand == null) {
-                continue;
-            }
-            float size = rig.gloveSizes[i];
-            if (t < GLOVE_LAND_SHARE) {
-                float fly = t / GLOVE_LAND_SHARE;
-                float ease = 1f - Mathf.Pow(1f - fly, 3f);
-                float radius = Mathf.Lerp(GLOVE_SWIRL_U, 0f, ease);
-                float spin = (i * 180f + fly * 540f) * Mathf.Deg2Rad;
-                glove.position = hand.position
-                    + (outward * Mathf.Cos(spin) + side * Mathf.Sin(spin))
-                        * radius
-                    + Vector3.up * radius * 0.7f;
-                glove.rotation = Quaternion.LookRotation(outward, Vector3.up)
-                    * Quaternion.Euler(0f, fly * 720f, 0f);
-                glove.localScale = Vector3.one * size * Mathf.Lerp(1.8f, 1f,
-                    ease);
-                continue;
-            }
-            if (!rig.hasGloveLanded) {
-                // on: held by the hand from now on, for good, & its sleeve
-                // grows up the arm
-                glove.SetParent(hand, false);
-                glove.localPosition = Vector3.zero;
-                glove.localRotation = Quaternion.identity;
-                Transform arm = rig.gloveHands[i].ArmVisual;
-                if (arm != null) {
-                    rig.sleeves[i] = BuildSleeve(arm);
-                }
-            }
-            // the sleeve grows from the hand end up to the shoulder
-            if (rig.sleeves[i] != null) {
-                float grow = Mathf.Clamp01((t - GLOVE_LAND_SHARE) / 0.15f);
-                grow = 1f - (1f - grow) * (1f - grow);
-                rig.sleeves[i].localScale = new Vector3(1f, 1f,
-                    Mathf.Max(0.01f, grow));
-                rig.sleeves[i].localPosition = new Vector3(0f, 0f,
-                    -0.5f + 0.5f * grow);
-            }
-            float pulse = Mathf.Sin((t - GLOVE_LAND_SHARE)
-                / (1f - GLOVE_LAND_SHARE) * Mathf.PI);
-            SetWorldScale(glove, size * (1f + 0.35f * pulse));
-        }
-        if (!rig.hasGloveLanded && t >= GLOVE_LAND_SHARE) {
-            rig.hasGloveLanded = true;
-            foreach (Transform glove in rig.gloves) {
-                if (glove != null) {
-                    rig.Parry.Burst(glove.position, tuning.SilkColor, 12);
-                    rig.Parry.Burst(glove.position, tuning.GoldenColor, 6);
-                }
-            }
-        }
-        rig.Parry.UpdateSparks();
-        UpdateGloveShine();
-        if (t >= 1f) {
-            rig.gloveRewardTimeS = -1f;
-            rig.hud.ShowRewardPanel(tuning.WinTitle, tuning.WinLine,
-                tuning.WinDetailLine);
-        }
-    }
-
-    // the gloves & sleeves shine softly, as the armor does
-    public void UpdateGloveShine() {
-        if (rig.gloves == null) {
-            return;
-        }
-        float shine = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f);
-        Color color = Color.Lerp(gloveColor, Color.white, shine * 0.35f);
-        for (int i = 0; i < rig.gloves.Length; i++) {
-            TintAll(rig.gloves[i], color);
-            if (rig.sleeves != null) {
-                TintAll(rig.sleeves[i], color);
-            }
-        }
-    }
-
-    public void TintAll(Transform root, Color color) {
-        if (root == null) {
-            return;
-        }
-        foreach (Renderer part in root.GetComponentsInChildren<Renderer>()) {
-            rig.Feedback.SetColor(part, color);
-        }
-    }
-
-    // a world size kept whatever the hand's own scale
-    public static void SetWorldScale(Transform target, float size) {
-        Transform parent = target.parent;
-        Vector3 lossy = parent != null ? parent.lossyScale : Vector3.one;
-        target.localScale = new Vector3(
-            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.x)),
-            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.y)),
-            size / Mathf.Max(0.0001f, Mathf.Abs(lossy.z)));
+        // the gloves are only their effect, nothing worn: straight to the
+        // reward panel
+        rig.hud.ShowRewardPanel(tuning.WinTitle, tuning.WinLine,
+            tuning.WinDetailLine);
     }
 
     // time stops on the reward panel till the player goes on
     public void UpdateRewardPause(GameController game) {
-        // the gloves swirl on first, time running
-        if (rig.gloveRewardTimeS >= 0f) {
-            UpdateGloveReward();
-            return;
-        }
         Time.timeScale = 0f;
         if (game.IsPaused) {
             return;
@@ -456,18 +280,6 @@ public sealed class SpiderKingEnding {
             && SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
             ContinueAfterReward();
         }
-    }
-
-    private bool HasGloves() {
-        if (rig.gloves == null) {
-            return false;
-        }
-        foreach (Transform glove in rig.gloves) {
-            if (glove != null) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void ContinueAfterReward() {
@@ -507,7 +319,7 @@ public sealed class SpiderKingEnding {
 
     // Endless Boss Rush  ------------------------------------------------------
     // the spider waits again two bosses on, the Cobra King's in b/t, harder;
-    // the gloves stay on
+    // the gloves' effect stays on
     public void ArmNextRush() {
         rig.rushEncounter += 2;
         rig.phase = SpiderKingPhase.Waiting;

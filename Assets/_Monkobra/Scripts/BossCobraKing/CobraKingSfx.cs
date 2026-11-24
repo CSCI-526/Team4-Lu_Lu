@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// The Cobra King fight's sound effects: a gong & hiss as it begins, a
-/// rising hiss before each warned attack, a clang when
+/// hiss as each warned attack strikes, a clang when
 /// the gold armor takes a hit, a watermelon bursting as a thrown fruit hits
 /// the crown, the beaten king shattering, and a short victory call a moment
 /// later.
@@ -28,7 +28,8 @@ public class CobraKingSfx: MonoBehaviour {
     private AudioClip entrance;
 
     [SerializeField]
-    [Tooltip("before each bite, tail sweep & minion wave")]
+    [Tooltip("as each bite, tail sweep & minion wave strikes, after its "
+        + "warning")]
     private AudioClip attackWarn;
 
     [SerializeField]
@@ -90,7 +91,7 @@ public class CobraKingSfx: MonoBehaviour {
             return;
         }
         fight.FightStarted += OnFightStarted;
-        fight.AttackWarned += OnAttackWarned;
+        fight.AttackStruck += OnAttackStruck;
         fight.ArmorAbsorbed += OnArmorAbsorbed;
         fight.JewelHit += OnJewelHit;
         fight.KingShattered += OnKingShattered;
@@ -101,7 +102,7 @@ public class CobraKingSfx: MonoBehaviour {
             return;
         }
         fight.FightStarted -= OnFightStarted;
-        fight.AttackWarned -= OnAttackWarned;
+        fight.AttackStruck -= OnAttackStruck;
         fight.ArmorAbsorbed -= OnArmorAbsorbed;
         fight.JewelHit -= OnJewelHit;
         fight.KingShattered -= OnKingShattered;
@@ -133,7 +134,7 @@ public class CobraKingSfx: MonoBehaviour {
         Play(entrance);
     }
 
-    private void OnAttackWarned() {
+    private void OnAttackStruck() {
         Play(attackWarn);
     }
 

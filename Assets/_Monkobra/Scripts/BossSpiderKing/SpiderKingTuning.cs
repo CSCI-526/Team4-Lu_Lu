@@ -24,6 +24,7 @@ public sealed class SpiderKingTuning {
     public float EasyHealthScale => easyHealthScale;
     public float EasyTimeScale => easyTimeScale;
     public float EasySpeedScale => easySpeedScale;
+    public float EasyReachScale => easyReachScale;
     public Material AirWallMaterial => airWallMaterial;
     public Material GoldenOutlineMaterial => goldenOutlineMaterial;
     public Color GoldenOutlineColor => goldenOutlineColor;
@@ -160,15 +161,20 @@ public sealed class SpiderKingTuning {
     [Tooltip("easy mode: share of the health")]
     [SerializeField]
     [Range(0.1f, 1f)]
-    private float easyHealthScale = 0.6f;
+    private float easyHealthScale = 0.45f;
     [Tooltip("easy mode: scale on rests, wind ups & gaps, > 1 is slower")]
     [SerializeField]
     [Min(1f)]
-    private float easyTimeScale = 1.4f;
+    private float easyTimeScale = 1.7f;
     [Tooltip("easy mode: scale on the speed of its attacks & crawl")]
     [SerializeField]
     [Range(0.3f, 1f)]
-    private float easySpeedScale = 0.85f;
+    private float easySpeedScale = 0.7f;
+    [Tooltip("easy mode: scale on a bullet's & a slash's gold & parry reach, "
+        + "> 1 is an easier parry")]
+    [SerializeField]
+    [Min(1f)]
+    private float easyReachScale = 1.3f;
     [Tooltip("a see-through lit material, eg the spider web's, copied for the "
         + "arena's top")]
     [SerializeField]
@@ -268,7 +274,7 @@ public sealed class SpiderKingTuning {
     [Tooltip("crawl speed after the monkey; u/s")]
     [SerializeField]
     [Min(0.1f)]
-    private float stalkSpeedU = 5.5f;
+    private float stalkSpeedU = 4.8f;
     [Tooltip("speed it rushes at to get in the camera's view, so its charge "
         + "can be seen; u/s")]
     [SerializeField]
@@ -286,11 +292,11 @@ public sealed class SpiderKingTuning {
     [Tooltip("seconds between attacks at full health")]
     [SerializeField]
     [Min(0.3f)]
-    private float restS = 3.2f;
+    private float restS = 4.2f;
     [Tooltip("share of that rest left at no health: weaker, faster")]
     [SerializeField]
     [Range(0.1f, 1f)]
-    private float minRestShare = 0.28f;
+    private float minRestShare = 0.4f;
     [Header("Web Wave")]
     [Tooltip("the charge b4 a web wave: the spider rears up, its body swells "
         + "& a white orb gathers at its head; s")]
@@ -301,12 +307,12 @@ public sealed class SpiderKingTuning {
         + "only be parried, never dodged; u/s")]
     [SerializeField]
     [Min(1f)]
-    private float webShotSpeedU = 24f;
+    private float webShotSpeedU = 20f;
     [Header("Dash")]
     [Tooltip("seconds after a dash b4 the next one")]
     [SerializeField]
     [Min(0f)]
-    private float dashCooldownS = 3.2f;
+    private float dashCooldownS = 4.2f;
     [Tooltip("wind up of the dash: the legs rear up & a red lane shows its "
         + "way on the bark; s")]
     [SerializeField]
@@ -338,7 +344,7 @@ public sealed class SpiderKingTuning {
     [Tooltip("web bullets fired after one charge in stages 1, 2 & 3: in the "
         + "later ones a volley, each to bat back")]
     [SerializeField]
-    private Vector3Int webShotsPerStage = new Vector3Int(1, 2, 3);
+    private Vector3Int webShotsPerStage = new Vector3Int(1, 2, 2);
     [Tooltip("slashes in a row in stages 1, 2 & 3; one at a time, a row of "
         + "them only in the endless run's later fights")]
     [SerializeField]
@@ -351,7 +357,7 @@ public sealed class SpiderKingTuning {
         + "the monkey is quicker to step out of its way")]
     [SerializeField]
     [Min(1f)]
-    private float endlessSlashWidthScale = 1.3f;
+    private float endlessSlashWidthScale = 1f;
     [Tooltip("the long gap b/t two bullets of a volley; s")]
     [SerializeField]
     [Min(0.05f)]
@@ -364,21 +370,21 @@ public sealed class SpiderKingTuning {
         + "crawl & dash, lerped from 1 as its health goes")]
     [SerializeField]
     [Min(1f)]
-    private float lateSpeedScale = 1.4f;
+    private float lateSpeedScale = 1.25f;
     [Tooltip("at the last stage: scale on its chase & circling only, lerped "
         + "from 1 as its health goes")]
     [SerializeField]
     [Min(1f)]
-    private float lateChaseScale = 1.08f;
+    private float lateChaseScale = 1.04f;
     [Tooltip("at the last stage: scale on wind ups & gaps, lerped from 1")]
     [SerializeField]
     [Range(0.3f, 1f)]
-    private float lateTimeScale = 0.75f;
+    private float lateTimeScale = 0.85f;
     [Tooltip("seconds b/t dashes at the last stage, lerped from "
         + "dashCooldownS")]
     [SerializeField]
     [Min(0f)]
-    private float lateDashCooldownS = 1.5f;
+    private float lateDashCooldownS = 2.4f;
     [Header("Slash")]
     [Tooltip("it never slashes from closer than this; u")]
     [SerializeField]
@@ -406,7 +412,7 @@ public sealed class SpiderKingTuning {
     [Tooltip("speed of a crescent along the bark; u/s")]
     [SerializeField]
     [Min(1f)]
-    private float slashSpeedU = 26f;
+    private float slashSpeedU = 18f;
     [Tooltip("width of a crescent across its way; u")]
     [SerializeField]
     [Min(0.5f)]
@@ -452,7 +458,7 @@ public sealed class SpiderKingTuning {
         + "parry readies the tail at once; real s")]
     [SerializeField]
     [Min(0f)]
-    private float tailRecoverS = 0.55f;
+    private float tailRecoverS = 0.45f;
     [Tooltip("the wave turns gold this close to the monkey: the moment to "
         + "double tap; u")]
     [SerializeField]

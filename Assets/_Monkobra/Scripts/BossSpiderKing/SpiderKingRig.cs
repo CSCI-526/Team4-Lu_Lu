@@ -185,11 +185,6 @@ public sealed class SpiderKingRig {
     public const float QUICK_SHOT_WEIGHT = 0.3f;
     public const int CRESCENT_STRANDS = 3;
     public const int SIGIL_PARTS = 9;
-    // the silk gloves' swirl on, real s; its share spent flying in; how far
-    // out it starts; u
-    public const float GLOVE_REWARD_S = 1.6f;
-    public const float GLOVE_LAND_SHARE = 0.7f;
-    public const float GLOVE_SWIRL_U = 2.5f;
     public const int CRESCENT_SPOKES = 5;
     // how far a crescent's middle runs ahead of its tips; u
     public const float CRESCENT_BULGE_U = 0.9f;
@@ -205,8 +200,6 @@ public sealed class SpiderKingRig {
     public static readonly int OUTLINE_WIDTH =
         Shader.PropertyToID("_Outline_Width");
     public static readonly int COLOR = Shader.PropertyToID("_Color");
-    // the silk gloves' silver
-    public static readonly Color gloveColor = new Color(0.82f, 0.86f, 0.95f);
 
     // Shared State  ##########################################################
     public readonly MonoBehaviour owner;
@@ -315,14 +308,6 @@ public sealed class SpiderKingRig {
     public bool isVolleySlowFirst;
     public float nextVolleyTime;
     public int lastStage;
-    // the silk gloves' swirl on: -1 when none plays
-    public float gloveRewardTimeS = -1f;
-    public bool hasGloveLanded;
-    public Transform[] gloves;
-    public Transform[] sleeves;
-    // over the arms, once the gloves are on
-    public ArmController[] gloveHands;
-    public float[] gloveSizes;
     public SpiderKingShot volleyCharge;
     // a volley's next bullet, charging
     public float callOutEndTime;
@@ -436,7 +421,7 @@ public sealed class SpiderKingRig {
     // an endless boss's bullets & slashes come faster, so their gold & parry
     // reach grow w/ them: the time to bat one back stays the same
     public float ReachScale => teach == SpiderKingTeachStep.Done
-        ? RushSpeedScale : 1f;
+        ? RushSpeedScale * (isEasy ? tuning.EasyReachScale : 1f) : 1f;
 
     public float WaveGoldNowU => tuning.WaveGoldU * ReachScale;
 

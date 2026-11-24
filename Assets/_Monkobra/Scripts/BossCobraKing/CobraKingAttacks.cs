@@ -39,6 +39,19 @@ public sealed class CobraKingAttacks {
         }
     }
 
+    // a new try waits for the first hit, the throw lesson; once learned in
+    // an earlier fight or run, the fight starts w/ a rest as after a hit
+    public void StartIntro() {
+        if (!ProgressStore.HasLearned(ProgressStore.COBRA_KING_THROW_LESSON)) {
+            rig.loop = CobraKingLoop.Intro;
+            return;
+        }
+        rig.hasThrown = true;
+        rig.hasHit = true;
+        rig.nextGoldenTime = Time.time + tuning.GoldenFirstDelayS;
+        StartRest();
+    }
+
     public void StartRest() {
         rig.loop = CobraKingLoop.Rest;
         rig.loopTimeS = (rig.isEasy
@@ -119,7 +132,6 @@ public sealed class CobraKingAttacks {
         rig.Arena.AddTrunkZone(rig.lockAngle, rig.lockY,
             tuning.BiteRadiusU * 2f, "BITE!", true);
         rig.biteStarted = false;
-        rig.onAttackWarned?.Invoke();
     }
 
     // the strike starts once the head is free, its wind-up filling the rest
@@ -141,6 +153,8 @@ public sealed class CobraKingAttacks {
             );
             Vector3 spot = rig.biteSpot;
             rig.body.StartStrike(spot, windUp, () => {
+                // its sound as the head lands, not at the warning
+                rig.onAttackStruck?.Invoke();
                 if ((rig.monkey.position
                     - spot).magnitude < tuning.BiteRadiusU) {
                     LethalHit();
@@ -176,7 +190,6 @@ public sealed class CobraKingAttacks {
             isBand = true
         });
         rig.tailHit = false;
-        rig.onAttackWarned?.Invoke();
     }
 
     // the band's sign follows the monkey round the trunk, so it stays in view
@@ -195,6 +208,8 @@ public sealed class CobraKingAttacks {
         }
         rig.Feedback.ClearAttackMarkers();
         if (rig.tail == null) {
+            // its sound as the tail comes round, not at the warning
+            rig.onAttackStruck?.Invoke();
             rig.tail = new Transform[tuning.TailBeadCount];
             for (int i = 0; i < tuning.TailBeadCount; i++) {
                 rig.tail[i] = rig.Feedback.CreatePrimitive(
