@@ -6,7 +6,7 @@ using static FallingCobraMath;
 /// <summary>The path the head swims down the bark, and the sampling of it that
 /// places every ring behind the head.</summary>
 public sealed class FallingCobraSwimTrail {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
     private readonly FallingCobraTuning tuning;
 

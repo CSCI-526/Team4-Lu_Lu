@@ -6,7 +6,7 @@ using static CobraKingRig;
 /// <summary>Height markers, spoken lines, camera focus, and the primitive and
 /// color helpers.</summary>
 public sealed class CobraKingFeedback {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingTuning tuning;
 

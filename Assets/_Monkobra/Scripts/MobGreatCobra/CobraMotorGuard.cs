@@ -4,7 +4,7 @@ using static CobraMotorRig;
 /// <summary>The boss arena guard: the held height and the peeking
 /// head.</summary>
 public sealed class CobraMotorGuard {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
     private readonly CobraMotorTuning tuning;
 

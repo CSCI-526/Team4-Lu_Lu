@@ -257,7 +257,7 @@ public class JungleBackdrop: MonoBehaviour {
         Apply(climbedU);
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private static readonly int ZENITH_ID = Shader.PropertyToID("_BackdropSkyZenith");
     private static readonly int HORIZON_ID = Shader.PropertyToID("_BackdropSkyHorizon");
     private static readonly int HAZE_COLOR_ID = Shader.PropertyToID("_BackdropHazeColor");
@@ -336,7 +336,7 @@ public class JungleBackdrop: MonoBehaviour {
     // puffs scattered through a band high over the start, real heights, so
     // the monkey climbs up past them
     private void AddClouds(System.Random random) {
-        var puffs = new List<Vector4>(clouds);
+        List<Vector4> puffs = new(clouds);
         for (int i = 0; i < clouds; i++) {
             float distance = Mathf.Lerp(cloudReachU.x, cloudReachU.y, (float)random.NextDouble());
             float climbed = Mathf.Lerp(cloudBandClimbedU.x, cloudBandClimbedU.y, (float)random.NextDouble());
@@ -351,8 +351,8 @@ public class JungleBackdrop: MonoBehaviour {
 
     // flocks circling at about the camera's height, a loose V each
     private void AddBirds(System.Random random) {
-        var paths = new List<Vector4>();
-        var flapSpans = new List<Vector2>();
+        List<Vector4> paths = new();
+        List<Vector2> flapSpans = new();
         for (int f = 0; f < flocks; f++) {
             float radius = Mathf.Lerp(flockReachU.x, flockReachU.y, (float)random.NextDouble());
             float angle = (float)random.NextDouble() * Mathf.PI * 2f;

@@ -7,7 +7,7 @@ using static BossFightHudRig;
 /// <summary>Moves and fades the HUD each frame: the call out, warnings, flash,
 /// damage pops, speech, and panel animations.</summary>
 public sealed class BossFightHudMotion {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly BossFightHudRig rig;
     private readonly BossFightHudTuning tuning;
 

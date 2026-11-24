@@ -6,7 +6,7 @@ using static CobraKingRig;
 /// <summary>Builds and clears the arena: branches, fruit, webs, rough bark, and
 /// the trunk markers.</summary>
 public sealed class CobraKingArena {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingTuning tuning;
 

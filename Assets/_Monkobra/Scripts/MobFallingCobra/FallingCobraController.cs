@@ -80,7 +80,7 @@ public class FallingCobraController: MonoBehaviour {
     [SerializeField]
     private FallingCobraTuning tuning = new();
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private FallingCobraRig rig;
     private FallingCobraHeadMesh headMesh;
     private FallingCobraBranchCoil branchCoil;

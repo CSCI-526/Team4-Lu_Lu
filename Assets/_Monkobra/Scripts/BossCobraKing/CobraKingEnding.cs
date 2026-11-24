@@ -6,7 +6,7 @@ using static CobraKingRig;
 /// <summary>The finisher, the loss, the revive offer, the victory, and the
 /// reward flow.</summary>
 public sealed class CobraKingEnding {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingTuning tuning;
     private readonly System.Action onRevived;

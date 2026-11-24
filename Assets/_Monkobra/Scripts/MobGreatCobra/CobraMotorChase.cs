@@ -4,7 +4,7 @@ using static CobraMotorRig;
 /// <summary>The climb speed of the chase, the head raise near the monkey, and
 /// the exit boost.</summary>
 public sealed class CobraMotorChase {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
     private readonly CobraMotorTuning tuning;
     private readonly System.Action onChaseStarted;

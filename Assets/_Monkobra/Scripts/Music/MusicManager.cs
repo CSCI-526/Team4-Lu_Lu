@@ -112,7 +112,7 @@ public class MusicManager: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private AudioSource climbSource;
     private AudioSource bossSource;
 

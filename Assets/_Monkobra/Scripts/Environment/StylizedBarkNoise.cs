@@ -65,7 +65,7 @@ public static class StylizedBarkNoise {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private static readonly int MOSS_SCALE_ID = Shader.PropertyToID("_MossScale");
     private static readonly int MOSS_STRETCH_ID =
         Shader.PropertyToID("_MossStretch");

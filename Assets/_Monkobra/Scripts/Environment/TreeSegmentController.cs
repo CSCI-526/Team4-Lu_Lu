@@ -117,7 +117,7 @@ public class TreeSegmentController: MonoBehaviour {
 
         if (worldBalanceConfig == null) {
             Debug.LogWarning(
-                "TreeSegmentController:	"
+                "TreeSegmentController:\t"
                     + "must assign Inspector Field: worldBalanceConfig",
                 this
             );

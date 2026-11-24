@@ -7,7 +7,7 @@ using static SpiderKingRig;
 /// <summary>The finisher, the revive offer, the defeat, and the reward
 /// flow.</summary>
 public sealed class SpiderKingEnding {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
     private readonly System.Action onRevived;

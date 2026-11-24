@@ -6,7 +6,7 @@ using static SpiderKingRig;
 
 /// <summary>The melons the monkey throws at the spider.</summary>
 public sealed class SpiderKingMelons {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

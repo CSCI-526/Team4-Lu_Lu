@@ -69,6 +69,6 @@ public class MenuSelectionKeeper: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private bool wasPressed;
 }

@@ -7,7 +7,7 @@ using static SpiderKingRig;
 /// <summary>Builds and clears the arena: the sky web, bare branches, melons,
 /// webs, and the mode choice.</summary>
 public sealed class SpiderKingArena {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

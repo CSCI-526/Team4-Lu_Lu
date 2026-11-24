@@ -4,7 +4,7 @@ using static CobraMotorRig;
 /// <summary>Lays the body along the coil, styles it, and poses the cartoon
 /// head.</summary>
 public sealed class CobraMotorCoil {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
     private readonly CobraMotorTuning tuning;
     private static readonly int BASE_COLOR_ID =

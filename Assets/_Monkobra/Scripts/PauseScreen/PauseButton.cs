@@ -48,7 +48,7 @@ public class PauseButton: MonoBehaviour {
         }
     }
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     private void OnClick() {
         // a selected button would take the next Space (the grab) as a confirm
         if (EventSystem.current != null) {
@@ -73,7 +73,7 @@ public class PauseButton: MonoBehaviour {
         group.blocksRaycasts = isShown;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private Button button;
     private CanvasGroup group;
     private GameController game;

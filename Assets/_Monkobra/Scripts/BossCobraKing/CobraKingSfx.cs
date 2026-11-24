@@ -108,7 +108,7 @@ public class CobraKingSfx: MonoBehaviour {
         fight.KingShattered -= OnKingShattered;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     // sounds at once; the oldest is cut off by one more
     private const int VOICES = 5;
 

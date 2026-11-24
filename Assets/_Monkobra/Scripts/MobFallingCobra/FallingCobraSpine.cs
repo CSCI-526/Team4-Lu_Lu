@@ -7,7 +7,7 @@ using static FallingCobraMath;
 /// in named steps that hand their results forward through one reused frame
 /// state.</summary>
 public sealed class FallingCobraSpine {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
     private readonly FallingCobraTuning tuning;
     private sealed class FrameState {

@@ -110,7 +110,7 @@ public class StylizedBranchArt: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private const int LENGTH_RINGS = 14;
     private const int SIDES = 10;
 

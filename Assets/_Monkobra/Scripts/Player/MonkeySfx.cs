@@ -220,7 +220,7 @@ public class MonkeySfx: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     // sounds at once; the oldest is cut off by one more
     private const int VOICES = 6;
 

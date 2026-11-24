@@ -7,7 +7,7 @@ using static BossFightHudRig;
 /// <summary>Builds the HUD elements in code: the quiet bar, the revive panel,
 /// the reward panel, the armor badge, and the UI factory helpers.</summary>
 public sealed class BossFightHudBuilder {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly BossFightHudRig rig;
     private readonly BossFightHudTuning tuning;
     private readonly System.Action onWatchAdClicked;

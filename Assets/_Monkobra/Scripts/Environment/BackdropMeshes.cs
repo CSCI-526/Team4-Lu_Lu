@@ -36,10 +36,10 @@ public class BackdropMeshes {
     /// draws each puff: per cloud x, y, z its centre, w its width.
     /// </summary>
     public static Mesh Clouds(List<Vector4> clouds, System.Random random) {
-        var centres = new List<Vector3>();
-        var corners = new List<Vector2>();
-        var sizeSeeds = new List<Vector2>();
-        var quads = new List<int>();
+        List<Vector3> centres = new();
+        List<Vector2> corners = new();
+        List<Vector2> sizeSeeds = new();
+        List<int> quads = new();
         foreach (Vector4 cloud in clouds) {
             int start = centres.Count;
             float seed = (float)random.NextDouble() * 100f;
@@ -72,10 +72,10 @@ public class BackdropMeshes {
             new Vector3(0f, 0f, 0.35f), new Vector3(0f, 0f, -0.25f),
             new Vector3(-0.5f, 0f, -0.12f), new Vector3(0.5f, 0f, -0.12f),
         };
-        var positions = new List<Vector3>();
-        var pathUvs = new List<Vector4>();
-        var flapUvs = new List<Vector2>();
-        var wings = new List<int>();
+        List<Vector3> positions = new();
+        List<Vector4> pathUvs = new();
+        List<Vector2> flapUvs = new();
+        List<int> wings = new();
         for (int b = 0; b < paths.Count; b++) {
             int start = positions.Count;
             foreach (Vector3 point in shape) {
@@ -168,7 +168,7 @@ public class BackdropMeshes {
         return mesh;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     // bounds of a mesh the shader moves about, never culled
     private const float HUGE_U = 100000f;
 

@@ -22,7 +22,7 @@ public struct BossFightHudWarning {
 /// more than one role asks of it.
 /// </summary>
 public sealed class BossFightHudRig {
-    // Constants  #############################################################
+    // constants  #############################################################
     /// <summary>Real s a call out takes from its head to its dock.</summary>
     public const float CALL_OUT_S = CALL_AT_HEAD_S + CALL_GLIDE_S;
     // a call out's beats, real s

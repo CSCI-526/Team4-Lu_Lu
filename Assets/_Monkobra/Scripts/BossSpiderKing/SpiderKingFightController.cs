@@ -166,7 +166,7 @@ public class SpiderKingFightController: MonoBehaviour {
     [SerializeField]
     private SpiderKingTuning tuning = new();
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private SpiderKingRig rig;
     private SpiderKingArena arena;
     private SpiderKingMelons melons;

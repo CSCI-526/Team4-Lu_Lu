@@ -161,7 +161,7 @@ public static partial class UIStyleBuilder {
             RectTransform button = FindSceneRect("PauseButton");
             RectTransform coconut = FindSceneRect("CoconutHUD");
             if (button == null) {
-                Debug.LogError("UIStyleBuilder:	no PauseButton in the scene");
+                Debug.LogError("UIStyleBuilder:\tno PauseButton in the scene");
                 return false;
             }
             button.anchorMin = button.anchorMax = Vector2.one;

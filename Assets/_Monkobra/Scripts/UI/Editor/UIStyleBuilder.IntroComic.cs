@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// small Skip <c>MenuButton</c>.
 /// </summary>
 public static partial class UIStyleBuilder {
-    // public members  #########################################################
+    // Public Members  #########################################################
     // the olive the see-through Panel plate shows over the comic's dry ground,
     // opaque so every panel's caption matches
     internal static readonly Color IntroCaptionPlate =

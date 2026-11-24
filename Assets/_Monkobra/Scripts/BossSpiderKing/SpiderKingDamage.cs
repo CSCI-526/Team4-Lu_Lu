@@ -6,7 +6,7 @@ using static SpiderKingRig;
 
 /// <summary>Hits, throw-offs, touch warnings, and the armor spent.</summary>
 public sealed class SpiderKingDamage {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

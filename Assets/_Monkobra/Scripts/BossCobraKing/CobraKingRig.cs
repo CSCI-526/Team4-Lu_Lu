@@ -97,7 +97,7 @@ public struct CobraKingMinion {
 /// more than one role asks of it.
 /// </summary>
 public sealed class CobraKingRig {
-    // Constants  #############################################################
+    // constants  #############################################################
     public const string FRUIT_TAG = "FruitCollider";
     // the banana hangs about this far below its branch root; u
     public const float BANANA_HANG_U = 1f;

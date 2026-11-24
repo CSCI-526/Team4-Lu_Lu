@@ -6,7 +6,7 @@ using static CobraKingRig;
 /// <summary>The shield ring, its dots, and the golden banana that renews the
 /// armor.</summary>
 public sealed class CobraKingArmor {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingTuning tuning;
 

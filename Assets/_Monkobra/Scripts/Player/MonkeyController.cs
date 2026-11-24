@@ -187,7 +187,7 @@ public class MonkeyController: MonoBehaviour {
 
         if (playerBalanceConfig == null) {
             Debug.LogWarning(
-                "MonkeyController:	must assign Inspector Field: "
+                "MonkeyController:\tmust assign Inspector Field: "
                     + "playerBalanceConfig",
                 this
             );

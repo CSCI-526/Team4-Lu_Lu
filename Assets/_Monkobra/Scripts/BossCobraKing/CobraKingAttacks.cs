@@ -6,7 +6,7 @@ using static CobraKingRig;
 /// <summary>The fight loop and the king's attacks: bite, sweep, push, and the
 /// warnings before each.</summary>
 public sealed class CobraKingAttacks {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingTuning tuning;
 

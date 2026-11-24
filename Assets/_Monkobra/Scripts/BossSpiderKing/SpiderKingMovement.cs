@@ -7,7 +7,7 @@ using static SpiderKingRig;
 /// <summary>Moves the spider: idle, stalk, prowl, rush, cocoon, the stages, and
 /// the tail.</summary>
 public sealed class SpiderKingMovement {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

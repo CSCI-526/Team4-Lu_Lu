@@ -48,7 +48,7 @@ public static class AnalyticsMetrics {
         return GetInfo(metric).HasHeight;
     }
 
-    // nested types  ###########################################################
+    // Nested Types  ###########################################################
     private readonly struct Info {
         public readonly string Title;
         public readonly bool HasHeight;

@@ -7,7 +7,7 @@ using static SpiderKingRig;
 /// <summary>The parry, the clash effects, the parry camera, and the time
 /// scale.</summary>
 public sealed class SpiderKingParry {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

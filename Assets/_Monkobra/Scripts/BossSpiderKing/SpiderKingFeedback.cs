@@ -7,7 +7,7 @@ using static SpiderKingRig;
 /// <summary>Camera, decor, primitive and color helpers, and static fight
 /// helpers.</summary>
 public sealed class SpiderKingFeedback {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

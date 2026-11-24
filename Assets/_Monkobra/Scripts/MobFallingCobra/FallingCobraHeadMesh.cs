@@ -6,7 +6,7 @@ using static FallingCobraMath;
 /// <summary>Builds the rigid head and the animated body mesh a falling cobra
 /// shows.</summary>
 public sealed class FallingCobraHeadMesh {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
     private readonly FallingCobraTuning tuning;
 

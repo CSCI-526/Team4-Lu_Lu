@@ -107,7 +107,7 @@ public class SpiderKingSfx: MonoBehaviour {
         fight.Defeated -= OnDefeated;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     // sounds at once; the oldest is cut off by one more
     private const int VOICES = 5;
 

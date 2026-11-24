@@ -6,7 +6,7 @@ using static FallingCobraMath;
 /// <summary>Tracking eyes and the hit contacts that follow the visible
 /// snake.</summary>
 public sealed class FallingCobraEyes {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
     private readonly FallingCobraTuning tuning;
     private readonly System.Action<Collider> onHeadHit;

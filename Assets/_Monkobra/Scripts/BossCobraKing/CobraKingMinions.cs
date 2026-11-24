@@ -5,7 +5,7 @@ using static CobraKingRig;
 
 /// <summary>The minion waves and streams of the finale.</summary>
 public sealed class CobraKingMinions {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingTuning tuning;
 

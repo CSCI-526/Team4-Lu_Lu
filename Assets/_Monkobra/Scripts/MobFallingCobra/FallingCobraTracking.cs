@@ -6,7 +6,7 @@ using static FallingCobraMath;
 /// <summary>Follows the monkey: aim point, tracked range, head steering, and
 /// the fall velocity.</summary>
 public sealed class FallingCobraTracking {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
     private readonly FallingCobraTuning tuning;
 

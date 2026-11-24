@@ -4,7 +4,7 @@ using static CobraMotorRig;
 /// <summary>Counts the monkey's mistakes and surges the cobra for
 /// each.</summary>
 public sealed class CobraMotorSurge {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
     private readonly CobraMotorTuning tuning;
     private readonly System.Action<int> onCatchUpStarted;

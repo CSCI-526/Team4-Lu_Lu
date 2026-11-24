@@ -6,7 +6,7 @@ using static CobraKingRig;
 /// <summary>Thrown bananas in flight, their trail and sparks, the jewel hit,
 /// and the first throw hint.</summary>
 public sealed class CobraKingThrows {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingTuning tuning;
 

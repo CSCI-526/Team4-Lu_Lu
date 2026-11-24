@@ -6,7 +6,7 @@ using static SpiderKingRig;
 
 /// <summary>The first-fight lesson that teaches the parry.</summary>
 public sealed class SpiderKingTeaching {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

@@ -23,7 +23,7 @@ public enum FallingCobraState {
 /// queries more than one role asks of it.
 /// </summary>
 public sealed class FallingCobraRig {
-    // Constants  #############################################################
+    // constants  #############################################################
     public const float NeckOverlapU = .006f;
     public const float HeadCollarBlendU = .4f;
     // the body tube's rings along it & sides round it: the mesh is made

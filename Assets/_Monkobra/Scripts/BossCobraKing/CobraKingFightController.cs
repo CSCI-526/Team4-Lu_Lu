@@ -367,7 +367,7 @@ public class CobraKingFightController: MonoBehaviour {
     [SerializeField]
     private CobraKingTuning tuning = new();
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private CobraKingRig rig;
     private CobraKingArena arena;
     private CobraKingArmor armor;

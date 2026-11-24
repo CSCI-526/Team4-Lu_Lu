@@ -145,7 +145,7 @@ public class MenuButtonPop: MonoBehaviour, ISelectHandler, IDeselectHandler,
         label.rectTransform.anchoredPosition = labelHome + shift + sink;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private Selectable selectable;
     private Vector2 contentHome;
     private Vector2 labelHome;

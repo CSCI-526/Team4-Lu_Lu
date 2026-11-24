@@ -108,7 +108,7 @@ public class TitleScreen: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private InputAction startAction;
     private float enabledTime;
 

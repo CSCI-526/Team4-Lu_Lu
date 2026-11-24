@@ -137,7 +137,7 @@ public class SpiderKingRing {
 /// more than one role asks of it.
 /// </summary>
 public sealed class SpiderKingRig {
-    // Constants  #############################################################
+    // constants  #############################################################
     public const string FRUIT_TAG = "FruitCollider";
     public const int PATH_PARTS = 14;
     public const int RING_PARTS = 20;

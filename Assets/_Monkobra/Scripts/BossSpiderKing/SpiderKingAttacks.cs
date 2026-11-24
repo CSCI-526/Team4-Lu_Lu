@@ -7,7 +7,7 @@ using static SpiderKingRig;
 /// <summary>The spider attacks: the volley, the dash, and the slash with their
 /// aims and effects.</summary>
 public sealed class SpiderKingAttacks {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

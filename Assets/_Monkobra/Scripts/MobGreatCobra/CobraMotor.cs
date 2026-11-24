@@ -198,7 +198,7 @@ public class CobraMotor: MonoBehaviour {
     [SerializeField]
     private CobraMotorTuning tuning = new();
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private CobraMotorRig rig;
     private CobraMotorChase chase;
     private CobraMotorSurge surge;

@@ -20,7 +20,7 @@ public class BossFightHud: MonoBehaviour {
     [SerializeField]
     private BossFightHudTuning tuning = new();
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private BossFightHudRig rig;
     private BossFightHudBuilder builder;
     private BossFightHudMotion motion;

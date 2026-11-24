@@ -249,7 +249,7 @@ public static class MockAnalyticsGenerator {
         1f, 0.5f, 0.25f, 0.125f, 0.0625f
     };
 
-    // nested types  ###########################################################
+    // Nested Types  ###########################################################
     // one moment of a simulated run, seconds since run start
     private readonly struct Moment {
         public readonly float T;

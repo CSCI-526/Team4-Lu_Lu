@@ -97,7 +97,7 @@ public class TrunkDecor: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private Transform decor;
     private Mesh mesh;
     private bool hasBuilt;

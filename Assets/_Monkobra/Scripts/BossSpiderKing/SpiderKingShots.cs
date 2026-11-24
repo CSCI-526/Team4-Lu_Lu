@@ -7,7 +7,7 @@ using static SpiderKingRig;
 /// <summary>The crescents and shots in flight, their waves, paths, and
 /// hits.</summary>
 public sealed class SpiderKingShots {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingTuning tuning;
 

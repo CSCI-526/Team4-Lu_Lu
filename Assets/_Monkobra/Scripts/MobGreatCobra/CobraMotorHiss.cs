@@ -3,7 +3,7 @@ using static CobraMotorRig;
 
 /// <summary>The close chase hiss and its alert cue.</summary>
 public sealed class CobraMotorHiss {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
     private readonly CobraMotorTuning tuning;
 

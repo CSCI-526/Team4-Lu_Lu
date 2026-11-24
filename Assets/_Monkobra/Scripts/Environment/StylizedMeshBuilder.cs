@@ -294,7 +294,7 @@ public class StylizedMeshBuilder {
         triangles.Clear();
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly List<Vector3> positions = new List<Vector3>();
     private readonly List<Vector3> normals = new List<Vector3>();
     private readonly List<Vector2> uvs = new List<Vector2>();

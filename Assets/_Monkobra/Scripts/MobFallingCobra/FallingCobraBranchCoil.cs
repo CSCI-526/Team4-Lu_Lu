@@ -6,7 +6,7 @@ using static FallingCobraMath;
 /// <summary>Frames the supporting branch and places the coil, perch, and head
 /// against it.</summary>
 public sealed class FallingCobraBranchCoil {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
     private readonly FallingCobraTuning tuning;
 

@@ -167,7 +167,7 @@ public class IntroComicScreen: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private sealed class LayerState {
         public RectTransform Rect;
         public Image Image;
@@ -206,7 +206,7 @@ public class IntroComicScreen: MonoBehaviour {
     private bool isCaptionSwapped;
     private bool isLeaving;
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     // a hidden panel per config entry, its layers placed and posed
     private void BuildPanels() {
         RectTransform holder = NewRect("Panels", stage);

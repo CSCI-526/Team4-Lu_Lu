@@ -133,7 +133,7 @@ public class LoseScreen: MonoBehaviour {
     private void RefreshFruitCounts() {
         if (ScoreManager.I == null) {
             Debug.LogWarning(
-                "LoseScreen:	ScoreManager not found",
+                "LoseScreen:\tScoreManager not found",
                 this
             );
             return;
@@ -152,7 +152,7 @@ public class LoseScreen: MonoBehaviour {
 
         if (Debug.isDebugBuild) {
             Debug.Log(
-                $"LoseScreen:	banana {score.BananaCollectedCount}, "
+                $"LoseScreen:\tbanana {score.BananaCollectedCount}, "
                     + $"pineapple {score.PineappleCollectedCount}, "
                     + $"coconut {score.CoconutCollectedCount}"
             );
