@@ -46,7 +46,7 @@ public class FreezeTimerWidget: MonoBehaviour {
     [Tooltip("blinks per s near the end")]
     private float endingBlinkHz = 4f;
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private int shownS = -1;
 
     // MonoBehaviour Lifecycle  ################################################

@@ -10,7 +10,7 @@ using UnityEngine;
 /// <c>I</c>, and add one <see cref="EnsureExists"/> line below.
 /// </para>
 /// </summary>
-public static class PersistentBootstrap {
+public static class PersistentBootstrapLoader {
     // private methods  ########################################################
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void CreatePersistentObjects() {
@@ -28,8 +28,8 @@ public static class PersistentBootstrap {
         GameObject prefab = Resources.Load<GameObject>(prefabName);
         if (prefab == null) {
             Debug.LogError(
-                "PersistentBootstrap:\tfail to load prefab from Resources: "
-                    + prefabName
+                "PersistentBootstrapLoader:\tfail to load prefab from "
+                    + "Resources: " + prefabName
             );
             return;
         }

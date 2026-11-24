@@ -6,7 +6,7 @@ using UnityEngine;
 /// such as "x12". The icon sprite is set on the prefab instance, this script
 /// only writes the count.
 /// </summary>
-public class LoseScreenCountRow: MonoBehaviour {
+public class LoseScreenCountRowWidget: MonoBehaviour {
     // Public Methods  #########################################################
     /// <summary>Shows the count as "x" plus the number.</summary>
     /// <param name="count">how many of the fruit the run collected</param>
@@ -27,7 +27,7 @@ public class LoseScreenCountRow: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (countText == null) {
             Debug.LogError(
-                "LoseScreenCountRow:\tmust assign Inspector Field: "
+                "LoseScreenCountRowWidget:\tmust assign Inspector Field: "
                     + "Count Text",
                 this
             );

@@ -92,12 +92,15 @@ public class TrunkDecor: MonoBehaviour {
 
     // a pooled segment moves in its owner's Restart; rebuild once it lands
     private void LateUpdate() {
-        if (!hasBuilt || (transform.position - builtPosition).sqrMagnitude > 0.0001f) {
+        if (
+            !hasBuilt
+                || (transform.position - builtPosition).sqrMagnitude > 0.0001f
+        ) {
             Rebuild();
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private Transform decor;
     private Mesh mesh;
     private bool hasBuilt;
@@ -110,7 +113,8 @@ public class TrunkDecor: MonoBehaviour {
 
         // the decor child undoes the segment's stretch, so it builds in u
         Vector3 scale = transform.lossyScale;
-        decor.localScale = new Vector3(1f / scale.x, 1f / scale.y, 1f / scale.z);
+        decor.localScale =
+            new Vector3(1f / scale.x, 1f / scale.y, 1f / scale.z);
         decor.localRotation = Quaternion.identity;
         decor.localPosition = Vector3.zero;
 
@@ -141,14 +145,18 @@ public class TrunkDecor: MonoBehaviour {
         if (moss.coverage <= 0.001f) {
             return;
         }
-        int around = Mathf.Max(8, Mathf.RoundToInt(2f * Mathf.PI * radiusU / strandSpacingU));
-        int rows = Mathf.Max(2, Mathf.RoundToInt(2f * halfHeightU / strandSpacingU));
+        int around = Mathf.Max(
+            8, Mathf.RoundToInt(2f * Mathf.PI * radiusU / strandSpacingU)
+        );
+        int rows =
+            Mathf.Max(2, Mathf.RoundToInt(2f * halfHeightU / strandSpacingU));
         int strands = 0;
         for (int row = 1; row < rows && strands < maxStrands; row++) {
             float y = -halfHeightU + row * (2f * halfHeightU / rows);
             for (int i = 0; i < around && strands < maxStrands; i++) {
                 float angle = (i + 0.5f * (row % 2)) * Mathf.PI * 2f / around;
-                Vector3 outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+                Vector3 outward =
+                    new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
                 Vector3 local = outward * radiusU + Vector3.up * y;
                 Vector3 world = decor.TransformPoint(local);
                 bool isMossy = StylizedBarkNoise.IsMossy(world, moss);
@@ -156,10 +164,16 @@ public class TrunkDecor: MonoBehaviour {
                     world + Vector3.down * strandSpacingU,
                     moss
                 );
-                if (!isMossy || !isBareBelow || random.NextDouble() > strandChance) {
+                if (
+                    !isMossy
+                        || !isBareBelow
+                        || random.NextDouble() > strandChance
+                ) {
                     continue;
                 }
-                float lengthU = Mathf.Lerp(strandLengthU.x, strandLengthU.y, (float)random.NextDouble());
+                float lengthU = Mathf.Lerp(
+                    strandLengthU.x, strandLengthU.y, (float)random.NextDouble()
+                );
                 // keep the strand clear of the segment's ends, the joins
                 if (y - lengthU < -halfHeightU + 0.1f) {
                     continue;
@@ -185,16 +199,27 @@ public class TrunkDecor: MonoBehaviour {
     ) {
         int wanted = random.Next(rosettes.x, rosettes.y + 1);
         int placed = 0;
-        for (int attempt = 0; attempt < wanted * 8 && placed < wanted; attempt++) {
+        for (
+            int attempt = 0; attempt < wanted * 8 && placed < wanted; attempt++
+        ) {
             float angle = (float)random.NextDouble() * Mathf.PI * 2f;
-            float y = Mathf.Lerp(-halfHeightU + 0.6f, halfHeightU - 0.6f, (float)random.NextDouble());
-            Vector3 outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+            float y = Mathf.Lerp(
+                -halfHeightU + 0.6f,
+                halfHeightU - 0.6f,
+                (float)random.NextDouble()
+            );
+            Vector3 outward =
+                new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
             Vector3 local = outward * (radiusU - 0.04f) + Vector3.up * y;
             if (moss.coverage > 0.001f
-                && !StylizedBarkNoise.IsMossy(decor.TransformPoint(local), moss)) {
+                && !StylizedBarkNoise.IsMossy(
+                    decor.TransformPoint(local), moss
+                )) {
                 continue;
             }
-            builder.AddRosette(local, outward, 4 + random.Next(3), leafLengthU, random);
+            builder.AddRosette(
+                local, outward, 4 + random.Next(3), leafLengthU, random
+            );
             placed++;
         }
     }

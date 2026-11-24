@@ -7,8 +7,9 @@ using UnityEngine;
 /// back once it is over.
 /// <para>
 /// Lives across scene loads, so a restart never cuts the music. Created by
-/// <see cref="PersistentBootstrap"/> from the <c>Resources/MusicManager</c>
-/// prefab. It only watches the fights' public state, nothing calls it.
+/// <see cref="PersistentBootstrapLoader"/> from the
+/// <c>Resources/MusicManager</c> prefab. It only watches the fights'
+/// public state, nothing calls it.
 /// </para>
 /// <para>
 /// The boss loop starts from its top each fight, while the climb loop is
@@ -112,7 +113,7 @@ public class MusicManager: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private AudioSource climbSource;
     private AudioSource bossSource;
 

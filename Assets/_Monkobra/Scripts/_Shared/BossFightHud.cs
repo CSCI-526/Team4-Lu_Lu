@@ -18,16 +18,27 @@ public class BossFightHud: MonoBehaviour {
     public const float CALL_OUT_S = BossFightHudRig.CALL_OUT_S;
     // Inspector Fields  #######################################################
     [SerializeField]
-    private BossFightHudTuning tuning = new();
+    [Tooltip("every tuned value of the boss fight HUD")]
+    private BossFightHudConfig config;
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private BossFightHudRig rig;
     private BossFightHudBuilder builder;
     private BossFightHudMotion motion;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        rig = new BossFightHudRig(this, tuning);
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogError(
+                "BossFightHud:\tmust assign Inspector Field: config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        rig = new BossFightHudRig(this, config);
         builder =
             new BossFightHudBuilder(rig, () => WatchAdClicked?.Invoke(),
                 () => GiveUpClicked?.Invoke(),
@@ -155,7 +166,7 @@ public class BossFightHud: MonoBehaviour {
     /// </summary>
     public void Flash(Color color) {
         rig.flashColor = color;
-        rig.flashLeftS = tuning.FlashS;
+        rig.flashLeftS = config.FlashS;
     }
 
     /// <summary>Shows <paramref name="line"/> in a bubble over the head.
@@ -165,7 +176,7 @@ public class BossFightHud: MonoBehaviour {
             return;
         }
         rig.speechLabel.text = line;
-        rig.speechLeftS = tuning.SpeechShowS;
+        rig.speechLeftS = config.SpeechShowS;
         // the bubble fits its line
         rig.speechRect.sizeDelta = new Vector2(
             Mathf.Max(200f, rig.speechLabel.GetPreferredValues(line).x + 48f),
@@ -202,7 +213,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Pops a rising damage number at a world point.</summary>
     public void PopDamage(string text, Vector3 worldPosition) {
-        PopText(text, worldPosition, tuning.DamageColor);
+        PopText(text, worldPosition, config.DamageColor);
     }
 
     /// <summary>Pops a rising word at a world point, eg "Blocked!".
@@ -242,7 +253,7 @@ public class BossFightHud: MonoBehaviour {
         BossFightHudBuilder.AddImage(panel,
             BossFightHudBuilder.Tint(UIStyle.Background, 0.8f));
         BossFightHudBuilder.AddCenterLabel(panel, "Victory!", 90f,
-            tuning.DamageColor, 140f);
+            config.DamageColor, 140f);
         BossFightHudBuilder.AddCenterLabel(
             panel, "You defeated the Cobra King!", 36f, UIStyle.Cream, 50f
         );
@@ -256,7 +267,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>Shows a big banner in the screen center.</summary>
     public void ShowBanner(string text) {
-        ShowBanner(text, tuning.DamageColor);
+        ShowBanner(text, config.DamageColor);
     }
 
     /// <summary>Shows a big banner in <paramref name="color"/>.</summary>
@@ -462,7 +473,7 @@ public class BossFightHud: MonoBehaviour {
     public void SetPrompt(bool isShown, Vector3 worldPosition) {
         if (rig.keyPrompt != null) {
             rig.keyPrompt.SetPrompt(isShown, worldPosition,
-                tuning.PromptOffset);
+                config.PromptOffset);
         }
     }
 
@@ -490,7 +501,7 @@ public class BossFightHud: MonoBehaviour {
         BossFightHudBuilder.Stretch(face);
         face.offsetMin = new Vector2(5f, 5f);
         face.offsetMax = new Vector2(-5f, -5f);
-        BossFightHudBuilder.AddImage(face, tuning.WarningColor);
+        BossFightHudBuilder.AddImage(face, config.WarningColor);
         TextMeshProUGUI mark =
             BossFightHudBuilder.CreateLabel("Mark", sign, "!", 56f,
                 Color.white);
@@ -498,7 +509,7 @@ public class BossFightHud: MonoBehaviour {
         mark.fontStyle = FontStyles.Bold;
 
         TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
-            "Word", sign, word, 30f, tuning.WarningColor
+            "Word", sign, word, 30f, config.WarningColor
         );
         label.fontStyle = FontStyles.Bold;
         label.outlineWidth = 0.25f;

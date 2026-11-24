@@ -2479,7 +2479,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c1e5a0b9d3f4e6a8b2c4d6e8f0a1b3c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoseScreenCountRow
+  m_EditorClassIdentifier: Assembly-CSharp::LoseScreenCountRowWidget
 --- !u!224 &6283 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1001, guid: 3a9f1c5e7b2d4086a1c3e5f7092b4d6e, type: 3}
@@ -2557,7 +2557,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c1e5a0b9d3f4e6a8b2c4d6e8f0a1b3c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoseScreenCountRow
+  m_EditorClassIdentifier: Assembly-CSharp::LoseScreenCountRowWidget
 --- !u!1001 &7030
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2625,7 +2625,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c1e5a0b9d3f4e6a8b2c4d6e8f0a1b3c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LoseScreenCountRow
+  m_EditorClassIdentifier: Assembly-CSharp::LoseScreenCountRowWidget
 --- !u!224 &6303 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1001, guid: 3a9f1c5e7b2d4086a1c3e5f7092b4d6e, type: 3}

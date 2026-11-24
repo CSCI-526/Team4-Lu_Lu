@@ -4,9 +4,9 @@ using static CobraMotorRig;
 /// <summary>Lays the body along the coil, styles it, and poses the cartoon
 /// head.</summary>
 public sealed class CobraMotorCoil {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
-    private readonly CobraMotorTuning tuning;
+    private readonly CobraMotorConfig config;
     private static readonly int BASE_COLOR_ID =
         Shader.PropertyToID("_BaseColor");
     private static readonly int COLOR_ID = Shader.PropertyToID("_Color");
@@ -15,7 +15,7 @@ public sealed class CobraMotorCoil {
 
     public CobraMotorCoil(CobraMotorRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -26,7 +26,7 @@ public sealed class CobraMotorCoil {
     /// </summary>
     public void FillCoilSegments() {
         int neededCount =
-            Mathf.CeilToInt(rig.CoilLengthU / tuning.MaxSegmentGapU) + 1;
+            Mathf.CeilToInt(rig.CoilLengthU / config.MaxSegmentGapU) + 1;
 
         if (neededCount <= rig.bodySegments.Length) {
             return;
@@ -57,7 +57,7 @@ public sealed class CobraMotorCoil {
         if (Debug.isDebugBuild) {
             Debug.Log(
                 $"CobraMotor:\tcloned {neededCount - authoredCount} segments, "
-                    + $"{neededCount} in total for {tuning.CoilTurns:F2} loops",
+                    + $"{neededCount} in total for {config.CoilTurns:F2} loops",
                 rig.owner
             );
         }
@@ -72,7 +72,7 @@ public sealed class CobraMotorCoil {
     /// </summary>
     public void StyleBody() {
         float arcStep = rig.SegmentArcStepU;
-        float segmentLength = arcStep * tuning.SegmentFill;
+        float segmentLength = arcStep * config.SegmentFill;
         MaterialPropertyBlock colorBlock = new();
 
         for (int i = 0; i < rig.bodySegments.Length; i++) {
@@ -84,17 +84,17 @@ public sealed class CobraMotorCoil {
 
             float bodyFraction = (float)i / rig.LastIndex;
             float thickness =
-                tuning.MaxThicknessU * Mathf.Max(
+                config.MaxThicknessU * Mathf.Max(
                     0.05f,
-                    tuning.ThicknessProfile.Evaluate(bodyFraction)
+                    config.ThicknessProfile.Evaluate(bodyFraction)
                 );
 
             // capsule mesh: local y runs along the body, 2 U long at scale 1,
             // local x is width, local z is depth off the trunk
             if (i == 0) {
                 segment.localScale = new Vector3(
-                    thickness * tuning.HeadWidthRatio,
-                    tuning.HeadLengthU * 0.5f,
+                    thickness * config.HeadWidthRatio,
+                    config.HeadLengthU * 0.5f,
                     thickness * 0.75f
                 );
             } else {
@@ -108,12 +108,12 @@ public sealed class CobraMotorCoil {
             StretchHitShape(segment, arcStep);
         }
 
-        if (tuning.CartoonAppearance.enabled && rig.bodySegments[0] != null
+        if (config.CartoonAppearance.enabled && rig.bodySegments[0] != null
             && rig.bodySegments[0].TryGetComponent(out Renderer source)) {
             rig.cartoonVisual = new CartoonCobraVisual(rig.host,
-                source.sharedMaterial, tuning.CartoonAppearance);
+                source.sharedMaterial, config.CartoonAppearance);
             rig.cartoonVisual.BuildHead(rig.bodySegments[0],
-                tuning.MaxThicknessU);
+                config.MaxThicknessU);
             rig.cartoonRadii = new float[rig.bodySegments.Length];
             rig.cartoonOutward = new Vector3[rig.bodySegments.Length];
             for (int i = 0; i < rig.bodySegments.Length; i++) {
@@ -122,12 +122,12 @@ public sealed class CobraMotorCoil {
                     renderer.enabled = false;
                 }
                 float t = i / (float)rig.LastIndex;
-                rig.cartoonRadii[i] = tuning.MaxThicknessU * 0.5f
-                    * Mathf.Max(0.05f, tuning.ThicknessProfile.Evaluate(t))
+                rig.cartoonRadii[i] = config.MaxThicknessU * 0.5f
+                    * Mathf.Max(0.05f, config.ThicknessProfile.Evaluate(t))
                     * (1f - Mathf.SmoothStep(0f, 1f,
                         Mathf.InverseLerp(0.8f, 1f, t)));
             }
-        } else if (tuning.EyeSizeU > 0f && rig.bodySegments[0] != null) {
+        } else if (config.EyeSizeU > 0f && rig.bodySegments[0] != null) {
             AddEyes(rig.bodySegments[0], colorBlock);
         }
     }
@@ -171,9 +171,9 @@ public sealed class CobraMotorCoil {
                 -0.3f
             );
             eye.transform.localScale = new Vector3(
-                tuning.EyeSizeU / headScale.x,
-                tuning.EyeSizeU / headScale.y,
-                tuning.EyeSizeU / headScale.z
+                config.EyeSizeU / headScale.x,
+                config.EyeSizeU / headScale.y,
+                config.EyeSizeU / headScale.z
             );
 
             Renderer eyeRenderer = eye.GetComponent<Renderer>();
@@ -216,23 +216,23 @@ public sealed class CobraMotorCoil {
         float arcStep = rig.SegmentArcStepU;
         // time spent frozen is skipped, so the wave resumes where it stopped
         float wavePhase =
-            (Time.time - rig.frozenTimeS) * tuning.WaveSpeedHz * 2f * Mathf.PI;
+            (Time.time - rig.frozenTimeS) * config.WaveSpeedHz * 2f * Mathf.PI;
 
         // the coil sits lower by the neck lift, so the raised head tip is
         // what reaches headHeight
-        float coilTopHeight = rig.headHeight - tuning.NeckLiftU;
+        float coilTopHeight = rig.headHeight - config.NeckLiftU;
 
         for (int i = 0; i < rig.bodySegments.Length; i++) {
             float bodyDistance = i * arcStep;
             float neckFraction =
-                Mathf.Clamp01(bodyDistance / tuning.NeckLengthU);
+                Mathf.Clamp01(bodyDistance / config.NeckLengthU);
 
             float lift =
-                tuning.NeckLiftU * rig.Chase.ChaseHeadRaiseBlend()
+                config.NeckLiftU * rig.Chase.ChaseHeadRaiseBlend()
                     * (1f - neckFraction)
                     * (1f - neckFraction);
-            float wave = tuning.WaveAmplitudeU * neckFraction * Mathf.Sin(
-                wavePhase - bodyDistance / tuning.WaveLengthU * 2f * Mathf.PI
+            float wave = config.WaveAmplitudeU * neckFraction * Mathf.Sin(
+                wavePhase - bodyDistance / config.WaveLengthU * 2f * Mathf.PI
             );
 
             rig.segmentPositions[i] = rig.GetPathPosition(
@@ -260,7 +260,7 @@ public sealed class CobraMotorCoil {
                 ? rig.segmentPositions[0] - rig.segmentPositions[1]
                 : rig.segmentPositions[i - 1] - rig.segmentPositions[i];
             Vector3 awayFromTrunk =
-                rig.segmentPositions[i] - tuning.PathCenter.position;
+                rig.segmentPositions[i] - rig.pathCenter.position;
             awayFromTrunk.y = 0f;
 
             if (alongBody.sqrMagnitude < 0.0001f
@@ -280,7 +280,7 @@ public sealed class CobraMotorCoil {
         }
         for (int i = 0; i < rig.segmentPositions.Length; i++) {
             Vector3 radial =
-                rig.segmentPositions[i] - tuning.PathCenter.position;
+                rig.segmentPositions[i] - rig.pathCenter.position;
             radial.y = 0f;
             rig.cartoonOutward[i] = radial.normalized;
         }
@@ -313,25 +313,25 @@ public sealed class CobraMotorCoil {
             Quaternion followedRotation =
                 Quaternion.Slerp(rig.cartoonHeadRotation,
                 desiredHeadRotation,
-                1f - Mathf.Exp(-tuning.HeadFollowSharpness * Time.deltaTime));
+                1f - Mathf.Exp(-config.HeadFollowSharpness * Time.deltaTime));
             rig.cartoonHeadRotation =
                 Quaternion.RotateTowards(rig.cartoonHeadRotation,
                 followedRotation,
-                tuning.HeadTurnSpeedDegrees * Time.deltaTime);
+                config.HeadTurnSpeedDegPerS * Time.deltaTime);
         }
         Quaternion headRotation = rig.cartoonHeadRotation;
         Vector3 headPosition = rig.segmentPositions[0];
-        if (tuning.CartoonAppearance.referenceHead != null) {
+        if (config.CartoonAppearance.referenceHead != null) {
             if (!hasHeadBounds) {
                 // reference head never changes; read its mesh once
                 referenceHeadBounds =
-                    tuning.CartoonAppearance.referenceHead
+                    config.CartoonAppearance.referenceHead
                         .GetComponent<MeshFilter>().sharedMesh.bounds;
                 hasHeadBounds = true;
             }
             Bounds headBounds = referenceHeadBounds;
             float headSize =
-                tuning.MaxThicknessU * tuning.CartoonAppearance.headScale;
+                config.MaxThicknessU * config.CartoonAppearance.headScale;
             float innerProjection = 0f;
             for (int corner = 0; corner < 8; corner++) {
                 Vector3 point =
@@ -346,10 +346,10 @@ public sealed class CobraMotorCoil {
             // Keep the inward-facing muzzle clear of the trunk while the neck
             // stays upright.
             headPosition += rig.cartoonOutward[0]
-                * Mathf.Max(0f, -innerProjection - tuning.MaxThicknessU * 0.5f);
+                * Mathf.Max(0f, -innerProjection - config.MaxThicknessU * 0.5f);
         } else {
-            headPosition += rig.cartoonOutward[0] * tuning.MaxThicknessU * 0.6f
-                + Vector3.up * tuning.MaxThicknessU * 0.2f;
+            headPosition += rig.cartoonOutward[0] * config.MaxThicknessU * 0.6f
+                + Vector3.up * config.MaxThicknessU * 0.2f;
         }
         rig.cartoonVisual.PoseHead(headPosition, headRotation);
         rig.Hiss.UpdateProximityHiss(headPosition);

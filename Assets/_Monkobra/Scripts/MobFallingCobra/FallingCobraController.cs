@@ -33,11 +33,11 @@ public class FallingCobraController: MonoBehaviour {
     /// <returns>pivot to the far end of the snake, hit radius included; u
     /// </returns>
     public float LengthU => rig.animatedReferenceMesh != null
-        ?tuning.SmoothBodyLengthU:rig.hitCollider.height;
+        ?config.SmoothBodyLengthU:rig.hitCollider.height;
 
     /// <returns>how far the snake's tail reaches below its pivot; u</returns>
     public float TailBelowPivotU => rig.animatedReferenceMesh != null
-        ? rig.referenceHeadBelowPivotU : tuning.HitRadiusU;
+        ? rig.referenceHeadBelowPivotU : config.HitRadiusU;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -78,9 +78,10 @@ public class FallingCobraController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    private FallingCobraTuning tuning = new();
+    [Tooltip("every tuned value of a falling cobra")]
+    private FallingCobraConfig config;
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private FallingCobraRig rig;
     private FallingCobraHeadMesh headMesh;
     private FallingCobraBranchCoil branchCoil;
@@ -91,7 +92,17 @@ public class FallingCobraController: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        rig = new FallingCobraRig(transform, tuning);
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogError(
+                "FallingCobraController:\tmust assign Inspector Field: config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        rig = new FallingCobraRig(transform, config);
         headMesh = new FallingCobraHeadMesh(rig);
         branchCoil = new FallingCobraBranchCoil(rig);
         tracking = new FallingCobraTracking(rig);
@@ -124,7 +135,7 @@ public class FallingCobraController: MonoBehaviour {
             Transform segment = transform.GetChild(i);
             if (segment.name.StartsWith("Segment_")) {
                 segment.localPosition =
-                    Vector3.up * (i * tuning.SegmentSpacingU);
+                    Vector3.up * (i * config.SegmentSpacingU);
                 highestSegmentY = Mathf.Max(
                     highestSegmentY,
                     segment.localPosition.y
@@ -142,8 +153,8 @@ public class FallingCobraController: MonoBehaviour {
             }
         }
         rig.hitCollider.direction = 1;
-        rig.hitCollider.radius = tuning.HitRadiusU;
-        rig.hitCollider.height = highestSegmentY + tuning.HitRadiusU * 2f;
+        rig.hitCollider.radius = config.HitRadiusU;
+        rig.hitCollider.height = highestSegmentY + config.HitRadiusU * 2f;
         rig.hitCollider.center = Vector3.up * highestSegmentY * 0.5f;
         rig.hitCollider.isTrigger = true;
         rig.hitCollider.enabled = false;
@@ -152,22 +163,22 @@ public class FallingCobraController: MonoBehaviour {
         eyes.CreateVisibleContacts();
         eyes.CreateTrackingEyes();
 
-        if (tuning.WarningHiss != null) {
+        if (config.WarningHiss != null) {
             GameObject voice = new GameObject("SnakeHiss");
             voice.transform.SetParent(rig.referenceHeadVisual != null
                 ? rig.referenceHeadVisual : transform, false);
             voice.transform.localPosition = rig.originalHeadFaceCenter;
             rig.hissSource = voice.AddComponent<AudioSource>();
-            rig.hissSource.clip = tuning.WarningHiss;
+            rig.hissSource.clip = config.WarningHiss;
             rig.hissSource.playOnAwake = false;
             rig.hissSource.loop = false;
-            rig.hissSource.volume = tuning.WarningHissVolume;
+            rig.hissSource.volume = config.WarningHissVolume;
             rig.hissSource.spatialBlend = 1f;
             rig.hissSource.dopplerLevel = 0f;
-            rig.hissSource.minDistance = tuning.WarningHissMinDistanceU;
+            rig.hissSource.minDistance = config.WarningHissMinDistanceU;
             rig.hissSource.maxDistance =
-                Mathf.Max(tuning.TriggerDistanceU + tuning.AlertExitPaddingU,
-                    tuning.WarningHissMinDistanceU);
+                Mathf.Max(config.TriggerDistanceU + config.AlertExitPaddingU,
+                    config.WarningHissMinDistanceU);
         }
         rig.lastHeadPoseTime = Time.time;
     }
@@ -229,7 +240,7 @@ public class FallingCobraController: MonoBehaviour {
                     Vector3.SignedAngle(previous, tailDirection, inward);
                 tailDirection =
                     Quaternion.AngleAxis(turn
-                        * (1f - Mathf.Exp(-tuning.SwimTurnSharpness
+                        * (1f - Mathf.Exp(-config.SwimTurnSharpness
                             * Time.deltaTime)),
                     inward) * previous;
             }
@@ -249,8 +260,8 @@ public class FallingCobraController: MonoBehaviour {
         rig.supportBranch = branch;
         rig.headRotationReady = false;
         branchCoil.RefreshBranchFrame();
-        if (rig.branchHalfLength < tuning.SittingCoilRadiusAlongU
-            + tuning.SmoothBodyRadiusU + .1f) {
+        if (rig.branchHalfLength < config.SittingCoilRadiusAlongU
+            + config.SmoothBodyRadiusU + .1f) {
             rig.supportBranch = null;
             return false;
         }
@@ -260,21 +271,21 @@ public class FallingCobraController: MonoBehaviour {
         Vector3 nearTrunk =
             new Vector3(rig.axisXZ.x, rig.branchCenter.y, rig.axisXZ.y)
                 + outwards
-                    * (tuning.TreeSurfaceRadiusU
-                        + tuning.SittingCoilRadiusAlongU + .9f);
+                    * (config.TreeSurfaceRadiusU
+                        + config.SittingCoilRadiusAlongU + .9f);
         rig.branchAnchorAlong =
             Mathf.Clamp(Vector3.Dot(nearTrunk - rig.branchCenter,
                 rig.branchAxis),
-            -rig.branchHalfLength + tuning.SittingCoilRadiusAlongU + .1f,
-                rig.branchHalfLength - tuning.SittingCoilRadiusAlongU - .1f);
-        Vector3 top = branchCoil.BranchCoilPoint(0f, tuning.SmoothBodyRadiusU);
+            -rig.branchHalfLength + config.SittingCoilRadiusAlongU + .1f,
+                rig.branchHalfLength - config.SittingCoilRadiusAlongU - .1f);
+        Vector3 top = branchCoil.BranchCoilPoint(0f, config.SmoothBodyRadiusU);
         Vector3 root =
-            new Vector3(rig.axisXZ.x, top.y - tuning.StandingBaseHeightU,
+            new Vector3(rig.axisXZ.x, top.y - config.StandingBaseHeightU,
                 rig.axisXZ.y) + outwards * rig.ringRadiusU;
         rig.body.position = root;
         transform.position = root;
         if (rig.player == null) {
-            GameObject monkey = GameObject.FindGameObjectWithTag(PLAYER_TAG);
+            GameObject monkey = MonkeyController.GetRootOrNull();
             if (monkey != null) {
                 rig.player = monkey.transform;
             }
@@ -320,9 +331,9 @@ public class FallingCobraController: MonoBehaviour {
         if (rig.referenceRenderer != null && !rig.referenceRenderer.isVisible) {
             return true;
         }
-        float rangeU = Mathf.Max(tuning.HeadTrackingRangeU,
-            tuning.TriggerDistanceU, rig.reachWakeDistanceU);
-        float gateU = rangeU + tuning.HeadTrackingExitPaddingU
+        float rangeU = Mathf.Max(config.HeadTrackingRangeU,
+            config.TriggerDistanceU, rig.reachWakeDistanceU);
+        float gateU = rangeU + config.HeadTrackingExitPaddingU
             + IDLE_MARGIN_U;
         return (rig.player.position - transform.position).sqrMagnitude
             > gateU * gateU;
@@ -333,7 +344,7 @@ public class FallingCobraController: MonoBehaviour {
     private const float IDLE_MARGIN_U = 4f;
 
     private void Start() {
-        GameObject playerObject = GameObject.FindGameObjectWithTag(PLAYER_TAG);
+        GameObject playerObject = MonkeyController.GetRootOrNull();
         if (playerObject != null) {
             rig.player = playerObject.transform;
             rig.playerArms =
@@ -383,11 +394,6 @@ public class FallingCobraController: MonoBehaviour {
         TryHit(other);
     }
 
-    // Editor Validation  ######################################################
-    private void OnValidate() {
-        tuning.Validate();
-    }
-
     private void TryWake() {
         if (!rig.isInitialized || rig.player == null
             || rig.supportBranch == null) {
@@ -395,8 +401,8 @@ public class FallingCobraController: MonoBehaviour {
         }
         Vector3 position = rig.ThreatPosition;
         float wakeDistanceU = tracking.IsMonkeyReaching()
-            ? Mathf.Max(tuning.TriggerDistanceU, rig.reachWakeDistanceU)
-            : tuning.TriggerDistanceU;
+            ? Mathf.Max(config.TriggerDistanceU, rig.reachWakeDistanceU)
+            : config.TriggerDistanceU;
         if (Vector3.Distance(position,
             tracking.MonkeyAimPosition()) >= wakeDistanceU) {
             return;
@@ -404,7 +410,7 @@ public class FallingCobraController: MonoBehaviour {
 
         rig.state = FallingCobraState.Warning;
         rig.warningStartTime = Time.time;
-        rig.fallStartTime = rig.warningStartTime + tuning.WarningDurationS;
+        rig.fallStartTime = rig.warningStartTime + config.WarningDurationS;
         rig.nextHissTime = Time.time;
     }
 
@@ -470,8 +476,8 @@ public class FallingCobraController: MonoBehaviour {
             rig.hissSource.Play();
             rig.nextHissTime =
                 Time.time
-                    + Mathf.Max(tuning.WarningHissIntervalS,
-                        tuning.WarningHiss.length);
+                    + Mathf.Max(config.WarningHissIntervalS,
+                        config.WarningHiss.length);
         }
     }
 
@@ -533,7 +539,7 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void StepFall() {
-        if (Time.time - rig.attackStartedTime >= tuning.MaximumFallDurationS) {
+        if (Time.time - rig.attackStartedTime >= config.MaximumFallDurationS) {
             FinishFall();
             return;
         }
@@ -553,7 +559,7 @@ public class FallingCobraController: MonoBehaviour {
         AlignReferenceToTree(position);
         rig.body.MoveRotation(rig.body.rotation);
         rig.fallenU += drop;
-        if (rig.fallenU >= tuning.MaxFallDistanceU) {
+        if (rig.fallenU >= config.MaxFallDistanceU) {
             FinishFall();
         }
     }

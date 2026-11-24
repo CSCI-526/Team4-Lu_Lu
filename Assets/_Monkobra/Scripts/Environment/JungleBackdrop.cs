@@ -39,7 +39,9 @@ public class JungleBackdrop: MonoBehaviour {
     private Material forestMaterial;
 
     [SerializeField]
-    [Tooltip("Monkobra/BackdropClouds material: the small puffy clouds up high")]
+    [Tooltip(
+        "Monkobra/BackdropClouds material: the small puffy clouds up high"
+    )]
     private Material cloudMaterial;
 
     [SerializeField]
@@ -48,7 +50,9 @@ public class JungleBackdrop: MonoBehaviour {
 
     [Header("Heights")]
     [SerializeField]
-    [Tooltip("how far below the monkey's start the forest canopy's top lies; u")]
+    [Tooltip(
+        "how far below the monkey's start the forest canopy's top lies; u"
+    )]
     private float canopyBelowStartU = 18f;
 
     [SerializeField]
@@ -81,7 +85,8 @@ public class JungleBackdrop: MonoBehaviour {
     private Vector2 cloudClimbedU = new Vector2(300f, 1100f);
 
     [SerializeField]
-    [Tooltip("the start height, used only if no RampedDifficultyManager is found; world u")]
+    [Tooltip("the start height, used only if no RampedDifficultyManager is "
+        + "found; world u")]
     private float fallbackStartY = 0f;
 
     [Header("Layout")]
@@ -112,13 +117,15 @@ public class JungleBackdrop: MonoBehaviour {
     private float underTopBelowStartU = 14f;
 
     [SerializeField]
-    [Tooltip("the ring of real trees reaches this far out, the painted forest beyond; u")]
+    [Tooltip("the ring of real trees reaches this far out, the painted forest "
+        + "beyond; u")]
     private float nearRadiusU = 420f;
 
     [SerializeField]
     [Tooltip(
         "the painted canopy starts this far out, hiding the near trees "
-            + "beyond, which sink into it & take on its colour toward nearRadiusU; u"
+            + "beyond, which sink into it & take on its colour toward "
+                + "nearRadiusU; u"
     )]
     private float paintedFromU = 220f;
 
@@ -164,6 +171,7 @@ public class JungleBackdrop: MonoBehaviour {
 
     [SerializeField]
     [Min(1)]
+    [Tooltip("birds in each flock")]
     private int birdsPerFlock = 5;
 
     [SerializeField]
@@ -180,22 +188,28 @@ public class JungleBackdrop: MonoBehaviour {
 
     [Header("Look")]
     [SerializeField]
+    [Tooltip("sky overhead at the start of the climb")]
     private Color lowZenith = new Color(0.47f, 0.67f, 0.88f);
 
     [SerializeField]
+    [Tooltip("sky overhead high up")]
     private Color highZenith = new Color(0.36f, 0.58f, 0.88f);
 
     [SerializeField]
+    [Tooltip("sky at the horizon at the start of the climb")]
     private Color lowHorizon = new Color(0.80f, 0.87f, 0.91f);
 
     [SerializeField]
+    [Tooltip("sky at the horizon high up")]
     private Color highHorizon = new Color(0.85f, 0.90f, 0.94f);
 
     [SerializeField]
+    [Tooltip("tint of the distance haze")]
     private Color hazeColor = new Color(0.74f, 0.83f, 0.88f);
 
     [SerializeField]
-    [Tooltip("haze per u near the ground & up high: thinner higher, the view opens out")]
+    [Tooltip("haze per u near the ground & up high: thinner higher, the view "
+        + "opens out")]
     private Vector2 hazeDensity = new Vector2(1f / 6000f, 1f / 10000f);
 
     [SerializeField]
@@ -205,8 +219,8 @@ public class JungleBackdrop: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (skyMaterial == null || forestMaterial == null || cloudMaterial == null
-            || birdMaterial == null) {
+        if (skyMaterial == null || forestMaterial == null
+            || cloudMaterial == null || birdMaterial == null) {
             Debug.LogWarning(
                 "JungleBackdrop:\tmust assign Inspector Fields: skyMaterial, "
                     + "forestMaterial, cloudMaterial, birdMaterial",
@@ -253,22 +267,37 @@ public class JungleBackdrop: MonoBehaviour {
         // apparentClimbScale of the climb
         float lift = Mathf.Max(climbedU, 0f) * (1f - apparentClimbScale);
         trees.localPosition = Vector3.up * lift;
-        Shader.SetGlobalVector(LAYOUT_ID, new Vector4(canopyY + lift, nearRadiusU, floorY + lift, paintedFromU));
+        Shader.SetGlobalVector(
+            LAYOUT_ID,
+            new Vector4(
+                canopyY + lift, nearRadiusU, floorY + lift, paintedFromU
+            )
+        );
         Apply(climbedU);
     }
 
-    // Private Members  ########################################################
-    private static readonly int ZENITH_ID = Shader.PropertyToID("_BackdropSkyZenith");
-    private static readonly int HORIZON_ID = Shader.PropertyToID("_BackdropSkyHorizon");
-    private static readonly int HAZE_COLOR_ID = Shader.PropertyToID("_BackdropHazeColor");
-    private static readonly int HAZE_DENSITY_ID = Shader.PropertyToID("_BackdropHazeDensity");
-    private static readonly int CLOUD_ID = Shader.PropertyToID("_BackdropCloudAmount");
-    private static readonly int RIVER_ID = Shader.PropertyToID("_BackdropRiverReveal");
+    // private members  ########################################################
+    private static readonly int ZENITH_ID =
+        Shader.PropertyToID("_BackdropSkyZenith");
+    private static readonly int HORIZON_ID =
+        Shader.PropertyToID("_BackdropSkyHorizon");
+    private static readonly int HAZE_COLOR_ID =
+        Shader.PropertyToID("_BackdropHazeColor");
+    private static readonly int HAZE_DENSITY_ID =
+        Shader.PropertyToID("_BackdropHazeDensity");
+    private static readonly int CLOUD_ID =
+        Shader.PropertyToID("_BackdropCloudAmount");
+    private static readonly int RIVER_ID =
+        Shader.PropertyToID("_BackdropRiverReveal");
     private static readonly int SUN_ID = Shader.PropertyToID("_BackdropSunDir");
-    private static readonly int LAYOUT_ID = Shader.PropertyToID("_BackdropLayout");
-    private static readonly int CENTRE_ID = Shader.PropertyToID("_BackdropCentre");
-    private static readonly int PUFFS_ID = Shader.PropertyToID("_BackdropPuffs");
-    private static readonly int BIRDS_ID = Shader.PropertyToID("_BackdropBirds");
+    private static readonly int LAYOUT_ID =
+        Shader.PropertyToID("_BackdropLayout");
+    private static readonly int CENTRE_ID =
+        Shader.PropertyToID("_BackdropCentre");
+    private static readonly int PUFFS_ID =
+        Shader.PropertyToID("_BackdropPuffs");
+    private static readonly int BIRDS_ID =
+        Shader.PropertyToID("_BackdropBirds");
 
     // crown greens, matched to Backdrop_CanopyDetail, so near crowns melt
     // into the painted forest
@@ -300,10 +329,14 @@ public class JungleBackdrop: MonoBehaviour {
         floorY = canopyY - forestHeightU;
         float canopyLocal = canopyY - transform.position.y;
         float floorLocal = floorY - transform.position.y;
-        Shader.SetGlobalVector(LAYOUT_ID, new Vector4(canopyY, nearRadiusU, floorY, paintedFromU));
+        Shader.SetGlobalVector(
+            LAYOUT_ID, new Vector4(canopyY, nearRadiusU, floorY, paintedFromU)
+        );
         Shader.SetGlobalVector(CENTRE_ID, transform.position);
 
-        sky = Layer("Sky", BackdropMeshes.Dome(skyRadiusU), skyMaterial).transform;
+        sky = Layer(
+            "Sky", BackdropMeshes.Dome(skyRadiusU), skyMaterial
+        ).transform;
 
         // the ring in wedges, each its own mesh, so Unity culls the ones
         // out of view, most of all the ones behind the camera
@@ -325,7 +358,11 @@ public class JungleBackdrop: MonoBehaviour {
         trees = new GameObject("Trees").transform;
         trees.SetParent(transform, false);
         for (int i = 0; i < TREE_WEDGES; i++) {
-            Layer("Trees" + i, wedges[i].Build("BackdropTrees" + i), forestMaterial)
+            Layer(
+                "Trees" + i,
+                wedges[i].Build("BackdropTrees" + i),
+                forestMaterial
+            )
                 .transform.SetParent(trees, false);
         }
 
@@ -336,14 +373,23 @@ public class JungleBackdrop: MonoBehaviour {
     // puffs scattered through a band high over the start, real heights, so
     // the monkey climbs up past them
     private void AddClouds(System.Random random) {
-        var puffs = new List<Vector4>(clouds);
+        List<Vector4> puffs = new(clouds);
         for (int i = 0; i < clouds; i++) {
-            float distance = Mathf.Lerp(cloudReachU.x, cloudReachU.y, (float)random.NextDouble());
-            float climbed = Mathf.Lerp(cloudBandClimbedU.x, cloudBandClimbedU.y, (float)random.NextDouble());
-            Vector3 centre = Around(random, distance) + Vector3.up * (startY + climbed - transform.position.y);
+            float distance = Mathf.Lerp(
+                cloudReachU.x, cloudReachU.y, (float)random.NextDouble()
+            );
+            float climbed = Mathf.Lerp(
+                cloudBandClimbedU.x,
+                cloudBandClimbedU.y,
+                (float)random.NextDouble()
+            );
+            Vector3 centre = Around(random, distance)
+                + Vector3.up * (startY + climbed - transform.position.y);
             puffs.Add(new Vector4(
                 centre.x, centre.y, centre.z,
-                Mathf.Lerp(cloudWidthU.x, cloudWidthU.y, (float)random.NextDouble())
+                Mathf.Lerp(
+                    cloudWidthU.x, cloudWidthU.y, (float)random.NextDouble()
+                )
             ));
         }
         Layer("Clouds", BackdropMeshes.Clouds(puffs, random), cloudMaterial);
@@ -351,16 +397,21 @@ public class JungleBackdrop: MonoBehaviour {
 
     // flocks circling at about the camera's height, a loose V each
     private void AddBirds(System.Random random) {
-        var paths = new List<Vector4>();
-        var flapSpans = new List<Vector2>();
+        List<Vector4> paths = new();
+        List<Vector2> flapSpans = new();
         for (int f = 0; f < flocks; f++) {
-            float radius = Mathf.Lerp(flockReachU.x, flockReachU.y, (float)random.NextDouble());
+            float radius = Mathf.Lerp(
+                flockReachU.x, flockReachU.y, (float)random.NextDouble()
+            );
             float angle = (float)random.NextDouble() * Mathf.PI * 2f;
-            float height = Mathf.Lerp(flockHeightU.x, flockHeightU.y, (float)random.NextDouble());
+            float height = Mathf.Lerp(
+                flockHeightU.x, flockHeightU.y, (float)random.NextDouble()
+            );
             // about 7 u/s, either way round
             float speed = 7f / radius * (random.Next(2) == 0 ? -1f : 1f);
             for (int b = 0; b < birdsPerFlock; b++) {
-                // the leader first, the rest trailing alternately out to the sides
+                // the leader first, the rest trailing alternately out to the
+                // sides
                 int rank = (b + 1) / 2;
                 float side = b % 2 == 0 ? 1f : -1f;
                 paths.Add(new Vector4(
@@ -371,12 +422,15 @@ public class JungleBackdrop: MonoBehaviour {
                 ));
                 flapSpans.Add(new Vector2(
                     (float)random.NextDouble() * 6.28f,
-                    birdSpanU * Mathf.Lerp(0.85f, 1.15f, (float)random.NextDouble())
+                    birdSpanU
+                        * Mathf.Lerp(0.85f, 1.15f, (float)random.NextDouble())
                 ));
             }
         }
         if (paths.Count > 0) {
-            Layer("Birds", BackdropMeshes.Birds(paths, flapSpans), birdMaterial);
+            Layer(
+                "Birds", BackdropMeshes.Birds(paths, flapSpans), birdMaterial
+            );
         }
     }
 
@@ -401,7 +455,9 @@ public class JungleBackdrop: MonoBehaviour {
             float kind = (float)random.NextDouble();
             bool isSlender = kind < 0.2f;
             bool isBroad = kind > 0.78f;
-            float radius = Mathf.Lerp(crownRadiusU.x, crownRadiusU.y, (float)random.NextDouble());
+            float radius = Mathf.Lerp(
+                crownRadiusU.x, crownRadiusU.y, (float)random.NextDouble()
+            );
             if (isSlender) {
                 radius *= 0.6f;
             } else if (isBroad) {
@@ -415,7 +471,9 @@ public class JungleBackdrop: MonoBehaviour {
             }
             // even over the ring's area
             float distance = Mathf.Sqrt(
-                Mathf.Lerp(inner * inner, outerU * outerU, (float)random.NextDouble())
+                Mathf.Lerp(
+                    inner * inner, outerU * outerU, (float)random.NextDouble()
+                )
             );
             Vector3 foot = Around(random, distance) + Vector3.up * floorLocal;
             if (Crowds(placed, foot, footprint)) {
@@ -435,35 +493,62 @@ public class JungleBackdrop: MonoBehaviour {
                 : Mathf.Lerp(-15f, 1f, (float)random.NextDouble());
             // crowns break the canopy's top, sinking under it toward the
             // ring's edge, so the ring melts into the painting
-            float sink = 18f * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(paintedFromU + 30f, nearRadiusU, distance));
-            float centreY = Mathf.Min(canopyLocal + rise, topLimit - radius * squash) - sink;
+            float sink = 18f * Mathf.SmoothStep(
+                0f,
+                1f,
+                Mathf.InverseLerp(paintedFromU + 30f, nearRadiusU, distance)
+            );
+            float centreY = Mathf.Min(
+                canopyLocal + rise, topLimit - radius * squash
+            ) - sink;
             // a slight lean
-            Vector3 lean = new Vector3((float)random.NextDouble() - 0.5f, 0f, (float)random.NextDouble() - 0.5f)
+            Vector3 lean = new Vector3(
+                (float)random.NextDouble() - 0.5f,
+                0f,
+                (float)random.NextDouble() - 0.5f
+            )
                 * radius * 0.3f;
             Vector3 centre = new Vector3(foot.x, centreY, foot.z) + lean;
 
-            float girth = isSlender ? 0.13f : isBroad ? 0.17f : Mathf.Lerp(0.09f, 0.15f, (float)random.NextDouble());
+            float girth = isSlender ? 0.13f : isBroad ? 0.17f : Mathf.Lerp(
+                0.09f, 0.15f, (float)random.NextDouble()
+            );
             Color green = CrownColor(random);
             BackdropMeshes wedge = wedges[Wedge(foot)];
-            wedge.AddTrunk(foot, centre, radius * girth, isBroad ? 0.8f : 0.5f, 5, 2, BARK);
+            wedge.AddTrunk(
+                foot, centre, radius * girth, isBroad ? 0.8f : 0.5f, 5, 2, BARK
+            );
             wedge.AddCrown(centre, radius, squash, 11, 6, green, random);
             if (isBroad) {
                 float spin = (float)random.NextDouble() * Mathf.PI * 2f;
                 for (int k = 0; k < 2; k++) {
                     float a = spin + k * Mathf.PI * 0.85f;
-                    Vector3 side = new Vector3(Mathf.Cos(a), -0.25f, Mathf.Sin(a)) * radius * 0.75f;
-                    wedge.AddCrown(centre + side, radius * 0.62f, squash * 1.1f, 9, 5, green * 0.93f, random);
+                    Vector3 side = new Vector3(
+                        Mathf.Cos(a), -0.25f, Mathf.Sin(a)
+                    ) * radius * 0.75f;
+                    wedge.AddCrown(
+                        centre + side,
+                        radius * 0.62f,
+                        squash * 1.1f,
+                        9,
+                        5,
+                        green * 0.93f,
+                        random
+                    );
                 }
             }
         }
     }
 
     private static int Wedge(Vector3 foot) {
-        float turn = Mathf.Repeat(Mathf.Atan2(foot.z, foot.x) / (Mathf.PI * 2f), 1f);
+        float turn =
+            Mathf.Repeat(Mathf.Atan2(foot.z, foot.x) / (Mathf.PI * 2f), 1f);
         return Mathf.Min((int)(turn * TREE_WEDGES), TREE_WEDGES - 1);
     }
 
-    private static bool Crowds(List<Vector3> placed, Vector3 foot, float radius) {
+    private static bool Crowds(
+        List<Vector3> placed, Vector3 foot, float radius
+    ) {
         foreach (Vector3 other in placed) {
             float dx = other.x - foot.x;
             float dz = other.y - foot.z;
@@ -477,7 +562,9 @@ public class JungleBackdrop: MonoBehaviour {
 
     private static Vector3 Around(System.Random random, float distanceU) {
         float angle = (float)random.NextDouble() * Mathf.PI * 2f;
-        return new Vector3(Mathf.Cos(angle) * distanceU, 0f, Mathf.Sin(angle) * distanceU);
+        return new Vector3(
+            Mathf.Cos(angle) * distanceU, 0f, Mathf.Sin(angle) * distanceU
+        );
     }
 
     private static Color CrownColor(System.Random random) {
@@ -492,43 +579,76 @@ public class JungleBackdrop: MonoBehaviour {
         layer.AddComponent<MeshFilter>().sharedMesh = mesh;
         MeshRenderer layerRenderer = layer.AddComponent<MeshRenderer>();
         layerRenderer.sharedMaterial = material;
-        layerRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        layerRenderer.shadowCastingMode =
+            UnityEngine.Rendering.ShadowCastingMode.Off;
         layerRenderer.receiveShadows = false;
-        layerRenderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
-        layerRenderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+        layerRenderer.lightProbeUsage =
+            UnityEngine.Rendering.LightProbeUsage.Off;
+        layerRenderer.reflectionProbeUsage =
+            UnityEngine.Rendering.ReflectionProbeUsage.Off;
         return layer;
     }
 
     // Apply  ------------------------------------------------------------------
     // everything that changes with height, as a few shader globals
     private void Apply(float climbedU) {
-        float high = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, highClimbedU, climbedU));
-        Shader.SetGlobalColor(ZENITH_ID, Color.Lerp(lowZenith, highZenith, high));
-        Shader.SetGlobalColor(HORIZON_ID, Color.Lerp(lowHorizon, highHorizon, high));
+        float high = Mathf.SmoothStep(
+            0f, 1f, Mathf.InverseLerp(0f, highClimbedU, climbedU)
+        );
+        Shader.SetGlobalColor(
+            ZENITH_ID, Color.Lerp(lowZenith, highZenith, high)
+        );
+        Shader.SetGlobalColor(
+            HORIZON_ID, Color.Lerp(lowHorizon, highHorizon, high)
+        );
         Shader.SetGlobalColor(HAZE_COLOR_ID, hazeColor);
-        Shader.SetGlobalFloat(HAZE_DENSITY_ID, Mathf.Lerp(hazeDensity.x, hazeDensity.y, high));
+        Shader.SetGlobalFloat(
+            HAZE_DENSITY_ID, Mathf.Lerp(hazeDensity.x, hazeDensity.y, high)
+        );
         Shader.SetGlobalFloat(
             CLOUD_ID,
-            Mathf.Lerp(cloudAmount.x, cloudAmount.y, Mathf.InverseLerp(cloudClimbedU.x, cloudClimbedU.y, climbedU))
+            Mathf.Lerp(
+                cloudAmount.x,
+                cloudAmount.y,
+                Mathf.InverseLerp(cloudClimbedU.x, cloudClimbedU.y, climbedU)
+            )
         );
-        float flyers = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(flyersShowClimbedU.x, flyersShowClimbedU.y, climbedU));
+        float flyers = Mathf.SmoothStep(
+            0f,
+            1f,
+            Mathf.InverseLerp(
+                flyersShowClimbedU.x, flyersShowClimbedU.y, climbedU
+            )
+        );
         Shader.SetGlobalFloat(PUFFS_ID, flyers);
         Shader.SetGlobalFloat(BIRDS_ID, flyers);
         Shader.SetGlobalFloat(
             RIVER_ID,
-            Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(riverStartClimbedU, riverFullClimbedU, climbedU))
+            Mathf.SmoothStep(
+                0f,
+                1f,
+                Mathf.InverseLerp(
+                    riverStartClimbedU, riverFullClimbedU, climbedU
+                )
+            )
         );
 
         if (sun == null && !hasLookedForSun) {
             sun = RenderSettings.sun != null ? RenderSettings.sun : FindSun();
             hasLookedForSun = true;
         }
-        Vector3 toSun = sun != null ? -sun.transform.forward : new Vector3(-0.4f, 0.8f, -0.4f).normalized;
+        Vector3 toSun = sun != null ? -sun.transform.forward : new Vector3(
+            -0.4f, 0.8f, -0.4f
+        ).normalized;
         Shader.SetGlobalVector(SUN_ID, toSun);
     }
 
     private static Light FindSun() {
-        foreach (Light candidate in FindObjectsByType<Light>(FindObjectsSortMode.None)) {
+        foreach (
+            Light candidate in FindObjectsByType<Light>(
+                FindObjectsSortMode.None
+            )
+        ) {
             if (candidate.type == LightType.Directional) {
                 return candidate;
             }

@@ -170,7 +170,7 @@ public class FruitFlyEffect: MonoBehaviour {
 
         // the monkey lives in another prefab, look it up over a scene link
         if (monkeyTarget == null) {
-            MonkeyController monkey = FindAnyObjectByType<MonkeyController>();
+            MonkeyController monkey = MonkeyController.I;
             if (monkey != null) {
                 monkeyTarget = monkey.transform;
             } else {

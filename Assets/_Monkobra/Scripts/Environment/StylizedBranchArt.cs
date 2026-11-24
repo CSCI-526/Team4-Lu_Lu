@@ -24,7 +24,8 @@ public class StylizedBranchArt: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
-    [Tooltip("the branch box child: its transform shapes the log, its renderer is hidden")]
+    [Tooltip("the branch box child: its transform shapes the log, its renderer "
+        + "is hidden")]
     private Transform branchBox;
 
     [SerializeField]
@@ -41,7 +42,8 @@ public class StylizedBranchArt: MonoBehaviour {
     [Header("Shape")]
     [SerializeField]
     [Range(0.5f, 2.5f)]
-    [Tooltip("log thickness at its inner end, inside the trunk, as a share of the box's")]
+    [Tooltip("log thickness at its inner end, inside the trunk, as a share of "
+        + "the box's")]
     private float baseThickness = 1.45f;
 
     [SerializeField]
@@ -51,7 +53,8 @@ public class StylizedBranchArt: MonoBehaviour {
 
     [SerializeField]
     [Range(0f, 1.5f)]
-    [Tooltip("extra swelling where the log leaves the trunk, as a share of the box's")]
+    [Tooltip("extra swelling where the log leaves the trunk, as a share of the "
+        + "box's")]
     private float collarFlare = 0.5f;
 
     [SerializeField]
@@ -110,7 +113,7 @@ public class StylizedBranchArt: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private const int LENGTH_RINGS = 14;
     private const int SIDES = 10;
 
@@ -118,7 +121,8 @@ public class StylizedBranchArt: MonoBehaviour {
     private const float COLLAR_END = 0.32f;
 
     // shared by every branch; the key holds the box's shape & the look
-    private static readonly Dictionary<string, Mesh> cache = new Dictionary<string, Mesh>();
+    private static readonly Dictionary<string, Mesh> cache =
+        new Dictionary<string, Mesh>();
 
     private bool isReady;
     private Mesh stalkMesh;
@@ -136,7 +140,8 @@ public class StylizedBranchArt: MonoBehaviour {
         centre = branchBox.localPosition;
         Vector3 lengthAxis = branchBox.localRotation * Vector3.right;
         // the outer end is the one pointing away from the trunk, along +z
-        outward = Vector3.Dot(lengthAxis, Vector3.forward) >= 0f ? lengthAxis : -lengthAxis;
+        outward = Vector3.Dot(lengthAxis, Vector3.forward) >= 0f
+            ? lengthAxis : -lengthAxis;
         up = branchBox.localRotation * Vector3.up;
         if (Vector3.Dot(up, Vector3.up) < 0f) {
             up = -up;
@@ -175,7 +180,8 @@ public class StylizedBranchArt: MonoBehaviour {
     }
 
     private Mesh SharedMesh(int look) {
-        string key = $"{centre}|{outward}|{branchBox.localScale}|{baseThickness}|"
+        string key =
+            $"{centre}|{outward}|{branchBox.localScale}|{baseThickness}|"
             + $"{tipThickness}|{collarFlare}|{archU}|{look}";
         // a scene unload may have freed it
         if (cache.TryGetValue(key, out Mesh cached) && cached != null) {
@@ -197,27 +203,45 @@ public class StylizedBranchArt: MonoBehaviour {
         for (int r = 0; r < LENGTH_RINGS; r++) {
             float t = (float)r / (LENGTH_RINGS - 1);
             float wobble = 0.04f * Mathf.Sin(wobblePhase + t * 6f) * t;
-            float thickness = Thickness(t) * (0.95f + 0.1f * (float)random.NextDouble());
+            float thickness = Thickness(t)
+                * (0.95f + 0.1f * (float)random.NextDouble());
             centres.Add(AxisPoint(t) + side * wobble);
             ups.Add(up);
             radiiUp.Add(halfHeightU * thickness);
             radiiSide.Add(halfDepthU * thickness * 1.15f);
         }
         StylizedMeshBuilder builder = new StylizedMeshBuilder();
-        builder.AddTube(centres, ups, radiiUp, radiiSide, SIDES, StylizedMeshBuilder.BARK, true);
+        builder.AddTube(
+            centres,
+            ups,
+            radiiUp,
+            radiiSide,
+            SIDES,
+            StylizedMeshBuilder.BARK,
+            true
+        );
 
         // Twig  ---------------------------------------------------------------
-        int twigRing = Mathf.RoundToInt((0.6f + 0.12f * (float)random.NextDouble()) * (LENGTH_RINGS - 1));
+        int twigRing = Mathf.RoundToInt(
+            (0.6f + 0.12f * (float)random.NextDouble()) * (LENGTH_RINGS - 1)
+        );
         float twigSide = random.NextDouble() < 0.5 ? -1f : 1f;
         Vector3 twigBase = centres[twigRing] + up * (radiiUp[twigRing] * 0.6f);
-        Vector3 twigDirection = (outward * 0.7f + up * 0.9f + side * (0.35f * twigSide)).normalized;
+        Vector3 twigDirection =
+            (outward * 0.7f + up * 0.9f + side * (0.35f * twigSide)).normalized;
         float twigLengthU = 0.45f + 0.2f * (float)random.NextDouble();
         builder.AddTaperedTube(
             twigBase, twigDirection, outward * 0.06f, twigLengthU,
             radiiUp[twigRing] * 0.35f, 0.025f, 4, 6,
             new Color(0f, 0f, 0f, 0.5f)
         );
-        builder.AddRosette(twigBase + twigDirection * twigLengthU, twigDirection, 3, 0.28f, random);
+        builder.AddRosette(
+            twigBase + twigDirection * twigLengthU,
+            twigDirection,
+            3,
+            0.28f,
+            random
+        );
 
         // Leaves  -------------------------------------------------------------
         int nearTip = LENGTH_RINGS - 2;
@@ -248,7 +272,13 @@ public class StylizedBranchArt: MonoBehaviour {
             float edge = random.NextDouble() < 0.5 ? -1f : 1f;
             Vector3 top = centres[ring] - up * (radiiUp[ring] * 0.55f)
                 + side * (radiiSide[ring] * 0.8f * edge);
-            builder.AddMossStrand(top, side * (0.05f * edge), 0.22f + 0.4f * (float)random.NextDouble(), 0.05f, random);
+            builder.AddMossStrand(
+                top,
+                side * (0.05f * edge),
+                0.22f + 0.4f * (float)random.NextDouble(),
+                0.05f,
+                random
+            );
         }
 
         return builder;
@@ -257,7 +287,9 @@ public class StylizedBranchArt: MonoBehaviour {
     // a green stalk from the log's underside, arcing down to the fruit, two
     // leaves where it sprouts and a little crown of sepals over the fruit
     private void BuildStalk(StylizedMeshBuilder builder, System.Random random) {
-        Vector3 tip = transform.InverseTransformPoint(fruitStem.TransformPoint(Vector3.down));
+        Vector3 tip = transform.InverseTransformPoint(
+            fruitStem.TransformPoint(Vector3.down)
+        );
 
         // sprout from inside the log, right above where the fruit hangs:
         // matched by level distance only, the stem's own top may poke up
@@ -265,7 +297,9 @@ public class StylizedBranchArt: MonoBehaviour {
         Vector3 levelOutward = Vector3.ProjectOnPlane(outward, Vector3.up);
         float levelPerU = Mathf.Max(levelOutward.sqrMagnitude, 0.0001f);
         float t = Mathf.Clamp01(
-            Vector3.Dot(Vector3.ProjectOnPlane(tip - centre, Vector3.up), levelOutward)
+            Vector3.Dot(
+                Vector3.ProjectOnPlane(tip - centre, Vector3.up), levelOutward
+            )
                 / (levelPerU * lengthU)
                 + 0.5f
         );
@@ -286,19 +320,25 @@ public class StylizedBranchArt: MonoBehaviour {
         for (int r = 0; r < RINGS; r++) {
             float s = (float)r / (RINGS - 1);
             // quadratic bezier sprout, bend, end
-            Vector3 point = (1 - s) * (1 - s) * sprout + 2 * (1 - s) * s * bend + s * s * end;
+            Vector3 point =
+                (1 - s) * (1 - s) * sprout + 2 * (1 - s) * s * bend
+                + s * s * end;
             centres.Add(point);
             ups.Add(outward);
             // tapers, then swells into a little node over the fruit
             float node = Mathf.Exp(-Mathf.Pow((s - 0.96f) / 0.05f, 2f)) * 0.35f;
             radii.Add(stalkRadiusU * (Mathf.Lerp(1f, 0.65f, s) + node));
         }
-        builder.AddTube(centres, ups, radii, radii, 7, StylizedMeshBuilder.VINE, false);
+        builder.AddTube(
+            centres, ups, radii, radii, 7, StylizedMeshBuilder.VINE, false
+        );
 
         // 2 leaves where the stalk leaves the log
         for (int i = 0; i < 2; i++) {
             float leafSide = i == 0 ? leanSide : -leanSide;
-            Vector3 direction = (side * leafSide + Vector3.down * 0.35f + outward * 0.25f).normalized;
+            Vector3 direction = (
+                side * leafSide + Vector3.down * 0.35f + outward * 0.25f
+            ).normalized;
             builder.AddLeaf(
                 underside + side * (stalkRadiusU * leafSide),
                 direction,
@@ -316,7 +356,9 @@ public class StylizedBranchArt: MonoBehaviour {
         int sepals = 5;
         float start = (float)random.NextDouble() * Mathf.PI * 2f;
         for (int i = 0; i < sepals; i++) {
-            Vector3 spoke = Quaternion.AngleAxis(start * Mathf.Rad2Deg + i * 360f / sepals, down) * radial;
+            Vector3 spoke = Quaternion.AngleAxis(
+                start * Mathf.Rad2Deg + i * 360f / sepals, down
+            ) * radial;
             builder.AddLeaf(
                 end - down * 0.02f,
                 (spoke * 0.85f + down * 0.5f).normalized,

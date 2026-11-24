@@ -11,7 +11,7 @@ using UnityEngine.UI;
 /// <para>
 /// Shares the screen edge with the black stamina pulse of
 /// <see cref="CameraCoolDownFeedback"/> through
-/// <see cref="ScreenVignetteArbiter"/>: a beat starts only with the slot, and
+/// <see cref="ScreenVignetteManager"/>: a beat starts only with the slot, and
 /// a refused beat waits, so the two vignettes alternate. All values are in
 /// <see cref="CameraConfig"/>. The URP Vignette is black and round only, so
 /// this is a UI overlay with its 2 gradient sprites made at startup; put it
@@ -125,7 +125,6 @@ public class CobraProximityVignette: MonoBehaviour {
     }
 
     // constants  ##############################################################
-    private const string PLAYER_TAG = "Player";
     private const int SPRITE_SIZE = 256;
 
     // inner radius of the dark edge, 0 centre, 1 mid-edge of the screen
@@ -179,8 +178,7 @@ public class CobraProximityVignette: MonoBehaviour {
         }
 
         if (player == null) {
-            GameObject playerObject =
-                GameObject.FindGameObjectWithTag(PLAYER_TAG);
+            GameObject playerObject = MonkeyController.GetRootOrNull();
             if (playerObject == null) {
                 return false;
             }
@@ -217,7 +215,7 @@ public class CobraProximityVignette: MonoBehaviour {
     // a beat starts only with the shared slot; a refusal is retried next
     // frame, which also tells the arbiter this vignette waits
     private void TryBeginBeat(float periodS) {
-        ScreenVignetteArbiter arbiter = ScreenVignetteArbiter.I;
+        ScreenVignetteManager arbiter = ScreenVignetteManager.I;
         if (arbiter != null && !arbiter.TryAcquire(VignetteOwner.Cobra)) {
             return;
         }
@@ -234,8 +232,8 @@ public class CobraProximityVignette: MonoBehaviour {
         }
         isBeating = false;
 
-        if (ScreenVignetteArbiter.I != null) {
-            ScreenVignetteArbiter.I.Release(VignetteOwner.Cobra);
+        if (ScreenVignetteManager.I != null) {
+            ScreenVignetteManager.I.Release(VignetteOwner.Cobra);
         }
     }
 

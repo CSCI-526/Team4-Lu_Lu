@@ -75,7 +75,7 @@ The chasing cobra is code-built geometry on one root: `CobraMotor` poses the bod
 
 In the starting zone game state the cobra stays active and keeps orbiting, but its height is fixed: it does not climb until the state becomes Playing.
 
-The cobra's shape, orbit, coil, and slow-down values are in the `tuning` object on `CobraMotor`, set on the `GreatCobra` prefab; `CobraMotor` is the Coordinator, and the work is split by role into `CobraMotorChase`, `CobraMotorSurge`, `CobraMotorGuard`, `CobraMotorHiss`, and `CobraMotorCoil`, which share the state in `CobraMotorRig`.
+The cobra's shape, orbit, coil, and slow-down values are in `Settings/MobGreatCobra/CobraMotorConfig.asset`, the `config` Inspector Field of `CobraMotor` on the `GreatCobra` prefab, while its scene references (path center, body segments, the three balance Configs) stay on `CobraMotor` itself; `CobraMotor` is the Coordinator, and the work is split by role into `CobraMotorChase`, `CobraMotorSurge`, `CobraMotorGuard`, `CobraMotorHiss`, and `CobraMotorCoil`, which share the state in `CobraMotorRig`.
 
 The monkey's top climb speed ([Monkey Movement](monkobra-tdd.md#monkey-movement)) is above the cobra's base speed, so it can outrun the cobra, but only by spending stamina.
 
@@ -95,7 +95,7 @@ While the monkey moves across rough bark (`MonkeyController.RoughBarkSpeedScale`
 - During: mistakes add no surge and raise no `CatchUpStarted`, so no warning shows; the base speed and the slow-down near the monkey resume at the thaw
 - Refused: a freeze while one runs is refused and spends nothing, so freezes never stack or reset
 - Contact: unchanged, a frozen coil is as fatal as a moving one
-- Look: `CobraFreezeTint` beside `CobraMotor` tints the body light blue, blinking back in the last seconds, and leaves the eyes black; the coconut counter shows the countdown
+- Look: `CobraFreezeTintListener` beside `CobraMotor` tints the body light blue, blinking back in the last seconds, and leaves the eyes black; the coconut counter shows the countdown
 - Events: `Frozen` (with the length) and `Thawed`; falling cobras are never frozen
 
 ### Contact
@@ -106,7 +106,7 @@ While the monkey moves across rough bark (`MonkeyController.RoughBarkSpeedScale`
 
 A hazard from above, spawned in `GameplayScene` as the monkey climbs the endless tree.
 
-Code: `FallingCobraController` is the Coordinator (state machine and lifecycle); the work is split by role into `FallingCobraHeadMesh`, `FallingCobraBranchCoil`, `FallingCobraTracking`, `FallingCobraSwimTrail`, `FallingCobraSpine`, and `FallingCobraEyes`, which share the state in `FallingCobraRig` and read every Inspector value from `FallingCobraTuning`, the `tuning` object on the `FallingCobra` prefab.
+Code: `FallingCobraController` is the Coordinator (state machine and lifecycle); the work is split by role into `FallingCobraHeadMesh`, `FallingCobraBranchCoil`, `FallingCobraTracking`, `FallingCobraSwimTrail`, `FallingCobraSpine`, and `FallingCobraEyes`, which share the state in `FallingCobraRig` and read every tuned value from `FallingCobraConfig`, the Config asset on the `FallingCobra` prefab.
 
 Cost: the body is one tube mesh (`BodyRings` 96 rings × `BodySides` 16 sides) made again on the CPU each frame the cobra moves; a dormant one holds its last pose & skips that rebuild while off screen (its renderer not visible) or beyond its wake & tracking range plus 4 u (`IsDormantAndIdle`); waking never waits on it.
 
@@ -168,7 +168,7 @@ Webs are in `GameplayScene` and follow the web probability curve. For a quick te
 
 The `BossCobraKing/CobraKingFight` prefab sits at the root of `GameplayScene`; everything in the arena is built at runtime around the trunk.
 
-Code: `CobraKingFightController` is the Coordinator (the public API, the lifecycle, and the phase dispatch); the work is split by role into `CobraKingArena`, `CobraKingArmor`, `CobraKingThrows`, `CobraKingAttacks`, `CobraKingMinions`, `CobraKingEnding`, and `CobraKingFeedback`, which share the state in `CobraKingRig` and read every Inspector value from `CobraKingTuning`, the `tuning` object on the prefab.
+Code: `CobraKingFightController` is the Coordinator (the public API, the lifecycle, and the phase dispatch); the work is split by role into `CobraKingArena`, `CobraKingArmor`, `CobraKingThrows`, `CobraKingAttacks`, `CobraKingMinions`, `CobraKingEnding`, and `CobraKingFeedback`, which share the state in `CobraKingRig` and read every tuned value from `CobraKingConfig`, the Config asset on the prefab; `WorldBalanceConfig` stays on `CobraKingFightController`.
 
 - Trigger: once the monkey has climbed `bossTriggerHeightU` (`WorldBalanceConfig`, the number on the trunk height markers, inside the boss zone between `bossZoneStartU` and `bossZoneEndU`) in Playing, the screen flashes white and the run enters the boss arena. The zone sits well past the basic run's whole cast, so a player has met and practised each hazard first: webs, pineapples, falling cobras, coconuts and rough bark, each first appearing where its own curve leaves zero; lower the 3 heights in the asset to test
 - Bare Zone: from `bossZoneStartU` to `bossZoneEndU` nothing but the fight is generated: branches of every kind, webs, falling cobras and rough bark each skip any spot whose own height falls in the zone (`RampedDifficultyManager.IsInBossZoneY`), so the trunk is bare there and the arena's own branches only ever bear bananas; the ramp holds its top value through the zone and ordinary generation resumes above the zone end
@@ -196,7 +196,7 @@ Code: `CobraKingFightController` is the Coordinator (the public API, the lifecyc
 | Bite | a dark red disc on the trunk at the monkey's spot whose bright center fills it, and a red "!" sign reading BITE!, `biteWarnS` | fatal within `biteRadiusU` of the spot | orbit or climb off the disc |
 | Tail Sweep | a red band round the trunk at the monkey's height, growing to the swept height, and a "!" sign reading TAIL!, `sweepWarnS` | the tail loops the trunk in `sweepTimeS`, fatal within `sweepBandHalfU` of the ring | climb above or below the ring |
 | Minions | `minionWaves` waves, each re-aimed at the monkey: a vertical danger strip down the trunk for each of `minionCount` - 1 fall lines spread `minionSpreadDeg` apart, covering the minion's whole fall path, from the king's coil down to where minions are gone (`guardDepthU` below the entry), all red from the start and beating faster and brighter as the drop nears, one inner line left empty as the gap, and one "!" sign reading LOOK UP! on a middle strip just above the monkey, `minionWarnS`; the first minion attack of a game holds "Minions, help me!" in the bubble | green minions appear under the king's coil and fall one after another (`minionStaggerS`) down their lines; their touch is fatal, unless the gold shield takes it | orbit into the gap |
-| Head Butt | the head rears back, `pushWindUpS` | a knock-down; a monkey at the ceiling or touching the resting king (`CobraKingContact`; a striking head's touch is ignored, as it reaches far below the rest pose) gets it any time, at most once per `pushCooldownS`, with "Stay away from me!"; while the head is busy with a bite the shove lands at once | stay below the ceiling |
+| Head Butt | the head rears back, `pushWindUpS` | a knock-down; a monkey at the ceiling or touching the resting king (`CobraKingContactSensor`; a striking head's touch is ignored, as it reaches far below the rest pose) gets it any time, at most once per `pushCooldownS`, with "Stay away from me!"; while the head is busy with a bite the shove lands at once | stay below the ceiling |
 
 Every warning sign is a red diamond with a white "!" and a word, built by `BossFightHud.AddWarning`, beating faster and growing as the hit nears. A knock-down is the usual stun and drop with the heavier shake (`HitBranchSensor.ReportHit`).
 
@@ -234,9 +234,9 @@ UI (`BossFightHud`) is built at runtime on the root Canvas, under the screens: e
 
 ## Spider King (Boss 2)
 
-The `BossSpiderKing/SpiderKingFight` prefab (`SpiderKingFightController`, `SpiderKingBody`, `BossFightHud`) is spawned by `CobraKingFightController` (`spiderFightPrefab`) if the scene has none; everything is built at runtime from primitives. Every tuning value is written out in the prefab, so the prefab, not the script's defaults, is what the game uses; change them there (Inspector).
+The `BossSpiderKing/SpiderKingFight` prefab (`SpiderKingFightController`, `SpiderKingBody`, `BossFightHud`) is spawned by `CobraKingFightController` (`spiderFightPrefab`) if the scene has none; everything is built at runtime from primitives. Every tuned value sits in `SpiderKingConfig`, so the asset, not the script's defaults, is what the game uses; change them there (Inspector).
 
-Code: `SpiderKingFightController` is the Coordinator (the public API, the lifecycle, and the phase dispatch); the work is split by role into `SpiderKingArena`, `SpiderKingMelons`, `SpiderKingMovement`, `SpiderKingAttacks`, `SpiderKingShots`, `SpiderKingParry`, `SpiderKingTeaching`, `SpiderKingDamage`, `SpiderKingEnding`, and `SpiderKingFeedback`, which share the state in `SpiderKingRig` and read every Inspector value from `SpiderKingTuning`, the `tuning` object on the prefab.
+Code: `SpiderKingFightController` is the Coordinator (the public API, the lifecycle, and the phase dispatch); the work is split by role into `SpiderKingArena`, `SpiderKingMelons`, `SpiderKingMovement`, `SpiderKingAttacks`, `SpiderKingShots`, `SpiderKingParry`, `SpiderKingTeaching`, `SpiderKingDamage`, `SpiderKingEnding`, and `SpiderKingFeedback`, which share the state in `SpiderKingRig` and read every tuned value from `SpiderKingConfig`, the Config asset on the prefab; `WorldBalanceConfig` stays on `SpiderKingFightController`.
 
 - Trigger: in the endless run at its turn of the boss rush (see Endless Boss Rush); else once the Cobra King is beaten (`CobraKingFightController.IsDone`) and the monkey has climbed `spiderTriggerHeightU` (1000 u, so its height marker reads 1000 m), not mid leap; never in Endless mode. From `spiderJumpHeightU` - 5 u the spider is already seen waiting above, crawling round the trunk (120°/s) to stay right above the monkey, and the fight starts w/ it right above the monkey as it enters, never across the trunk
 - Monkey Speed: in the arena the monkey climbs & orbits `monkeySpeedScale` (1.2) times as fast (`MonkeyController.ArenaSpeedScale`), back to 1 when the fight is over

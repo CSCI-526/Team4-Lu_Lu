@@ -167,7 +167,7 @@ public class IntroComicScreen: MonoBehaviour {
         }
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private sealed class LayerState {
         public RectTransform Rect;
         public Image Image;
@@ -206,7 +206,7 @@ public class IntroComicScreen: MonoBehaviour {
     private bool isCaptionSwapped;
     private bool isLeaving;
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     // a hidden panel per config entry, its layers placed and posed
     private void BuildPanels() {
         RectTransform holder = NewRect("Panels", stage);
@@ -377,7 +377,8 @@ public class IntroComicScreen: MonoBehaviour {
     private static void Animate(PanelState panel, float t) {
         IntroComicConfig.Panel data = panel.Data;
         float k = EaseInOut(Mathf.Clamp01(t / data.motionS));
-        float zoom = Mathf.Max(1f, Mathf.Lerp(data.start.zoom, data.end.zoom, k));
+        float zoom =
+            Mathf.Max(1f, Mathf.Lerp(data.start.zoom, data.end.zoom, k));
         Vector2 center = Vector2.Lerp(data.start.center, data.end.center, k);
         Vector2 reach = PANEL_SIZE / 2f * (1f - 1f / zoom);
         center.x = Mathf.Clamp(center.x, -reach.x, reach.x);
@@ -439,7 +440,8 @@ public class IntroComicScreen: MonoBehaviour {
                 scale = 1f + cue.amount * (0.5f - 0.5f * Mathf.Cos(wave));
                 break;
             case IntroComicConfig.CueKind.Twinkle:
-                alpha = Mathf.Lerp(cue.amount, 1f, 0.5f + 0.5f * Mathf.Cos(wave));
+                alpha =
+                    Mathf.Lerp(cue.amount, 1f, 0.5f + 0.5f * Mathf.Cos(wave));
                 break;
             case IntroComicConfig.CueKind.Reveal:
                 // on, off, then on for good with a slow pulse
@@ -510,7 +512,9 @@ public class IntroComicScreen: MonoBehaviour {
     }
 
     // the flag outlives a play session when domain reload is off in the Editor
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    [RuntimeInitializeOnLoadMethod(
+        RuntimeInitializeLoadType.SubsystemRegistration
+    )]
     private static void ResetLaunch() {
         HasPlayed = false;
     }

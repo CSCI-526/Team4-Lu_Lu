@@ -48,7 +48,8 @@ public sealed class FirebaseLeaderboardClient {
         return best;
     }
 
-    public string PlayerName => PlayerPrefs.GetString(preferencePrefix + "name");
+    public string PlayerName =>
+        PlayerPrefs.GetString(preferencePrefix + "name");
 
     public static bool TryNormalizeName(string name, out string normalized) {
         normalized = (name ?? "").Trim();
@@ -66,7 +67,9 @@ public sealed class FirebaseLeaderboardClient {
         return true;
     }
 
-    public async Task<Result> SubmitAndLoad(string board, long score, int limit) {
+    public async Task<Result> SubmitAndLoad(
+        string board, long score, int limit
+    ) {
         if (board != "normal" && board != "endless") {
             throw new ArgumentException("Unknown leaderboard.", nameof(board));
         }
@@ -137,7 +140,9 @@ public sealed class FirebaseLeaderboardClient {
                     ReadScore(JsonUtility.FromJson<Document>(ownJson)));
             }
             RememberScore(board, best);
-            return new Result { Entries = entries.ToArray(), PersonalBest = best };
+            return new Result {
+                Entries = entries.ToArray(), PersonalBest = best
+            };
         }
         finally {
             requests.Release();

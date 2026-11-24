@@ -7,7 +7,7 @@ using UnityEngine;
 /// physical part of the monkey (body, tail or hand) overlaps the king; its
 /// sensing triggers do not count.
 /// </summary>
-public class CobraKingContact: MonoBehaviour {
+public class CobraKingContactSensor: MonoBehaviour {
     // Public Members  #########################################################
     public event Action Touched;
 

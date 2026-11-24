@@ -33,6 +33,7 @@ public class ProgressBarWidget: MonoBehaviour {
     private RectTransform distanceRoot;
 
     [SerializeField]
+    [Tooltip("text showing the climbed distance")]
     private TMP_Text distanceLabel;
 
     [SerializeField]
@@ -200,7 +201,6 @@ public class ProgressBarWidget: MonoBehaviour {
     }
 
     // constants  ##############################################################
-    private const string PLAYER_TAG = "Player";
     private const int CIRCLE_TEXTURE_SIZE = 128;
 
     // private members  ########################################################
@@ -281,8 +281,7 @@ public class ProgressBarWidget: MonoBehaviour {
             return true;
         }
 
-        GameObject playerObject =
-            GameObject.FindGameObjectWithTag(PLAYER_TAG);
+        GameObject playerObject = MonkeyController.GetRootOrNull();
 
         if (playerObject == null) {
             if (!hasWarnedNoPlayer) {

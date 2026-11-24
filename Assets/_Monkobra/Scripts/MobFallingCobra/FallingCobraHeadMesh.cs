@@ -6,13 +6,13 @@ using static FallingCobraMath;
 /// <summary>Builds the rigid head and the animated body mesh a falling cobra
 /// shows.</summary>
 public sealed class FallingCobraHeadMesh {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly FallingCobraRig rig;
-    private readonly FallingCobraTuning tuning;
+    private readonly FallingCobraConfig config;
 
     public FallingCobraHeadMesh(FallingCobraRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     private static readonly Dictionary<(Mesh, float, Vector3, float),
@@ -20,7 +20,7 @@ public sealed class FallingCobraHeadMesh {
 
     // Public Methods  #########################################################
     public void BuildCartoonVisual() {
-        if (!tuning.CartoonAppearance.enabled) {
+        if (!config.CartoonAppearance.enabled) {
             return;
         }
         List<Transform> segments = new List<Transform>();
@@ -34,14 +34,14 @@ public sealed class FallingCobraHeadMesh {
             || !segments[0].TryGetComponent(out Renderer source)) {
             return;
         }
-        if (tuning.CartoonAppearance.referenceBody != null) {
+        if (config.CartoonAppearance.referenceBody != null) {
             foreach (Transform segment in segments) {
                 if (segment.TryGetComponent(out Renderer renderer)) {
                     renderer.enabled = false;
                 }
             }
             GameObject visual =
-                Object.Instantiate(tuning.CartoonAppearance.referenceBody,
+                Object.Instantiate(config.CartoonAppearance.referenceBody,
                     rig.host);
             visual.name = "CartoonSnakeBody";
             MeshFilter meshFilter = visual.GetComponent<MeshFilter>();
@@ -50,22 +50,22 @@ public sealed class FallingCobraHeadMesh {
         }
         rig.cartoonVisual =
             new CartoonCobraVisual(rig.host, source.sharedMaterial,
-                tuning.CartoonAppearance);
+                config.CartoonAppearance);
         Transform head = new GameObject("CartoonHeadAnchor").transform;
         head.SetParent(rig.host, false);
         head.localPosition = segments[0].localPosition;
         head.localRotation = Quaternion.Euler(0f, 0f, 180f);
-        rig.cartoonVisual.BuildHead(head, tuning.HitRadiusU * 0.78f);
+        rig.cartoonVisual.BuildHead(head, config.HitRadiusU * 0.78f);
         Vector3[] centers = new Vector3[segments.Count];
         Vector3[] outward = new Vector3[segments.Count];
         float[] radii = new float[segments.Count];
         for (int i = 0; i < segments.Count; i++) {
             float t = i / (float)(segments.Count - 1);
             Vector3 local = segments[i].localPosition;
-            local.x += Mathf.Sin(t * Mathf.PI * 3f) * tuning.HitRadiusU * 0.38f;
+            local.x += Mathf.Sin(t * Mathf.PI * 3f) * config.HitRadiusU * 0.38f;
             centers[i] = rig.host.TransformPoint(local);
             outward[i] = -rig.host.forward;
-            radii[i] = tuning.HitRadiusU * 0.37f * (1f - t * t);
+            radii[i] = config.HitRadiusU * 0.37f * (1f - t * t);
             if (segments[i].TryGetComponent(out Renderer renderer)) {
                 renderer.enabled = false;
             }
@@ -177,7 +177,7 @@ public sealed class FallingCobraHeadMesh {
         pivot += sourceAxis * (cut - Vector3.Dot(pivot, sourceAxis));
         Quaternion align = Quaternion.FromToRotation(sourceAxis, Vector3.up);
         Vector3 face =
-            Vector3.ProjectOnPlane(align * tuning.ReferenceFaceDirection,
+            Vector3.ProjectOnPlane(align * config.ReferenceFaceDirection,
                 Vector3.up).normalized;
         Quaternion yaw =
             Quaternion.FromToRotation(face, Vector3.forward) * align;
@@ -207,10 +207,10 @@ public sealed class FallingCobraHeadMesh {
             Vector3 normal = yaw * head[i].normal;
             float collarT = Mathf.InverseLerp(-.4f, 0f, vertex.y);
             float collarScale =
-                Mathf.Lerp(1f, tuning.NeckWaistScale,
+                Mathf.Lerp(1f, config.NeckWaistScale,
                     Mathf.SmoothStep(0f, 1f, collarT));
             float derivative =
-                (tuning.NeckWaistScale - 1f) * 6f * collarT * (1f - collarT)
+                (config.NeckWaistScale - 1f) * 6f * collarT * (1f - collarT)
                     / .4f;
             normal = new Vector3(normal.x / collarScale,
                 normal.y - derivative
@@ -244,7 +244,7 @@ public sealed class FallingCobraHeadMesh {
             template.bounds.Encapsulate(vertex);
         }
         template.faceBasis =
-            Quaternion.LookRotation(yaw * tuning.ReferenceFaceDirection,
+            Quaternion.LookRotation(yaw * config.ReferenceFaceDirection,
                 yaw * Vector3.up);
         template.faceCenter = template.bounds.center;
         // Intersect rays with the actual clipped boundary. The first body ring
@@ -284,7 +284,7 @@ public sealed class FallingCobraHeadMesh {
             }
             template.rim[side] =
                 new Vector3(direction.x, 0f, direction.y) * radius
-                    * tuning.NeckWaistScale;
+                    * config.NeckWaistScale;
             template.rimUV[side] = rimUV;
             template.rimNormals[side] =
                 new Vector3(direction.x, 0f, direction.y);
@@ -307,11 +307,11 @@ public sealed class FallingCobraHeadMesh {
                 * Mathf.PI * 2f;
         Mesh source = filter.sharedMesh;
         float size =
-            tuning.HitRadiusU * 2f * tuning.ReferenceSizeMultiplier
+            config.HitRadiusU * 2f * config.ReferenceSizeMultiplier
                 / Mathf.Max(source.bounds.size.x, source.bounds.size.z);
         (Mesh, float, Vector3, float) key =
-            (source, size, tuning.ReferenceFaceDirection,
-                tuning.NeckWaistScale);
+            (source, size, config.ReferenceFaceDirection,
+                config.NeckWaistScale);
         if (!headTemplates.TryGetValue(key, out HeadTemplate template)) {
             template = CreateHeadTemplate(source, size);
             headTemplates.Add(key, template);
@@ -406,17 +406,17 @@ public sealed class FallingCobraHeadMesh {
         rig.spineRadii = new float[BodyRings];
         rig.spineContact = new float[BodyRings];
         rig.referenceHeadBelowPivotU =
-            Mathf.Max(tuning.HitRadiusU, -headBounds.min.y + .05f);
+            Mathf.Max(config.HitRadiusU, -headBounds.min.y + .05f);
         rig.hitCollider.radius =
             Mathf.Max(headBounds.extents.x,
-                tuning.SmoothBodyRadiusU
-                    + Mathf.Max(tuning.HeadSwayAmplitudeU,
-                        tuning.StandingCoilOuterRadiusU));
+                config.SmoothBodyRadiusU
+                    + Mathf.Max(config.HeadSwayAmplitudeU,
+                        config.StandingCoilOuterRadiusU));
         rig.hitCollider.height =
             Mathf.Max(rig.hitCollider.radius * 2f,
-                tuning.SmoothBodyLengthU - headBounds.min.y);
+                config.SmoothBodyLengthU - headBounds.min.y);
         rig.hitCollider.center =
-            Vector3.up * (tuning.SmoothBodyLengthU + headBounds.min.y) * .5f;
+            Vector3.up * (config.SmoothBodyLengthU + headBounds.min.y) * .5f;
     }
 
 }

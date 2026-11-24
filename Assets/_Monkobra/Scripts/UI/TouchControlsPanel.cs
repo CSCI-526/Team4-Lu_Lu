@@ -66,7 +66,7 @@ public class TouchControlsPanel: MonoBehaviour {
         }
     }
 
-    // Private Methods  ########################################################
+    // private methods  ########################################################
     private void OnStyleChanged(ControlStyle _) {
         Refresh();
     }
@@ -92,7 +92,7 @@ public class TouchControlsPanel: MonoBehaviour {
             && game.State != GameState.Won;
     }
 
-    // Private Members  ########################################################
+    // private members  ########################################################
     private GameController game;
     private bool isStarted;
 }

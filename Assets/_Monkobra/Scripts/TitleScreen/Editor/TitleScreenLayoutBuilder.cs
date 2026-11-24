@@ -13,7 +13,7 @@ using UnityEngine.UI;
 /// references, and the input icons the scene overrides), only moving it.
 /// </summary>
 public static class TitleScreenLayoutBuilder {
-    // public members  #########################################################
+    // Public Members  #########################################################
     // the loading page's vines on a full-screen panel, replacing any there;
     // the level selection uses them too, so both screens hang them alike
     internal static RectTransform BuildVines(Transform panel) {

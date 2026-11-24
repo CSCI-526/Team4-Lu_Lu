@@ -104,7 +104,7 @@ public class HackShortcutConfig: ScriptableObject {
         }
         isLayerOn = !isLayerOn;
         if (Debug.isDebugBuild) {
-            Debug.Log("HackShortcutConfig:	hack layer " + isLayerOn);
+            Debug.Log("HackShortcutConfig:\thack layer " + isLayerOn);
         }
         return true;
     }

@@ -3,18 +3,18 @@ using static CobraMotorRig;
 
 /// <summary>The close chase hiss and its alert cue.</summary>
 public sealed class CobraMotorHiss {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly CobraMotorRig rig;
-    private readonly CobraMotorTuning tuning;
+    private readonly CobraMotorConfig config;
 
     public CobraMotorHiss(CobraMotorRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
     public void CreateProximityHiss() {
-        if (tuning.ProximityHiss == null) {
+        if (config.ProximityHiss == null) {
             return;
         }
         rig.hissBodyShapes = new CapsuleCollider[rig.bodySegments.Length];
@@ -25,25 +25,25 @@ public sealed class CobraMotorHiss {
         GameObject voice = new GameObject("GreatCobraHiss");
         voice.transform.SetParent(rig.host, false);
         rig.proximityHissSource = voice.AddComponent<AudioSource>();
-        rig.proximityHissSource.clip = tuning.ProximityHiss;
+        rig.proximityHissSource.clip = config.ProximityHiss;
         rig.proximityHissSource.playOnAwake = false;
         rig.proximityHissSource.loop = false;
-        rig.proximityHissSource.volume = tuning.HissVolume;
-        rig.proximityHissSource.pitch = tuning.HissPitch;
+        rig.proximityHissSource.volume = config.HissVolume;
+        rig.proximityHissSource.pitch = config.HissPitch;
         rig.proximityHissSource.spatialBlend = 1f;
         rig.proximityHissSource.dopplerLevel = 0f;
         rig.proximityHissSource.rolloffMode = AudioRolloffMode.Linear;
-        rig.proximityHissSource.minDistance = tuning.HissMinDistanceU;
+        rig.proximityHissSource.minDistance = config.HissMinDistanceU;
         rig.proximityHissSource.maxDistance =
-            Mathf.Max(tuning.HissMinDistanceU, tuning.HissMaxDistanceU);
+            Mathf.Max(config.HissMinDistanceU, config.HissMaxDistanceU);
         GameObject alert = new GameObject("GreatCobraChaseAlertHiss");
         alert.transform.SetParent(rig.host, false);
         rig.chaseAlertHissSource = alert.AddComponent<AudioSource>();
-        rig.chaseAlertHissSource.clip = tuning.ProximityHiss;
+        rig.chaseAlertHissSource.clip = config.ProximityHiss;
         rig.chaseAlertHissSource.playOnAwake = false;
         rig.chaseAlertHissSource.loop = false;
-        rig.chaseAlertHissSource.volume = tuning.ChaseAlertHissVolume;
-        rig.chaseAlertHissSource.pitch = tuning.HissPitch;
+        rig.chaseAlertHissSource.volume = config.ChaseAlertHissVolume;
+        rig.chaseAlertHissSource.pitch = config.HissPitch;
         // The introduction shot must be audible while the monkey is still far
         // above the cobra.
         rig.chaseAlertHissSource.spatialBlend = 0f;
@@ -83,8 +83,8 @@ public sealed class CobraMotorHiss {
         bool near = rig.player != null && !rig.isFrozen && !rig.isGuarding
             && Time.timeScale>0f
             && (GameController.I == null || GameController.I.IsRunLive)
-            && distanceSquared <= Mathf.Pow(tuning.HissStartDistanceU
-                +(rig.wasInHissRange?tuning.HissExitPaddingU:0f), 2f);
+            && distanceSquared <= Mathf.Pow(config.HissStartDistanceU
+                +(rig.wasInHissRange?config.HissExitPaddingU:0f), 2f);
         if (!near) {
             StopProximityHiss();
             return;
@@ -98,9 +98,9 @@ public sealed class CobraMotorHiss {
             rig.proximityHissSource.Play();
             rig.nextProximityHissTime =
                 Time.time
-                    +Mathf.Max(tuning.HissIntervalS,
-                        tuning.ProximityHiss.length
-                            / Mathf.Max(.1f, tuning.HissPitch));
+                    +Mathf.Max(config.HissIntervalS,
+                        config.ProximityHiss.length
+                            / Mathf.Max(.1f, config.HissPitch));
         }
     }
 

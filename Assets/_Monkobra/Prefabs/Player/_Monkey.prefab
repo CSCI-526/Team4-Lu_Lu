@@ -359,7 +359,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64d9abc7de9649e1b97ee48e13c13c4d, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::MonkeySfx
+  m_EditorClassIdentifier: Assembly-CSharp::MonkeySfxListener
   bananaGrab: {fileID: 8300000, guid: 9684d534cfbd42bfab91b8444f111ac1, type: 3}
   coconutGrab: {fileID: 8300000, guid: e810cf960d4e421fabe22a7e09860ecd, type: 3}
   pineappleGrab: {fileID: 8300000, guid: 00c5dc831a5d46319b5d5f81692e9643, type: 3}

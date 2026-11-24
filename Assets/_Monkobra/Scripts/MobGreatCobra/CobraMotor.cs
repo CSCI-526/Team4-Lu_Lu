@@ -78,17 +78,17 @@ public class CobraMotor: MonoBehaviour {
     /// only to a monkey lingering that low; the coil never climbs.
     /// </summary>
     public void StartGuard(float headWorldY) {
-        if (tuning.PathCenter == null) {
+        if (pathCenter == null) {
             return;
         }
 
         rig.isGuarding = true;
         rig.nextPeekTime = Time.time + UnityEngine.Random.Range(
-            tuning.PeekIntervalRangeS.x, tuning.PeekIntervalRangeS.y
+            config.PeekIntervalRangeS.x, config.PeekIntervalRangeS.y
         );
         rig.surgeStacks = 0;
         rig.isCatchingUp = false;
-        rig.guardHeadHeight = headWorldY - tuning.PathCenter.position.y;
+        rig.guardHeadHeight = headWorldY - pathCenter.position.y;
         rig.headHeight = rig.guardHeadHeight;
         coil.UpdateBody();
     }
@@ -116,7 +116,7 @@ public class CobraMotor: MonoBehaviour {
         if (rig.isGuarding) {
             rig.guardPeek = 0f;
             rig.nextPeekTime = Time.time + UnityEngine.Random.Range(
-                tuning.PeekIntervalRangeS.x, tuning.PeekIntervalRangeS.y
+                config.PeekIntervalRangeS.x, config.PeekIntervalRangeS.y
             );
         } else {
             rig.headHeight -= Mathf.Max(0f, distanceU);
@@ -182,9 +182,9 @@ public class CobraMotor: MonoBehaviour {
         rig.chaseAlertHissSource.Play();
         rig.nextProximityHissTime =
             Time.time
-                +Mathf.Max(tuning.HissIntervalS,
-                    tuning.ProximityHiss.length
-                        / Mathf.Max(.1f, tuning.HissPitch));
+                +Mathf.Max(config.HissIntervalS,
+                    config.ProximityHiss.length
+                        / Mathf.Max(.1f, config.HissPitch));
     }
 
     private void OnDisable() {
@@ -195,10 +195,37 @@ public class CobraMotor: MonoBehaviour {
     }
 
     // Inspector Fields  #######################################################
+    [Header("References")]
     [SerializeField]
-    private CobraMotorTuning tuning = new();
+    [Tooltip("trunk axis the cobra orbits, its y is the path's zero height")]
+    private Transform pathCenter;
 
-    // Private Members  ########################################################
+    [SerializeField]
+    [Tooltip("body segments, head first; missing ones are cloned from the last "
+        + "to fill the coil")]
+    private Transform[] bodySegments;
+
+    [SerializeField]
+    [Tooltip("cobra balance tuning; catch-up when the monkey is far ahead, "
+        + "none if unset")]
+    private CobraBalanceConfig cobraBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("player balance tuning; hit stun length, so one hit counts once; "
+        + "none if unset")]
+    private PlayerBalanceConfig playerBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("monkey climb tuning; its top up speed is what the base speed "
+        + "multipliers scale; inspector climb speed if unset")]
+    private MonkeyClimbConfig monkeyClimbConfig;
+
+    [Header("Tuning")]
+    [SerializeField]
+    [Tooltip("every tuned value of the great cobra")]
+    private CobraMotorConfig config;
+
+    // private members  ########################################################
     private CobraMotorRig rig;
     private CobraMotorChase chase;
     private CobraMotorSurge surge;
@@ -207,8 +234,22 @@ public class CobraMotor: MonoBehaviour {
     private CobraMotorCoil coil;
 
     private void Awake() {
-        rig = new CobraMotorRig(this, tuning);
-        rig.bodySegments = tuning.BodySegments;
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogError(
+                "CobraMotor:\tmust assign Inspector Field: config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        rig = new CobraMotorRig(this, config);
+        rig.pathCenter = pathCenter;
+        rig.bodySegments = bodySegments;
+        rig.cobraBalanceConfig = cobraBalanceConfig;
+        rig.playerBalanceConfig = playerBalanceConfig;
+        rig.monkeyClimbConfig = monkeyClimbConfig;
         chase = new CobraMotorChase(rig, () => ChaseStarted?.Invoke());
         surge = new CobraMotorSurge(rig,
             (stacks) => CatchUpStarted?.Invoke(stacks));
@@ -220,8 +261,7 @@ public class CobraMotor: MonoBehaviour {
         rig.Guard = guard;
         rig.Hiss = hiss;
         rig.Coil = coil;
-        // Inspector Assignment Guard  -----------------------------------------
-        if (tuning.PathCenter == null) {
+        if (pathCenter == null) {
             Debug.LogError(
                 "CobraMotor:\tmust assign Inspector Field: pathCenter",
                 this
@@ -235,13 +275,13 @@ public class CobraMotor: MonoBehaviour {
             );
         }
 
-        if (tuning.PathCenter == null || rig.bodySegments == null
+        if (pathCenter == null || rig.bodySegments == null
             || rig.bodySegments.Length == 0) {
             enabled = false;
             return;
         }
 
-        if (tuning.CobraBalanceConfig == null) {
+        if (cobraBalanceConfig == null) {
             Debug.LogWarning(
                 "CobraMotor:\tno Inspector Field: cobraBalanceConfig, "
                     + "the cobra will not catch up",
@@ -260,16 +300,14 @@ public class CobraMotor: MonoBehaviour {
             return;
         }
 
-        rig.headHeight = tuning.StartHeight;
-        rig.currentClimbSpeed = tuning.ClimbSpeed;
+        rig.headHeight = config.StartHeightU;
+        rig.currentClimbSpeed = config.ClimbSpeedUPerS;
         coil.UpdateBody();
     }
 
     private void Update() {
         if (rig.player == null) {
-            GameObject playerObject = GameObject.FindGameObjectWithTag(
-                "Player"
-            );
+            GameObject playerObject = MonkeyController.GetRootOrNull();
 
             if (playerObject != null) {
                 rig.player = playerObject.transform;
@@ -288,7 +326,7 @@ public class CobraMotor: MonoBehaviour {
         }
 
         rig.headAngle +=
-            rig.Direction * tuning.OrbitSpeedDegrees * Time.deltaTime;
+            rig.Direction * config.OrbitSpeedDegPerS * Time.deltaTime;
 
         if (rig.isGuarding) {
             guard.UpdateGuard();
@@ -306,7 +344,7 @@ public class CobraMotor: MonoBehaviour {
             rig.surgeStacks = 0;
         }
         rig.isCatchingUp = rig.surgeStacks > 0
-            && tuning.CobraBalanceConfig != null;
+            && cobraBalanceConfig != null;
 
         if (rig.isCatchingUp) {
             // a surge never slows near the monkey: it is the punishment
@@ -314,20 +352,20 @@ public class CobraMotor: MonoBehaviour {
                 baseClimbSpeed,
                 Mathf.Min(
                     baseClimbSpeed
-                        + tuning.CobraBalanceConfig.GetSurgeSpeedBonusU(
+                        + cobraBalanceConfig.GetSurgeSpeedBonusU(
                             rig.surgeStacks),
-                    tuning.CobraBalanceConfig.CobraMaxSurgeSpeedU
+                    cobraBalanceConfig.CobraMaxSurgeSpeedU
                 )
             );
         } else if (Time.time < rig.exitBoostEndTime) {
             // leaving the starting zone releases the cobra with a burst
             targetClimbSpeed = baseClimbSpeed
-                + tuning.CobraBalanceConfig.CobraExitBoostSpeedU;
+                + cobraBalanceConfig.CobraExitBoostSpeedU;
         }
 
         // ease toward the target, so a speed-up or a slow-down never jumps
-        float speedChangeRate = tuning.CobraBalanceConfig != null
-            ? tuning.CobraBalanceConfig.CobraSpeedChangeRateU
+        float speedChangeRate = cobraBalanceConfig != null
+            ? cobraBalanceConfig.CobraSpeedChangeRateU
             : float.PositiveInfinity;
         rig.currentClimbSpeed = Mathf.MoveTowards(
             rig.currentClimbSpeed,
@@ -352,11 +390,6 @@ public class CobraMotor: MonoBehaviour {
     private void OnDestroy() {
         rig.cartoonVisual?.Dispose();
         surge.StopListening();
-    }
-
-    // Editor Validation  ######################################################
-    private void OnValidate() {
-        tuning.Validate();
     }
 
     private void LateUpdate() {

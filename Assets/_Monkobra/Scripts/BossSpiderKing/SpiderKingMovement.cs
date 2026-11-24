@@ -7,13 +7,13 @@ using static SpiderKingRig;
 /// <summary>Moves the spider: idle, stalk, prowl, rush, cocoon, the stages, and
 /// the tail.</summary>
 public sealed class SpiderKingMovement {
-    // Private Members  ########################################################
+    // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingMovement(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -64,7 +64,7 @@ public sealed class SpiderKingMovement {
             Mathf.Lerp(rig.HorizontalDistance(from), rig.HorizontalDistance(to),
             t) + Mathf.Sin(t * Mathf.PI) * bulgeU;
         return rig.PointOnTrunk(angle, y,
-            Mathf.Max(radius, tuning.TrunkRadiusU + 0.3f));
+            Mathf.Max(radius, config.TrunkRadiusU + 0.3f));
     }
 
     // Spider  -----------------------------------------------------------------
@@ -115,7 +115,7 @@ public sealed class SpiderKingMovement {
         rig.body.SetEyeGlow(isStunned ? 0f : glow);
         if (rig.isSlashing && rig.slashChargeLeftS > 0f && !isStunned) {
             rig.body.SetEyeGlow(0.7f + 0.3f * Mathf.Sin(Time.time * 30f),
-                tuning.WarnColor);
+                config.WarnColor);
         }
         if (Time.unscaledTime < rig.biteEndTime) {
             float t = 1f - (rig.biteEndTime - Time.unscaledTime) / BITE_S;
@@ -166,7 +166,7 @@ public sealed class SpiderKingMovement {
     public float Rush() {
         Vector3 at = rig.monkey.position;
         bool hasArrived = MoveToward(rig.AngleOf(at), at.y,
-            tuning.RushSpeedU * rig.RushSpeedScale, tuning.StalkDistanceU);
+            config.RushSpeedU * rig.RushSpeedScale, config.StalkDistanceU);
         return hasArrived ? 0f : 1f;
     }
 
@@ -196,8 +196,8 @@ public sealed class SpiderKingMovement {
         Vector3 at = rig.monkey.position;
         bool hasArrived =
             MoveToward(rig.AngleOf(at), at.y,
-                tuning.StalkSpeedU * rig.ChaseScale,
-            tuning.StalkDistanceU);
+                config.StalkSpeedU * rig.ChaseScale,
+            config.StalkDistanceU);
         if (!hasArrived) {
             return 0.6f;
         }
@@ -213,7 +213,7 @@ public sealed class SpiderKingMovement {
             rig.nextProwlFlipTime = Time.time + Random.Range(1.2f, 2.6f);
         }
         float arcU = Mathf.DeltaAngle(rig.spiderAngle, rig.AngleOf(at))
-            * Mathf.Deg2Rad * tuning.TrunkRadiusU;
+            * Mathf.Deg2Rad * config.TrunkRadiusU;
         float dy = at.y - rig.spiderY;
         float distance = Mathf.Sqrt(arcU * arcU + dy * dy);
         if (distance < 0.01f) {
@@ -222,9 +222,9 @@ public sealed class SpiderKingMovement {
         // across the line to the monkey, & a pull back onto its distance
         float toU = arcU / distance;
         float toV = dy / distance;
-        float speedU = tuning.StalkSpeedU * rig.ChaseScale * PROWL_SHARE;
+        float speedU = config.StalkSpeedU * rig.ChaseScale * PROWL_SHARE;
         float pull =
-            Mathf.Clamp(distance - tuning.StalkDistanceU, -1f, 1f) * 2f;
+            Mathf.Clamp(distance - config.StalkDistanceU, -1f, 1f) * 2f;
         float stepU =
             (-toV * rig.prowlSign * speedU + toU * pull) * Time.deltaTime;
         float stepV =
@@ -232,11 +232,11 @@ public sealed class SpiderKingMovement {
         float nextY = rig.spiderY + stepV;
         // turned back at the arena's floor & top
         if (nextY < rig.ArenaBottomY
-            || nextY > rig.entryY + tuning.ArenaHeightU) {
+            || nextY > rig.entryY + config.ArenaHeightU) {
             rig.prowlSign = -rig.prowlSign;
             return;
         }
-        rig.spiderAngle += stepU / tuning.TrunkRadiusU * Mathf.Rad2Deg;
+        rig.spiderAngle += stepU / config.TrunkRadiusU * Mathf.Rad2Deg;
         rig.spiderY = nextY;
     }
 
@@ -252,10 +252,10 @@ public sealed class SpiderKingMovement {
         }
         Vector3 at = rig.monkey.position;
         float speedU = rig.hasBeenTrapped
-            ? tuning.CocoonSpeedU
-            : tuning.CocoonSpeedU * tuning.FirstCocoonSpeedScale;
+            ? config.CocoonSpeedU
+            : config.CocoonSpeedU * config.FirstCocoonSpeedScale;
         bool hasArrived =
-            MoveToward(rig.AngleOf(at), at.y, speedU, tuning.CocoonReachU);
+            MoveToward(rig.AngleOf(at), at.y, speedU, config.CocoonReachU);
         if (hasArrived) {
             rig.Damage.LethalHit("Wrapped!");
             return 0f;
@@ -272,9 +272,9 @@ public sealed class SpiderKingMovement {
     ) {
         targetY =
             Mathf.Clamp(targetY, rig.ArenaBottomY,
-                rig.entryY + tuning.ArenaHeightU);
+                rig.entryY + config.ArenaHeightU);
         float arcU = Mathf.DeltaAngle(rig.spiderAngle, targetAngle)
-            * Mathf.Deg2Rad * tuning.TrunkRadiusU;
+            * Mathf.Deg2Rad * config.TrunkRadiusU;
         float dy = targetY - rig.spiderY;
         float distance = Mathf.Sqrt(arcU * arcU + dy * dy);
         if (distance <= reachU) {
@@ -282,7 +282,7 @@ public sealed class SpiderKingMovement {
         }
         float step = Mathf.Min(speedU * Time.deltaTime, distance - reachU);
         rig.spiderAngle +=
-            arcU / distance * step / tuning.TrunkRadiusU * Mathf.Rad2Deg;
+            arcU / distance * step / config.TrunkRadiusU * Mathf.Rad2Deg;
         rig.spiderY += dy / distance * step;
         return false;
     }
@@ -290,10 +290,10 @@ public sealed class SpiderKingMovement {
     // Attacks  ----------------------------------------------------------------
     // the weaker, the shorter the rests
     public float RestNow() {
-        return tuning.RestS
-            * Mathf.Lerp(tuning.MinRestShare, 1f,
+        return config.RestS
+            * Mathf.Lerp(config.MinRestShare, 1f,
                 rig.health / (float)rig.maxHealth)
-            * (rig.isEasy ? tuning.EasyTimeScale : 1f) * rig.RushTimeScale;
+            * (rig.isEasy ? config.EasyTimeScale : 1f) * rig.RushTimeScale;
     }
 
     public static int PerStage(Vector3Int values, int stage) =>
@@ -323,7 +323,7 @@ public sealed class SpiderKingMovement {
             return;
         }
         rig.isTailTinted = true;
-        Color color = isFlash ? Color.white : tuning.GoldenColor;
+        Color color = isFlash ? Color.white : config.GoldenColor;
         foreach (Renderer part in
             rig.tail.GetComponentsInChildren<Renderer>(true)) {
             rig.Feedback.SetColor(part, color);
@@ -360,7 +360,7 @@ public sealed class SpiderKingMovement {
         }
         rig.tailTimeS += Time.unscaledDeltaTime;
         float total =
-            tuning.TailWindUpS + tuning.TailActiveS + tuning.TailRecoverS;
+            config.TailWindUpS + config.TailActiveS + config.TailRecoverS;
         if (rig.tailTimeS >= total) {
             rig.tailTimeS = -1f;
             if (rig.tail != null) {
@@ -374,18 +374,18 @@ public sealed class SpiderKingMovement {
         }
         float swish;
         float flick;
-        if (rig.tailTimeS < tuning.TailWindUpS) {
-            float t = rig.tailTimeS / Mathf.Max(0.001f, tuning.TailWindUpS);
+        if (rig.tailTimeS < config.TailWindUpS) {
+            float t = rig.tailTimeS / Mathf.Max(0.001f, config.TailWindUpS);
             swish = -45f * t;
             flick = -15f * t;
-        } else if (rig.tailTimeS < tuning.TailWindUpS + tuning.TailActiveS) {
-            float t = (rig.tailTimeS - tuning.TailWindUpS) / tuning.TailActiveS;
+        } else if (rig.tailTimeS < config.TailWindUpS + config.TailActiveS) {
+            float t = (rig.tailTimeS - config.TailWindUpS) / config.TailActiveS;
             float ease = 1f - (1f - t) * (1f - t);
             swish = Mathf.Lerp(-45f, 95f, ease);
             flick = -15f - 45f * Mathf.Sin(t * Mathf.PI);
         } else {
-            float t = (rig.tailTimeS - tuning.TailWindUpS - tuning.TailActiveS)
-                / Mathf.Max(0.001f, tuning.TailRecoverS);
+            float t = (rig.tailTimeS - config.TailWindUpS - config.TailActiveS)
+                / Mathf.Max(0.001f, config.TailRecoverS);
             swish = Mathf.Lerp(95f, 0f, t * t * (3f - 2f * t));
             flick = Mathf.Lerp(-15f, 0f, t);
         }
