@@ -8,14 +8,14 @@ using static CobraKingRig;
 public sealed class CobraKingEnding {
     // private members  ########################################################
     private readonly CobraKingRig rig;
-    private readonly CobraKingTuning tuning;
+    private readonly CobraKingConfig config;
     private readonly System.Action onRevived;
     private readonly System.Action onFightEnded;
 
     public CobraKingEnding(CobraKingRig rig, System.Action onRevived,
         System.Action onFightEnded) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
         this.onRevived = onRevived;
         this.onFightEnded = onFightEnded;
     }
@@ -31,7 +31,7 @@ public sealed class CobraKingEnding {
         rig.finisherTimeS = 0f;
         rig.Feedback.ClearMarkers();
         rig.hud.SetPrompt(false, Vector3.zero);
-        Time.timeScale = tuning.FinisherTimeScale;
+        Time.timeScale = config.FinisherTimeScale;
 
         if (isWin) {
             rig.hud.Flash(Color.white);
@@ -63,7 +63,7 @@ public sealed class CobraKingEnding {
         if (!rig.isFinisherWin) {
             rig.monkey.Rotate(Vector3.up, 900f * Time.unscaledDeltaTime);
         }
-        if (rig.finisherTimeS < tuning.FinisherRealS) {
+        if (rig.finisherTimeS < config.FinisherRealS) {
             return;
         }
 
@@ -72,7 +72,7 @@ public sealed class CobraKingEnding {
             Defeat();
             return;
         }
-        if (tuning.CanRevive) {
+        if (config.CanRevive) {
             OfferRevive();
             return;
         }
@@ -92,7 +92,7 @@ public sealed class CobraKingEnding {
     // Time stands still meanwhile, so all of it runs on unscaled time
     public void OfferRevive() {
         rig.phase = CobraKingPhase.ReviveOffer;
-        rig.reviveLeftS = tuning.ReviveOfferS;
+        rig.reviveLeftS = config.ReviveOfferS;
         Time.timeScale = 0f;
         rig.hud.HideBanner();
         rig.hud.ShowReviveOffer();
@@ -114,9 +114,9 @@ public sealed class CobraKingEnding {
         // a short while
         if (rig.phase == CobraKingPhase.WatchingAd) {
             rig.adElapsedS += stepS;
-            bool canSkip = rig.adElapsedS >= tuning.AdSkipAfterS;
+            bool canSkip = rig.adElapsedS >= config.AdSkipAfterS;
             rig.hud.SetAdSkippable(canSkip);
-            if (canSkip && WasPressed(tuning.ConfirmAction)) {
+            if (canSkip && WasPressed(config.ConfirmAction)) {
                 SkipAd();
             }
             return;
@@ -126,9 +126,9 @@ public sealed class CobraKingEnding {
 
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(Mathf.Max(0f,
             rig.reviveLeftS)));
-        if (WasPressed(tuning.ConfirmAction)) {
+        if (WasPressed(config.ConfirmAction)) {
             WatchAd();
-        } else if (WasPressed(tuning.GiveUpAction) || rig.reviveLeftS <= 0f) {
+        } else if (WasPressed(config.GiveUpAction) || rig.reviveLeftS <= 0f) {
             GiveUp();
         }
     }
@@ -205,10 +205,10 @@ public sealed class CobraKingEnding {
             rig.monkeyController.ClearStun();
             rig.monkeyController.IsHeld = true;
             rig.monkeyController.PullTo(rig.entryPosition,
-                tuning.ReviveReturnSpeedU);
+                config.ReviveReturnSpeedU);
             rig.isReturningToStart = true;
         }
-        rig.Arena.SpawnWebs(tuning.WebCount);
+        rig.Arena.SpawnWebs(config.WebCount);
         rig.Arena.SpawnLowWebs();
         // a plain difficulty card, time stopped till a pick
         rig.isChoosing = true;
@@ -224,7 +224,7 @@ public sealed class CobraKingEnding {
 
     public void SkipAd() {
         if (rig.phase != CobraKingPhase.WatchingAd
-            || rig.adElapsedS < tuning.AdSkipAfterS) {
+            || rig.adElapsedS < config.AdSkipAfterS) {
             return;
         }
         RestartFight();
@@ -232,8 +232,8 @@ public sealed class CobraKingEnding {
 
     public void OpenCoursePage() {
         if (rig.phase == CobraKingPhase.WatchingAd
-            && !string.IsNullOrEmpty(tuning.CourseUrl)) {
-            Application.OpenURL(tuning.CourseUrl);
+            && !string.IsNullOrEmpty(config.CourseUrl)) {
+            Application.OpenURL(config.CourseUrl);
         }
     }
 
@@ -250,7 +250,7 @@ public sealed class CobraKingEnding {
         rig.monkeyController.ClearStun();
         rig.monkeyController.IsHeld = true;
         rig.monkeyController.PullTo(rig.entryPosition,
-            tuning.ReviveReturnSpeedU);
+            config.ReviveReturnSpeedU);
         rig.isReturningToStart = true;
     }
 
@@ -306,21 +306,21 @@ public sealed class CobraKingEnding {
     public void UpdateVictory() {
         rig.victoryTimeS += Time.deltaTime;
         if (rig.crown != null) {
-            float t = Mathf.Clamp01(rig.victoryTimeS / tuning.CrownFlyS);
+            float t = Mathf.Clamp01(rig.victoryTimeS / config.CrownFlyS);
             Vector3 end =
-                rig.monkey.position + Vector3.up * tuning.CrownAboveMonkeyU;
+                rig.monkey.position + Vector3.up * config.CrownAboveMonkeyU;
             Vector3 position = Vector3.Lerp(rig.crownStart, end, t)
                 + Vector3.up * Mathf.Sin(t * Mathf.PI) * 2.5f;
             rig.crown.position = position;
             rig.crown.localScale = rig.crownStartScale
-                * Mathf.Lerp(1.4f, tuning.CrownScaleOnMonkey, t);
+                * Mathf.Lerp(1.4f, config.CrownScaleOnMonkey, t);
             rig.crown.rotation = Quaternion.Euler(0f, t * 720f, 0f);
             if (t >= 1f) {
                 rig.crown.SetParent(rig.monkey, true);
             }
         }
         if (!rig.hasWon
-            && rig.victoryTimeS >= tuning.CrownFlyS + tuning.VictoryDelayS) {
+            && rig.victoryTimeS >= config.CrownFlyS + config.VictoryDelayS) {
             rig.hasWon = true;
             FinishWithReward();
         }
@@ -348,8 +348,8 @@ public sealed class CobraKingEnding {
                 return;
             }
             rig.isRewardPanelShown = true;
-            rig.hud.ShowRewardPanel(tuning.WinTitle, tuning.WinLine,
-                tuning.WinDetailLine);
+            rig.hud.ShowRewardPanel(config.WinTitle, config.WinLine,
+                config.WinDetailLine);
         }
         // a pause & resume would run the game under the panel otherwise
         Time.timeScale = 0f;
@@ -358,7 +358,7 @@ public sealed class CobraKingEnding {
         }
         // only once the win has played in, so a Space mashed in the fight
         // never skips it
-        if (rig.hud.IsRewardReady && WasPressed(tuning.ConfirmAction)) {
+        if (rig.hud.IsRewardReady && WasPressed(config.ConfirmAction)) {
             ContinueAfterReward();
         }
     }
@@ -393,7 +393,7 @@ public sealed class CobraKingEnding {
         // called out a moment after
         if (rig.greatCobra != null) {
             rig.greatCobra.StopGuard();
-            rig.greatCobra.KnockBack(tuning.WinCobraDropU);
+            rig.greatCobra.KnockBack(config.WinCobraDropU);
         }
         rig.chaseWarnTime = Time.time + 1f;
         rig.hasWarnedChase = false;

@@ -8,13 +8,17 @@ public sealed class CobraMotorRig {
     // Shared State  ##########################################################
     public readonly MonoBehaviour owner;
     public readonly Transform host;
-    public readonly CobraMotorTuning tuning;
+    public readonly CobraMotorConfig config;
     public CobraMotorChase Chase;
     public CobraMotorSurge Surge;
     public CobraMotorGuard Guard;
     public CobraMotorHiss Hiss;
     public CobraMotorCoil Coil;
+    public Transform pathCenter;
     public Transform[] bodySegments;
+    public CobraBalanceConfig cobraBalanceConfig;
+    public PlayerBalanceConfig playerBalanceConfig;
+    public MonkeyClimbConfig monkeyClimbConfig;
     public AudioSource proximityHissSource;
     public AudioSource chaseAlertHissSource;
     public CapsuleCollider[] hissBodyShapes;
@@ -61,10 +65,10 @@ public sealed class CobraMotorRig {
     public Transform player;
     public Vector3[] segmentPositions;
 
-    public CobraMotorRig(MonoBehaviour owner, CobraMotorTuning tuning) {
+    public CobraMotorRig(MonoBehaviour owner, CobraMotorConfig config) {
         this.owner = owner;
         host = owner.transform;
-        this.tuning = tuning;
+        this.config = config;
     }
 
     // Public Methods  #########################################################
@@ -72,22 +76,22 @@ public sealed class CobraMotorRig {
         GameController.I != null
         && GameController.I.State == GameState.StartingZone;
 
-    public float Direction => tuning.Clockwise ? -1f : 1f;
+    public float Direction => config.Clockwise ? -1f : 1f;
 
     public int LastIndex => Mathf.Max(1, bodySegments.Length - 1);
 
     /// <returns>angle between neighbouring segments so the whole body spans
     /// <see cref="coilTurns"/> loops; deg</returns>
-    public float SegmentAngleStepDeg => tuning.CoilTurns * 360f / LastIndex;
+    public float SegmentAngleStepDeg => config.CoilTurns * 360f / LastIndex;
 
     /// <returns>height drop between neighbouring segments; U</returns>
     public float SegmentHeightStepU =>
-        tuning.CoilTurns * tuning.CoilPitchU / LastIndex;
+        config.CoilTurns * config.CoilPitchU / LastIndex;
 
     /// <returns>body length of the whole coil, head to tail; U</returns>
     public float CoilLengthU => Mathf.Sqrt(
-        Mathf.Pow(tuning.CoilTurns * 2f * Mathf.PI * tuning.OrbitRadius, 2f)
-            + Mathf.Pow(tuning.CoilTurns * tuning.CoilPitchU, 2f)
+        Mathf.Pow(config.CoilTurns * 2f * Mathf.PI * config.OrbitRadiusU, 2f)
+            + Mathf.Pow(config.CoilTurns * config.CoilPitchU, 2f)
     );
 
     /// <returns>body length between neighbouring segments; U</returns>
@@ -97,12 +101,12 @@ public sealed class CobraMotorRig {
         float radians = angleDegrees * Mathf.Deg2Rad;
 
         Vector3 offset = new Vector3(
-            Mathf.Cos(radians) * tuning.OrbitRadius,
+            Mathf.Cos(radians) * config.OrbitRadiusU,
             height,
-            Mathf.Sin(radians) * tuning.OrbitRadius
+            Mathf.Sin(radians) * config.OrbitRadiusU
         );
 
-        return tuning.PathCenter.position + offset;
+        return pathCenter.position + offset;
     }
 
 }

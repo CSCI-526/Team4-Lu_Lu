@@ -8,12 +8,12 @@ using static FallingCobraMath;
 public sealed class FallingCobraSwimTrail {
     // private members  ########################################################
     private readonly FallingCobraRig rig;
-    private readonly FallingCobraTuning tuning;
+    private readonly FallingCobraConfig config;
 
 
     public FallingCobraSwimTrail(FallingCobraRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -36,7 +36,7 @@ public sealed class FallingCobraSwimTrail {
         for (int ring = BodyRings - 1; ring >= 0; ring--) {
             Vector3 position = rig.spinePoseReady ? rig.spineCenters[ring]
                 : rig.body.position + rig.host.up
-                    * (tuning.SmoothBodyLengthU * ring / (BodyRings - 1));
+                    * (config.SmoothBodyLengthU * ring / (BodyRings - 1));
             Vector3 outward =
                 new Vector3(position.x - rig.axisXZ.x, 0f,
                     position.z - rig.axisXZ.y).normalized;
@@ -54,8 +54,8 @@ public sealed class FallingCobraSwimTrail {
         }
         rig.launchNeckArc = 0f;
         int raisedEnd =
-            Mathf.Clamp(Mathf.RoundToInt(tuning.StandingNeckLengthU
-                / tuning.SmoothBodyLengthU * (BodyRings - 1)), 1,
+            Mathf.Clamp(Mathf.RoundToInt(config.StandingNeckLengthU
+                / config.SmoothBodyLengthU * (BodyRings - 1)), 1,
                     BodyRings - 1);
         for (int ring = 1; ring <= raisedEnd; ring++) {
             rig.launchNeckArc +=
@@ -81,14 +81,14 @@ public sealed class FallingCobraSwimTrail {
             return rig.previousTrailRoot;
         }
         float age = Mathf.Max(0f, Time.time - rig.attackStartedTime);
-        float t = Mathf.Clamp01(age / tuning.ReleaseCurveDurationS);
+        float t = Mathf.Clamp01(age / config.ReleaseCurveDurationS);
         float ease = t * t * t * (t * (t * 6f - 15f) + 10f);
         Vector3 point =
             rig.GetTreeSurfacePoint(rig.Tracking.GetPredictedAttackPosition())
                 + rig.releaseTrailOffset * (1f - ease);
         point -= rig.launchWindupOffset
             * Mathf.SmoothStep(0f, 1f,
-                Mathf.Clamp01(age / tuning.StrikeLaunchRampS)) * (1f - ease);
+                Mathf.Clamp01(age / config.StrikeLaunchRampS)) * (1f - ease);
         if (rig.descentStopped) {
             point.y = Mathf.Max(point.y, rig.stoppedTrailHeight);
         }
@@ -121,7 +121,7 @@ public sealed class FallingCobraSwimTrail {
                     rig.GetTreeSurfacePoint(nominal));
             rig.swimTravelDistance += advance;
             rig.swimPhase +=
-                advance / Mathf.Max(.5f, tuning.SwimWavelengthU) * Mathf.PI
+                advance / Mathf.Max(.5f, config.SwimWavelengthU) * Mathf.PI
                     * 2f;
             Vector3 outward =
                 new Vector3(nominal.x - rig.axisXZ.x, 0f,
@@ -135,29 +135,29 @@ public sealed class FallingCobraSwimTrail {
             float turn = Vector3.SignedAngle(previous, desired, outward);
             rig.trailHeading =
                 Quaternion.AngleAxis(turn
-                    * (1f - Mathf.Exp(-tuning.SwimTurnSharpness * sampleTime)),
+                    * (1f - Mathf.Exp(-config.SwimTurnSharpness * sampleTime)),
                         outward) * previous;
             Vector3 lateral =
                 Vector3.Cross(rig.trailHeading, outward).normalized;
             float enterDistance =
-                Mathf.Max(tuning.SmoothBodyRadiusU * 4f,
-                    tuning.HeadSwayEntryDistanceU);
+                Mathf.Max(config.SmoothBodyRadiusU * 4f,
+                    config.HeadSwayEntryDistanceU);
             float enter =
                 Mathf.SmoothStep(0f, 1f,
                     Mathf.Clamp01(rig.swimTravelDistance / enterDistance));
             Vector3 head =
                 nominal + lateral
-                    * (tuning.HeadSwayAmplitudeU * Mathf.Sin(rig.swimPhase)
+                    * (config.HeadSwayAmplitudeU * Mathf.Sin(rig.swimPhase)
                         * enter * rig.Tracking.SteadyHeadAim(nominal));
             head = Vector3.SmoothDamp(rig.displayedTrailHead, head,
                 ref rig.displayedTrailVelocity,
-                    Mathf.Lerp(tuning.HeadTrailSmoothTimeS
-                        * tuning.StrikeHeadFollowScale,
-                            tuning.HeadTrailSmoothTimeS,
+                    Mathf.Lerp(config.HeadTrailSmoothTimeS
+                        * config.StrikeHeadFollowScale,
+                            config.HeadTrailSmoothTimeS,
                                 Mathf.SmoothStep(0f, 1f,
                                     Mathf.Clamp01((Time.time
                                         - rig.attackStartedTime)
-                                            / tuning.StrikeBurstDurationS))),
+                                            / config.StrikeBurstDurationS))),
                                                 Mathf.Infinity, sampleTime);
             // Store the head's branch-clearing route so the entire body follows
             // that route.
@@ -193,7 +193,7 @@ public sealed class FallingCobraSwimTrail {
         float newest = rig.swimTrail[rig.swimTrail.Count - 1].distance;
         while (rig.swimTrail.Count>4
             && newest
-                - rig.swimTrail[1].distance>Mathf.Max(tuning.SmoothBodyLengthU,
+                - rig.swimTrail[1].distance>Mathf.Max(config.SmoothBodyLengthU,
                     rig.launchBodyArc) + 1f) {
             rig.swimTrail.RemoveAt(0);
         }
@@ -211,7 +211,7 @@ public sealed class FallingCobraSwimTrail {
             gap = Mathf.Min(gap,
                 Vector3.Dot(rig.spineCenters[ring] - rig.branchCenter,
                     rig.branchUp) - rig.branchHalfHeight - rig.spineRadii[ring]
-                        - tuning.BranchSkinClearanceU);
+                        - config.BranchSkinClearanceU);
         }
         if (float.IsInfinity(gap) || gap <= 0f) {
             return;

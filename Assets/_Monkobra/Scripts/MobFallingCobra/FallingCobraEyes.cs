@@ -8,19 +8,19 @@ using static FallingCobraMath;
 public sealed class FallingCobraEyes {
     // private members  ########################################################
     private readonly FallingCobraRig rig;
-    private readonly FallingCobraTuning tuning;
+    private readonly FallingCobraConfig config;
     private readonly System.Action<Collider> onHeadHit;
 
     public FallingCobraEyes(FallingCobraRig rig,
         System.Action<Collider> onHeadHit) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
         this.onHeadHit = onHeadHit;
     }
 
     // Public Methods  #########################################################
     public void CreateTrackingEyes() {
-        if (!tuning.EyeAnchorsReady || rig.referenceHeadVisual == null) {
+        if (!config.EyeAnchorsReady || rig.referenceHeadVisual == null) {
             return;
         }
         Shader shader = Shader.Find("Universal Render Pipeline/Lit");
@@ -40,8 +40,8 @@ public sealed class FallingCobraEyes {
         List<int> triangles = new List<int>();
         int sides = 24, rings = 5;
         float aperture =
-            Mathf.Asin(Mathf.Clamp(tuning.EyePupilRadiusU
-                / tuning.EyeWhiteRadiusU, .1f, .85f));
+            Mathf.Asin(Mathf.Clamp(config.EyePupilRadiusU
+                / config.EyeWhiteRadiusU, .1f, .85f));
         for (int ring = 0; ring <= rings; ring++)for (int side =
             0; side <= sides; side++) {
             float theta = aperture * ring / rings,
@@ -49,7 +49,7 @@ public sealed class FallingCobraEyes {
             Vector3 direction =
                 new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi),
                     Mathf.Sin(theta) * Mathf.Sin(phi), Mathf.Cos(theta));
-            vertices.Add(direction * (tuning.EyeWhiteRadiusU + .004f));
+            vertices.Add(direction * (config.EyeWhiteRadiusU + .004f));
             normals.Add(direction);
             if (ring<rings && side<sides) {
                 int a = ring * (sides + 1) + side, b = a + sides + 1;
@@ -70,19 +70,19 @@ public sealed class FallingCobraEyes {
         rig.eyePupilMesh.RecalculateBounds();
         rig.eyePupils = new Transform[2];
         Vector3[] points =
-            {tuning.LeftEyeSurfaceLocal, tuning.RightEyeSurfaceLocal},
+            {config.LeftEyeSurfaceLocal, config.RightEyeSurfaceLocal},
                 directions =
-                    {tuning.LeftEyeNormalLocal, tuning.RightEyeNormalLocal};
+                    {config.LeftEyeNormalLocal, config.RightEyeNormalLocal};
         for (int i = 0; i<2; i++) {
             Vector3 center =
                 points[i] - directions[i].normalized
-                    * (tuning.EyeWhiteRadiusU - .006f);
+                    * (config.EyeWhiteRadiusU - .006f);
             GameObject eye = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             eye.name = i == 0?"TrackingEyeLeft":"TrackingEyeRight";
             eye.transform.SetParent(rig.referenceHeadVisual, false);
             eye.transform.localPosition = center;
             eye.transform.localScale =
-                Vector3.one * (tuning.EyeWhiteRadiusU * 2f);
+                Vector3.one * (config.EyeWhiteRadiusU * 2f);
             eye.GetComponent<Collider>().enabled = false;
             Object.Destroy(eye.GetComponent<Collider>());
             eye.GetComponent<Renderer>().sharedMaterial = rig.eyeWhiteMaterial;
@@ -104,8 +104,8 @@ public sealed class FallingCobraEyes {
         }
         for (int i = 0; i<rig.eyePupils.Length; i++) {
             Vector3 normal =
-                (i == 0?tuning.LeftEyeNormalLocal
-                    :tuning.RightEyeNormalLocal).normalized;
+                (i == 0?config.LeftEyeNormalLocal
+                    :config.RightEyeNormalLocal).normalized;
             Vector3 direction = rig.monkeyInHeadRange
                 ? rig.referenceHeadVisual.InverseTransformDirection(
                     rig.committedTargetPosition - rig.eyePupils[i].position)
@@ -125,10 +125,10 @@ public sealed class FallingCobraEyes {
         if (rig.referenceHeadVisual == null) {
             return;
         }
-        rig.hitCollider.radius = tuning.HeadContactRadiusU;
-        rig.hitCollider.height = tuning.HeadContactRadiusU * 2f;
+        rig.hitCollider.radius = config.HeadContactRadiusU;
+        rig.hitCollider.height = config.HeadContactRadiusU * 2f;
         rig.visibleBodyContacts =
-            new CapsuleCollider[tuning.BodyContactSections];
+            new CapsuleCollider[config.BodyContactSections];
         for (int i = 0; i<rig.visibleBodyContacts.Length; i++) {
             GameObject part = new GameObject("VisibleSnakeContact_" + i);
             part.transform.SetParent(rig.host, false);
@@ -157,8 +157,8 @@ public sealed class FallingCobraEyes {
         }
         rig.hitCollider.center =
             rig.host.InverseTransformPoint(rig.ThreatPosition);
-        rig.hitCollider.radius = tuning.HeadContactRadiusU;
-        rig.hitCollider.height = tuning.HeadContactRadiusU * 2f;
+        rig.hitCollider.radius = config.HeadContactRadiusU;
+        rig.hitCollider.height = config.HeadContactRadiusU * 2f;
         rig.hitCollider.enabled = active;
         for (int i = 0; i<rig.visibleBodyContacts.Length; i++) {
             int first =
@@ -179,12 +179,12 @@ public sealed class FallingCobraEyes {
             float startRadius =
                 Mathf.Lerp(rig.headNeckRadiusU, rig.spineRadii[first],
                     Mathf.SmoothStep(0f, 1f,
-                        first * tuning.SmoothBodyLengthU / (BodyRings - 1)
+                        first * config.SmoothBodyLengthU / (BodyRings - 1)
                             / .4f));
             float endRadius =
                 Mathf.Lerp(rig.headNeckRadiusU, rig.spineRadii[last],
                     Mathf.SmoothStep(0f, 1f,
-                        last * tuning.SmoothBodyLengthU / (BodyRings - 1)
+                        last * config.SmoothBodyLengthU / (BodyRings - 1)
                             / .4f));
             shape.radius = Mathf.Max(.015f, Mathf.Max(startRadius, endRadius));
             shape.height = delta.magnitude + shape.radius * 2f;
@@ -200,7 +200,7 @@ public sealed class FallingCobraEyes {
         }
         int count =
             Physics.OverlapCapsuleNonAlloc(rig.previousHeadContact, point,
-                tuning.HeadContactRadiusU, rig.sweptHeadHits, ~0,
+                config.HeadContactRadiusU, rig.sweptHeadHits, ~0,
                     QueryTriggerInteraction.Collide);
         rig.previousHeadContact = point;
         for (int i = 0; i<count

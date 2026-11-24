@@ -9,11 +9,11 @@ using static BossFightHudRig;
 public sealed class BossFightHudMotion {
     // private members  ########################################################
     private readonly BossFightHudRig rig;
-    private readonly BossFightHudTuning tuning;
+    private readonly BossFightHudConfig config;
 
     public BossFightHudMotion(BossFightHudRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -23,7 +23,7 @@ public sealed class BossFightHudMotion {
             return;
         }
         rig.callOutAgeS += Time.unscaledDeltaTime;
-        PlaceOnScreen(rig.callOutRect, rig.callOutWorld, tuning.SpeechOffset);
+        PlaceOnScreen(rig.callOutRect, rig.callOutWorld, config.SpeechOffset);
         Vector2 from = rig.callOutRect.anchoredPosition;
         Vector2 half = rig.canvasRect != null ? rig.canvasRect.rect.size * 0.5f
             : Vector2.zero;
@@ -44,7 +44,7 @@ public sealed class BossFightHudMotion {
             if (warning.sign == null) {
                 continue;
             }
-            Place(warning.sign, warning.worldPosition, tuning.WarningOffset);
+            Place(warning.sign, warning.worldPosition, config.WarningOffset);
             float beatHz = Mathf.Lerp(2f, 9f, warning.progress);
             float beat =
                 0.5f + 0.5f * Mathf.Sin(Time.time * beatHz * 2f * Mathf.PI);
@@ -61,8 +61,8 @@ public sealed class BossFightHudMotion {
         if (rig.flashLeftS > 0f) {
             rig.flashLeftS -= Time.unscaledDeltaTime;
         }
-        float alpha = tuning.FlashS > 0f
-            ? Mathf.Clamp01(rig.flashLeftS / tuning.FlashS) : 0f;
+        float alpha = config.FlashS > 0f
+            ? Mathf.Clamp01(rig.flashLeftS / config.FlashS) : 0f;
         rig.flashImage.color = new Color(
             rig.flashColor.r, rig.flashColor.g, rig.flashColor.b, alpha
         );
@@ -124,7 +124,7 @@ public sealed class BossFightHudMotion {
             && view.y > 0.12f && view.y < 0.75f;
         if (isHeadInView) {
             PlaceOnScreen(rig.speechRect, rig.speechWorldPosition,
-                tuning.SpeechOffset);
+                config.SpeechOffset);
             return;
         }
         rig.speechRect.anchorMin = rig.speechRect.anchorMax =

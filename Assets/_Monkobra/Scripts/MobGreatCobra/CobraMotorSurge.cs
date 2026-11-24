@@ -6,13 +6,13 @@ using static CobraMotorRig;
 public sealed class CobraMotorSurge {
     // private members  ########################################################
     private readonly CobraMotorRig rig;
-    private readonly CobraMotorTuning tuning;
+    private readonly CobraMotorConfig config;
     private readonly System.Action<int> onCatchUpStarted;
 
     public CobraMotorSurge(CobraMotorRig rig,
         System.Action<int> onCatchUpStarted) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
         this.onCatchUpStarted = onCatchUpStarted;
     }
 
@@ -37,13 +37,13 @@ public sealed class CobraMotorSurge {
         if (rig.isGuarding) {
             return;
         }
-        if (tuning.PlayerBalanceConfig != null
+        if (rig.playerBalanceConfig != null
             && Time.time < rig.nextCountedHitTime) {
             return;
         }
-        if (tuning.PlayerBalanceConfig != null) {
+        if (rig.playerBalanceConfig != null) {
             rig.nextCountedHitTime =
-                Time.time + tuning.PlayerBalanceConfig.HitStunDurationS;
+                Time.time + rig.playerBalanceConfig.HitStunDurationS;
         }
         StartSurge();
     }
@@ -61,8 +61,8 @@ public sealed class CobraMotorSurge {
     // a frozen cobra ignores mistakes
     public void StartSurge() {
         if (
-            tuning.CobraBalanceConfig == null
-            || tuning.CobraBalanceConfig.CobraSurgePerMistakeS <= 0f
+            rig.cobraBalanceConfig == null
+            || rig.cobraBalanceConfig.CobraSurgePerMistakeS <= 0f
             || rig.isFrozen
             // it holds still in the starting zone, so no surge & no cue
             || IsInStartingZone
@@ -76,8 +76,8 @@ public sealed class CobraMotorSurge {
         rig.surgeEndTime =
             Time.time
             + Mathf.Min(
-                remainingS + tuning.CobraBalanceConfig.CobraSurgePerMistakeS,
-                tuning.CobraBalanceConfig.CobraMaxSurgeS
+                remainingS + rig.cobraBalanceConfig.CobraSurgePerMistakeS,
+                rig.cobraBalanceConfig.CobraMaxSurgeS
             );
         rig.surgeStacks++;
         onCatchUpStarted?.Invoke(rig.surgeStacks);

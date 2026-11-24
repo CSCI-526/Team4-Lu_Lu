@@ -8,11 +8,11 @@ using static SpiderKingRig;
 public sealed class SpiderKingMelons {
     // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingMelons(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -39,7 +39,7 @@ public sealed class SpiderKingMelons {
                 continue;
             }
             thrown.ageS += Time.deltaTime;
-            float t = Mathf.Clamp01(thrown.ageS / tuning.MelonFlyS);
+            float t = Mathf.Clamp01(thrown.ageS / config.MelonFlyS);
             thrown.transform.position =
                 rig.Movement.ArcPoint(thrown.from, rig.body.HeadPosition,
                 t, 2.5f);
@@ -64,7 +64,7 @@ public sealed class SpiderKingMelons {
     }
 
     public void OnMelonHit() {
-        rig.Damage.Hurt(tuning.MelonDamage);
+        rig.Damage.Hurt(config.MelonDamage);
     }
 
 }

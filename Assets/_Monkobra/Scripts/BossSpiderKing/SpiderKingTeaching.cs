@@ -8,11 +8,11 @@ using static SpiderKingRig;
 public sealed class SpiderKingTeaching {
     // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingTeaching(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -27,7 +27,7 @@ public sealed class SpiderKingTeaching {
         }
         bool isTrapped = rig.struggle != null && rig.struggle.IsTrapped;
         if (isTrapped) {
-            rig.nextAttackTime = Time.time + tuning.TeachGapS;
+            rig.nextAttackTime = Time.time + config.TeachGapS;
             return 0f;
         }
         bool isFree = !rig.HasLiveShots;
@@ -41,14 +41,14 @@ public sealed class SpiderKingTeaching {
                 bool isSlashFree = !rig.isSlashing
                     && !rig.crescents.Exists(c => !c.isReflected);
                 if (Time.time >= rig.nextAttackTime && isFree && isSlashFree) {
-                    Teach("Bounce it back too!", "", tuning.WarnColor, 0f);
+                    Teach("Bounce it back too!", "", config.WarnColor, 0f);
                     rig.Attacks.StartSlash(true);
                 }
                 return 0f;
             case SpiderKingTeachStep.Final:
             case SpiderKingTeachStep.Ready:
                 float waitS = rig.teach == SpiderKingTeachStep.Ready
-                    ? tuning.ReadyS : tuning.FinalS;
+                    ? config.ReadyS : config.FinalS;
                 if (rig.teachTimeS >= waitS) {
                     rig.teach = SpiderKingTeachStep.Done;
                     rig.hud.HideBanner();
@@ -62,7 +62,7 @@ public sealed class SpiderKingTeaching {
     public void AdvanceTeach(SpiderKingTeachStep next) {
         rig.teach = next;
         rig.teachTimeS = 0f;
-        rig.nextAttackTime = Time.time + tuning.TeachGapS;
+        rig.nextAttackTime = Time.time + config.TeachGapS;
         rig.hud.SetPrompt(false, Vector3.zero);
         ShowStepBanner();
     }
@@ -70,7 +70,7 @@ public sealed class SpiderKingTeaching {
     public void ShowStepBanner() {
         switch (rig.teach) {
             case SpiderKingTeachStep.Parry:
-                Teach(tuning.BossName, "", tuning.WarnColor, 2f);
+                Teach(config.BossName, "", config.WarnColor, 2f);
                 break;
         }
     }

@@ -9,11 +9,11 @@ using static SpiderKingRig;
 public sealed class SpiderKingAttacks {
     // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingAttacks(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -22,7 +22,7 @@ public sealed class SpiderKingAttacks {
         rig.volleyGapIndex++;
         // never shorter than a parry & a new double tap take
         return Mathf.Max(MIN_VOLLEY_GAP_S,
-            (isSlow ? tuning.VolleySlowGapS : tuning.VolleyFastGapS)
+            (isSlow ? config.VolleySlowGapS : config.VolleyFastGapS)
                 * rig.TimeScaleNow);
     }
 
@@ -68,7 +68,7 @@ public sealed class SpiderKingAttacks {
 
     public bool IsCloseEnoughToDash() {
         return Time.time >= rig.nextDashTime
-            && rig.Movement.DistanceToMonkey() <= tuning.DashStartU;
+            && rig.Movement.DistanceToMonkey() <= config.DashStartU;
     }
 
     // from afar: a web shot or a slash
@@ -77,12 +77,12 @@ public sealed class SpiderKingAttacks {
             return;
         }
         float distance = rig.Movement.DistanceToMonkey();
-        bool canSlash = distance <= tuning.SlashRangeU
-            && distance >= tuning.SlashMinRangeU;
+        bool canSlash = distance <= config.SlashRangeU
+            && distance >= config.SlashMinRangeU;
         // far off a slash is likelier, it is what reaches
-        float chance = distance > tuning.SlashMinRangeU * 2f
-            ? Mathf.Max(tuning.SlashChance, 0.75f)
-            : tuning.SlashChance;
+        float chance = distance > config.SlashMinRangeU * 2f
+            ? Mathf.Max(config.SlashChance, 0.75f)
+            : config.SlashChance;
         // a stage of volleys opens w/ a couple of them b4 any slash
         if (canSlash && rig.websBeforeSlash <= 0 && Random.value < chance) {
             StartSlash();
@@ -96,18 +96,18 @@ public sealed class SpiderKingAttacks {
     public void BeginAttack(SpiderKingAttack kind, bool isTeaching) {
         rig.attack = kind;
         rig.attackTimeS = 0f;
-        float slow = isTeaching ? tuning.TeachSlowScale : 1f;
+        float slow = isTeaching ? config.TeachSlowScale : 1f;
         rig.aimPoint = rig.monkey.position;
         switch (kind) {
             case SpiderKingAttack.Web:
                 rig.attackWindUpS =
-                    tuning.WebShotWindUpS * slow * rig.TimeScaleNow;
+                    config.WebShotWindUpS * slow * rig.TimeScaleNow;
                 rig.chargingShot =
                     rig.Shots.NewShot(SpiderKingShotKind.Web, rig.aimPoint);
                 break;
             default:
                 rig.attackWindUpS =
-                    tuning.DashWindUpS * slow * rig.TimeScaleNow;
+                    config.DashWindUpS * slow * rig.TimeScaleNow;
                 rig.warningId = rig.hud.AddWarning(rig.aimPoint, "DASH!");
                 break;
         }
@@ -136,7 +136,7 @@ public sealed class SpiderKingAttacks {
         if (rig.attack == SpiderKingAttack.Dash) {
             rig.body.SetSwipe(progress);
             bool isDashLocked =
-                rig.attackTimeS >= rig.attackWindUpS - tuning.DashLockS;
+                rig.attackTimeS >= rig.attackWindUpS - config.DashLockS;
             if (!isDashLocked) {
                 AimDash();
             }
@@ -157,7 +157,7 @@ public sealed class SpiderKingAttacks {
         if (fired != SpiderKingAttack.Dash) {
             rig.nextAttackTime = Time.time
                 + (rig.teach == SpiderKingTeachStep.Done
-                    ? rig.Movement.RestNow() : tuning.TeachGapS);
+                    ? rig.Movement.RestNow() : config.TeachGapS);
         }
         switch (fired) {
             case SpiderKingAttack.Web:
@@ -172,7 +172,7 @@ public sealed class SpiderKingAttacks {
                 if (rig.teach == SpiderKingTeachStep.Done) {
                     rig.websBeforeSlash = Mathf.Max(0, rig.websBeforeSlash - 1);
                     rig.volleyLeft =
-                        SpiderKingMovement.PerStage(tuning.WebShotsPerStage,
+                        SpiderKingMovement.PerStage(config.WebShotsPerStage,
                             rig.Stage) - 1;
                     rig.volleyGapIndex = 0;
                     rig.isVolleySlowFirst = Random.value < 0.5f;
@@ -222,18 +222,18 @@ public sealed class SpiderKingAttacks {
         Vector3 at = rig.monkey.position;
         float arcU =
             Mathf.DeltaAngle(rig.spiderAngle, rig.AngleOf(at)) * Mathf.Deg2Rad
-            * tuning.TrunkRadiusU;
+            * config.TrunkRadiusU;
         float dy = at.y - rig.spiderY;
         float distance = Mathf.Max(0.01f, Mathf.Sqrt(arcU * arcU + dy * dy));
         rig.dashStartAngle = rig.spiderAngle;
         rig.dashStartY = rig.spiderY;
         rig.dashWayU = arcU / distance;
         rig.dashWayV = dy / distance;
-        rig.dashLengthU = distance + tuning.DashOvershootU;
+        rig.dashLengthU = distance + config.DashOvershootU;
         // cut where it would leave the arena, so the lane is the whole run
         if (rig.dashWayV > 0.001f) {
             rig.dashLengthU = Mathf.Min(rig.dashLengthU,
-                (rig.entryY + tuning.ArenaHeightU - rig.spiderY)
+                (rig.entryY + config.ArenaHeightU - rig.spiderY)
                     / rig.dashWayV);
         } else if (rig.dashWayV < -0.001f) {
             rig.dashLengthU = Mathf.Min(rig.dashLengthU,
@@ -241,7 +241,7 @@ public sealed class SpiderKingAttacks {
         }
         rig.dashLengthU = Mathf.Max(0.5f, rig.dashLengthU);
         rig.dashAngle = rig.spiderAngle
-            + rig.dashWayU * rig.dashLengthU / tuning.TrunkRadiusU
+            + rig.dashWayU * rig.dashLengthU / config.TrunkRadiusU
                 * Mathf.Rad2Deg;
         rig.dashY = rig.spiderY + rig.dashWayV * rig.dashLengthU;
     }
@@ -257,18 +257,18 @@ public sealed class SpiderKingAttacks {
                 rig.dashLane[i] =
                     rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
                         "DashLane",
-                    Vector3.one * 0.1f, tuning.WarnColor).transform;
+                    Vector3.one * 0.1f, config.WarnColor).transform;
             }
         }
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 30f);
         Color color = isLocked
-            ? Color.Lerp(tuning.WarnColor, Color.white, pulse * 0.5f)
-            : tuning.WarnColor * 0.6f;
+            ? Color.Lerp(config.WarnColor, Color.white, pulse * 0.5f)
+            : config.WarnColor * 0.6f;
         float thickness = isLocked ? 0.22f : 0.12f;
-        float reach = rig.dashLengthU + tuning.DashHitU;
+        float reach = rig.dashLengthU + config.DashHitU;
         // across the way, on the bark
-        float acrossU = -rig.dashWayV * tuning.DashHitU;
-        float acrossV = rig.dashWayU * tuning.DashHitU;
+        float acrossU = -rig.dashWayV * config.DashHitU;
+        float acrossV = rig.dashWayU * config.DashHitU;
         for (int edge = 0; edge < 2; edge++) {
             float sign = edge == 0 ? -1f : 1f;
             for (int i = 0; i < PATH_PARTS; i++) {
@@ -310,19 +310,19 @@ public sealed class SpiderKingAttacks {
         // straight along the locked lane, never turning; the arena's top or
         // bottom ends it early
         rig.dashTravelU = Mathf.Min(rig.dashLengthU,
-            rig.dashTravelU + tuning.DashSpeedU * rig.SpeedScale
+            rig.dashTravelU + config.DashSpeedU * rig.SpeedScale
                 * Time.deltaTime);
         float nextY = rig.dashStartY + rig.dashWayV * rig.dashTravelU;
         bool isOutOfArena = nextY < rig.ArenaBottomY - 0.01f
-            || nextY > rig.entryY + tuning.ArenaHeightU + 0.01f;
+            || nextY > rig.entryY + config.ArenaHeightU + 0.01f;
         if (!isOutOfArena) {
             rig.spiderAngle = rig.dashStartAngle
-                + rig.dashWayU * rig.dashTravelU / tuning.TrunkRadiusU
+                + rig.dashWayU * rig.dashTravelU / config.TrunkRadiusU
                     * Mathf.Rad2Deg;
             rig.spiderY = nextY;
         }
         bool hasArrived = rig.dashTravelU >= rig.dashLengthU || isOutOfArena;
-        if (!rig.hasDashHit && rig.Movement.DistanceToMonkey() < tuning.DashHitU
+        if (!rig.hasDashHit && rig.Movement.DistanceToMonkey() < config.DashHitU
             && Time.time >= rig.saveGraceEndTime) {
             rig.hasDashHit = true;
             rig.Damage.LethalHit("Caught!", false, true);
@@ -335,7 +335,7 @@ public sealed class SpiderKingAttacks {
         ClearDashLane();
         rig.nextDashTime =
             Time.time
-                + Mathf.Lerp(tuning.DashCooldownS, tuning.LateDashCooldownS,
+                + Mathf.Lerp(config.DashCooldownS, config.LateDashCooldownS,
             rig.Rage);
         if (rig.teach == SpiderKingTeachStep.Done) {
             rig.nextAttackTime =
@@ -353,8 +353,8 @@ public sealed class SpiderKingAttacks {
     public void StartSlash(bool isTeaching = false) {
         rig.isSlashing = true;
         rig.slashLeft = isTeaching ? 1 : rig.SlashesNow;
-        rig.slashSlow = isTeaching ? tuning.TeachSlowScale : 1f;
-        rig.slashChargeLeftS = tuning.SlashChargeS * rig.slashSlow;
+        rig.slashSlow = isTeaching ? config.TeachSlowScale : 1f;
+        rig.slashChargeLeftS = config.SlashChargeS * rig.slashSlow;
         rig.slashGapIndex = 0;
         rig.isSlashSlowFirst = Random.value < 0.5f;
         rig.nextSlashTime = Time.time;
@@ -367,7 +367,7 @@ public sealed class SpiderKingAttacks {
             rig.slashChargeLeftS -= Time.deltaTime;
             float charge =
                 1f - rig.slashChargeLeftS
-                    / (tuning.SlashChargeS * rig.slashSlow);
+                    / (config.SlashChargeS * rig.slashSlow);
             rig.body.SetCharge(charge);
             rig.body.SetSwipe(charge);
             UpdateSlashChargeFx(charge);
@@ -387,7 +387,7 @@ public sealed class SpiderKingAttacks {
         rig.slashTimeS += Time.deltaTime;
         // the aim follows the monkey till the slash
         rig.slashAimDeg = AimDegToMonkey();
-        float windUpS = tuning.SlashWindUpS * rig.slashSlow * rig.TimeScaleNow;
+        float windUpS = config.SlashWindUpS * rig.slashSlow * rig.TimeScaleNow;
         float progress = Mathf.Clamp01(rig.slashTimeS / windUpS);
         rig.body.SetSwipe(progress);
         DrawSlashAim(progress);
@@ -405,13 +405,13 @@ public sealed class SpiderKingAttacks {
             rig.isSlashing = false;
             rig.nextAttackTime = Time.time
                 + (rig.teach == SpiderKingTeachStep.Done
-                    ? rig.Movement.RestNow() : tuning.TeachGapS);
+                    ? rig.Movement.RestNow() : config.TeachGapS);
             return 0f;
         }
         bool isSlow = (rig.slashGapIndex % 2 == 0) == rig.isSlashSlowFirst;
         rig.slashGapIndex++;
         rig.nextSlashTime = Time.time
-            + (isSlow ? tuning.SlashSlowGapS : tuning.SlashFastGapS)
+            + (isSlow ? config.SlashSlowGapS : config.SlashFastGapS)
                 * rig.TimeScaleNow;
         return 0f;
     }
@@ -422,15 +422,15 @@ public sealed class SpiderKingAttacks {
         Vector3 at = rig.monkey.position;
         float arcU =
             Mathf.DeltaAngle(rig.spiderAngle, rig.AngleOf(at)) * Mathf.Deg2Rad
-            * tuning.TrunkRadiusU;
+            * config.TrunkRadiusU;
         return Mathf.Atan2(at.y - rig.spiderY, arcU) * Mathf.Rad2Deg;
     }
 
     // a point on the bark, u round the trunk & v up from a base spot
     public Vector3 BarkPoint(float baseAngle, float baseY, float u, float v) {
-        return rig.PointOnTrunk(baseAngle + u / tuning.TrunkRadiusU
+        return rig.PointOnTrunk(baseAngle + u / config.TrunkRadiusU
             * Mathf.Rad2Deg,
-            baseY + v, tuning.TrunkRadiusU + 0.12f);
+            baseY + v, config.TrunkRadiusU + 0.12f);
     }
 
     // the aim: a thin red line along the bark out to the slash's reach,
@@ -442,7 +442,7 @@ public sealed class SpiderKingAttacks {
                 rig.slashAim[i] =
                     rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
                         "SlashAim",
-                    Vector3.one * 0.1f, tuning.WarnColor).transform;
+                    Vector3.one * 0.1f, config.WarnColor).transform;
             }
         }
         ShowSlashAim(true);
@@ -450,13 +450,13 @@ public sealed class SpiderKingAttacks {
         float du = Mathf.Cos(radians);
         float dv = Mathf.Sin(radians);
         Color color =
-            Color.Lerp(tuning.WarnColor * 0.5f, tuning.WarnColor, progress);
+            Color.Lerp(config.WarnColor * 0.5f, config.WarnColor, progress);
         for (int i = 0; i < PATH_PARTS; i++) {
             // dashed: every other part
             bool isShown = i % 2 == 0;
             rig.slashAim[i].gameObject.SetActive(isShown);
-            float d0 = tuning.SlashRangeU * i / PATH_PARTS;
-            float d1 = tuning.SlashRangeU * (i + 1) / PATH_PARTS;
+            float d0 = config.SlashRangeU * i / PATH_PARTS;
+            float d1 = config.SlashRangeU * (i + 1) / PATH_PARTS;
             SpiderKingFeedback.SetLine(rig.slashAim[i],
                 BarkPoint(rig.spiderAngle, rig.spiderY, du * d0, dv * d0),
                 BarkPoint(rig.spiderAngle, rig.spiderY, du * d1, dv * d1),
@@ -510,7 +510,7 @@ public sealed class SpiderKingAttacks {
         rig.chargeRingS -= Time.deltaTime;
         if (rig.chargeRingS <= 0f) {
             rig.chargeRingS = 0.16f;
-            rig.Parry.AddRing(rig.body.HeadPosition, tuning.SilkColor, 0f,
+            rig.Parry.AddRing(rig.body.HeadPosition, config.SilkColor, 0f,
                 true);
         }
         rig.chargeSparkS -= Time.deltaTime;
@@ -540,19 +540,19 @@ public sealed class SpiderKingAttacks {
         rig.chargeRingS -= Time.deltaTime;
         if (rig.chargeRingS <= 0f) {
             rig.chargeRingS = 0.2f;
-            rig.Parry.AddRing(head, tuning.WarnColor, 0f);
+            rig.Parry.AddRing(head, config.WarnColor, 0f);
         }
         rig.chargeSparkS -= Time.deltaTime;
         if (rig.chargeSparkS <= 0f) {
             rig.chargeSparkS = 0.06f;
-            rig.Parry.BurstStreaks(head, tuning.WarnColor, 2, 3f, 7f);
+            rig.Parry.BurstStreaks(head, config.WarnColor, 2, 3f, 7f);
         }
         if (rig.slashSigil == null) {
             rig.slashSigil = new Transform[SIGIL_PARTS];
             for (int i = 0; i < SIGIL_PARTS; i++) {
                 rig.slashSigil[i] =
                     rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
-                    "SlashSign", Vector3.one, tuning.WarnColor).transform;
+                    "SlashSign", Vector3.one, config.WarnColor).transform;
             }
         }
         // a crescent facing the camera, opening up over its head
@@ -563,7 +563,7 @@ public sealed class SpiderKingAttacks {
         float radius = Mathf.Lerp(0.6f, 1.8f, charge);
         Vector3 center = head + up * (0.6f + 0.5f * charge);
         float spread = Mathf.Lerp(40f, 150f, charge) * Mathf.Deg2Rad;
-        Color color = Color.Lerp(tuning.WarnColor, Color.white,
+        Color color = Color.Lerp(config.WarnColor, Color.white,
             0.25f * (1f - flicker));
         for (int i = 0; i < SIGIL_PARTS; i++) {
             float a0 = -spread * 0.5f + spread * i / SIGIL_PARTS;

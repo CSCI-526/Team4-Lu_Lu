@@ -8,11 +8,11 @@ using static FallingCobraMath;
 public sealed class FallingCobraTracking {
     // private members  ########################################################
     private readonly FallingCobraRig rig;
-    private readonly FallingCobraTuning tuning;
+    private readonly FallingCobraConfig config;
 
     public FallingCobraTracking(FallingCobraRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -80,8 +80,8 @@ public sealed class FallingCobraTracking {
             if (tangent.sqrMagnitude > .00001f) {
                 float turn =
                     Mathf.Clamp(Vector3.SignedAngle(heading, tangent, outward),
-                        -tuning.TrackingSurfaceTurnDegrees,
-                            tuning.TrackingSurfaceTurnDegrees);
+                        -config.TrackingSurfaceTurnDeg,
+                            config.TrackingSurfaceTurnDeg);
                 heading = Quaternion.AngleAxis(turn, outward) * heading;
             }
         }
@@ -107,7 +107,7 @@ public sealed class FallingCobraTracking {
             Quaternion.LookRotation(gaze, faceUp)
                 * Quaternion.Inverse(rig.SourceEyeBasis());
         return Quaternion.RotateTowards(flat, aimed,
-            tuning.UpwardHeadPitchDegrees);
+            config.UpwardHeadPitchDeg);
     }
 
     public Vector3 FitHeadToBark(Vector3 position, Quaternion rotation) {
@@ -131,14 +131,14 @@ public sealed class FallingCobraTracking {
             rig.supportCached = true;
         }
         float desired =
-            tuning.TreeSurfaceRadiusU + tuning.HeadBarkGapU
+            config.TreeSurfaceRadiusU + config.HeadBarkGapU
                 - rig.supportMinimum;
         if (rig.monkeyInHeadRange) {
             Vector3 faceOffset =
                 rotation
-                    * (tuning.EyeAnchorsReady
-                        ? (tuning.LeftEyeSurfaceLocal
-                            + tuning.RightEyeSurfaceLocal) * .5f
+                    * (config.EyeAnchorsReady
+                        ? (config.LeftEyeSurfaceLocal
+                            + config.RightEyeSurfaceLocal) * .5f
                                 - rig.SourceEyeUp()
                                     * .06f : rig.originalHeadFaceCenter);
             Vector3 face = position + faceOffset;
@@ -146,14 +146,14 @@ public sealed class FallingCobraTracking {
             float surfaceGap = Vector3.ProjectOnPlane(delta, outward).magnitude;
             float reachBlend =
                 1f - Mathf.SmoothStep(0f, 1f,
-                    Mathf.Clamp01(surfaceGap / tuning.StrikeReachDistanceU));
+                    Mathf.Clamp01(surfaceGap / config.StrikeReachDistanceU));
             float targetRadius =
                 Vector3.Dot(rig.committedTargetPosition
                     - new Vector3(rig.axisXZ.x, position.y, rig.axisXZ.y)
                         - faceOffset, outward);
             desired +=
                 Mathf.Clamp(targetRadius - desired, 0f,
-                    tuning.MaximumStrikeReachU) * reachBlend;
+                    config.MaximumStrikeReachU) * reachBlend;
         }
         float radius =
             new Vector2(position.x - rig.axisXZ.x,
@@ -196,13 +196,13 @@ public sealed class FallingCobraTracking {
         }
         Vector3 aim = MonkeyAimPosition();
         float range =
-            Mathf.Max(tuning.HeadTrackingRangeU, tuning.TriggerDistanceU);
+            Mathf.Max(config.HeadTrackingRangeU, config.TriggerDistanceU);
         if (IsMonkeyReaching()) {
             range = Mathf.Max(range, rig.reachWakeDistanceU);
         }
         rig.monkeyInHeadRange =
             Vector3.Distance(rig.ThreatPosition, aim) <= range
-                + (rig.monkeyInHeadRange?tuning.HeadTrackingExitPaddingU:0f);
+                + (rig.monkeyInHeadRange?config.HeadTrackingExitPaddingU:0f);
         rig.pursuitPaused = rig.state == FallingCobraState.Falling
             && !rig.monkeyInHeadRange;
         if (rig.monkeyInHeadRange) {
@@ -239,19 +239,19 @@ public sealed class FallingCobraTracking {
                 Mathf.DeltaAngle(headAngle, rig.committedTargetAngle)
                     * Mathf.Deg2Rad * rig.ringRadiusU;
             rig.headAimCommand =
-                Mathf.Clamp(tuning.HeadAimGain * aimError
-                    - tuning.HeadAimDamping * rig.headAngularSpeed,
+                Mathf.Clamp(config.HeadAimGain * aimError
+                    - config.HeadAimDamping * rig.headAngularSpeed,
                         -rig.horizontalSpeedU, rig.horizontalSpeedU);
             float bias = Mathf.DeltaAngle(rootAngle, headAngle);
             rig.headSteeringBias =
                 Mathf.LerpAngle(rig.headSteeringBias, bias,
-                    1f - Mathf.Exp(-tuning.HeadSteeringSharpness
+                    1f - Mathf.Exp(-config.HeadSteeringSharpness
                         * Time.fixedDeltaTime));
             float drop = head.y - rig.committedTargetPosition.y;
             float desiredFall = 1f;
             if (rig.monkeyInHeadRange) {
                 if (!rig.descentStopped
-                    && drop <= tuning.TargetHeightStopMarginU) {
+                    && drop <= config.TargetHeightStopMarginU) {
                     rig.descentStopped = true;
                     rig.stoppedTrailHeight = rig.displayedTrailHead.y;
                     rig.displayedTrailVelocity.y =
@@ -260,26 +260,26 @@ public sealed class FallingCobraTracking {
                 // Brake using the visible face height; the root pivot can be
                 // well below the raised head.
                 desiredFall = rig.descentStopped ? 0f
-                    : Mathf.Clamp01((drop - tuning.TargetHeightStopMarginU)
-                        * tuning.VerticalArrivalGain
+                    : Mathf.Clamp01((drop - config.TargetHeightStopMarginU)
+                        * config.VerticalArrivalGain
                             / Mathf.Max(.01f, rig.fallSpeedU));
             }
             if (rig.monkeyInHeadRange && drop>-.25f
-                && drop<tuning.ApproachDropRangeU) {
+                && drop<config.ApproachDropRangeU) {
                 float angularError =
                     Mathf.Abs(Mathf.DeltaAngle(headAngle,
                         rig.committedTargetAngle)) * Mathf.Deg2Rad
                             * rig.ringRadiusU;
                 float offAim =
                     Mathf.SmoothStep(0f, 1f,
-                        Mathf.InverseLerp(tuning.HeadContactRadiusU * .6f,
-                            tuning.HeadContactRadiusU * 1.6f, angularError));
+                        Mathf.InverseLerp(config.HeadContactRadiusU * .6f,
+                            config.HeadContactRadiusU * 1.6f, angularError));
                 float near =
                     1f - Mathf.SmoothStep(0f, 1f,
-                        Mathf.InverseLerp(1f, tuning.ApproachDropRangeU,
+                        Mathf.InverseLerp(1f, config.ApproachDropRangeU,
                             Mathf.Max(0f, drop)));
                 desiredFall *=
-                    Mathf.Lerp(1f, tuning.MinimumApproachFallScale,
+                    Mathf.Lerp(1f, config.MinimumApproachFallScale,
                         offAim * near);
             }
             rig.approachFallScale = rig.descentStopped ? 0f
@@ -293,10 +293,10 @@ public sealed class FallingCobraTracking {
         if (!rig.monkeyInHeadRange) {
             return 1f;
         }
-        return Mathf.Lerp(tuning.CloseAimSwayScale, 1f,
+        return Mathf.Lerp(config.CloseAimSwayScale, 1f,
             Mathf.SmoothStep(0f, 1f,
                 Mathf.Clamp01(Vector3.Distance(position,
-                    rig.committedTargetPosition) / tuning.SteadyAimDistanceU)));
+                    rig.committedTargetPosition) / config.SteadyAimDistanceU)));
     }
 
     public bool IsMonkeyReaching() {
@@ -326,7 +326,7 @@ public sealed class FallingCobraTracking {
             float brake =
                 Mathf.SmoothStep(0f, 1f,
                     Mathf.Clamp01(Mathf.Abs(arc)
-                        / tuning.AttackSideBrakeDistanceU));
+                        / config.AttackSideBrakeDistanceU));
             float desired = Mathf.Sign(arc) * rig.horizontalSpeedU * brake;
             sideways =
                 Mathf.Clamp(desired, -Mathf.Abs(arc) / Time.fixedDeltaTime,
@@ -338,13 +338,13 @@ public sealed class FallingCobraTracking {
         float age = Mathf.Max(0f, Time.time - rig.attackStartedTime);
         float release =
             Mathf.SmoothStep(0f, 1f,
-                Mathf.Clamp01(age / tuning.AttackSpeedRampS));
+                Mathf.Clamp01(age / config.AttackSpeedRampS));
         float burst =
             Mathf.SmoothStep(0f, 1f,
-                Mathf.Clamp01(age / tuning.StrikeLaunchRampS))
-            *Mathf.Lerp(tuning.StrikeSpeedMultiplier,1f,
+                Mathf.Clamp01(age / config.StrikeLaunchRampS))
+            *Mathf.Lerp(config.StrikeSpeedMultiplier,1f,
                 Mathf.SmoothStep(0f,1f,
-                    Mathf.Clamp01(age/tuning.StrikeBurstDurationS)));
+                    Mathf.Clamp01(age/config.StrikeBurstDurationS)));
         release = Mathf.Max(release, burst);
         return new Vector2(sideways, -rig.fallSpeedU * rig.approachFallScale)
             * release;

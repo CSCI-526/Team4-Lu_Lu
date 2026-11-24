@@ -8,11 +8,11 @@ using static CobraKingRig;
 public sealed class CobraKingArmor {
     // private members  ########################################################
     private readonly CobraKingRig rig;
-    private readonly CobraKingTuning tuning;
+    private readonly CobraKingConfig config;
 
     public CobraKingArmor(CobraKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -23,13 +23,13 @@ public sealed class CobraKingArmor {
             UnityEngine.Object.Destroy(listener);
         }
         Material outline = null;
-        if (tuning.GoldenOutlineMaterial != null) {
-            outline = new Material(tuning.GoldenOutlineMaterial);
-            outline.SetColor(OUTLINE_COLOR, tuning.GoldenOutlineColor);
+        if (config.GoldenOutlineMaterial != null) {
+            outline = new Material(config.GoldenOutlineMaterial);
+            outline.SetColor(OUTLINE_COLOR, config.GoldenOutlineColor);
             outline.SetFloat(
                 OUTLINE_WIDTH,
-                tuning.GoldenOutlineMaterial.GetFloat(OUTLINE_WIDTH)
-                    * tuning.GoldenOutlineWidthScale
+                config.GoldenOutlineMaterial.GetFloat(OUTLINE_WIDTH)
+                    * config.GoldenOutlineWidthScale
             );
         }
         foreach (Renderer part in
@@ -38,7 +38,7 @@ public sealed class CobraKingArmor {
             if (outline != null) {
                 part.sharedMaterials = new[] { baseMaterial, outline };
             }
-            rig.Feedback.SetColor(part, tuning.GoldenColor);
+            rig.Feedback.SetColor(part, config.GoldenColor);
         }
     }
 
@@ -53,7 +53,7 @@ public sealed class CobraKingArmor {
         if (golden.branch.activeSelf) {
             if (Time.time >= rig.goldenHideTime) {
                 HideGolden();
-                rig.nextGoldenTime = Time.time + tuning.GoldenIntervalS;
+                rig.nextGoldenTime = Time.time + config.GoldenIntervalS;
             }
             return;
         }
@@ -66,24 +66,24 @@ public sealed class CobraKingArmor {
         CobraKingArenaFruit golden = rig.fruits[rig.goldenIndex];
         float side = Random.value < 0.5f ? -1f : 1f;
         float angle =
-            rig.AngleOf(rig.monkey.position) + side * tuning.GoldenSideDeg;
+            rig.AngleOf(rig.monkey.position) + side * config.GoldenSideDeg;
         float y = Mathf.Clamp(
-            rig.monkey.position.y + tuning.GoldenAboveMonkeyU,
-            rig.entryY + tuning.FruitHeightRangeU.x,
-            rig.body.LowestY - tuning.CeilingGapU - 0.5f
+            rig.monkey.position.y + config.GoldenAboveMonkeyU,
+            rig.entryY + config.FruitHeightRangeU.x,
+            rig.body.LowestY - config.CeilingGapU - 0.5f
         );
         rig.Arena.PlaceBranch(golden.branch.transform, angle, y);
         golden.branch.SetActive(true);
         golden.root.SetActive(true);
-        rig.goldenHideTime = Time.time + tuning.GoldenShowS;
+        rig.goldenHideTime = Time.time + config.GoldenShowS;
         rig.hud.PopText(
             "Golden watermelon!", golden.root.transform.position,
-                tuning.GoldenColor
+                config.GoldenColor
         );
         // & a banner low on screen, so it is never missed
         rig.hud.ShowBannerFor(
-            tuning.GoldenHintTitle, tuning.GoldenHintLine, tuning.GoldenColor,
-                tuning.GoldenHintS
+            config.GoldenHintTitle, config.GoldenHintLine, config.GoldenColor,
+                config.GoldenHintS
         );
     }
 
@@ -94,11 +94,11 @@ public sealed class CobraKingArmor {
 
     // dotted line from the first banana to the crown, until the 1st hit
     public void BuildDots() {
-        rig.dots = new Transform[tuning.DotCount];
-        for (int i = 0; i < tuning.DotCount; i++) {
+        rig.dots = new Transform[config.DotCount];
+        for (int i = 0; i < config.DotCount; i++) {
             rig.dots[i] = rig.Feedback.CreatePrimitive(
                 PrimitiveType.Sphere, "HintDot" + i,
-                Vector3.one * tuning.DotRadiusU * 2f, Color.white
+                Vector3.one * config.DotRadiusU * 2f, Color.white
             ).transform;
         }
     }
@@ -109,17 +109,17 @@ public sealed class CobraKingArmor {
         rig.armor = new Transform[4];
         rig.armor[0] = rig.Feedback.CreatePrimitive(
             PrimitiveType.Cylinder, "ArmorPlate",
-            new Vector3(1.1f, 0.08f, 1.3f), tuning.GoldenColor
+            new Vector3(1.1f, 0.08f, 1.3f), config.GoldenColor
         ).transform;
         for (int side = 0; side < 2; side++) {
             rig.armor[1 + side] = rig.Feedback.CreatePrimitive(
                 PrimitiveType.Sphere, side == 0 ? "ArmorPadL" : "ArmorPadR",
-                new Vector3(0.6f, 0.4f, 0.6f), tuning.GoldenColor
+                new Vector3(0.6f, 0.4f, 0.6f), config.GoldenColor
             ).transform;
         }
         rig.armor[3] = rig.Feedback.CreatePrimitive(
             PrimitiveType.Sphere, "ArmorHelmet",
-            new Vector3(0.85f, 0.5f, 0.85f), tuning.GoldenColor
+            new Vector3(0.85f, 0.5f, 0.85f), config.GoldenColor
         ).transform;
         rig.armorBaseScales = new Vector3[rig.armor.Length];
         for (int i = 0; i < rig.armor.Length; i++) {
@@ -135,7 +135,7 @@ public sealed class CobraKingArmor {
             stamina.AddStamina(stamina.MaxStamina);
         }
         rig.hasShield = true;
-        rig.hud.PopText("Shield!", rig.monkey.position, tuning.GoldenColor);
+        rig.hud.PopText("Shield!", rig.monkey.position, config.GoldenColor);
     }
 
     // the armor follows the monkey; its back faces out from the trunk
@@ -149,19 +149,19 @@ public sealed class CobraKingArmor {
             : Vector3.forward;
         Vector3 side = Vector3.Cross(Vector3.up, outward);
         float shine = 0.5f + 0.5f * Mathf.Sin(Time.time * 4f);
-        Color gold = Color.Lerp(tuning.GoldenColor, Color.white, shine * 0.35f);
+        Color gold = Color.Lerp(config.GoldenColor, Color.white, shine * 0.35f);
         float rewardT = UpdateArmorReward();
 
         Vector3[] positions = {
-            rig.monkey.position + outward * tuning.ArmorOutU + Vector3.up
+            rig.monkey.position + outward * config.ArmorOutU + Vector3.up
                 * 0.15f,
-            rig.monkey.position + outward * (tuning.ArmorOutU * 0.6f) - side
+            rig.monkey.position + outward * (config.ArmorOutU * 0.6f) - side
                 * 0.55f
                 + Vector3.up * 0.6f,
-            rig.monkey.position + outward * (tuning.ArmorOutU * 0.6f) + side
+            rig.monkey.position + outward * (config.ArmorOutU * 0.6f) + side
                 * 0.55f
                 + Vector3.up * 0.6f,
-            rig.monkey.position + Vector3.up * tuning.ArmorHelmetU,
+            rig.monkey.position + Vector3.up * config.ArmorHelmetU,
         }
         ;
         for (int i = 0; i < rig.armor.Length; i++) {
@@ -177,7 +177,7 @@ public sealed class CobraKingArmor {
                 // smaller as it nears, then all pulse bright once it lands
                 float fly = Mathf.Clamp01(rewardT / ARMOR_LAND_SHARE);
                 float ease = 1f - Mathf.Pow(1f - fly, 3f);
-                float radius = Mathf.Lerp(tuning.ArmorRewardRadiusU, 0f, ease);
+                float radius = Mathf.Lerp(config.ArmorRewardRadiusU, 0f, ease);
                 float spin = (i * 90f + fly * 540f) * Mathf.Deg2Rad;
                 position += (outward * Mathf.Cos(spin) + side * Mathf.Sin(spin))
                     * radius + Vector3.up * radius * 0.7f;
@@ -208,11 +208,11 @@ public sealed class CobraKingArmor {
             return -1f;
         }
         rig.armorRewardTimeS += Time.deltaTime;
-        float t = Mathf.Clamp01(rig.armorRewardTimeS / tuning.ArmorRewardS);
+        float t = Mathf.Clamp01(rig.armorRewardTimeS / config.ArmorRewardS);
         if (!rig.hasArmorLanded && t >= ARMOR_LAND_SHARE) {
             rig.hasArmorLanded = true;
             rig.Throws.BurstAt(rig.monkey.position + Vector3.up * 0.4f,
-                tuning.GoldenColor);
+                config.GoldenColor);
         }
         if (t >= 1f) {
             rig.armorRewardTimeS = -1f;

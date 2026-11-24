@@ -118,7 +118,8 @@ public sealed class CobraKingRig {
     public System.Action onJewelHit;
     public System.Action onShattered;
     public readonly Transform host;
-    public readonly CobraKingTuning tuning;
+    public WorldBalanceConfig worldBalanceConfig;
+    public readonly CobraKingConfig config;
     public CobraKingArena Arena;
     public CobraKingArmor Armor;
     public CobraKingThrows Throws;
@@ -255,27 +256,27 @@ public sealed class CobraKingRig {
     public CameraClimbFraming cameraFraming;
     public MaterialPropertyBlock colorBlock;
 
-    public CobraKingRig(MonoBehaviour owner, CobraKingTuning tuning) {
+    public CobraKingRig(MonoBehaviour owner, CobraKingConfig config) {
         this.owner = owner;
         host = owner.transform;
-        this.tuning = tuning;
+        this.config = config;
     }
 
     // Public Methods  #########################################################
     public string ChoiceLine =>
-        tuning.ArmorIntroLine + "\n" + tuning.ChooseLine;
+        config.ArmorIntroLine + "\n" + config.ChooseLine;
 
     public float BananaRespawnScale => Third >= 2
-        ? tuning.BananaRespawnScaleByThird.y
+        ? config.BananaRespawnScaleByThird.y
         : Third >= 1
-            ? tuning.BananaRespawnScaleByThird.x
+            ? config.BananaRespawnScaleByThird.x
             : 1f;
 
     // easy mode warns a notch longer: its last third as normal's start; a
     // later boss of the endless run's rush warns shorter
     public float WarnScale => (isEasy
-        ? (Third >= 2 ? 1f : tuning.EasyWarnScale)
-        : (Third >= 2 ? tuning.FinalWarnScale : 1f)) * RushTimeScale;
+        ? (Third >= 2 ? 1f : config.EasyWarnScale)
+        : (Third >= 2 ? config.FinalWarnScale : 1f)) * RushTimeScale;
 
     /// <returns>if this fight is a boss of the endless run's rush</returns>
     public bool IsRush => rushEncounter >= 0;
@@ -288,17 +289,17 @@ public sealed class CobraKingRig {
     /// <returns>the king's full health on normal: more for a later boss of
     /// the endless run's rush</returns>
     public int BaseMaxHealth => Mathf.Max(1, Mathf.RoundToInt(
-        tuning.WorldBalanceConfig.BossMaxHealth
+        worldBalanceConfig.BossMaxHealth
             * (IsRush ? EndlessBossRush.HealthScale(rushEncounter) : 1f)));
 
     /// <returns>climbed height the fight begins at: the config's, or this
     /// boss's in the endless run's rush; u</returns>
     public float TriggerClimbU => IsRush
         ? EndlessBossRush.TriggerU(rushEncounter)
-        : tuning.WorldBalanceConfig.BossTriggerHeightU;
+        : worldBalanceConfig.BossTriggerHeightU;
 
-    public int MinionWaves => isEasy ? tuning.EasyMinionWaves
-        : tuning.MinionWaves;
+    public int MinionWaves => isEasy ? config.EasyMinionWaves
+        : config.MinionWaves;
 
     // normal mode's last third: minion waves stream on & on, alongside the
     // usual rounds of bites & sweeps, until the king or the monkey falls;
@@ -306,7 +307,7 @@ public sealed class CobraKingRig {
     public bool IsMinionFinale => !isEasy && Third >= 2;
 
     // world y a falling minion is gone at, the bottom of its fall line
-    public float MinionEndY => entryY - tuning.GuardDepthU;
+    public float MinionEndY => entryY - config.GuardDepthU;
 
     /// <returns>share of its health the king has lost, 0~1</returns>
     public float LostShare => maxHealth > 0

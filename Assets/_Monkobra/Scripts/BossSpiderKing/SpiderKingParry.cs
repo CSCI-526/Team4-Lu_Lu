@@ -9,11 +9,11 @@ using static SpiderKingRig;
 public sealed class SpiderKingParry {
     // private members  ########################################################
     private readonly SpiderKingRig rig;
-    private readonly SpiderKingTuning tuning;
+    private readonly SpiderKingConfig config;
 
     public SpiderKingParry(SpiderKingRig rig) {
         this.rig = rig;
-        tuning = rig.tuning;
+        config = rig.config;
     }
 
     // Public Methods  #########################################################
@@ -29,7 +29,7 @@ public sealed class SpiderKingParry {
             return;
         }
         if (game.IsPaused
-            || !SpiderKingFeedback.WasPressed(tuning.ConfirmAction)) {
+            || !SpiderKingFeedback.WasPressed(config.ConfirmAction)) {
             return;
         }
         // only w/ something to bat on its way (or charging): a double tap
@@ -45,7 +45,7 @@ public sealed class SpiderKingParry {
         // hit: a parry readies the tail at once, so a chain of slashes can
         // all be batted back, but a whiff waits its whole follow through
         bool isSwinging = rig.tailTimeS >= 0f && !rig.hasSwingHit;
-        if (now - rig.lastTapTime <= tuning.DoubleTapS && !isSwinging) {
+        if (now - rig.lastTapTime <= config.DoubleTapS && !isSwinging) {
             rig.lastTapTime = -10f;
             rig.Movement.StartTail();
             if (rig.isTeachFrozen) {
@@ -78,7 +78,7 @@ public sealed class SpiderKingParry {
         // short beat, the camera barely in, so the next one is seen in time
         bool isMore = IsMoreComing();
         rig.parrySlowEndTime = Time.unscaledTime
-            + (isMore ? QUICK_SLOW_S : tuning.ParrySlowS);
+            + (isMore ? QUICK_SLOW_S : config.ParrySlowS);
         rig.shotMaxWeight = isMore ? QUICK_SHOT_WEIGHT : 1f;
         // a shot already on goes on w/o easing in again
         float now = Time.unscaledTime;
@@ -156,11 +156,11 @@ public sealed class SpiderKingParry {
         // a slow swing round the monkey all through the slow motion
         float progress = Mathf.Clamp01(t / Mathf.Max(0.01f, total));
         float orbit =
-            rig.shotSide * tuning.ParryOrbitDeg * (0.35f + 0.65f * progress);
+            rig.shotSide * config.ParryOrbitDeg * (0.35f + 0.65f * progress);
         Vector3 way = Quaternion.AngleAxis(orbit, Vector3.up) * back;
         way = (way + Vector3.up * 0.15f).normalized;
-        float distance = tuning.ParryCloseUpU;
-        float roll = rig.shotSide * tuning.ParryRollDeg;
+        float distance = config.ParryCloseUpU;
+        float roll = rig.shotSide * config.ParryRollDeg;
         float fovScale = 1f;
         // the clash: a slam in, a roll kick, a shake
         float sinceClash = now - rig.shotClashTime;
@@ -257,7 +257,7 @@ public sealed class SpiderKingParry {
             -Mathf.Sin(radians) * MONKEY_EDGE_U);
         back = rig.monkey.position
             + (back - rig.PointOnTrunk(rig.AngleOf(rig.monkey.position),
-            rig.monkey.position.y, tuning.TrunkRadiusU + 0.12f));
+            rig.monkey.position.y, config.TrunkRadiusU + 0.12f));
         return back;
     }
 
@@ -280,7 +280,7 @@ public sealed class SpiderKingParry {
         AddCross(at);
         BurstStreaks(at, new Color(1f, 0.55f, 0.1f), 26, 6f, 15f);
         BurstStreaks(at, new Color(1f, 0.9f, 0.4f), 16, 4f, 10f);
-        AddRing(at, tuning.GoldenColor, 0f);
+        AddRing(at, config.GoldenColor, 0f);
         AddRing(at, new Color(1f, 0.55f, 0.1f), 0.07f);
         AddPop(at);
         rig.tailFlashEndTime = Time.unscaledTime + 0.15f;
@@ -328,7 +328,7 @@ public sealed class SpiderKingParry {
     public void AddTrailBead(Vector3 at) {
         Transform bead =
             rig.Feedback.CreatePrimitive(PrimitiveType.Sphere, "TrailBead",
-            Vector3.one * 0.3f, tuning.GoldenColor).transform;
+            Vector3.one * 0.3f, config.GoldenColor).transform;
         bead.position = at;
         rig.sparks.Add(new SpiderKingSpark {
             transform = bead,
@@ -472,7 +472,7 @@ public sealed class SpiderKingParry {
     // the swing bats things back from the double tap to the end of its
     // active part: its wind up is only the look
     public bool IsParryArmed() => rig.tailTimeS >= 0f
-        && rig.tailTimeS < tuning.TailWindUpS + tuning.TailActiveS;
+        && rig.tailTimeS < config.TailWindUpS + config.TailActiveS;
 
     // a lesson's stop never finds the monkey stuck in a web, where Space
     // would only struggle & the lesson could never be passed
@@ -508,7 +508,7 @@ public sealed class SpiderKingParry {
         // the lesson passed: the fight is on once it breaks out
         if (rig.teach == SpiderKingTeachStep.Parry) {
             rig.teach = SpiderKingTeachStep.Done;
-            rig.nextAttackTime = Time.time + tuning.ParryStunS + 1f;
+            rig.nextAttackTime = Time.time + config.ParryStunS + 1f;
         }
     }
 
@@ -516,10 +516,10 @@ public sealed class SpiderKingParry {
     public void WebTheSpider() {
         // already stuck: more batted back bullets never add to it
         if (Time.time < rig.stunEndTime) {
-            Burst(rig.body.Position, tuning.SilkColor, 6);
+            Burst(rig.body.Position, config.SilkColor, 6);
             return;
         }
-        rig.stunEndTime = Time.time + tuning.ParryStunS;
+        rig.stunEndTime = Time.time + config.ParryStunS;
         rig.Attacks.CancelAttack();
         rig.isDashing = false;
         rig.Attacks.StopSlashing();
@@ -530,10 +530,10 @@ public sealed class SpiderKingParry {
             Mathf.Max(rig.nextAttackTime, rig.stunEndTime + 0.5f);
         rig.hud.PopText("STUCK!", rig.body.HeadPosition, UIStyle.Gold);
         rig.hud.Say("Ugh! My own web!");
-        Burst(rig.body.Position, tuning.SilkColor, 14);
+        Burst(rig.body.Position, config.SilkColor, 14);
         if (rig.stuckWeb == null) {
             rig.stuckWeb =
-                UnityEngine.Object.Instantiate(tuning.WebPrefab,
+                UnityEngine.Object.Instantiate(config.WebPrefab,
                     rig.body.Position, Quaternion.identity,
                 rig.host).gameObject;
             SpiderKingFeedback.MakeDecor(rig.stuckWeb);
@@ -553,7 +553,7 @@ public sealed class SpiderKingParry {
         }
         rig.stuckWeb.transform.SetPositionAndRotation(
             rig.PointOnTrunk(rig.spiderAngle, rig.spiderY,
-                tuning.TrunkRadiusU + 1.7f),
+                config.TrunkRadiusU + 1.7f),
             Quaternion.Euler(0f, -rig.spiderAngle, 0f)
         );
     }
@@ -567,7 +567,7 @@ public sealed class SpiderKingParry {
             || Time.unscaledTime < rig.clashStopEndTime
             ? 0f
             : Time.unscaledTime < rig.parrySlowEndTime
-                ? tuning.ParrySlowTimeScale : 1f;
+                ? config.ParrySlowTimeScale : 1f;
         if (scale < 1f || rig.isTimeBent) {
             Time.timeScale = scale;
             rig.isTimeBent = scale < 1f;
