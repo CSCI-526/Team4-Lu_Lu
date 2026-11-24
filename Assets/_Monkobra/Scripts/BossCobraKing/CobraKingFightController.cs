@@ -365,6 +365,15 @@ public class CobraKingFightController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
+    [Tooltip("balance numbers: trigger height, king health, banana damage")]
+    private WorldBalanceConfig worldBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("every tuned value of the Cobra King fight")]
+    private CobraKingConfig config;
+
+    [SerializeField]
+    [Tooltip("legacy tuning, read until the roles read config")]
     private CobraKingTuning tuning = new();
 
     // private members  ########################################################

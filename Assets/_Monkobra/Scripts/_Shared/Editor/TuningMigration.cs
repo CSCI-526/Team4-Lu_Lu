@@ -100,6 +100,42 @@ public static class TuningMigration {
             },
             new string[0]
         ),
+        new Job(
+            PREFABS + "BossCobraKing/CobraKingFight.prefab",
+            typeof(CobraKingFightController),
+            typeof(CobraKingConfig),
+            SETTINGS + "BossCobraKing/CobraKingConfig.asset",
+            new Dictionary<string, string>(),
+            new[] {
+                "worldBalanceConfig",
+            }
+        ),
+        new Job(
+            PREFABS + "BossCobraKing/CobraKingFight.prefab",
+            typeof(BossFightHud),
+            typeof(BossFightHudConfig),
+            SETTINGS + "_Shared/BossFightHudConfig_CobraKing.asset",
+            new Dictionary<string, string>(),
+            new string[0]
+        ),
+        new Job(
+            PREFABS + "BossSpiderKing/SpiderKingFight.prefab",
+            typeof(SpiderKingFightController),
+            typeof(SpiderKingConfig),
+            SETTINGS + "BossSpiderKing/SpiderKingConfig.asset",
+            new Dictionary<string, string>(),
+            new[] {
+                "worldBalanceConfig",
+            }
+        ),
+        new Job(
+            PREFABS + "BossSpiderKing/SpiderKingFight.prefab",
+            typeof(BossFightHud),
+            typeof(BossFightHudConfig),
+            SETTINGS + "_Shared/BossFightHudConfig_SpiderKing.asset",
+            new Dictionary<string, string>(),
+            new string[0]
+        ),
     };
 
     // private methods  ########################################################

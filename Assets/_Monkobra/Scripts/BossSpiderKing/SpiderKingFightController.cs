@@ -164,6 +164,15 @@ public class SpiderKingFightController: MonoBehaviour {
 
     // Inspector Fields  #######################################################
     [SerializeField]
+    [Tooltip("zone & trigger heights")]
+    private WorldBalanceConfig worldBalanceConfig;
+
+    [SerializeField]
+    [Tooltip("every tuned value of the Spider King fight")]
+    private SpiderKingConfig config;
+
+    [SerializeField]
+    [Tooltip("legacy tuning, read until the roles read config")]
     private SpiderKingTuning tuning = new();
 
     // private members  ########################################################

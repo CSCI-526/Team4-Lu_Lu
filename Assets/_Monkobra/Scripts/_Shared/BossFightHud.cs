@@ -18,6 +18,11 @@ public class BossFightHud: MonoBehaviour {
     public const float CALL_OUT_S = BossFightHudRig.CALL_OUT_S;
     // Inspector Fields  #######################################################
     [SerializeField]
+    [Tooltip("every tuned value of the boss fight HUD")]
+    private BossFightHudConfig config;
+
+    [SerializeField]
+    [Tooltip("legacy tuning, read until the roles read config")]
     private BossFightHudTuning tuning = new();
 
     // private members  ########################################################

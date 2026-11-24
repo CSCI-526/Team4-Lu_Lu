@@ -156,8 +156,8 @@ public class CobraMotorConfig: ScriptableObject {
 
     [Header("Coil Shape")]
     [SerializeField]
-    [Tooltip("full loops the body wraps round the trunk, head to tail; keep at "
-        + "least 1 so no gap is left")]
+    [Tooltip("full loops the body wraps round the trunk, head to tail; keep "
+        + "at least 1 so no gap is left")]
     private float coilTurns = 1.25f;
 
     [SerializeField]
@@ -185,8 +185,8 @@ public class CobraMotorConfig: ScriptableObject {
     );
 
     [SerializeField]
-    [Tooltip("how much of the spacing between segments each one fills; below 1 "
-        + "leaves a visible gap, the hit shape still has none")]
+    [Tooltip("how much of the spacing between segments each one fills; below "
+        + "1 leaves a visible gap, the hit shape still has none")]
     private float segmentFill = 0.8f;
 
     [SerializeField]
