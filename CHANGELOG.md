@@ -7,6 +7,7 @@ Bug force encounter spider
 Bug make leaderboard works
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
 Bug cobra camera: slow down, show more of the snake
+Todo add point to boss fight
 Fixme erik mpv tutorial for boss fight
 Fixme erik b/t boss fight, better randomization
 Fixme erik size of the rough bark need to improve
