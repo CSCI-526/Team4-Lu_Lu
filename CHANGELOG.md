@@ -1,13 +1,13 @@
 # Monkobra CHANGELOG
 
 <!--
+Bug make leaderboard works
+
 Fixme tutorial zone: manageable amount of banana
 Bug force encounter spider
-Bug make leaderboard works
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
 Fixme erik mpv tutorial for boss fight
 Fixme erik b/t boss fight, better randomization
-Fixme erik size of the rough bark need to improve
 
 todo lighting improvement
 todo vertical version adaptation
