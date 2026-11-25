@@ -95,12 +95,35 @@ public class BranchController: MonoBehaviour {
         }
     }
 
+    /// <returns>world y of the lowest point of the fruit this branch bears,
+    /// once <see cref="Setup"/> hung it; NaN for a branch w/o fruit</returns>
+    public float FruitBottomY {
+        get {
+            GameObject fruit = hungFruit != null ? hungFruit
+                : kind == BranchKind.Banana && banana != null
+                    && banana.activeSelf ? banana : null;
+            if (fruit == null) {
+                return float.NaN;
+            }
+            float bottom = float.PositiveInfinity;
+            foreach (Renderer part in
+                fruit.GetComponentsInChildren<Renderer>()) {
+                bottom = Mathf.Min(bottom, part.bounds.min.y);
+            }
+            return float.IsPositiveInfinity(bottom)
+                ? fruit.transform.position.y : bottom;
+        }
+    }
+
     // constants  ##############################################################
     private const float STEM_Y_SCALE_MIN = 0.5f;
     private const float STEM_Y_SCALE_MAX = 2.0f;
     private const float BANANA_Y_OFFSET = -.2f;
 
     // lower end of the stem: a capsule, 2 u long at scale 1 on its local y
+    // the coconut or pineapple hung in the banana's place, if any
+    private GameObject hungFruit;
+
     private Vector3 StemTipPosition =>
         bananaStem.transform.TransformPoint(Vector3.down);
 
@@ -139,6 +162,7 @@ public class BranchController: MonoBehaviour {
             fruitPrefab,
             banana.transform.parent
         );
+        hungFruit = pineapple;
         pineapple.transform.SetLocalPositionAndRotation(
             banana.transform.localPosition
                 + banana.transform.localRotation * fruitOffsetU,
@@ -154,6 +178,7 @@ public class BranchController: MonoBehaviour {
             return;
         }
         GameObject coconut = Instantiate(fruitPrefab, banana.transform.parent);
+        hungFruit = coconut;
         coconut.transform.SetPositionAndRotation(
             StemTipPosition
                 + banana.transform.rotation * fruitOffsetU,

@@ -85,7 +85,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   startingZoneBranchClearRadiusU: 6
-  startingZoneBananaBranchChance: 0.12
+  startingZoneBananaBranchChance: 0.2
   emptyBranchAttemptCount: 10
   emptyBranchProbabilityCurve:
     serializedVersion: 2
