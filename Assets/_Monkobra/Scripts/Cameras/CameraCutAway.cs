@@ -6,8 +6,8 @@ using UnityEngine.UI;
 /// <summary>
 /// How a cut away from the monkey looks (the cobra alert): the game's UI
 /// goes and black cinema bars grow slowly in from the top & bottom; as the
-/// camera cuts back the bars slowly draw back out, and once they are gone
-/// the UI is back at once, so the player sees at once this is a look
+/// camera cuts back the UI is back at once and the bars slowly draw back out
+/// under it, so the player sees at once this is a look
 /// elsewhere, not the climb, and that the controls wait while it lasts
 /// (<see cref="CameraRigManager"/> locks them).
 /// <para>
@@ -24,9 +24,10 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CameraRigManager))]
 public class CameraCutAway: MonoBehaviour {
     // Public Members  #########################################################
-    /// <returns>if the camera has cut away from the monkey, or its bars are
-    /// still drawing back: the UI is hidden till this ends</returns>
-    public bool IsCutAway => isCutAway || shown > 0f;
+    /// <returns>if the camera is cut away from the monkey: the UI is hidden
+    /// till this ends, the very moment the shot does; the bars then draw back
+    /// out under the returned UI</returns>
+    public bool IsCutAway => isCutAway;
 
     // Inspector Fields  #######################################################
     [SerializeField]
