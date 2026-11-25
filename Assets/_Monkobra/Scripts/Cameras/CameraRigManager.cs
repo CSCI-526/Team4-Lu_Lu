@@ -242,6 +242,7 @@ public class CameraRigManager: MonoBehaviour {
     }
 
     private void OnDisable() {
+        LiftCobraAlertHold();
         UnsubscribeCobra();
         // never leave the monkey locked behind a shot that can no longer end
         if (liveKind.HasValue && IsCutAwayShot(liveKind.Value)
@@ -251,6 +252,7 @@ public class CameraRigManager: MonoBehaviour {
     }
 
     private void OnDestroy() {
+        LiftCobraAlertHold();
         UnsubscribeCobra();
         if (game != null) {
             game.LeapChanged -= OnLeapChanged;
@@ -272,6 +274,13 @@ public class CameraRigManager: MonoBehaviour {
         // a missed event can never leave the view stuck up
         if (liveKind == ShotKind.Leap && game != null && !game.IsLeaping) {
             ReleaseShot(ShotKind.Leap);
+        }
+        // the cobra climbs on once its look is held long enough, or the shot
+        // is gone
+        if (isCobraHeldByAlert
+            && (Time.time >= cobraAlertLiftTime
+                || liveKind != ShotKind.CobraAlert)) {
+            LiftCobraAlertHold();
         }
         if (!liveKind.HasValue) {
             return;
@@ -340,6 +349,12 @@ public class CameraRigManager: MonoBehaviour {
     private GameController game;
     private PineappleLeapController leapController;
     private CobraMotor cobra;
+    private bool isCobraHeldByAlert; // this director holds the cobra still
+    private float cobraAlertLiftTime; // Time.time the hold ends
+
+    // how long the head stays reared after the hold ends, so it lowers as
+    // the cobra pulls away; s
+    private const float ALERT_REAR_AFTER_HOLD_S = 1f;
 
     // private methods  ########################################################
     private void SubscribeCobra() {
@@ -365,7 +380,29 @@ public class CameraRigManager: MonoBehaviour {
         }
         if (RequestShot(ShotKind.CobraAlert, config.CobraAlertShot.DurationS)) {
             cobra.PlayChaseAlertHiss();
-            cobra.PlayAlertRear(config.CobraAlertShot.DurationS);
+            // the cobra is still while the camera shows it, then climbs on
+            // in view; never takes a hold someone else keeps
+            float holdS = Mathf.Min(
+                config.CobraAlertHoldS, config.CobraAlertShot.DurationS);
+            if (holdS > 0f && !cobra.IsStoryHeld) {
+                cobra.SetStoryHold(true, true);
+                isCobraHeldByAlert = true;
+                cobraAlertLiftTime = Time.time + holdS;
+            }
+            cobra.PlayAlertRear(holdS > 0f
+                ? holdS + ALERT_REAR_AFTER_HOLD_S
+                : config.CobraAlertShot.DurationS);
+        }
+    }
+
+    // lets the cobra climb on, only if this director holds it; idempotent
+    private void LiftCobraAlertHold() {
+        if (!isCobraHeldByAlert) {
+            return;
+        }
+        isCobraHeldByAlert = false;
+        if (cobra != null) {
+            cobra.SetStoryHold(false, true);
         }
     }
 

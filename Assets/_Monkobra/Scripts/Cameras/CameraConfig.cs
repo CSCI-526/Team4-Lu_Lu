@@ -141,6 +141,10 @@ public class CameraConfig: ScriptableObject {
     /// out of the starting zone</returns>
     public ShotSettings CobraAlertShot => cobraAlertShot;
 
+    /// <returns>time the great cobra is held still, rearing & hissing, from
+    /// the alert's cut before it starts to climb in view; s</returns>
+    public float CobraAlertHoldS => cobraAlertHoldS;
+
     /// <returns>how far out from the monkey the cobra alert camera stands,
     /// horizontally, so it is close; u</returns>
     public float CobraAlertDistanceU => cobraAlertDistanceU;
@@ -377,7 +381,14 @@ public class CameraConfig: ScriptableObject {
     [Header("Shot: Cobra Alert")]
     [SerializeField]
     [Tooltip("cobra alert shot timing & priority; s")]
-    private ShotSettings cobraAlertShot = new ShotSettings(1.5f, 0.8f, 4f, 20);
+    private ShotSettings cobraAlertShot = new ShotSettings(4f, 0.8f, 4f, 20);
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time the great cobra stays still, rearing & hissing, from the "
+        + "cut before it climbs on in view; keep it under the shot's "
+        + "duration, the climb that follows is under input lock; s")]
+    private float cobraAlertHoldS = 2.5f;
 
     [SerializeField]
     [Tooltip("how far out from the monkey the alert camera stands, "

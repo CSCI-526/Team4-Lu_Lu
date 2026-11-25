@@ -84,7 +84,7 @@ MonoBehaviour:
   headTurnSpeedDegPerS: 180
   headRaiseStartDistanceU: 9
   headRaiseFullDistanceU: 3.5
-  alertRearEaseS: 0.4
+  alertRearEaseS: 0.8
   proximityHiss: {fileID: 8300000, guid: 34e7c832cfb4cd5448d8d365a2a9f4f9, type: 3}
   hissStartDistanceU: 7
   hissExitPaddingU: 1

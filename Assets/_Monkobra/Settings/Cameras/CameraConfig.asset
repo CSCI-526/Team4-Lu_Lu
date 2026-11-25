@@ -88,10 +88,11 @@ MonoBehaviour:
     cooldownS: 0.2
     priority: 30
   cobraAlertShot:
-    durationS: 2
+    durationS: 4
     minHoldS: 0.8
     cooldownS: 4
     priority: 20
+  cobraAlertHoldS: 2.5
   cobraAlertDistanceU: 5
   cobraAlertYOffsetU: 3
   cobraAlertPitchDeg: 15
