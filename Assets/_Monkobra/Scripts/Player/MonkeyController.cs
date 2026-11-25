@@ -495,7 +495,9 @@ public class MonkeyController: MonoBehaviour {
     private float activePullSpeedU; // speed of the current pull; u/s
     private bool isReturning; // whether the body glides back onto its ring
 
-    private bool IsStunned => Time.time < stunEndTime;
+    /// <returns>if a hit has knocked the monkey off its climb: input is
+    /// ignored while it falls the drop distance</returns>
+    public bool IsStunned => Time.time < stunEndTime;
 
     // body and arms share one action, held on the input config asset
     private InputActionReference MoveAction =>

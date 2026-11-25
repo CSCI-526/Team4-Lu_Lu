@@ -42,6 +42,18 @@ The Cobra King fight, into ``BossCobraKing/``:
 - ``CobraKing_Victory``: a short horn call blended with a strummed chord,
   a drum roll & a sparkle
 
+The Spider King fight, into ``BossSpiderKing/``, all the spider's own sounds,
+dry & short:
+
+- ``SpiderKing_WebCharge``: a wet, gurgling spit drawing in, threads
+  stretching, pt!, as a web bullet charges
+- ``SpiderKing_SlashCharge``: a vicious fang bite & a short bristle hiss, as
+  a slash charges
+- ``SpiderKing_DashWarn``: legs scrambling on the bark, faster & faster, a
+  hiss as it lunges
+- ``SpiderKing_Parry``: a hard thwack & a taut silk thread snapping, as the
+  tail bats a strike back
+
 Run from the repository root; ``--out`` picks the root folder, each sound
 going into its module's folder under it::
 
@@ -589,11 +601,126 @@ def cobra_king_victory():
     return finish(out, 0.85)
 
 
+# Spider King  ################################################################
+# its cues are the spider's own: silk & goo from the spinnerets, fangs, a
+# bristle rasp, legs on the bark; dry & short, so each reads at once
+def dry(out, gain=0.95, fade_s=0.02):
+    """crisp: no room, a short fade, normalized"""
+    return peak1(fade_out(np.array(out, dtype=float), fade_s)) * gain
+
+
+def env_in(dur_s, power=1.5):
+    t = times(dur_s)
+    return (t / dur_s) ** power
+
+
+def rasp(dur_s, rate_from, rate_to, band=(1200, 6000)):
+    """bristles rubbed together, a tarantula's hiss: noise in fast, rough
+    pulses, not a smooth snake's hiss"""
+    t = times(dur_s)
+    rate = rate_from + (rate_to - rate_from) * t / dur_s
+    phase = np.cumsum(rate) / SR
+    saw = phase % 1.0
+    pulses = np.clip(1 - saw / 0.35, 0, 1) ** 2
+    grit = filt(noise(len(t)), "band", list(band))
+    return peak1(grit * (0.25 + 0.75 * pulses))
+
+
+def silk(dur_s, density_from, density_to):
+    """silk drawn from the spinnerets: fine, sticky fibres crackling"""
+    return peak1(fibres(dur_s, density_from, density_to, (2500, 8500)))
+
+
+def goo(dur_s, f_from, f_to):
+    """a wet, gluey squelch"""
+    t = times(dur_s)
+    f = f_from + (f_to - f_from) * t / dur_s
+    tone = np.sin(2 * np.pi * np.cumsum(f * (1 + 0.3 * np.sin(2 * np.pi * 30 * t))) / SR)
+    wet = filt(noise(len(t)), "band", [400, 2200]) * (0.5 + 0.5 * np.sin(2 * np.pi * 26 * t))
+    return peak1((tone + 0.8 * wet) * np.sin(np.pi * t / dur_s))
+
+
+def leg_tap(f=1100):
+    """a spider's leg tip on bark: a dry, woody tap"""
+    g = times(0.025)
+    tap = filt(noise(len(g)), "band", [f * 0.6, f * 2.5]) * np.exp(-g / 0.003)
+    tap += np.sin(2 * np.pi * f * 0.4 * g) * np.exp(-g / 0.006) * 0.6
+    return peak1(tap)
+
+
+def fang_snap(f=1800):
+    """2 hard fangs snapping shut: a sharp chitin crack"""
+    g = times(0.04)
+    snap = filt(noise(len(g)), "band", [f * 0.7, f * 4]) * np.exp(-g / 0.004)
+    snap += np.sin(2 * np.pi * f * 0.5 * g) * np.exp(-g / 0.006) * 0.7
+    return peak1(snap)
+
+
+def spider_king_web_charge():
+    """the web bullet charging: a wet, gurgling spit drawing in, threads
+    stretching, pt!"""
+    dur = 0.27
+    out = np.zeros(int(dur * SR))
+    place(out, goo(0.2, 260, 480) * env_in(0.2, 1.0), 0.0, 0.8)
+    place(out, silk(0.18, 600, 1800) * env_in(0.18, 1.6), 0.04, 0.45)
+    t = times(0.05)
+    spit = filt(noise(len(t)), "band", [900, 4000]) * np.exp(-t / 0.008)
+    place(out, peak1(spit), 0.205, 0.9)
+    return dry(np.tanh(1.8 * peak1(out)) / np.tanh(1.8))
+
+
+def spider_king_slash_charge():
+    """the slash charging: a vicious fang bite, KCHK!, & a short hiss"""
+    dur = 0.24
+    out = np.zeros(int(dur * SR))
+    place(out, fang_snap(1700), 0.0, 1.0)
+    place(out, fang_snap(2100), 0.028, 0.85)
+    r = rasp(0.15, 110, 90, (1500, 6500))
+    t = times(0.15)
+    place(out, r * np.clip(t / 0.01, 0, 1) * np.clip((0.15 - t) / 0.08, 0, 1), 0.06, 0.7)
+    return dry(np.tanh(2.0 * peak1(out)) / np.tanh(2.0))
+
+
+def spider_king_dash_warn():
+    """the dash winding up: 8 legs scrambling on the bark, faster & faster,
+    a hiss as it lunges"""
+    dur = 0.28
+    out = np.zeros(int(dur * SR))
+    t = 0.0
+    while t < 0.2:
+        place(out, leg_tap(rng.uniform(800, 1500)), t, 0.5 + 0.5 * t / 0.2)
+        t += 0.032 * (1 - 0.55 * t / 0.2) * rng.uniform(0.7, 1.3)
+    place(out, rasp(0.09, 120, 160), 0.18, 0.8)
+    return dry(np.tanh(2.2 * peak1(out)) / np.tanh(2.2))
+
+
+def spider_king_parry():
+    """the tail bats a strike back: a hard thwack & a taut silk thread
+    snapping"""
+    dur = 0.3
+    out = np.zeros(int(dur * SR))
+    t = times(0.18)
+    thwack = filt(noise(len(t)), "band", [600, 5000]) * np.exp(-t / 0.009)
+    thwack += sweep(240, 75, 0.012, t) * np.exp(-t / 0.045)
+    place(out, peak1(thwack), 0.0, 1.0)
+    t = times(0.2)
+    f = 700 * (1 + 0.5 * np.exp(-t / 0.02))
+    twang = np.sin(2 * np.pi * np.cumsum(f) / SR) + 0.5 * np.sin(2 * np.pi * np.cumsum(2.7 * f) / SR)
+    twang *= np.exp(-t / 0.05)
+    place(out, peak1(twang), 0.004, 0.7)
+    place(out, silk(0.07, 1500, 300), 0.01, 0.5)
+    return dry(np.tanh(2.0 * peak1(out)) / np.tanh(2.0), 0.97, 0.03)
+
+
 # Main  ########################################################################
 # takes picked from a review, kept by the seed they were heard with
 SEEDS = {
     "Grab_Banana": 703,
     "CobraKing_AttackWarn": 701,
+    "SpiderKing_WebCharge": 801,
+    "SpiderKing_DashWarn": 804,
+    "SpiderKing_SlashCharge": 902,
+    "SpiderKing_Parry": 904,
 }
 
 # name: (module folder, maker)
@@ -624,6 +751,10 @@ SOUNDS = {
     "CobraKing_FruitSplat": ("BossCobraKing", cobra_king_fruit_splat),
     "CobraKing_Shatter": ("BossCobraKing", cobra_king_shatter),
     "CobraKing_Victory": ("BossCobraKing", cobra_king_victory),
+    "SpiderKing_WebCharge": ("BossSpiderKing", spider_king_web_charge),
+    "SpiderKing_SlashCharge": ("BossSpiderKing", spider_king_slash_charge),
+    "SpiderKing_DashWarn": ("BossSpiderKing", spider_king_dash_warn),
+    "SpiderKing_Parry": ("BossSpiderKing", spider_king_parry),
 }
 
 

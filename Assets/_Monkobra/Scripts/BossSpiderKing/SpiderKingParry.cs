@@ -273,6 +273,7 @@ public sealed class SpiderKingParry {
     // the clash: sparks flying off the tail where the thing meets it, &
     // "Nice!"
     public void Clash(Vector3 at) {
+        rig.onParried?.Invoke();
         rig.clashStopEndTime = Time.unscaledTime + CLASH_STOP_S;
         rig.shotClashTime = Time.unscaledTime;
         rig.shakeEndTime = Time.unscaledTime + SHAKE_S;

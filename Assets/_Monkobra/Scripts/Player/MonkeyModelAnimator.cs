@@ -100,6 +100,15 @@ public class MonkeyModelAnimator: MonoBehaviour {
     [Tooltip("share of the cycle a limb spends planted on the bark")]
     private float stanceShare = 0.6f;
 
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip(
+        "while a hit knocks the monkey down it climbs no strides: the cycle "
+            + "settles at this rate onto a pose with every limb on the bark; "
+            + "cycles/s"
+    )]
+    private float knockedGripSettleHz = 4f;
+
     [Header("Legs")]
     [SerializeField]
     [Tooltip("foot distance out from the middle, model units")]
@@ -274,6 +283,7 @@ public class MonkeyModelAnimator: MonoBehaviour {
         leftArm = leftHand.GetComponent<ArmController>();
         rightArm = rightHand.GetComponent<ArmController>();
         web = GetComponent<SpiderWebStruggle>();
+        monkey = GetComponent<MonkeyController>();
 
         hips = Bone("ORG-hips");
         spine = Bone("ORG-spine");
@@ -364,6 +374,7 @@ public class MonkeyModelAnimator: MonoBehaviour {
     private ArmController leftArm;
     private ArmController rightArm;
     private SpiderWebStruggle web;
+    private MonkeyController monkey;
 
     private Transform hips;
     private Transform spine;
@@ -860,6 +871,12 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
     // one stride of travel, up, down or round the trunk, is one cycle
     private void UpdateCycle(float deltaS) {
+        // knocked down, the monkey hangs on as it slides: no strides, the
+        // limbs settle where they all grip the bark
+        if (monkey != null && monkey.IsStunned) {
+            SettleToGrip(deltaS);
+            return;
+        }
         Vector2 travel = new Vector2(modelVelocity.x, modelVelocity.y);
         float speedU = travel.magnitude;
         if (speedU < minMoveSpeedU) {
@@ -871,6 +888,23 @@ public class MonkeyModelAnimator: MonoBehaviour {
             climbPhase + direction * rateHz * deltaS,
             1f
         );
+    }
+
+    // both diagonal pairs are planted in the overlap of their stances, from 0
+    // to stanceShare - 0.5 & half a cycle on; the cycle moves the short way
+    // to the middle of the nearer one
+    private void SettleToGrip(float deltaS) {
+        float grip = Mathf.Max(0f, stanceShare - 0.5f) * 0.5f;
+        float toFirst = CycleDelta(climbPhase, grip);
+        float toSecond = CycleDelta(climbPhase, grip + 0.5f);
+        float toGrip = Mathf.Abs(toFirst) < Mathf.Abs(toSecond) ? toFirst : toSecond;
+        float step = knockedGripSettleHz * deltaS;
+        climbPhase = Mathf.Repeat(climbPhase + Mathf.Clamp(toGrip, -step, step), 1f);
+    }
+
+    // the signed short way round the cycle from one phase to another, -0.5~0.5
+    private static float CycleDelta(float from, float to) {
+        return Mathf.Repeat(to - from + 0.5f, 1f) - 0.5f;
     }
 
     private static bool IsReaching(ArmController arm) {

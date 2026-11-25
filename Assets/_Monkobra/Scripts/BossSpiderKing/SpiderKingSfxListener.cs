@@ -2,12 +2,13 @@ using UnityEngine;
 
 
 /// <summary>
-/// The Spider King fight's sound effects, as the Cobra King's: a gong &
-/// hiss as it begins, a hiss as each attack strikes (a web bullet fired, a
-/// slash flying, a dash going; never at its charge), a watermelon bursting
-/// as the spider is hurt, the beaten spider shattering, and a short victory
-/// call a moment later. The gold armor's clang is the Cobra King's, as the
-/// armor is his.
+/// The Spider King fight's sound effects: a gong & hiss as it begins; as
+/// each attack begins to charge, the spider's own cue, so the ear tells
+/// them apart (a gurgling spit for a web bullet, a fang bite & hiss for a
+/// slash, legs scrambling for a dash); a thwack & a silk snap at each
+/// parry's clash; a watermelon bursting as the spider is hurt, the beaten
+/// spider shattering, and a short victory call a moment later. The gold
+/// armor's clang is the Cobra King's, as the armor is his.
 /// <para>
 /// Next to <see cref="SpiderKingFightController"/> on the
 /// <c>SpiderKingFight</c> prefab. It only listens to the controller's
@@ -17,7 +18,8 @@ using UnityEngine;
 /// motions & the reward panel never bend or stop them.
 /// </para>
 /// <para>
-/// The clips are the Cobra King's, made by <c>tools/sfx/make_sfx.py</c>.
+/// The clips, the spider's own & the Cobra King's reused, are made by
+/// <c>tools/sfx/make_sfx.py</c>.
 /// </para>
 /// </summary>
 [RequireComponent(typeof(SpiderKingFightController))]
@@ -29,8 +31,20 @@ public class SpiderKingSfxListener: MonoBehaviour {
     private AudioClip entrance;
 
     [SerializeField]
-    [Tooltip("as each web bullet, slash & dash strikes, after its charge")]
-    private AudioClip attack;
+    [Tooltip("as a web bullet begins to charge, each of a volley's too")]
+    private AudioClip webCharge;
+
+    [SerializeField]
+    [Tooltip("as a slash begins to charge")]
+    private AudioClip slashCharge;
+
+    [SerializeField]
+    [Tooltip("as a dash begins its wind up")]
+    private AudioClip dashWarn;
+
+    [SerializeField]
+    [Tooltip("the tail's clash with a bullet or slash it bats back")]
+    private AudioClip parry;
 
     [SerializeField]
     [Tooltip("the spider hurt by a melon or a parried slash")]
@@ -52,8 +66,8 @@ public class SpiderKingSfxListener: MonoBehaviour {
 
     [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("the attack hiss's loudness share, as a volley fires often")]
-    private float attackVolumeShare = 0.7f;
+    [Tooltip("the charge cues' loudness share, as a volley charges often")]
+    private float chargeVolumeShare = 0.8f;
 
     [SerializeField]
     [Min(0f)]
@@ -68,11 +82,13 @@ public class SpiderKingSfxListener: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (entrance == null || attack == null || spiderHit == null
+        if (entrance == null || webCharge == null || slashCharge == null
+            || dashWarn == null || parry == null || spiderHit == null
             || shatter == null || victory == null) {
             Debug.LogWarning(
                 "SpiderKingSfxListener:\tmust assign Inspector Fields: "
-                    + "entrance, attack, spiderHit, shatter, victory",
+                    + "entrance, webCharge, slashCharge, dashWarn, parry, "
+                    + "spiderHit, shatter, victory",
                 this
             );
             enabled = false;
@@ -94,7 +110,10 @@ public class SpiderKingSfxListener: MonoBehaviour {
             return;
         }
         fight.FightStarted += OnFightStarted;
-        fight.AttackStruck += OnAttackStruck;
+        fight.WebCharged += OnWebCharged;
+        fight.SlashCharged += OnSlashCharged;
+        fight.DashWarned += OnDashWarned;
+        fight.Parried += OnParried;
         fight.SpiderHit += OnSpiderHit;
         fight.Defeated += OnDefeated;
     }
@@ -104,7 +123,10 @@ public class SpiderKingSfxListener: MonoBehaviour {
             return;
         }
         fight.FightStarted -= OnFightStarted;
-        fight.AttackStruck -= OnAttackStruck;
+        fight.WebCharged -= OnWebCharged;
+        fight.SlashCharged -= OnSlashCharged;
+        fight.DashWarned -= OnDashWarned;
+        fight.Parried -= OnParried;
         fight.SpiderHit -= OnSpiderHit;
         fight.Defeated -= OnDefeated;
     }
@@ -135,8 +157,20 @@ public class SpiderKingSfxListener: MonoBehaviour {
         Play(entrance);
     }
 
-    private void OnAttackStruck() {
-        Play(attack, attackVolumeShare);
+    private void OnWebCharged() {
+        Play(webCharge, chargeVolumeShare);
+    }
+
+    private void OnSlashCharged() {
+        Play(slashCharge, chargeVolumeShare);
+    }
+
+    private void OnDashWarned() {
+        Play(dashWarn, chargeVolumeShare);
+    }
+
+    private void OnParried() {
+        Play(parry);
     }
 
     private void OnSpiderHit() {
