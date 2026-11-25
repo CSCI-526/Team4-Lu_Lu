@@ -37,6 +37,10 @@ todo add 3x fruit
   appears above the monkey, the camera cuts to it, and it spits a web that
   traps the monkey, so the first web is always met with its escape hint; the
   great cobra holds still until the monkey breaks free; never in Endless mode
+- slower pacing for 2 story events: at the chase start the great cobra stays
+  still, rearing and hissing, while the camera shows it, then climbs on in
+  view with the exit boost after; the web intro shows the bare trunk, the
+  king scuttles in round it, then a longer glow, web flight, linger and exit
 
 ### Changed
 
