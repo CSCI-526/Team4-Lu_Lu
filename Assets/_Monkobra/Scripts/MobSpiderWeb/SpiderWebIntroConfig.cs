@@ -15,6 +15,18 @@ public class SpiderWebIntroConfig: ScriptableObject {
     /// <returns>how far above the monkey the king appears; u</returns>
     public float KingAboveU => kingAboveU;
 
+    /// <returns>time the shot shows the empty trunk before the king comes
+    /// in; s</returns>
+    public float EstablishS => establishS;
+
+    /// <returns>time the king takes to scuttle in round the trunk; s
+    /// </returns>
+    public float EnterTimeS => enterTimeS;
+
+    /// <returns>how far round the trunk, from where it ends up, the king
+    /// starts its scuttle in, out of the camera's sight; deg</returns>
+    public float EnterAngleDeg => enterAngleDeg;
+
     /// <returns>time the king's eyes take to glow up before the throw; s
     /// </returns>
     public float WindUpS => windUpS;
@@ -61,24 +73,40 @@ public class SpiderWebIntroConfig: ScriptableObject {
 
     [SerializeField]
     [Min(0f)]
+    [Tooltip("time the shot shows the empty trunk before the king comes in; s")]
+    private float establishS = 1f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("time the king takes to scuttle in round the trunk; s")]
+    private float enterTimeS = 1.6f;
+
+    [SerializeField]
+    [Range(0f, 180f)]
+    [Tooltip("how far round the trunk from its resting spot the king starts "
+        + "its scuttle in, behind the trunk from the camera; deg")]
+    private float enterAngleDeg = 70f;
+
+    [SerializeField]
+    [Min(0f)]
     [Tooltip("time the king's eyes take to glow up before the throw; s")]
-    private float windUpS = 1.2f;
+    private float windUpS = 2f;
 
     [SerializeField]
     [Min(0.1f)]
     [Tooltip("time the king takes to climb off and vanish; s")]
-    private float exitTimeS = 1.5f;
+    private float exitTimeS = 2.2f;
 
     [SerializeField]
     [Min(0f)]
     [Tooltip("speed the king climbs off at; u/s")]
-    private float exitSpeedU = 14f;
+    private float exitSpeedU = 9f;
 
     [Header("Web")]
     [SerializeField]
     [Min(0.1f)]
     [Tooltip("time the web takes to fly from the king to the monkey; s")]
-    private float throwTimeS = 0.7f;
+    private float throwTimeS = 1.3f;
 
     [SerializeField]
     [Min(0f)]
@@ -101,5 +129,5 @@ public class SpiderWebIntroConfig: ScriptableObject {
     [Min(0f)]
     [Tooltip("time the shot lingers on the trapped monkey before it is "
         + "released, so the cut away ends before the escape is asked for; s")]
-    private float stickHoldS = 0.8f;
+    private float stickHoldS = 1.6f;
 }

@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpiderWebIntroConfig
   triggerClimbedHeightU: 250
   kingAboveU: 7
-  windUpS: 1.2
-  exitTimeS: 1.5
-  exitSpeedU: 14
-  throwTimeS: 0.7
+  establishS: 1
+  enterTimeS: 1.6
+  enterAngleDeg: 70
+  windUpS: 2
+  exitTimeS: 2.2
+  exitSpeedU: 9
+  throwTimeS: 1.3
   arcHeightU: 2
   startScale: 0.2
   trunkRadiusU: 5.02
-  stickHoldS: 0.8
+  stickHoldS: 1.6
