@@ -89,12 +89,12 @@ public static class TitleScreenLayoutBuilder {
             }
             Picture(body, Item.Centred(
                 "Segment_" + k.ToString("00"), "CobraSegment",
-                x, SURFACE_Y + 3 - d / 2, d, d, CENTRE
+                x, SURFACE_Y + SEG_DROP - d / 2, d, d, CENTRE
             ));
         }
 
         float frontX = DOT_X0 + (DOT_COUNT - 1) * SPACING;
-        float segY = SURFACE_Y + 3 - SEG_D / 2;
+        float segY = SURFACE_Y + SEG_DROP - SEG_D / 2;
         Picture(runway, Item.Centred(
             "CobraHead", "CobraHead", frontX + HEAD_AHEAD, segY - HEAD_LIFT,
             HEAD_W, HEAD_H, CENTRE
@@ -106,15 +106,17 @@ public static class TitleScreenLayoutBuilder {
     }
 
     // the start prompt (input icons and words, laid out by its own group)
-    // stays as it is and keeps its size; it only moves to where the loading
-    // page writes "Loading", and its words take that label's font, size and
-    // color (Baloo 2 SemiBold, cream), so they change in place at the hand-over
+    // keeps its layout & is drawn at PROMPT_SCALE; it only moves to where the
+    // loading page writes "Loading", and its words take that label's font,
+    // size and color (Baloo 2 SemiBold, cream), so they change in place at
+    // the hand-over
     private static void MovePrompt(RectTransform prompt) {
         Vector2 size = prompt.sizeDelta;
         Place(prompt, Item.Centred(
             prompt.name, "", LABEL.X + LABEL.W / 2, LABEL.Y + LABEL.H / 2,
             size.x, size.y, CENTRE
         ));
+        prompt.localScale = new Vector3(PROMPT_SCALE, PROMPT_SCALE, 1f);
 
         TMPro.TMP_FontAsset font = UIStyleBuilder.SemiBold;
         if (font == null) {
@@ -238,29 +240,35 @@ public static class TitleScreenLayoutBuilder {
     private static readonly Color BACKGROUND = new Color32(10, 31, 18, 255);
     // the loading page's "Loading" label size, the prompt words' size
     private const float LABEL_SIZE = 40f;
+    // the prompt drawn at 0.7 its size, its words so at the label's 28 px
+    private const float PROMPT_SCALE = 0.7f;
 
     private static readonly Vector2 CENTRE = new Vector2(0.5f, 0.5f);
     private static readonly Vector2 TOP_LEFT = new Vector2(0f, 1f);
     private static readonly Vector2 TOP_RIGHT = new Vector2(1f, 1f);
 
     // keep equal to LAYOUT in WebGLTemplates/FitWindow/index.html  ------------
+    // the logo 1.2 times its first size, a bit above the middle; the branch,
+    // the cobra, the monkey & the prompt 0.7 times theirs, the middle of that
+    // block moved down to (640, 585)
     private const int DOT_COUNT = 20;
-    private const float DOT_X0 = 330f;
-    private const float SPACING = 30f;
-    private const float SEG_D = 36f;
-    private const float SURFACE_Y = 449f;
-    private const float HEAD_AHEAD = 14f;
-    private const float HEAD_LIFT = 12f;
-    private const float HEAD_W = 62f;
-    private const float HEAD_H = 60f;
-    private const float MONKEY_GAP = 84f;
-    private const float MONKEY_SINK = 4f;
-    private const float MONKEY_W = 64f;
-    private const float MONKEY_H = 60f;
+    private const float DOT_X0 = 423f;
+    private const float SPACING = 21f;
+    private const float SEG_D = 25.2f;
+    private const float SURFACE_Y = 565.4f;
+    private const float SEG_DROP = 2.1f;
+    private const float HEAD_AHEAD = 9.8f;
+    private const float HEAD_LIFT = 8.4f;
+    private const float HEAD_W = 43.4f;
+    private const float HEAD_H = 42f;
+    private const float MONKEY_GAP = 58.8f;
+    private const float MONKEY_SINK = 2.8f;
+    private const float MONKEY_W = 44.8f;
+    private const float MONKEY_H = 42f;
 
     // first body segments, tapering to the tail tip: x, size
     private static readonly Vector2[] TAIL = {
-        new Vector2(322f, 20f), new Vector2(339f, 26f), new Vector2(362f, 32f),
+        new Vector2(417.4f, 14f), new Vector2(429.3f, 18.2f), new Vector2(445.4f, 22.4f),
     };
 
     private static readonly Item[] VINES = {
@@ -269,9 +277,9 @@ public static class TitleScreenLayoutBuilder {
         new Item("Vine_B", "Vine_B", 1150, -40, 78, 286, TOP_RIGHT),
     };
     private static readonly Item LOGO =
-        new Item("MonkobraLogo", "MonkobraLogo", 290, 143, 700, 124, CENTRE);
+        new Item("MonkobraLogo", "MonkobraLogo", 220, 240, 840, 149, CENTRE);
     private static readonly Item BRANCH =
-        new Item("Branch", "Branch", 200, 384, 880, 120, CENTRE);
+        new Item("Branch", "Branch", 332, 519.9f, 616, 84, CENTRE);
     private static readonly Item LABEL =
-        new Item("Prompt", "", 440, 520, 400, 50, CENTRE);
+        new Item("Prompt", "", 500, 615.1f, 280, 35, CENTRE);
 }
