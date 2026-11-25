@@ -12,7 +12,13 @@ using UnityEngine;
 /// <see cref="Phase.Appear"/>: the great cobra is held still
 /// (<see cref="CobraMotor.SetStoryHold"/>), the spider intro shot is asked of
 /// <see cref="CameraRigManager"/> (which locks the monkey's input), the king
-/// is built above the monkey and its eyes glow up.
+/// is built above the monkey and its eyes glow up. Then
+/// <see cref="Phase.Throw"/>: the king spits a web, the real
+/// <see cref="SpiderWebTrap"/> prefab, unarmed so it passes harmlessly, that
+/// arcs to the monkey's spot on the bark and grows to full size on the way.
+/// Then <see cref="Phase.Stick"/>: it lands flat on the bark facing out,
+/// armed, and traps the monkey, whose escape the existing
+/// <see cref="SpiderWebStruggle"/> and its first-trap hint teach.
 /// </para>
 /// Finds the monkey, the cobra, the camera rig and the framing by singleton or
 /// type at use, as they live in other prefabs.
@@ -26,6 +32,8 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     public enum Phase {
         Waiting,
         Appear,
+        Throw,
+        Stick,
     }
 
     /// <returns>the stage the event is in</returns>
@@ -37,6 +45,10 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     [Tooltip("trigger height, king offset and every timing of the event")]
     private SpiderWebIntroConfig config;
 
+    [SerializeField]
+    [Tooltip("the climb's spider web prefab, the very web the king throws")]
+    private SpiderWebTrap webPrefab;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -45,6 +57,14 @@ public class SpiderWebIntroEvent: MonoBehaviour {
                 "SpiderWebIntroEvent:\tmust assign Inspector Field: config",
                 this
             );
+        }
+        if (webPrefab == null) {
+            Debug.LogWarning(
+                "SpiderWebIntroEvent:\tmust assign Inspector Field: webPrefab",
+                this
+            );
+        }
+        if (config == null || webPrefab == null) {
             enabled = false;
             return;
         }
@@ -80,6 +100,12 @@ public class SpiderWebIntroEvent: MonoBehaviour {
             case Phase.Appear:
                 UpdateAppear();
                 break;
+            case Phase.Throw:
+                UpdateThrow();
+                break;
+            case Phase.Stick:
+                UpdateStick();
+                break;
         }
         FollowKingWithSubject();
     }
@@ -88,10 +114,13 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     private Phase phase = Phase.Waiting;
     private bool isDone; // the event ran once, never again this run
     private bool hasWarnedNoShot; // a refused shot is logged once
+    private bool hasForcedTrap; // the trap fallback ran, it runs once
     private float phaseStartTime; // Time.time the phase began
     private float kingAngleDeg; // angle round the trunk the king sits at
     private float kingY; // world height of the king's center
     private Vector3 trunkCenter; // trunk axis point at the start
+    private Vector3 webFullScale; // the prefab's own scale, reached at landing
+    private SpiderWebTrap web; // the web in flight, then stuck on the bark
 
     // cached references  ------------------------------------------------------
     private SpiderKingBody king;
@@ -100,6 +129,11 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     private CobraMotor cobra;
     private CameraRigManager cameraRig;
     private CameraSpiderIntroFraming framing;
+    private SpiderWebStruggle struggle;
+
+    // constants  ##############################################################
+    // how long the web may take to catch by itself before the trap is forced; s
+    private const float CATCH_GRACE_S = 0.3f;
 
     // private methods  ########################################################
     // iff the run plays, the monkey climbed to the trigger height in the open
@@ -118,7 +152,6 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         if (monkey.IsHeld || monkey.IsInputLocked) {
             return false;
         }
-        SpiderWebStruggle struggle = monkey.GetComponent<SpiderWebStruggle>();
         if (struggle != null && struggle.IsTrapped) {
             return false;
         }
@@ -148,6 +181,9 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         }
         if (framing == null) {
             framing = FindFirstObjectByType<CameraSpiderIntroFraming>();
+        }
+        if (monkey != null && struggle == null) {
+            struggle = monkey.GetComponent<SpiderWebStruggle>();
         }
         return monkey != null && monkey.transform.parent != null;
     }
@@ -204,7 +240,103 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         float windUpS = Mathf.Max(0.01f, config.WindUpS);
         float glow = Mathf.Clamp01((Time.time - phaseStartTime) / windUpS);
         king.SetEyeGlow(glow);
-        // TODO the throw follows the wind up
+        if (glow >= 1f) {
+            BeginThrow();
+        }
+    }
+
+    // the king spits the real web, unarmed, from between its eyes
+    private void BeginThrow() {
+        web = Instantiate(
+            webPrefab,
+            king.HeadPosition,
+            GetStickRotation(GetOutward())
+        );
+        web.IsArmed = false;
+        webFullScale = webPrefab.transform.localScale;
+        web.transform.localScale = webFullScale * config.StartScale;
+        EnterPhase(Phase.Throw);
+    }
+
+    // the web arcs out from the trunk to the monkey's spot on the bark,
+    // growing as it flies; the spot is read live, the monkey may still glide
+    private void UpdateThrow() {
+        king.Place(kingAngleDeg, kingY, 0f);
+        if (web == null) {
+            // the web vanished mid flight: nothing left to throw
+            Debug.LogWarning(
+                "SpiderWebIntroEvent:\tthe flying web is gone", this);
+            EnterPhase(Phase.Stick);
+            return;
+        }
+
+        float t = Mathf.Clamp01(
+            (Time.time - phaseStartTime) / Mathf.Max(0.01f, config.ThrowTimeS)
+        );
+        Vector3 outward = GetOutward();
+        Vector3 spot = GetStickSpot(outward);
+        Vector3 flight = Vector3.Lerp(king.HeadPosition, spot, t)
+            + outward * (config.ArcHeightU * 4f * t * (1f - t));
+        web.transform.SetPositionAndRotation(
+            flight, GetStickRotation(outward));
+        web.transform.localScale =
+            webFullScale * Mathf.Lerp(config.StartScale, 1f, t);
+        if (t >= 1f) {
+            BeginStick(outward);
+        }
+    }
+
+    // lands flat on the bark facing out and arms: the monkey is in its
+    // trigger, so it traps by itself; UpdateStick forces it if it does not
+    private void BeginStick(Vector3 outward) {
+        web.transform.SetPositionAndRotation(
+            GetStickSpot(outward), GetStickRotation(outward));
+        web.transform.localScale = webFullScale;
+        web.IsArmed = true;
+        EnterPhase(Phase.Stick);
+    }
+
+    private void UpdateStick() {
+        king.Place(kingAngleDeg, kingY, 0f);
+        if (struggle == null || struggle.IsTrapped || hasForcedTrap) {
+            return;
+        }
+        if (Time.time - phaseStartTime < CATCH_GRACE_S) {
+            return;
+        }
+        // the trigger had its chance, trap the monkey in the web outright, once
+        hasForcedTrap = true;
+        if (web == null || !struggle.TryTrap(web)) {
+            Debug.LogWarning(
+                "SpiderWebIntroEvent:\tthe web did not trap the monkey",
+                this
+            );
+        }
+    }
+
+    // direction from the trunk axis out to the monkey, flat; the web faces it
+    private Vector3 GetOutward() {
+        Vector3 outward = monkey.transform.position - trunkCenter;
+        outward.y = 0f;
+        return outward.sqrMagnitude > Mathf.Epsilon
+            ? outward.normalized
+            : new Vector3(
+                Mathf.Cos(kingAngleDeg * Mathf.Deg2Rad),
+                0f,
+                Mathf.Sin(kingAngleDeg * Mathf.Deg2Rad)
+            );
+    }
+
+    // the monkey's height on the bark, as SpiderWebSpawner lays a web
+    private Vector3 GetStickSpot(Vector3 outward) {
+        return new Vector3(trunkCenter.x, monkey.transform.position.y,
+            trunkCenter.z) + outward * config.TrunkRadiusU;
+    }
+
+    // -90 yaw turns the strands' local +X onto forward, so the face looks out
+    private static Quaternion GetStickRotation(Vector3 outward) {
+        return Quaternion.LookRotation(outward)
+            * Quaternion.Euler(0f, -90f, 0f);
     }
 
     private void EnterPhase(Phase next) {
