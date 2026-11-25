@@ -160,6 +160,19 @@ The escape progress per press, its decay while idle, and the immunity after esca
 
 The struggle suspends interact because of a shared Space binding, see [Input](monkobra-tdd.md#input), and freezes while the game is paused or over.
 
+### Spider King Intro
+
+A player can reach the web zone and never meet a web, so the escape (mash Space) would go untaught. A scripted story event, `SpiderWebIntroEvent` on the `Prefabs/MobSpiderWeb/SpiderWebIntro` prefab (an instance under `Envs`, beside a `SpiderKingBody` as the Spider King's own look), teaches it once. It fires at a fixed climbed height (`triggerClimbedHeightU`, 250 u, below where webs first grow), once per Normal Play run, never in Endless mode, only while the run plays on: not leaping, not trapped, not in a boss zone. A scene load makes a fresh event, so every run gets its own.
+
+1. Appear: the great cobra is held still (`CobraMotor.SetStoryHold`: its climb stops and mistakes add no surge, while it still orbits and slithers; no freeze HUD or popup, since it is no coconut freeze), the camera cuts to the `SpiderIntro` shot (`CameraRigManager`, input locked, the UI hidden and cinema bars as in the cobra alert, [TDD](monkobra-tdd.md#camera)), the king shows on the trunk `kingAboveU` above the monkey and its eyes glow up over `windUpS`
+2. Throw: the king spits the real `SpiderWeb` prefab, unarmed (`SpiderWebTrap.IsArmed` false: it neither catches nor raises `Encountered` in flight), which arcs out from the trunk to the monkey's spot on the bark over `throwTimeS`, growing from `startScale` to full size
+3. Stick: it lands flat on the bark facing outward, as `SpiderWebSpawner` lays a web, armed, so the trigger traps the monkey; if it has not within 0.3 s the event calls `SpiderWebStruggle.TryTrap` itself. The existing escape bar and first-trap hint then teach the escape
+4. Exit: the king climbs off up the trunk over `exitTimeS` and is cleared; the shot lets go `stickHoldS` after the trap, so the cut away ends before the escape is asked for; the cobra's hold ends once the monkey breaks free (`SpiderWebStruggle.Escaped`) and it chases again, easing up from a standstill
+
+A loss, a disable or a scene change ends the event cleanly at any phase: the cobra moves on, the shot lets go at once and the king is cleared. If the shot is refused (no `spiderIntroCamera` on `CameraRigManager`) the event waits and warns once. Every value is in `Settings/MobSpiderWeb/SpiderWebIntroConfig.asset`; the camera's framing values are in `CameraConfig`.
+
+To test without the climb, press Play and run the event's `Play Now` context menu (the cog of `Envs/SpiderWebIntro` > `SpiderWebIntroEvent`), or lower `triggerClimbedHeightU`.
+
 ### Testing
 
 Webs are in `GameplayScene` and follow the web probability curve. For a quick test select `Envs/DynamicTreeSegmentPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Spawn Chance per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/Environment/WorldBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
