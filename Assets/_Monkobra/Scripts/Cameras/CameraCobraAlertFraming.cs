@@ -53,6 +53,8 @@ public class CameraCobraAlertFraming: MonoBehaviour {
         seeHoldS = Mathf.Max(0f, seeS);
         travelOutS = Mathf.Max(0.01f, outS);
         journeyStartTime = Time.time;
+        hasOrbitDelta = false;
+        hasYawDelta = false;
         isPrimed = false;
         isJourneyOn = true;
     }
@@ -134,7 +136,7 @@ public class CameraCobraAlertFraming: MonoBehaviour {
         );
         transform.SetPositionAndRotation(
             GetJourneyPosition(endPosition, progress),
-            Quaternion.Slerp(startRotation, endRotation, progress)
+            GetJourneyRotation(endRotation, progress)
         );
         vcam.Lens.FieldOfView = Mathf.Lerp(startFovDeg, endFovDeg, progress);
     }
@@ -156,6 +158,11 @@ public class CameraCobraAlertFraming: MonoBehaviour {
     private float startFovDeg;
     private Vector3 trunkAxis; // a point on the trunk axis, the orbit center
     private bool hasTrunkAxis; // whether the trunk axis is known
+    // the turns the journey makes, kept continuous frame to frame; deg
+    private float orbitDeltaDeg; // round the trunk
+    private float yawDeltaDeg; // of the view
+    private bool hasOrbitDelta;
+    private bool hasYawDelta;
 
     // cached references  ------------------------------------------------------
     private CinemachineCamera vcam;
@@ -193,8 +200,13 @@ public class CameraCobraAlertFraming: MonoBehaviour {
         }
         float fromDeg = Mathf.Atan2(from.y, from.x) * Mathf.Rad2Deg;
         float toDeg = Mathf.Atan2(to.y, to.x) * Mathf.Rad2Deg;
-        float angleRad = (fromDeg + Mathf.DeltaAngle(fromDeg, toDeg) * progress)
-            * Mathf.Deg2Rad;
+        float deltaDeg = Mathf.DeltaAngle(fromDeg, toDeg);
+        if (hasOrbitDelta) {
+            deltaDeg = KeepContinuous(deltaDeg, orbitDeltaDeg);
+        }
+        orbitDeltaDeg = deltaDeg;
+        hasOrbitDelta = true;
+        float angleRad = (fromDeg + deltaDeg * progress) * Mathf.Deg2Rad;
         float distanceU = Mathf.Lerp(from.magnitude, to.magnitude, progress)
             + config.CobraAlertPullOutU * Mathf.Sin(Mathf.PI * progress);
         return new Vector3(
@@ -202,6 +214,36 @@ public class CameraCobraAlertFraming: MonoBehaviour {
             Mathf.Lerp(startPosition.y, endPosition.y, progress),
             trunkAxis.z + Mathf.Sin(angleRad) * distanceU
         );
+    }
+
+    // the turn picked each frame is the shortest way round, which flips to the
+    // other way when the moving end passes the far side; this keeps the turn
+    // on the same side as last frame, so the camera never jumps across
+    private static float KeepContinuous(float deltaDeg, float previousDeg) {
+        while (deltaDeg - previousDeg > 180f) {
+            deltaDeg -= 360f;
+        }
+        while (previousDeg - deltaDeg > 180f) {
+            deltaDeg += 360f;
+        }
+        return deltaDeg;
+    }
+
+    // how the camera looks on its way: yaw turned the continuous way, pitch &
+    // roll eased; at 0 it is exactly the start view
+    private Quaternion GetJourneyRotation(Quaternion endRotation, float progress) {
+        Vector3 from = startRotation.eulerAngles;
+        Vector3 to = endRotation.eulerAngles;
+        float deltaDeg = Mathf.DeltaAngle(from.y, to.y);
+        if (hasYawDelta) {
+            deltaDeg = KeepContinuous(deltaDeg, yawDeltaDeg);
+        }
+        yawDeltaDeg = deltaDeg;
+        hasYawDelta = true;
+        float pitchDeg = Mathf.LerpAngle(from.x, to.x, progress);
+        float rollDeg = Mathf.LerpAngle(from.z, to.z, progress);
+        return Quaternion.Euler(
+            pitchDeg, from.y + deltaDeg * progress, rollDeg);
     }
 
     // the view that shows the whole cobra, tracking it as it moves
