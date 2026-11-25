@@ -169,6 +169,10 @@ public class CameraConfig: ScriptableObject {
     /// <returns>looks up and pulls back while a pineapple leap runs</returns>
     public ShotSettings LeapShot => leapShot;
 
+    /// <returns>the cut to the spider king's intro, held by the event till
+    /// it releases it, capped by its duration</returns>
+    public ShotSettings SpiderIntroShot => spiderIntroShot;
+
     /// <returns>extra aim height during a leap; u</returns>
     public float LeapAimOffsetU => leapAimOffsetU;
 
@@ -383,6 +387,13 @@ public class CameraConfig: ScriptableObject {
     [Tooltip("time the alert's height and field of view take to follow the "
         + "cobra; s")]
     private float cobraAlertSmoothTimeS = 0.3f;
+
+    [Header("Shot: Spider Intro")]
+    [SerializeField]
+    [Tooltip("spider king intro shot timing & priority; its duration is only "
+        + "the safety cap, the event releases it; s")]
+    private ShotSettings spiderIntroShot =
+        new ShotSettings(20f, 0.5f, 0f, 50);
 
     [Header("Shot: Pineapple Leap")]
     [SerializeField]

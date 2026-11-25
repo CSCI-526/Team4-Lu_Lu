@@ -31,6 +31,14 @@ public class CameraRigManager: MonoBehaviour {
         Coconut,
         CobraAlert,
         Leap,
+        SpiderIntro,
+    }
+
+    /// <param name="kind">which shot</param>
+    /// <returns>if the shot looks away from the monkey, so the input is
+    /// locked & the cut away bars show</returns>
+    public static bool IsCutAwayShot(ShotKind kind) {
+        return kind == ShotKind.CobraAlert || kind == ShotKind.SpiderIntro;
     }
 
     /// <summary>
@@ -137,6 +145,11 @@ public class CameraRigManager: MonoBehaviour {
     [SerializeField]
     private CinemachineCamera leapCamera;
 
+    [Tooltip("shot that looks up at the spider king's intro; the shot is "
+        + "refused if unset")]
+    [SerializeField]
+    private CinemachineCamera spiderIntroCamera;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -176,6 +189,13 @@ public class CameraRigManager: MonoBehaviour {
         if (leapCamera == null) {
             Debug.LogWarning(
                 "CameraRigManager:\tmust assign Inspector Field: leapCamera",
+                this
+            );
+        }
+        if (spiderIntroCamera == null) {
+            Debug.LogWarning(
+                "CameraRigManager:\tmust assign Inspector Field: "
+                    + "spiderIntroCamera, no spider intro shot",
                 this
             );
         }
@@ -224,7 +244,8 @@ public class CameraRigManager: MonoBehaviour {
     private void OnDisable() {
         UnsubscribeCobra();
         // never leave the monkey locked behind a shot that can no longer end
-        if (liveKind == ShotKind.CobraAlert && MonkeyController.I != null) {
+        if (liveKind.HasValue && IsCutAwayShot(liveKind.Value)
+            && MonkeyController.I != null) {
             MonkeyController.I.IsInputLocked = false;
         }
     }
@@ -356,6 +377,7 @@ public class CameraRigManager: MonoBehaviour {
             ShotKind.Coconut => config.CoconutShot,
             ShotKind.CobraAlert => config.CobraAlertShot,
             ShotKind.Leap => config.LeapShot,
+            ShotKind.SpiderIntro => config.SpiderIntroShot,
             _ => null,
         };
     }
@@ -365,6 +387,7 @@ public class CameraRigManager: MonoBehaviour {
             ShotKind.Coconut => coconutCamera,
             ShotKind.CobraAlert => cobraAlertCamera,
             ShotKind.Leap => leapCamera,
+            ShotKind.SpiderIntro => spiderIntroCamera,
             _ => null,
         };
     }
@@ -381,9 +404,9 @@ public class CameraRigManager: MonoBehaviour {
         }
     }
 
-    // cut away to the cobra, the player only watches: no input till it ends
+    // cut away from the monkey, the player only watches: no input till it ends
     private void AnnounceShot(ShotKind kind, bool isLive) {
-        if (kind == ShotKind.CobraAlert && MonkeyController.I != null) {
+        if (IsCutAwayShot(kind) && MonkeyController.I != null) {
             MonkeyController.I.IsInputLocked = isLive;
         }
         ShotChanged?.Invoke(kind, isLive);

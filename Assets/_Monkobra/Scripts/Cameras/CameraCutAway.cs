@@ -193,7 +193,7 @@ public class CameraCutAway: MonoBehaviour {
 
     // Event Handlers  #########################################################
     private void OnShotChanged(CameraRigManager.ShotKind kind, bool isLive) {
-        if (kind != CameraRigManager.ShotKind.CobraAlert) {
+        if (!CameraRigManager.IsCutAwayShot(kind)) {
             return;
         }
         isCutAway = isLive;
