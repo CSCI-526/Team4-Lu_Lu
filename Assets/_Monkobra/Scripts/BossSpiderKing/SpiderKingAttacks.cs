@@ -39,6 +39,7 @@ public sealed class SpiderKingAttacks {
             rig.volleyCharge =
                 rig.Shots.NewShot(SpiderKingShotKind.Web, rig.monkey.position);
             rig.volleyChargeFromTime = Time.time;
+            rig.onWebCharge?.Invoke();
         }
         float chargeS =
             Mathf.Max(0.05f, rig.nextVolleyTime - rig.volleyChargeFromTime);
@@ -104,11 +105,13 @@ public sealed class SpiderKingAttacks {
                     config.WebShotWindUpS * slow * rig.TimeScaleNow;
                 rig.chargingShot =
                     rig.Shots.NewShot(SpiderKingShotKind.Web, rig.aimPoint);
+                rig.onWebCharge?.Invoke();
                 break;
             default:
                 rig.attackWindUpS =
                     config.DashWindUpS * slow * rig.TimeScaleNow;
                 rig.warningId = rig.hud.AddWarning(rig.aimPoint, "DASH!");
+                rig.onDashWarn?.Invoke();
                 break;
         }
         if (isTeaching) {
@@ -359,6 +362,7 @@ public sealed class SpiderKingAttacks {
         rig.isSlashSlowFirst = Random.value < 0.5f;
         rig.nextSlashTime = Time.time;
         rig.isSlashAiming = false;
+        rig.onSlashCharge?.Invoke();
     }
 
     public float UpdateSlash() {

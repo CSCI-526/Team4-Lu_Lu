@@ -1,8 +1,8 @@
 using UnityEngine;
 using static CobraMotorRig;
 
-/// <summary>The climb speed of the chase, the head raise near the monkey, and
-/// the exit boost.</summary>
+/// <summary>The climb speed of the chase, the head raise near the monkey or
+/// for the camera's look, and the exit boost.</summary>
 public sealed class CobraMotorChase {
     // private members  ########################################################
     private readonly CobraMotorRig rig;
@@ -20,16 +20,31 @@ public sealed class CobraMotorChase {
         if (rig.isGuarding) {
             return 1f;
         }
+        float rear = AlertRearBlend();
         if (rig.player == null || rig.pathCenter == null) {
-            return 0f;
+            return rear;
         }
         float distance = Vector3.Distance(rig.player.position,
             rig.GetPathPosition(rig.headAngle, rig.headHeight));
-        return Mathf.SmoothStep(0f, 1f,
+        float near = Mathf.SmoothStep(0f, 1f,
             Mathf.InverseLerp(config.HeadRaiseStartDistanceU,
             Mathf.Min(config.HeadRaiseFullDistanceU,
                 config.HeadRaiseStartDistanceU - .01f),
                 distance));
+        return Mathf.Max(near, rear);
+    }
+
+    // how far the head is reared for the camera's look, 0 to 1: up, held,
+    // back down
+    private float AlertRearBlend() {
+        float now = Time.time;
+        if (now < rig.alertRearStartTime || now > rig.alertRearEndTime) {
+            return 0f;
+        }
+        float easeS = config.AlertRearEaseS;
+        float up = Mathf.Clamp01((now - rig.alertRearStartTime) / easeS);
+        float down = Mathf.Clamp01((rig.alertRearEndTime - now) / easeS);
+        return Mathf.SmoothStep(0f, 1f, Mathf.Min(up, down));
     }
 
     /// <returns>vertical gap from the coil top up to the monkey, never

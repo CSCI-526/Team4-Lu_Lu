@@ -194,10 +194,20 @@ public class ProgressBarWidget: MonoBehaviour {
     }
 
     private void OnChaseStarted() {
-        if (PopUpManager.I == null) {
-            return;
+        StartCoroutine(ShowChaseOnceSeen());
+    }
+
+    // the camera cuts away to the cobra this same moment, the UI hidden:
+    // "Run!" waits for the cut back, so it is seen as the run goes on
+    private System.Collections.IEnumerator ShowChaseOnceSeen() {
+        yield return null;
+        CameraCutAway cutAway = FindFirstObjectByType<CameraCutAway>();
+        while (cutAway != null && cutAway.IsCutAway) {
+            yield return null;
         }
-        PopUpManager.I.Show(PopUpId.CobraChase);
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(PopUpId.CobraChase);
+        }
     }
 
     // constants  ##############################################################

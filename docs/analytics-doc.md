@@ -85,7 +85,7 @@ Drawn from the `Lost` runs only; when lost runs of both run modes occur, one blo
 - Final Score: total score of the run
 - Score from Height: points earned by climbing
 - Score from Banana, Score from Coconut: points earned by each fruit, kept apart in `RunData.RewardScoreByKind` (one slot per `RewardKind`), shown as `unit * count = total` when every grab paid the same; both lines always show
-- Score from Pineapple, Cobra Freeze, Height Marker, Web Escape: the other good deeds, each line shown only once it scored; the pineapple, marker and escape lines carry the count form, the freeze line the plain total because its metric also counts the boss armor
+- Score from Pineapple, Cobra Freeze, Height Marker, Web Escape, Cobra King Defeat, Spider King Defeat: the other good deeds, each line shown only once it scored; the pineapple, marker, escape and Spider King lines carry the count form (the Spider King's from Spider Win), the freeze line the plain total because its metric also counts the boss armor, and the Cobra King line the plain total because no metric counts its wins
 - Score Split: pie of height score against the score of every reward kind that scored
 
 ### Events

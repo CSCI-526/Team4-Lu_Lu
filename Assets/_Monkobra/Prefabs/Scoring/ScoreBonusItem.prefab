@@ -107,11 +107,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreBonusItem
   plusText: {fileID: 4420000000000000014}
   valueText: {fileID: 4420000000000000024}
-  bangSeconds: 0.25
+  bangDurationS: 0.25
   bangStartScale: 0.3
   bangPeakScale: 1.5
-  holdSeconds: 0.45
-  exitSeconds: 0.4
+  holdDurationS: 0.45
+  exitDurationS: 0.4
   exitRiseDistance: 70
   exitEndScale: 0.85
   colors:
@@ -127,6 +127,10 @@ MonoBehaviour:
     color: {r: 0.4, g: 0.9, b: 0.4, a: 1}
   - kind: 5
     color: {r: 0.85, g: 0.88, b: 0.9, a: 1}
+  - kind: 6
+    color: {r: 0.4509804, g: 0.3019608, b: 0.7019608, a: 1}
+  - kind: 7
+    color: {r: 0.16078432, g: 0.09019608, b: 0.2, a: 1}
 --- !u!1 &4420000000000000011
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,10 +163,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 4420000000000000002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 40, y: 40}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4420000000000000013
 CanvasRenderer:
@@ -201,7 +205,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4281588223
   m_fontColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -296,10 +300,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 4420000000000000002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 40, y: 40}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4420000000000000023
 CanvasRenderer:
@@ -338,7 +342,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4281588223
   m_fontColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3

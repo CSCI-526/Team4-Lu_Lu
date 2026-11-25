@@ -21,4 +21,10 @@ public enum RewardKind {
 
     /// <summary>the monkey broke free of a spider web</summary>
     WebEscape,
+
+    /// <summary>the Cobra King was beaten & its reward taken</summary>
+    CobraKingDefeat,
+
+    /// <summary>the Spider King was beaten & its reward taken</summary>
+    SpiderKingDefeat,
 }

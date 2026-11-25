@@ -12,6 +12,11 @@ using UnityEngine;
 /// <see cref="CinemachineCamera.Priority"/>, the <c>CinemachineBrain</c> on
 /// the main camera blends, with the per-pair times of its blender settings.
 /// <para>
+/// The cobra alert cuts away from the monkey, so while it is live the
+/// monkey's input is locked (<see cref="MonkeyController.IsInputLocked"/>)
+/// and <see cref="ShotChanged"/> tells the cut away bars to show.
+/// </para>
+/// <para>
 /// Reads no input: the grab framing lives in
 /// <see cref="CameraClimbFraming"/>, so nothing here touches the shared
 /// interact action.
@@ -27,6 +32,11 @@ public class CameraRigManager: MonoBehaviour {
         CobraAlert,
         Leap,
     }
+
+    /// <summary>
+    /// Raised as an event shot goes live (true) or ends (false).
+    /// </summary>
+    public event System.Action<ShotKind, bool> ShotChanged;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -67,6 +77,7 @@ public class CameraRigManager: MonoBehaviour {
         state.minHoldEndS = now + settings.MinHoldS;
         liveKind = kind;
         ApplyPriorities();
+        AnnounceShot(kind, true);
         if (Debug.isDebugBuild) {
             Debug.Log($"CameraRigManager:\tshot live: {kind}", this);
         }
@@ -212,6 +223,10 @@ public class CameraRigManager: MonoBehaviour {
 
     private void OnDisable() {
         UnsubscribeCobra();
+        // never leave the monkey locked behind a shot that can no longer end
+        if (liveKind == ShotKind.CobraAlert && MonkeyController.I != null) {
+            MonkeyController.I.IsInputLocked = false;
+        }
     }
 
     private void OnDestroy() {
@@ -329,6 +344,7 @@ public class CameraRigManager: MonoBehaviour {
         }
         if (RequestShot(ShotKind.CobraAlert, config.CobraAlertShot.DurationS)) {
             cobra.PlayChaseAlertHiss();
+            cobra.PlayAlertRear(config.CobraAlertShot.DurationS);
         }
     }
 
@@ -359,9 +375,18 @@ public class CameraRigManager: MonoBehaviour {
         state.cooldownEndS = Time.time + GetSettings(kind).CooldownS;
         liveKind = null;
         ApplyPriorities();
+        AnnounceShot(kind, false);
         if (Debug.isDebugBuild) {
             Debug.Log($"CameraRigManager:\tshot ended: {kind}", this);
         }
+    }
+
+    // cut away to the cobra, the player only watches: no input till it ends
+    private void AnnounceShot(ShotKind kind, bool isLive) {
+        if (kind == ShotKind.CobraAlert && MonkeyController.I != null) {
+            MonkeyController.I.IsInputLocked = isLive;
+        }
+        ShotChanged?.Invoke(kind, isLive);
     }
 
     // the climb view always stands ready, the live shot rises above it

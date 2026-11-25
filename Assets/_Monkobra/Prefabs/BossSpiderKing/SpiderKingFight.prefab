@@ -95,11 +95,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderKingSfxListener
   entrance: {fileID: 8300000, guid: 078a087aa163458a9dde73f3c47d71e6, type: 3}
-  attack: {fileID: 8300000, guid: 6e4f1b13303a43ddb108cc6b3e7267d7, type: 3}
+  webCharge: {fileID: 8300000, guid: ac7361c4613e4351a61091c9e2875d39, type: 3}
+  slashCharge: {fileID: 8300000, guid: 480489ae7d2f42e2930937fa06d25ded, type: 3}
+  dashWarn: {fileID: 8300000, guid: fff62a696707452fa6400a0e02bfaaff, type: 3}
+  parry: {fileID: 8300000, guid: 855b87c5404946b99ff0152844fd609d, type: 3}
   spiderHit: {fileID: 8300000, guid: 77de4b4be7074bf38a9252289a86cf1a, type: 3}
   shatter: {fileID: 8300000, guid: baffc27557c64d468d30a1dbbb3744c9, type: 3}
   victory: {fileID: 8300000, guid: 0b7eb70e3d394ecf8aabdf491d609ad0, type: 3}
   volume: 0.55
-  attackVolumeShare: 0.7
+  chargeVolumeShare: 0.8
   victoryDelayS: 1
   pitchJitter: 0.06
