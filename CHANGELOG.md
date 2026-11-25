@@ -3,7 +3,7 @@
 <!--
 Bug make leaderboard works
 
-Bug force encounter spider
+BUG force encounter spider
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
 Fixme erik mpv tutorial for boss fight
 Fixme erik b/t boss fight, better randomization
