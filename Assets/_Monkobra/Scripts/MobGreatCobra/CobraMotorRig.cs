@@ -65,6 +65,12 @@ public sealed class CobraMotorRig {
     // total time spent frozen, kept off the wave; s
     public bool isStoryHeld;
     // climb stopped by a story event, orbit & slither go on
+    public bool isStartHold;
+    // the running story hold is the chase's start look
+    public bool isStartEasing;
+    // easing up slowly after the start hold, till the target speed
+    public float exitBoostBankedS;
+    // exit boost time kept through a start hold; s
     public HitBranchSensor playerSensor;
     public SpiderWebStruggle playerStruggle;
     public Transform player;

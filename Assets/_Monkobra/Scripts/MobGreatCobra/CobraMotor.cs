@@ -203,10 +203,14 @@ public class CobraMotor: MonoBehaviour {
     /// <see cref="Thawed"/>, so no freeze HUD or popup shows. Clears the
     /// running surge and the starting zone exit boost, and mistakes made
     /// while held add no surge. Lifted, the climb eases back up from a
-    /// standstill. Contact still ends the run.
+    /// standstill. Contact still ends the run. A start hold (the chase's
+    /// first look) banks the exit boost's time left and gives it back at the
+    /// lift, which then eases up at the gentler
+    /// <see cref="CobraBalanceConfig.CobraStartEaseRateU"/>.
     /// </summary>
     /// <param name="isHeld">whether to hold the cobra's climb</param>
-    public void SetStoryHold(bool isHeld) {
+    /// <param name="isStart">whether this is the chase's start hold</param>
+    public void SetStoryHold(bool isHeld, bool isStart = false) {
         if (rig == null || rig.isStoryHeld == isHeld) {
             return;
         }
@@ -214,7 +218,17 @@ public class CobraMotor: MonoBehaviour {
         if (isHeld) {
             rig.surgeStacks = 0;
             rig.isCatchingUp = false;
+            rig.isStartHold = isStart;
+            rig.isStartEasing = false;
+            rig.exitBoostBankedS = isStart
+                ? Mathf.Max(0f, rig.exitBoostEndTime - Time.time) : 0f;
             rig.exitBoostEndTime = 0f;
+        } else if (rig.isStartHold) {
+            // the boost starts now, after the look
+            rig.isStartHold = false;
+            rig.isStartEasing = true;
+            rig.exitBoostEndTime = Time.time + rig.exitBoostBankedS;
+            rig.exitBoostBankedS = 0f;
         }
         rig.currentClimbSpeed = 0f;
     }
@@ -435,6 +449,13 @@ public class CobraMotor: MonoBehaviour {
         float speedChangeRate = cobraBalanceConfig != null
             ? cobraBalanceConfig.CobraSpeedChangeRateU
             : float.PositiveInfinity;
+        // after the start hold the first pull away is slow, to be seen
+        if (rig.isStartEasing && cobraBalanceConfig != null) {
+            speedChangeRate = cobraBalanceConfig.CobraStartEaseRateU;
+            if (rig.currentClimbSpeed >= targetClimbSpeed) {
+                rig.isStartEasing = false;
+            }
+        }
         rig.currentClimbSpeed = Mathf.MoveTowards(
             rig.currentClimbSpeed,
             targetClimbSpeed,
