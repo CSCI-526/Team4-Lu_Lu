@@ -224,7 +224,7 @@ public class WorldBalanceConfig: ScriptableObject {
             + "starting zone, below the exit trigger; replaces the banana "
             + "branch curve there, and no other kind grows there"
     )]
-    private float startingZoneBananaBranchChance = 0.12f;
+    private float startingZoneBananaBranchChance = 0.2f;
 
     [SerializeField]
     [Min(0f)]

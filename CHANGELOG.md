@@ -50,8 +50,11 @@ todo add 3x fruit
 ##### Wenhai Dong
 
 - the starting zone grows a manageable amount of bananas: each banana branch
-  attempt at 0.12 instead of 0.4 (`startingZoneBananaBranchChance`), about 1
-  banana branch a segment instead of 4
+  attempt at 0.2 instead of 0.4 (`startingZoneBananaBranchChance`), about 2
+  banana branches a segment instead of 4
+- no fruit hangs below the monkey's start any more, so none shows up under
+  the player at the start: its branch is lifted till the fruit is level w/
+  the start, or dropped if it can't be (`KeepFruitAboveStart`)
 
 ### Deprecated
 
