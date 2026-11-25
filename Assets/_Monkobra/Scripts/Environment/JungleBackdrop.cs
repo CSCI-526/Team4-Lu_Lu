@@ -130,6 +130,14 @@ public class JungleBackdrop: MonoBehaviour {
     private float paintedFromU = 220f;
 
     [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "round where the painted canopy starts, the near trees stand this much "
+            + "taller, all their crowns over its top, so its edge never shows; u"
+    )]
+    private float junctionLiftU = 14f;
+
+    [SerializeField]
     [Min(0)]
     [Tooltip("round-crowned trees in the near ring")]
     private int nearTrees = 560;
@@ -308,6 +316,13 @@ public class JungleBackdrop: MonoBehaviour {
     };
     private static readonly Color BARK = new Color(0.40f, 0.34f, 0.28f);
     private const int TREE_WEDGES = 8;
+    // the band round paintedFromU whose trees stand lifted: rising from
+    // this far inside it, fully up this far inside, holding to this far
+    // outside, back down this far outside; u
+    private const float JUNCTION_RISE_FROM_U = 90f;
+    private const float JUNCTION_FULL_FROM_U = 40f;
+    private const float JUNCTION_FULL_TO_U = 30f;
+    private const float JUNCTION_FALL_TO_U = 70f;
 
     private bool isReady;
     private float startY;
@@ -491,12 +506,17 @@ public class JungleBackdrop: MonoBehaviour {
             float rise = isSlender
                 ? Mathf.Lerp(-2f, 8f, (float)random.NextDouble())
                 : Mathf.Lerp(-15f, 1f, (float)random.NextDouble());
-            // crowns break the canopy's top, sinking under it toward the
-            // ring's edge, so the ring melts into the painting
+            // round the painted canopy's start the crowns stand lifted, all
+            // over its top, a wall hiding its edge; past that band they
+            // sink under it toward the ring's edge, so the ring melts into
+            // the painting
+            rise += junctionLiftU * JunctionShare(distance);
             float sink = 18f * Mathf.SmoothStep(
                 0f,
                 1f,
-                Mathf.InverseLerp(paintedFromU + 30f, nearRadiusU, distance)
+                Mathf.InverseLerp(
+                    paintedFromU + JUNCTION_FALL_TO_U, nearRadiusU, distance
+                )
             );
             float centreY = Mathf.Min(
                 canopyLocal + rise, topLimit - radius * squash
@@ -558,6 +578,22 @@ public class JungleBackdrop: MonoBehaviour {
             }
         }
         return false;
+    }
+
+    // 0 to 1, how far a tree this far out stands in the lifted band round
+    // where the painted canopy starts
+    private float JunctionShare(float distanceU) {
+        float up = Mathf.InverseLerp(
+            paintedFromU - JUNCTION_RISE_FROM_U,
+            paintedFromU - JUNCTION_FULL_FROM_U,
+            distanceU
+        );
+        float down = Mathf.InverseLerp(
+            paintedFromU + JUNCTION_FALL_TO_U,
+            paintedFromU + JUNCTION_FULL_TO_U,
+            distanceU
+        );
+        return Mathf.SmoothStep(0f, 1f, Mathf.Min(up, down));
     }
 
     private static Vector3 Around(System.Random random, float distanceU) {
