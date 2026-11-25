@@ -224,13 +224,41 @@ public class CobraMotor: MonoBehaviour {
                 ? Mathf.Max(0f, rig.exitBoostEndTime - Time.time) : 0f;
             rig.exitBoostEndTime = 0f;
         } else if (rig.isStartHold) {
-            // the boost starts now, after the look
             rig.isStartHold = false;
             rig.isStartEasing = true;
-            rig.exitBoostEndTime = Time.time + rig.exitBoostBankedS;
-            rig.exitBoostBankedS = 0f;
+            // the boost starts now, after the look, unless a creep cap
+            // keeps it waiting
+            if (rig.startCreepSpeedU <= 0f) {
+                RestoreBankedBoost();
+            }
         }
         rig.currentClimbSpeed = 0f;
+    }
+
+    /// <summary>
+    /// Caps the climb speed after a start hold, so the cobra may creep up in
+    /// view while the monkey is still locked; the banked exit boost waits.
+    /// 0 ends the cap and starts the banked boost, if the hold is lifted.
+    /// </summary>
+    /// <param name="speedU">top climb speed while capped, 0 or less for no
+    /// cap; u/s</param>
+    public void SetStartCreep(float speedU) {
+        if (rig == null) {
+            return;
+        }
+        rig.startCreepSpeedU = Mathf.Max(0f, speedU);
+        if (rig.startCreepSpeedU <= 0f && !rig.isStoryHeld) {
+            RestoreBankedBoost();
+        }
+    }
+
+    // gives back the exit boost time a start hold kept
+    private void RestoreBankedBoost() {
+        if (rig.exitBoostBankedS <= 0f) {
+            return;
+        }
+        rig.exitBoostEndTime = Time.time + rig.exitBoostBankedS;
+        rig.exitBoostBankedS = 0f;
     }
 
     /// <summary>
@@ -443,6 +471,12 @@ public class CobraMotor: MonoBehaviour {
             // leaving the starting zone releases the cobra with a burst
             targetClimbSpeed = baseClimbSpeed
                 + cobraBalanceConfig.CobraExitBoostSpeedU;
+        }
+
+        // the start creep never lets the cobra pass its cap
+        if (rig.startCreepSpeedU > 0f) {
+            targetClimbSpeed = Mathf.Min(
+                targetClimbSpeed, rig.startCreepSpeedU);
         }
 
         // ease toward the target, so a speed-up or a slow-down never jumps

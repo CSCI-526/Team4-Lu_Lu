@@ -71,6 +71,8 @@ public sealed class CobraMotorRig {
     // easing up slowly after the start hold, till the target speed
     public float exitBoostBankedS;
     // exit boost time kept through a start hold; s
+    public float startCreepSpeedU;
+    // climb speed cap after the start hold, 0 for none; u/s
     public HitBranchSensor playerSensor;
     public SpiderWebStruggle playerStruggle;
     public Transform player;
