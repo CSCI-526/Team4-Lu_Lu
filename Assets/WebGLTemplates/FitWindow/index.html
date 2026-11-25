@@ -25,7 +25,7 @@
       #loader-logos, #loader-stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; visibility: hidden; opacity: 0; }
       #loader img { position: absolute; display: block; user-select: none; -webkit-user-drag: none; }
       .logos-plate, .logos-divider { position: absolute; box-sizing: border-box; }
-      #loader-label { position: absolute; color: #FFF2D2; font: 600 40px "Baloo2", sans-serif; text-align: center; white-space: nowrap; }
+      #loader-label { position: absolute; color: #FFF2D2; font: 600 28px "Baloo2", sans-serif; text-align: center; white-space: nowrap; }
       #unity-fullscreen-button { position: absolute; right: 12px; bottom: 12px; padding: 6px 10px; font: 13px sans-serif; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #888; border-radius: 4px; cursor: pointer; z-index: 2; display: none; }
       #unity-ios-hint { position: absolute; right: 12px; bottom: 12px; max-width: 60%; padding: 6px 10px; font: 13px sans-serif; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #888; border-radius: 4px; z-index: 2; display: none; }
       /* iOS cannot lock the orientation, so a phone held in portrait is covered by this message and the game is paused; the overlay swallows every touch */
@@ -83,28 +83,32 @@
       var LOADER_SMOOTHING = 8;          // how fast the snake catches up, per s
       var LOADER_MIN_CATCH_UP = 0.8;     // ...but at least this much runway per s
       var LOADER_HOP_PERIOD_S = 0.42;    // one monkey hop
-      var LOADER_HOP_HEIGHT = 24;        // px of the 1280x720 stage
-      var LOADER_BLINK_HEIGHT = 6;       // eyes shut below this hop height
+      var LOADER_HOP_HEIGHT = 16.8;      // px of the 1280x720 stage
+      var LOADER_BLINK_HEIGHT = 4.2;     // eyes shut below this hop height
       var LOADER_POP_S = 0.12;           // a new body segment pops in
       var LOADER_FALLBACK_HIDE_S = 8;    // hide anyway if Unity never reports
       var LOADER_ART = "TemplateData/TitleScreen/";
 
       // Loading page layout  ##################################################
       // 1280x720 px, y down; the same numbers place TitleScreen.prefab, whose
-      // picture is this page's last frame, so keep both equal when changing it
+      // picture is this page's last frame, so keep both equal when changing it.
+      // The logo is drawn 1.2 times its first size, a bit above the middle;
+      // the branch, the cobra, the monkey & the label 0.7 times theirs, the
+      // middle of that block moved down to (640, 585)
       var LAYOUT = {
-        dotCount: 20, dotX0: 330, spacing: 30, dotD: 12, segD: 36,
-        tail: [[322, 20], [339, 26], [362, 32]], // first segments: x, size
-        surfaceY: 449, headAhead: 14, headLift: 12, headW: 62, headH: 60,
-        monkeyGap: 84, monkeySink: 4, monkeyW: 64, monkeyH: 60,
+        dotCount: 20, dotX0: 423, spacing: 21, dotD: 8.4, segD: 25.2,
+        tail: [[417.4, 14], [429.3, 18.2], [445.4, 22.4]], // first segments: x, size
+        surfaceY: 565.4, segDrop: 2.1, dotRise: 3.5,
+        headAhead: 9.8, headLift: 8.4, headW: 43.4, headH: 42,
+        monkeyGap: 58.8, monkeySink: 2.8, monkeyW: 44.8, monkeyH: 42,
         statics: [
           { src: "Vine_A", x: 40, y: -40, w: 94, h: 298 },
           { src: "Vine_Curl", x: 138, y: -30, w: 52, h: 234 },
           { src: "Vine_B", x: 1150, y: -40, w: 78, h: 286 },
-          { src: "MonkobraLogo", x: 290, y: 143, w: 700, h: 124 },
-          { src: "Branch", x: 200, y: 384, w: 880, h: 120 }
+          { src: "MonkobraLogo", x: 220, y: 240, w: 840, h: 149 },
+          { src: "Branch", x: 332, y: 519.9, w: 616, h: 84 }
         ],
-        label: { x: 440, y: 520, w: 400, h: 50 }
+        label: { x: 500, y: 615.1, w: 280, h: 35 }
       };
 
       var canvas = document.querySelector("#unity-canvas");
@@ -279,11 +283,11 @@
         }
         for (var d = 0; d < L.dotCount; d++) {
           var dx = L.dotX0 + d * L.spacing;
-          loaderParts.dots.push(picture(stage, "RunwayDot", dx - L.dotD / 2, L.surfaceY - 5 - L.dotD / 2, L.dotD, L.dotD));
+          loaderParts.dots.push(picture(stage, "RunwayDot", dx - L.dotD / 2, L.surfaceY - L.dotRise - L.dotD / 2, L.dotD, L.dotD));
         }
         for (var k = 0; k <= L.dotCount; k++) {
           var seg = segmentAt(k);
-          var img = picture(stage, "CobraSegment", seg.x - seg.d / 2, L.surfaceY + 3 - seg.d, seg.d, seg.d);
+          var img = picture(stage, "CobraSegment", seg.x - seg.d / 2, L.surfaceY + L.segDrop - seg.d, seg.d, seg.d);
           img.style.visibility = k === 0 ? "visible" : "hidden";
           loaderParts.segments.push({ img: img, bornMs: -1 });
         }
@@ -393,7 +397,7 @@
           }
         }
 
-        var segY = L.surfaceY + 3 - L.segD / 2;
+        var segY = L.surfaceY + L.segDrop - L.segD / 2;
         var head = loaderParts.head;
         head.style.left = frontX + L.headAhead - L.headW / 2 + "px";
         head.style.top = segY - L.headLift - L.headH / 2 + "px";
