@@ -2,11 +2,12 @@ using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
-/// Frames the cobra alert shot so the whole cobra is in view. The camera
-/// travels only up and down: it stays a set horizontal distance out from the
-/// monkey, close, on the anchor's yaw, so the view direction in the
-/// horizontal plane is the one of the main camera, which moves with the
-/// monkey, and only its height follows. It aims at the middle of the cobra's
+/// Frames the cobra alert shot so the whole cobra is in view, its head
+/// first. The camera stands on the head's own side of the trunk, a set
+/// horizontal distance out along the head's angle at the monkey's ring, so
+/// the trunk never hides the head (the shot is cut to, so the turn from the
+/// climb view never shows); w/o a head it keeps the monkey's side & the
+/// anchor's yaw. It aims at the middle of the cobra's
 /// own coil, wherever that is below or above the monkey, from a height that
 /// makes the view look down by a set angle, and widens the field of view just
 /// enough to fit the coil, up to a limit.
@@ -82,18 +83,32 @@ public class CameraCobraAlertFraming: MonoBehaviour {
             span = body;
         }
 
-        // height only: x & z stay on the monkey, yaw stays the anchor's; the
-        // config's y offset lifts the whole shot above the coil's middle
+        // the height eased; the config's y offset lifts the whole shot above
+        // the coil's middle
         focusY = Mathf.SmoothDamp(
             focusY,
             span.center.y + config.CobraAlertYOffsetU,
             ref focusVelocityY,
             smoothS
         );
+        // on the head's own side of the trunk, out along its angle, so the
+        // trunk never hides the head; w/o a head, the monkey's side
         Vector3 anchorPos = anchor.position;
+        Vector3 place = anchorPos;
+        Quaternion yaw = anchor.rotation;
+        if (cobra != null && cobra.TryGetHead(out Vector3 head, out Vector3 axis)) {
+            Vector3 headOut = head - axis;
+            headOut.y = 0f;
+            if (headOut.sqrMagnitude > 0.0001f) {
+                headOut.Normalize();
+                float ringU = new Vector2(anchorPos.x - axis.x, anchorPos.z - axis.z).magnitude;
+                place = axis + headOut * ringU;
+                yaw = Quaternion.LookRotation(headOut, Vector3.up);
+            }
+        }
         focus.SetPositionAndRotation(
-            new Vector3(anchorPos.x, focusY, anchorPos.z),
-            anchor.rotation
+            new Vector3(place.x, focusY, place.z),
+            yaw
         );
 
         // close, out from the monkey along the anchor's yaw, and above the
@@ -106,9 +121,9 @@ public class CameraCobraAlertFraming: MonoBehaviour {
         // horizontal distance from the camera to the middle of the coil,
         // and the coil's radius: the near side is closer than the middle by
         // that radius, the width shows at the middle
-        Vector3 outward = anchor.rotation * Vector3.forward;
+        Vector3 outward = yaw * Vector3.forward;
         Vector2 outwardXZ = new Vector2(outward.x, outward.z).normalized;
-        Vector2 cameraXZ = new Vector2(anchorPos.x, anchorPos.z)
+        Vector2 cameraXZ = new Vector2(place.x, place.z)
             + outwardXZ * distanceU;
         float middleU = Vector2.Distance(
             cameraXZ,

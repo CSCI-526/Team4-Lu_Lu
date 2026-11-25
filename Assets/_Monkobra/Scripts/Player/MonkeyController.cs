@@ -29,6 +29,15 @@ public class MonkeyController: MonoBehaviour {
     }
 
     /// <summary>
+    /// While true the player's input does nothing: no climb, no reach, no
+    /// coconut, no struggle against a web; the body still falls, is pulled
+    /// or held as ever. Set by <see cref="CameraRigManager"/> while the
+    /// camera has cut away from the monkey to the great cobra. Apart from
+    /// <see cref="IsHeld"/>, which webs & leaps own.
+    /// </summary>
+    public bool IsInputLocked { get; set; }
+
+    /// <summary>
     /// While true the body stays exactly where it is, ignoring input and any
     /// branch-hit fall. Set by <see cref="SpiderWebStruggle"/> while the
     /// monkey is caught in a web. Either change zeroes the climb speed, so
@@ -323,7 +332,7 @@ public class MonkeyController: MonoBehaviour {
             / Mathf.Max(0.01f, worldBalanceConfig.RoughBarkBlendS);
         roughBarkSpeedScale = Mathf.MoveTowards(
             roughBarkSpeedScale, targetScale, blendStep);
-        Vector2 directionalInput = isStunned || MoveAction == null
+        Vector2 directionalInput = isStunned || IsInputLocked || MoveAction == null
             ? Vector2.zero
             : MoveAction.action.ReadValue<Vector2>();
         bool hasInput = directionalInput.sqrMagnitude > INPUT_DEADZONE_SQR;

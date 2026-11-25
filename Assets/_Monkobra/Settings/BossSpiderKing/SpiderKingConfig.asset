@@ -26,7 +26,7 @@ MonoBehaviour:
   easyTimeScale: 1.7
   easySpeedScale: 0.7
   easyReachScale: 1.3
-  airWallMaterial: {fileID: 2100000, guid: 906f4892bde12417d93d23637ab10c7c, type: 2}
+  airWallMaterial: {fileID: 2100000, guid: dc212d9a9b084ef7b9e5d17d8f252ae7, type: 2}
   goldenOutlineMaterial: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
   goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
   goldenOutlineWidthScale: 2

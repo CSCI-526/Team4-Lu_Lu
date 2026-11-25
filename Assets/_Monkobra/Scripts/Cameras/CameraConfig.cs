@@ -258,6 +258,13 @@ public class CameraConfig: ScriptableObject {
     /// <returns>ease from peak back to rest in a beat; s</returns>
     public float CobraVignetteEaseOutS => cobraVignetteEaseOutS;
 
+    // cut away  ---------------------------------------------------------------
+    /// <returns>each cut away bar's height, a share of the screen's</returns>
+    public float CutAwayBarShare => cutAwayBarShare;
+
+    /// <returns>time the bars take to slide in or out; s</returns>
+    public float CutAwayBarSlideS => cutAwayBarSlideS;
+
     // comfort  ----------------------------------------------------------------
     /// <returns>if the camera should move as little as it can: no shake, no
     /// continuous noise, no look-ahead lead, no extra pull-back</returns>
@@ -504,6 +511,20 @@ public class CameraConfig: ScriptableObject {
     [Min(0f)]
     [Tooltip("ease from peak back to rest in a beat; s")]
     private float cobraVignetteEaseOutS = 0.3f;
+
+    [Header("Cut Away")]
+    [SerializeField]
+    [Range(0f, 0.3f)]
+    [Tooltip(
+        "while a shot looks away from the monkey (the cobra alert), black "
+            + "cinema bars grow in at the top & bottom, each this share of the screen"
+    )]
+    private float cutAwayBarShare = 0.11f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("time the cut away bars take to grow in, & to draw back out; s")]
+    private float cutAwayBarSlideS = 2f;
 
     [Header("Comfort")]
     [SerializeField]

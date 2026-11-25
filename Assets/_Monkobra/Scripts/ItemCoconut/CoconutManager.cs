@@ -321,7 +321,9 @@ public class CoconutManager: MonoBehaviour {
 
     // a duplicate instance waits to be destroyed, it must not act
     private void OnUseCoconutPerformed(InputAction.CallbackContext _) {
-        if (I == this) {
+        // nor while the camera has cut away from the monkey
+        bool isLocked = MonkeyController.I != null && MonkeyController.I.IsInputLocked;
+        if (I == this && !isLocked) {
             TryUseCoconut();
         }
     }

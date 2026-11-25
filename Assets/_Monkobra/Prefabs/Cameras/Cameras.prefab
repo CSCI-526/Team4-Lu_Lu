@@ -650,6 +650,7 @@ GameObject:
   - component: {fileID: 5555555555555550301}
   - component: {fileID: 5109030492090726729}
   - component: {fileID: 386349140292953820}
+  - component: {fileID: 5555555555555550399}
   m_Layer: 0
   m_Name: CameraRig
   m_TagString: Untagged
@@ -1253,3 +1254,16 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}
   anchor: {fileID: 1111111111111111102}
   focus: {fileID: 3333333333333333312}
+--- !u!114 &5555555555555550399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8368625664876696387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fde8c5579fa49579c2a6eab631c518a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraCutAway
+  config: {fileID: 11400000, guid: 83f9a1f79c8252f44a789b33e46f12e3, type: 2}

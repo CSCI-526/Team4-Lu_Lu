@@ -24,7 +24,7 @@ The widgets stay as thin event listeners and hold no text: `CoconutMessageWidget
 Each popup is one entry of `Settings/PopUp/PopUpCatalog`; open the asset and edit
 
 - Text: `message`, with a `{0}` slot for a value the caller passes, and `touchMessage` for the touch wording (blank keeps `message`)
-- Look: `fontSize` and `textColor`: Cream for plain text, a signal color (warning red, frozen blue) where it means something; the [UI Style](ui-style-doc.md#plate) plate and the Baloo 2 font sit on the entity prefab, shared by all (Panel at alpha 0.55, so the monkey's arm shows through, and a Gold `Rim` child)
+- Look: `fontSize` and `textColor`: Cream for plain text, a signal color (cobra orange, frozen blue) where it means something; the [UI Style](ui-style-doc.md#plate) plate and the Baloo 2 font sit on the entity prefab, shared by all (Panel at alpha 0.55, so the monkey's arm shows through, and a Gold `Rim` child)
 - Position: `anchorY` (0 bottom, 1 top) and `offsetY`; the plate grows with the text
 - Timing: show time (0 stays until hidden), fade-in, fade-out, and pulse rate
 - Rules: priority, run-only, once-per-scene

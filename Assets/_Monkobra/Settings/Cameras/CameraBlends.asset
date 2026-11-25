@@ -38,8 +38,8 @@ MonoBehaviour:
   - From: '**ANY CAMERA**'
     To: CameraCobraAlert
     Blend:
-      Style: 1
-      Time: 0.45
+      Style: 0
+      Time: 0
       CustomCurve:
         serializedVersion: 2
         m_Curve: []
@@ -49,8 +49,8 @@ MonoBehaviour:
   - From: CameraCobraAlert
     To: '**ANY CAMERA**'
     Blend:
-      Style: 1
-      Time: 1
+      Style: 0
+      Time: 0
       CustomCurve:
         serializedVersion: 2
         m_Curve: []

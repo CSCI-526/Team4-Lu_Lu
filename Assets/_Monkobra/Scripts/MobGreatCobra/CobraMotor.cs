@@ -43,6 +43,25 @@ public class CobraMotor: MonoBehaviour {
     public bool IsGuarding => rig.isGuarding;
 
     /// <summary>
+    /// The head's position as posed now & the trunk's axis it circles, eg
+    /// for a camera to face the head from its own side of the trunk
+    /// </summary>
+    /// <param name="head">the head, world space</param>
+    /// <param name="axis">a point on the trunk's axis, world space</param>
+    /// <returns>if the body is set up</returns>
+    public bool TryGetHead(out Vector3 head, out Vector3 axis) {
+        head = Vector3.zero;
+        axis = Vector3.zero;
+        if (rig.bodySegments == null || rig.bodySegments.Length == 0
+            || rig.bodySegments[0] == null || rig.pathCenter == null) {
+            return false;
+        }
+        head = rig.bodySegments[0].position;
+        axis = rig.pathCenter.position;
+        return true;
+    }
+
+    /// <summary>
     /// The box round every body segment's position as posed now, head to
     /// tail, eg for a camera to fit the whole cobra
     /// </summary>
@@ -172,6 +191,20 @@ public class CobraMotor: MonoBehaviour {
 
         Frozen?.Invoke(durationS);
         return true;
+    }
+
+    /// <summary>
+    /// Rears the head up, as if the monkey were close, for
+    /// <paramref name="durationS"/>, easing up & back down, eg while the
+    /// camera cuts to the cobra as the chase starts. Never while guarding,
+    /// whose head is up anyway.
+    /// </summary>
+    public void PlayAlertRear(float durationS) {
+        if (rig.isGuarding || durationS <= 0f) {
+            return;
+        }
+        rig.alertRearStartTime = Time.time;
+        rig.alertRearEndTime = Time.time + durationS;
     }
 
     public void PlayChaseAlertHiss() {

@@ -214,7 +214,8 @@ public class SpiderWebStruggle: MonoBehaviour {
 
     // Event Handlers  #########################################################
     private void OnEscapePerformed(InputAction.CallbackContext context) {
-        if (!isTrapped || IsGameHalted) {
+        if (!isTrapped || IsGameHalted
+            || (monkeyRoot != null && monkeyRoot.IsInputLocked)) {
             return;
         }
 

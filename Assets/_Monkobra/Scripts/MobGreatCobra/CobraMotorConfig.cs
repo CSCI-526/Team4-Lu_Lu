@@ -86,6 +86,10 @@ public class CobraMotorConfig: ScriptableObject {
     /// <returns>monkey distance at which the head is fully raised; u</returns>
     public float HeadRaiseFullDistanceU => headRaiseFullDistanceU;
 
+    /// <returns>time the head takes to rear up for the camera's look, & to
+    /// lower again at its end; s</returns>
+    public float AlertRearEaseS => alertRearEaseS;
+
     /// <returns>hiss played while the monkey is close</returns>
     public AudioClip ProximityHiss => proximityHiss;
 
@@ -240,6 +244,13 @@ public class CobraMotorConfig: ScriptableObject {
     [SerializeField, Min(.1f)]
     [Tooltip("monkey distance at which the head is fully raised; u")]
     private float headRaiseFullDistanceU = 3.5f;
+
+    [SerializeField, Min(.01f)]
+    [Tooltip(
+        "while the camera cuts to the cobra as the chase starts, the head "
+            + "rears up, fully raised, over this time, & lowers over it at the end; s"
+    )]
+    private float alertRearEaseS = .4f;
 
     [Header("Close Chase Hiss")]
     [SerializeField]

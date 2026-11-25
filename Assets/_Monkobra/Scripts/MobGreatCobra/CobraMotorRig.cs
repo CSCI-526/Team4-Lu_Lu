@@ -32,6 +32,9 @@ public sealed class CobraMotorRig {
     public float headAngle;
     public float headHeight;
     public bool isGuarding;
+    // the head reared up for the camera's look, from & till; Time.time
+    public float alertRearStartTime = -1f;
+    public float alertRearEndTime = -1f;
     // holding below the boss arena, never chasing
     public float nextPeekTime;
     // Time.time the next guard peek starts

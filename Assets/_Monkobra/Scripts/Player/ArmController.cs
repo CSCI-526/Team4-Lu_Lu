@@ -371,7 +371,7 @@ public class ArmController: MonoBehaviour {
     // Event Handlers  #########################################################
     // detection singleton picks the side, only the matching arm reaches
     private void OnInteractPerformed(InputAction.CallbackContext context) {
-        if (isLeapReaching) {
+        if (isLeapReaching || IsInputLocked) {
             return;
         }
 
@@ -491,6 +491,10 @@ public class ArmController: MonoBehaviour {
     private Rigidbody body;
     private ConfigurableJoint joint;
     private MonkeyController monkeyRoot;
+
+    // the camera has cut away: a press starts no reach
+    private static bool IsInputLocked =>
+        MonkeyController.I != null && MonkeyController.I.IsInputLocked;
     private PineappleLeapController leapController;
 
     // private methods  ########################################################
