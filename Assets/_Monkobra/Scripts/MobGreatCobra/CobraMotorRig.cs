@@ -63,6 +63,8 @@ public sealed class CobraMotorRig {
     // length of the running or last freeze; s
     public float frozenTimeS;
     // total time spent frozen, kept off the wave; s
+    public bool isStoryHeld;
+    // climb stopped by a story event, orbit & slither go on
     public HitBranchSensor playerSensor;
     public SpiderWebStruggle playerStruggle;
     public Transform player;

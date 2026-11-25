@@ -193,6 +193,32 @@ public class CobraMotor: MonoBehaviour {
         return true;
     }
 
+    /// <returns>if a story event holds the cobra's climb right now</returns>
+    public bool IsStoryHeld => rig != null && rig.isStoryHeld;
+
+    /// <summary>
+    /// Stops the climb for a story event, eg the spider king's intro: the
+    /// head keeps its height while the body still orbits & slithers. Unlike
+    /// <see cref="TryFreeze"/> it raises no <see cref="Frozen"/> or
+    /// <see cref="Thawed"/>, so no freeze HUD or popup shows. Clears the
+    /// running surge and the starting zone exit boost, and mistakes made
+    /// while held add no surge. Lifted, the climb eases back up from a
+    /// standstill. Contact still ends the run.
+    /// </summary>
+    /// <param name="isHeld">whether to hold the cobra's climb</param>
+    public void SetStoryHold(bool isHeld) {
+        if (rig == null || rig.isStoryHeld == isHeld) {
+            return;
+        }
+        rig.isStoryHeld = isHeld;
+        if (isHeld) {
+            rig.surgeStacks = 0;
+            rig.isCatchingUp = false;
+            rig.exitBoostEndTime = 0f;
+        }
+        rig.currentClimbSpeed = 0f;
+    }
+
     /// <summary>
     /// Rears the head up, as if the monkey were close, for
     /// <paramref name="durationS"/>, easing up & back down, eg while the
@@ -363,6 +389,15 @@ public class CobraMotor: MonoBehaviour {
 
         if (rig.isGuarding) {
             guard.UpdateGuard();
+            coil.UpdateBody();
+            return;
+        }
+
+        if (rig.isStoryHeld) {
+            // orbit & slither go on, the climb and every surge stay off
+            rig.surgeStacks = 0;
+            rig.isCatchingUp = false;
+            rig.currentClimbSpeed = 0f;
             coil.UpdateBody();
             return;
         }
