@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 // tracks height and reward score, notifies the UI on a change, and stops
 // scoring once the run ends
@@ -156,6 +157,14 @@ public class ScoreManager: MonoBehaviour {
         if (webStruggle != null) {
             webStruggle.Escaped += OnWebEscaped;
         }
+        cobraKing = CobraKingFightController.I;
+        if (cobraKing != null) {
+            cobraKing.FightEnded += OnCobraKingBeaten;
+        }
+        spiderKing = SpiderKingFightController.I;
+        if (spiderKing != null) {
+            spiderKing.FightEnded += OnSpiderKingBeaten;
+        }
         isRunEnded = GameController.I != null
             && GameController.I.State == GameState.Lost;
         hasStarted = true;
@@ -171,6 +180,7 @@ public class ScoreManager: MonoBehaviour {
     private void LateUpdate() {
         if (CanScore) {
             SampleHeight();
+            GrantBossRewards();
         }
     }
 
@@ -186,6 +196,12 @@ public class ScoreManager: MonoBehaviour {
         }
         if (webStruggle != null) {
             webStruggle.Escaped -= OnWebEscaped;
+        }
+        if (cobraKing != null) {
+            cobraKing.FightEnded -= OnCobraKingBeaten;
+        }
+        if (spiderKing != null) {
+            spiderKing.FightEnded -= OnSpiderKingBeaten;
         }
         if (I == this) {
             I = null;
@@ -204,6 +220,11 @@ public class ScoreManager: MonoBehaviour {
     private CoconutManager coconutManager;
     private HeightMarkerSystem markerSystem;
     private SpiderWebStruggle webStruggle;
+    private CobraKingFightController cobraKing;
+    private SpiderKingFightController spiderKing;
+    // beaten kings whose points wait for LateUpdate
+    private readonly List<RewardKind> pendingBossRewards =
+        new List<RewardKind>();
 
     // private methods  ########################################################
     // each pineapple grab starts 1 leap
@@ -226,6 +247,26 @@ public class ScoreManager: MonoBehaviour {
 
     private void OnWebEscaped() {
         AddReward(RewardKind.WebEscape);
+    }
+
+    // a king's FightEnded is raised only once it is beaten & its reward
+    // taken, every fight of the endless run's rush included; the points wait
+    // for LateUpdate, since ScoreHeightBossHider brings the score HUD the
+    // Cobra King's fight hid back in a later listener of the same event, and
+    // the "+N" popup under it only hears a reward while shown
+    private void OnCobraKingBeaten() {
+        pendingBossRewards.Add(RewardKind.CobraKingDefeat);
+    }
+
+    private void OnSpiderKingBeaten() {
+        pendingBossRewards.Add(RewardKind.SpiderKingDefeat);
+    }
+
+    private void GrantBossRewards() {
+        foreach (RewardKind kind in pendingBossRewards) {
+            AddReward(kind);
+        }
+        pendingBossRewards.Clear();
     }
 
     private void SampleHeight() {

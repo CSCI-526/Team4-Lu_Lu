@@ -20,3 +20,5 @@ MonoBehaviour:
   cobraFreezePoints: 150
   heightMarkerPoints: 25
   webEscapePoints: 75
+  cobraKingDefeatPoints: 1000
+  spiderKingDefeatPoints: 2000

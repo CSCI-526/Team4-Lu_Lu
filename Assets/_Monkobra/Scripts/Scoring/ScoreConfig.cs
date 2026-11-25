@@ -37,6 +37,12 @@ public class ScoreConfig: ScriptableObject {
     /// <returns>points breaking free of a spider web adds</returns>
     public int WebEscapePoints => webEscapePoints;
 
+    /// <returns>points beating the Cobra King adds</returns>
+    public int CobraKingDefeatPoints => cobraKingDefeatPoints;
+
+    /// <returns>points beating the Spider King adds</returns>
+    public int SpiderKingDefeatPoints => spiderKingDefeatPoints;
+
     // Public Methods  #########################################################
     /// <returns>points one reward of the kind adds</returns>
     public int PointsFor(RewardKind kind) {
@@ -53,6 +59,10 @@ public class ScoreConfig: ScriptableObject {
                 return heightMarkerPoints;
             case RewardKind.WebEscape:
                 return webEscapePoints;
+            case RewardKind.CobraKingDefeat:
+                return cobraKingDefeatPoints;
+            case RewardKind.SpiderKingDefeat:
+                return spiderKingDefeatPoints;
             default:
                 return 0;
         }
@@ -101,6 +111,17 @@ public class ScoreConfig: ScriptableObject {
     [Tooltip("points breaking free of a spider web adds")]
     private int webEscapePoints = 75;
 
+    [Header("Bosses")]
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points beating the Cobra King adds, once its reward is taken")]
+    private int cobraKingDefeatPoints = 1000;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points beating the Spider King adds, once its reward is taken")]
+    private int spiderKingDefeatPoints = 2000;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         pointsPerMeter = Mathf.Max(0, pointsPerMeter);
@@ -111,5 +132,7 @@ public class ScoreConfig: ScriptableObject {
         cobraFreezePoints = Mathf.Max(0, cobraFreezePoints);
         heightMarkerPoints = Mathf.Max(0, heightMarkerPoints);
         webEscapePoints = Mathf.Max(0, webEscapePoints);
+        cobraKingDefeatPoints = Mathf.Max(0, cobraKingDefeatPoints);
+        spiderKingDefeatPoints = Mathf.Max(0, spiderKingDefeatPoints);
     }
 }
