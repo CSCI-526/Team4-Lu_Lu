@@ -38,8 +38,8 @@ MonoBehaviour:
   - From: '**ANY CAMERA**'
     To: CameraCobraAlert
     Blend:
-      Style: 0
-      Time: 0
+      Style: 1
+      Time: 0.6
       CustomCurve:
         serializedVersion: 2
         m_Curve: []
@@ -49,8 +49,8 @@ MonoBehaviour:
   - From: CameraCobraAlert
     To: '**ANY CAMERA**'
     Blend:
-      Style: 0
-      Time: 0
+      Style: 1
+      Time: 0.6
       CustomCurve:
         serializedVersion: 2
         m_Curve: []
@@ -73,6 +73,28 @@ MonoBehaviour:
     Blend:
       Style: 1
       Time: 0.35
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - From: '**ANY CAMERA**'
+    To: CameraSpiderIntro
+    Blend:
+      Style: 1
+      Time: 0.8
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - From: CameraSpiderIntro
+    To: '**ANY CAMERA**'
+    Blend:
+      Style: 1
+      Time: 0.8
       CustomCurve:
         serializedVersion: 2
         m_Curve: []
