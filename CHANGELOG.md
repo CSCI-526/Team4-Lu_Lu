@@ -2,22 +2,17 @@
 
 <!--
 Fixme tutorial zone: manageable amount of banana
-Bug failling monkey need separate animation
 Bug force encounter spider
 Bug make leaderboard works
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
-Bug cobra camera: slow down, show more of the snake
-Todo add point to boss fight
 Fixme erik mpv tutorial for boss fight
 Fixme erik b/t boss fight, better randomization
 Fixme erik size of the rough bark need to improve
 
-Todo upd weekly devlog
-
-todo erik lighting
-todo todo vertical version adpation
-todo todo chinese version
-todo todo add 3x fruit
+todo lighting improvement
+todo vertical version adaptation
+todo chinese version
+todo add 3x fruit
 -->
 
 
@@ -31,13 +26,39 @@ todo todo add 3x fruit
   Spider King, added as the climb goes on after the reward, every win of the
   endless boss rush included
 
+##### Houdong Pan
+
+- Spider King sound cues as each attack charges: spit for a web bullet, fang
+  bite for a slash, scrambling legs for a dash; thwack and silk snap at a parry
+- cobra alert cut away: black cinema bars grow in top and bottom, the UI hides,
+  the monkey's input locks; all return after the shot
+
 ### Changed
+
+##### Yuqing Lu
+
+- Cobra King and Spider King defeat popups tinted in each king's purple
+
+##### Houdong Pan
+
+- cobra alert shot: 2 s hard cut and cut back, no swoop down the trunk; camera
+  stands on the head's side of the trunk and the head rears up
+- "Run!" and "speeding up" popups smaller, orange and higher; "Run!" waits for
+  the UI to return
+- spider web brighter with a soft glow; branch bark warmer, less moss, thicker
+  outline
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+##### Houdong Pan
+
+- knocked-down monkey no longer cycles limbs while sliding; all 4 limbs grip
+  the bark until control returns
+- Spider King air wall no longer takes the web's glow, own see-through material
 
 ### Security
 
