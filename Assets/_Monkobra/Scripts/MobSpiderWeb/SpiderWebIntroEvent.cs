@@ -18,7 +18,12 @@ using UnityEngine;
 /// arcs to the monkey's spot on the bark and grows to full size on the way.
 /// Then <see cref="Phase.Stick"/>: it lands flat on the bark facing out,
 /// armed, and traps the monkey, whose escape the existing
-/// <see cref="SpiderWebStruggle"/> and its first-trap hint teach.
+/// <see cref="SpiderWebStruggle"/> and its first-trap hint teach. Then
+/// <see cref="Phase.Exit"/>: the king climbs off up the trunk and clears, the
+/// shot is released after a short linger so the escape can be asked for, and
+/// the cobra's hold is lifted once the monkey breaks free
+/// (<see cref="SpiderWebStruggle.Escaped"/>), so it chases again. A loss, a
+/// disable or a scene change ends the event cleanly at any phase.
 /// </para>
 /// Finds the monkey, the cobra, the camera rig and the framing by singleton or
 /// type at use, as they live in other prefabs.
@@ -34,6 +39,8 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         Appear,
         Throw,
         Stick,
+        Exit,
+        Done,
     }
 
     /// <returns>the stage the event is in</returns>
@@ -84,10 +91,26 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         if (GameController.I == null) {
             Debug.LogWarning(
                 "SpiderWebIntroEvent:\tfail to get singleton: "
-                    + "GameController, no mode check",
+                    + "GameController, no mode check or loss abort",
                 this
             );
+            return;
         }
+        game = GameController.I;
+        game.StateChanged += OnStateChanged;
+    }
+
+    // never leave the cobra held, the monkey locked or a king standing behind
+    // a disabled event
+    private void OnDisable() {
+        Abort();
+    }
+
+    private void OnDestroy() {
+        if (game != null) {
+            game.StateChanged -= OnStateChanged;
+        }
+        Abort();
     }
 
     private void Update() {
@@ -106,8 +129,30 @@ public class SpiderWebIntroEvent: MonoBehaviour {
             case Phase.Stick:
                 UpdateStick();
                 break;
+            case Phase.Exit:
+                UpdateExit();
+                break;
         }
         FollowKingWithSubject();
+    }
+
+    // Test Hook  ##############################################################
+    /// <summary>
+    /// Plays the event now, w/o the trigger height, for a test in Play mode
+    /// </summary>
+    [ContextMenu("Play Now")]
+    private void PlayNow() {
+        if (!Application.isPlaying || phase != Phase.Waiting || isDone) {
+            Debug.LogWarning(
+                "SpiderWebIntroEvent:\tPlay Now needs Play mode and an event "
+                    + "that has not run yet",
+                this
+            );
+            return;
+        }
+        if (ResolveReferences()) {
+            BeginAppear();
+        }
     }
 
     // private members  ########################################################
@@ -115,6 +160,9 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     private bool isDone; // the event ran once, never again this run
     private bool hasWarnedNoShot; // a refused shot is logged once
     private bool hasForcedTrap; // the trap fallback ran, it runs once
+    private bool isShotReleased; // the shot was let go after the stick
+    private bool isCobraHeld; // this event holds the cobra, and must lift it
+    private float exitStartTime; // Time.time the king began to climb off
     private float phaseStartTime; // Time.time the phase began
     private float kingAngleDeg; // angle round the trunk the king sits at
     private float kingY; // world height of the king's center
@@ -130,6 +178,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     private CameraRigManager cameraRig;
     private CameraSpiderIntroFraming framing;
     private SpiderWebStruggle struggle;
+    private GameController game;
 
     // constants  ##############################################################
     // how long the web may take to catch by itself before the trap is forced; s
@@ -220,8 +269,13 @@ public class SpiderWebIntroEvent: MonoBehaviour {
             return;
         }
 
+        // the cobra holds from the cut until the monkey breaks free
         if (cobra != null) {
             cobra.SetStoryHold(true);
+            isCobraHeld = true;
+        }
+        if (struggle != null) {
+            struggle.Escaped += OnEscaped;
         }
         isDone = true;
         king.SetEyeGlow(0f);
@@ -298,20 +352,123 @@ public class SpiderWebIntroEvent: MonoBehaviour {
 
     private void UpdateStick() {
         king.Place(kingAngleDeg, kingY, 0f);
-        if (struggle == null || struggle.IsTrapped || hasForcedTrap) {
+        if (struggle == null) {
+            // nothing can trap or free the monkey: end it, cobra lifted
+            LiftCobraHold();
+            BeginExit();
             return;
         }
-        if (Time.time - phaseStartTime < CATCH_GRACE_S) {
+        if (struggle.IsTrapped) {
+            BeginExit();
+            return;
+        }
+        if (hasForcedTrap
+            || Time.time - phaseStartTime < CATCH_GRACE_S) {
             return;
         }
         // the trigger had its chance, trap the monkey in the web outright, once
         hasForcedTrap = true;
-        if (web == null || !struggle.TryTrap(web)) {
-            Debug.LogWarning(
-                "SpiderWebIntroEvent:\tthe web did not trap the monkey",
-                this
-            );
+        if (web != null && struggle.TryTrap(web)) {
+            return;
         }
+        // nothing to escape from, so nothing to hold the cobra for
+        Debug.LogWarning(
+            "SpiderWebIntroEvent:\tthe web did not trap the monkey", this);
+        LiftCobraHold();
+        BeginExit();
+    }
+
+    // the monkey is caught: the king climbs off while the shot lingers
+    private void BeginExit() {
+        exitStartTime = Time.time;
+        EnterPhase(Phase.Exit);
+    }
+
+    // the king walks up the trunk and clears; the shot lets go after its
+    // linger, so the cut away ends before the escape is asked for
+    private void UpdateExit() {
+        float sinceExitS = Time.time - exitStartTime;
+        if (!isShotReleased && sinceExitS >= config.StickHoldS) {
+            ReleaseShot();
+        }
+
+        if (king.IsBuilt) {
+            if (sinceExitS < config.ExitTimeS) {
+                kingY += config.ExitSpeedU * Time.deltaTime;
+                king.Place(kingAngleDeg, kingY, 1f);
+            } else {
+                king.Clear();
+            }
+        }
+
+        if (isShotReleased && !king.IsBuilt) {
+            EnterPhase(Phase.Done);
+        }
+    }
+
+    private void ReleaseShot() {
+        isShotReleased = true;
+        if (cameraRig != null) {
+            cameraRig.ReleaseShot(CameraRigManager.ShotKind.SpiderIntro);
+        }
+        if (framing != null) {
+            framing.SetSubject(null);
+        }
+    }
+
+    // the cobra chases again, easing up from a standstill
+    private void LiftCobraHold() {
+        if (!isCobraHeld) {
+            return;
+        }
+        isCobraHeld = false;
+        if (cobra != null) {
+            cobra.SetStoryHold(false);
+        }
+    }
+
+    // the monkey broke free: the web is gone, the cobra's hold ends
+    private void OnEscaped() {
+        if (struggle != null) {
+            struggle.Escaped -= OnEscaped;
+        }
+        LiftCobraHold();
+    }
+
+    // a loss ends the story where it stands
+    private void OnStateChanged(GameState state) {
+        if (state != GameState.Playing) {
+            Abort();
+        }
+    }
+
+    // ends the event at any phase: the cobra moves on, the shot lets go at
+    // once, the king and a web still in the air are gone; idempotent. A web
+    // already stuck stays, it is the monkey's to break
+    private void Abort() {
+        if (struggle != null) {
+            struggle.Escaped -= OnEscaped;
+        }
+        LiftCobraHold();
+        if (phase == Phase.Waiting || phase == Phase.Done) {
+            return;
+        }
+
+        if (!isShotReleased && cameraRig != null) {
+            cameraRig.ReleaseShot(
+                CameraRigManager.ShotKind.SpiderIntro, 0f, true);
+        }
+        isShotReleased = true;
+        if (framing != null) {
+            framing.SetSubject(null);
+        }
+        if (king != null) {
+            king.Clear();
+        }
+        if (phase == Phase.Throw && web != null) {
+            Destroy(web.gameObject);
+        }
+        phase = Phase.Done;
     }
 
     // direction from the trunk axis out to the monkey, flat; the web faces it
