@@ -151,6 +151,8 @@ public static class MockAnalyticsGenerator {
     private const int COBRA_FREEZE_POINTS = 150;
     private const int HEIGHT_MARKER_POINTS = 25;
     private const int WEB_ESCAPE_POINTS = 75;
+    private const int COBRA_KING_DEFEAT_POINTS = 1000;
+    private const int SPIDER_KING_DEFEAT_POINTS = 2000;
     // HeightMarkerSystem.intervalU
     private const int HEIGHT_MARKER_INTERVAL_U = 50;
     private const float COBRA_FREEZE_S = 10f;
@@ -942,6 +944,15 @@ public static class MockAnalyticsGenerator {
             * HEIGHT_MARKER_POINTS;
         run.RewardScoreByKind[(int)RewardKind.WebEscape] =
             (long)run.CountOf(AnalyticsMetric.WebEscape) * WEB_ESCAPE_POINTS;
+        // only a won Cobra King lets a normal run climb past its zone, and
+        // that still holds for a run CutShort trimmed
+        bool isCobraKingBeaten = plan.Mode == RunMode.Full
+            && plan.HighestHeight > BOSS_END_U;
+        run.RewardScoreByKind[(int)RewardKind.CobraKingDefeat] =
+            isCobraKingBeaten ? COBRA_KING_DEFEAT_POINTS : 0;
+        run.RewardScoreByKind[(int)RewardKind.SpiderKingDefeat] =
+            (long)run.CountOf(AnalyticsMetric.SpiderWin)
+            * SPIDER_KING_DEFEAT_POINTS;
         foreach (long kindScore in run.RewardScoreByKind) {
             run.RewardScore += kindScore;
         }

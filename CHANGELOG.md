@@ -23,6 +23,12 @@ todo todo add 3x fruit
 
 ### Added
 
+##### Yuqing Lu
+
+- beating a boss scores: 1000 points for the Cobra King and 2000 for the
+  Spider King, added as the climb goes on after the reward, every win of the
+  endless boss rush included
+
 ### Changed
 
 ### Deprecated

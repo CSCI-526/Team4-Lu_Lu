@@ -78,7 +78,7 @@ graph TD
 | Falling Cobra | a hazard from above that rewards watching the branches | warns, then falls, with the same penalty as a branch hit |
 | Coconut | a rare, higher-up fruit kept as a panic button, so a good grab can be cashed in when the cobra is close | scores double a banana and restores no stamina; a double-tap freezes the cobra for a while, but its coil stays fatal |
 | Spider Web | a forced stop that lets the cobra gain ground, and a clash with the grab since reaching is locked while stuck | holds the monkey until rapid presses fill an escape bar, then brief immunity from further webs |
-| Score | rewards height and risk | points per meter climbed and a bonus for each good deed: a banana, coconut or pineapple grab, freezing the cobra, passing a new height marker, escaping a spider web |
+| Score | rewards height and risk | points per meter climbed and a bonus for each good deed: a banana, coconut or pineapple grab, freezing the cobra, passing a new height marker, escaping a spider web, and a bigger bonus for beating the Cobra King or the Spider King |
 
 ## Win and Lose
 
@@ -144,7 +144,7 @@ Each Run Section answers "how did this one attempt go":
 - Run Header: mode, status, highest and death height, death cause; the verdict of the run in one glance
 - Height vs Time (line): sampled height over the run; reflects pace, so plateaus mark webs or empty stamina and dips mark branch hits (Metric #5)
 - Stamina vs Time (line): sampled stamina over the run, placed under the banana table; reflects the core twist, since a healthy run is a drain and refill sawtooth (Metric #6)
-- Score Split (pie): height score against the score of each reward kind (banana, coconut, pineapple, cobra freeze, height marker, web escape); reflects what the player was rewarded for, climbing or grabbing, which checks the Earned Rewards pillar
+- Score Split (pie): height score against the score of each reward kind (banana, coconut, pineapple, cobra freeze, height marker, web escape, Cobra King defeat, Spider King defeat); reflects what the player was rewarded for, climbing or grabbing, which checks the Earned Rewards pillar
 - Event Tables (rows of time since start, and height where it matters): every banana, coconut, branch hit, web, leap, and boss event; reflect risk against reward, the grabs made against the hits taken (Metric #7), and give the exact moment behind any shape seen in a line
 
 Reading Order: the summary finds the pattern across attempts, then the run sections explain it, so a doubt raised by a bar is answered by the line or table of the run behind it

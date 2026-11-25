@@ -356,6 +356,10 @@ public static class AnalyticsMarkdownWriter {
                 return "Height Marker";
             case RewardKind.WebEscape:
                 return "Web Escape";
+            case RewardKind.CobraKingDefeat:
+                return "Cobra King Defeat";
+            case RewardKind.SpiderKingDefeat:
+                return "Spider King Defeat";
             default:
                 return kind.ToString();
         }
@@ -375,6 +379,8 @@ public static class AnalyticsMarkdownWriter {
                 return AnalyticsMetric.HeightMarker;
             case RewardKind.WebEscape:
                 return AnalyticsMetric.WebEscape;
+            case RewardKind.SpiderKingDefeat:
+                return AnalyticsMetric.SpiderWin;
             default:
                 return null;
         }
