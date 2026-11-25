@@ -3,7 +3,6 @@
 <!--
 Bug make leaderboard works
 
-Fixme tutorial zone: manageable amount of banana
 Bug force encounter spider
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
 Fixme erik mpv tutorial for boss fight
@@ -47,6 +46,12 @@ todo add 3x fruit
   the UI to return
 - spider web brighter with a soft glow; branch bark warmer, less moss, thicker
   outline
+
+##### Wenhai Dong
+
+- the starting zone grows a manageable amount of bananas: each banana branch
+  attempt at 0.12 instead of 0.4 (`startingZoneBananaBranchChance`), about 1
+  banana branch a segment instead of 4
 
 ### Deprecated
 
