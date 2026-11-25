@@ -96,6 +96,7 @@ MonoBehaviour:
   cobraAlertSeeS: 3.5
   cobraAlertHoldS: 1.2
   cobraAlertCreepSpeedU: 1.5
+  cobraAlertPullOutU: 6
   cobraAlertDistanceU: 5
   cobraAlertYOffsetU: 3
   cobraAlertPitchDeg: 15

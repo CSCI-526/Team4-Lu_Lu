@@ -133,7 +133,7 @@ public class CameraCobraAlertFraming: MonoBehaviour {
             out float endFovDeg
         );
         transform.SetPositionAndRotation(
-            Vector3.Lerp(startPosition, endPosition, progress),
+            GetJourneyPosition(endPosition, progress),
             Quaternion.Slerp(startRotation, endRotation, progress)
         );
         vcam.Lens.FieldOfView = Mathf.Lerp(startFovDeg, endFovDeg, progress);
@@ -154,6 +154,8 @@ public class CameraCobraAlertFraming: MonoBehaviour {
     private Vector3 startPosition; // the live view the journey began on
     private Quaternion startRotation;
     private float startFovDeg;
+    private Vector3 trunkAxis; // a point on the trunk axis, the orbit center
+    private bool hasTrunkAxis; // whether the trunk axis is known
 
     // cached references  ------------------------------------------------------
     private CinemachineCamera vcam;
@@ -173,6 +175,33 @@ public class CameraCobraAlertFraming: MonoBehaviour {
         raw = Mathf.Clamp01(raw);
         // smootherstep: speeds up, then slows to a stop, both ends gentle
         return raw * raw * raw * (raw * (raw * 6f - 15f) + 10f);
+    }
+
+    // where the camera is on its way from the start view to the cobra view:
+    // it swings round the trunk, never across it, bulging outward half way so
+    // it moves away from the tree; w/o a known trunk, a straight line
+    private Vector3 GetJourneyPosition(Vector3 endPosition, float progress) {
+        if (!hasTrunkAxis) {
+            return Vector3.Lerp(startPosition, endPosition, progress);
+        }
+        Vector2 from = new Vector2(
+            startPosition.x - trunkAxis.x, startPosition.z - trunkAxis.z);
+        Vector2 to = new Vector2(
+            endPosition.x - trunkAxis.x, endPosition.z - trunkAxis.z);
+        if (from.sqrMagnitude < 0.0001f || to.sqrMagnitude < 0.0001f) {
+            return Vector3.Lerp(startPosition, endPosition, progress);
+        }
+        float fromDeg = Mathf.Atan2(from.y, from.x) * Mathf.Rad2Deg;
+        float toDeg = Mathf.Atan2(to.y, to.x) * Mathf.Rad2Deg;
+        float angleRad = (fromDeg + Mathf.DeltaAngle(fromDeg, toDeg) * progress)
+            * Mathf.Deg2Rad;
+        float distanceU = Mathf.Lerp(from.magnitude, to.magnitude, progress)
+            + config.CobraAlertPullOutU * Mathf.Sin(Mathf.PI * progress);
+        return new Vector3(
+            trunkAxis.x + Mathf.Cos(angleRad) * distanceU,
+            Mathf.Lerp(startPosition.y, endPosition.y, progress),
+            trunkAxis.z + Mathf.Sin(angleRad) * distanceU
+        );
     }
 
     // the view that shows the whole cobra, tracking it as it moves
@@ -208,6 +237,8 @@ public class CameraCobraAlertFraming: MonoBehaviour {
         Quaternion yaw = anchor.rotation;
         if (cobra != null
             && cobra.TryGetHead(out Vector3 head, out Vector3 axis)) {
+            trunkAxis = axis;
+            hasTrunkAxis = true;
             Vector3 headOut = head - axis;
             headOut.y = 0f;
             if (headOut.sqrMagnitude > 0.0001f) {

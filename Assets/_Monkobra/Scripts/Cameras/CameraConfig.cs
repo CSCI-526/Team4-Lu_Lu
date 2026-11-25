@@ -158,6 +158,11 @@ public class CameraConfig: ScriptableObject {
     /// the monkey still locked; u/s</returns>
     public float CobraAlertCreepSpeedU => cobraAlertCreepSpeedU;
 
+    /// <returns>how far the camera bulges away from the trunk half way
+    /// through the pull away & the pull back, so it never nears the bark;
+    /// u</returns>
+    public float CobraAlertPullOutU => cobraAlertPullOutU;
+
     /// <returns>how far out from the monkey the cobra alert camera stands,
     /// horizontally, so it is close; u</returns>
     public float CobraAlertDistanceU => cobraAlertDistanceU;
@@ -420,6 +425,13 @@ public class CameraConfig: ScriptableObject {
     [Tooltip("top climb speed of the great cobra while it creeps in view, the "
         + "monkey still locked; the cap lifts when control returns; u/s")]
     private float cobraAlertCreepSpeedU = 1.5f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("how far the camera bulges away from the trunk half way through "
+        + "the pull away & the pull back, so it swings round the tree and "
+        + "never nears the bark; u")]
+    private float cobraAlertPullOutU = 6f;
 
     [SerializeField]
     [Tooltip("how far out from the monkey the alert camera stands, "
