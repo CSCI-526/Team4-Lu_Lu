@@ -3,7 +3,6 @@
 <!--
 Bug make leaderboard works
 
-BUG force encounter spider
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
 Fixme erik mpv tutorial for boss fight
 Fixme erik b/t boss fight, better randomization
@@ -31,6 +30,13 @@ todo add 3x fruit
   bite for a slash, scrambling legs for a dash; thwack and silk snap at a parry
 - cobra alert cut away: black cinema bars grow in top and bottom, the UI hides,
   the monkey's input locks; all return after the shot
+
+##### Erik
+
+- Spider King web intro: once per Normal Play run, at 250 u climbed, the king
+  appears above the monkey, the camera cuts to it, and it spits a web that
+  traps the monkey, so the first web is always met with its escape hint; the
+  great cobra holds still until the monkey breaks free; never in Endless mode
 
 ### Changed
 
