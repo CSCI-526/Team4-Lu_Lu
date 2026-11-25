@@ -88,11 +88,14 @@ MonoBehaviour:
     cooldownS: 0.2
     priority: 30
   cobraAlertShot:
-    durationS: 4
+    durationS: 14
     minHoldS: 0.8
     cooldownS: 4
     priority: 20
-  cobraAlertHoldS: 2.5
+  cobraAlertTravelS: 3
+  cobraAlertSeeS: 3.5
+  cobraAlertHoldS: 1.2
+  cobraAlertCreepSpeedU: 1.5
   cobraAlertDistanceU: 5
   cobraAlertYOffsetU: 3
   cobraAlertPitchDeg: 15
@@ -131,5 +134,5 @@ MonoBehaviour:
   cobraVignetteEaseInS: 0.12
   cobraVignetteEaseOutS: 0.3
   cutAwayBarShare: 0.11
-  cutAwayBarSlideS: 2
+  cutAwayBarSlideS: 3
   reduceMotion: 0

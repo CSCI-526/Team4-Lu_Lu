@@ -141,9 +141,22 @@ public class CameraConfig: ScriptableObject {
     /// out of the starting zone</returns>
     public ShotSettings CobraAlertShot => cobraAlertShot;
 
-    /// <returns>time the great cobra is held still, rearing & hissing, from
-    /// the alert's cut before it starts to climb in view; s</returns>
+    /// <returns>time the camera takes to pull away from the monkey view to
+    /// the cobra view, and the same again to come back; s</returns>
+    public float CobraAlertTravelS => cobraAlertTravelS;
+
+    /// <returns>time the camera stays on the cobra view, between the pull
+    /// away and the pull back; s</returns>
+    public float CobraAlertSeeS => cobraAlertSeeS;
+
+    /// <returns>time the great cobra stays still, rearing & hissing, from
+    /// the camera's arrival at the cobra view before it creeps up; s
+    /// </returns>
     public float CobraAlertHoldS => cobraAlertHoldS;
+
+    /// <returns>top climb speed of the great cobra while it creeps in view,
+    /// the monkey still locked; u/s</returns>
+    public float CobraAlertCreepSpeedU => cobraAlertCreepSpeedU;
 
     /// <returns>how far out from the monkey the cobra alert camera stands,
     /// horizontally, so it is close; u</returns>
@@ -380,15 +393,33 @@ public class CameraConfig: ScriptableObject {
 
     [Header("Shot: Cobra Alert")]
     [SerializeField]
-    [Tooltip("cobra alert shot timing & priority; s")]
-    private ShotSettings cobraAlertShot = new ShotSettings(4f, 0.8f, 4f, 20);
+    [Tooltip("cobra alert shot timing & priority; its duration is only the "
+        + "safety cap, the shot lasts travel + see + travel; s")]
+    private ShotSettings cobraAlertShot = new ShotSettings(14f, 0.8f, 4f, 20);
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("time the camera takes to pull away from the monkey view to the "
+        + "cobra view, and the same again to come back; s")]
+    private float cobraAlertTravelS = 3f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time the camera stays on the cobra view, between the pull away "
+        + "and the pull back; s")]
+    private float cobraAlertSeeS = 3.5f;
 
     [SerializeField]
     [Min(0f)]
     [Tooltip("time the great cobra stays still, rearing & hissing, from the "
-        + "cut before it climbs on in view; keep it under the shot's "
-        + "duration, the climb that follows is under input lock; s")]
-    private float cobraAlertHoldS = 2.5f;
+        + "camera's arrival at the cobra view before it creeps up; s")]
+    private float cobraAlertHoldS = 1.2f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("top climb speed of the great cobra while it creeps in view, the "
+        + "monkey still locked; the cap lifts when control returns; u/s")]
+    private float cobraAlertCreepSpeedU = 1.5f;
 
     [SerializeField]
     [Tooltip("how far out from the monkey the alert camera stands, "
@@ -590,7 +621,7 @@ public class CameraConfig: ScriptableObject {
     [SerializeField]
     [Min(0.01f)]
     [Tooltip("time the cut away bars take to grow in, & to draw back out; s")]
-    private float cutAwayBarSlideS = 2f;
+    private float cutAwayBarSlideS = 3f;
 
     [Header("Comfort")]
     [SerializeField]
