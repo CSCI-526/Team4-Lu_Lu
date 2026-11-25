@@ -9,10 +9,12 @@ using UnityEngine;
 /// load makes a fresh event, so every run gets its own.
 /// <para>
 /// Phases: <see cref="Phase.Waiting"/> for the trigger, then
-/// <see cref="Phase.Appear"/>: the great cobra is held still
+/// <see cref="Phase.Establish"/>: the great cobra is held still
 /// (<see cref="CobraMotor.SetStoryHold"/>), the spider intro shot is asked of
-/// <see cref="CameraRigManager"/> (which locks the monkey's input), the king
-/// is built above the monkey and its eyes glow up. Then
+/// <see cref="CameraRigManager"/> (which locks the monkey's input) and shows
+/// the bare trunk above the monkey for a beat. Then <see cref="Phase.Enter"/>:
+/// the king scuttles in round the trunk, from behind it, to its spot above the
+/// monkey. Then <see cref="Phase.Appear"/>: its eyes glow up. Then
 /// <see cref="Phase.Throw"/>: the king spits a web, the real
 /// <see cref="SpiderWebTrap"/> prefab, unarmed so it passes harmlessly, that
 /// arcs to the monkey's spot on the bark and grows to full size on the way.
@@ -36,6 +38,8 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     /// </summary>
     public enum Phase {
         Waiting,
+        Establish,
+        Enter,
         Appear,
         Throw,
         Stick,
@@ -119,6 +123,12 @@ public class SpiderWebIntroEvent: MonoBehaviour {
                 if (IsTriggered()) {
                     BeginAppear();
                 }
+                break;
+            case Phase.Establish:
+                UpdateEstablish();
+                break;
+            case Phase.Enter:
+                UpdateEnter();
                 break;
             case Phase.Appear:
                 UpdateAppear();
@@ -255,13 +265,15 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         kingAngleDeg = Mathf.Atan2(outward.z, outward.x) * Mathf.Rad2Deg;
         kingY = monkey.transform.position.y + config.KingAboveU;
 
-        king.Build(trunkCenter, kingAngleDeg, kingY);
-        FollowKingWithSubject();
+        // the framed point waits on the bare trunk, where the king will be
+        float kingRad = kingAngleDeg * Mathf.Deg2Rad;
+        subject.position = new Vector3(trunkCenter.x, kingY, trunkCenter.z)
+            + new Vector3(Mathf.Cos(kingRad), 0f, Mathf.Sin(kingRad))
+                * config.TrunkRadiusU;
         if (framing != null) {
             framing.SetSubject(subject);
         }
         if (!cameraRig.RequestShot(CameraRigManager.ShotKind.SpiderIntro)) {
-            king.Clear();
             if (framing != null) {
                 framing.SetSubject(null);
             }
@@ -278,13 +290,39 @@ public class SpiderWebIntroEvent: MonoBehaviour {
             struggle.Escaped += OnEscaped;
         }
         isDone = true;
-        king.SetEyeGlow(0f);
-        EnterPhase(Phase.Appear);
+        EnterPhase(Phase.Establish);
         if (Debug.isDebugBuild) {
             Debug.Log(
-                $"SpiderWebIntroEvent:\tking appears at y {kingY}",
+                $"SpiderWebIntroEvent:\tintro begins, king due at y {kingY}",
                 this
             );
+        }
+    }
+
+    // the shot holds on the bare trunk, so the player feels something coming
+    private void UpdateEstablish() {
+        if (Time.time - phaseStartTime >= config.EstablishS) {
+            king.Build(
+                trunkCenter, kingAngleDeg + config.EnterAngleDeg, kingY);
+            EnterPhase(Phase.Enter);
+        }
+    }
+
+    // the king scuttles in round the trunk, its legs slowing as it settles
+    private void UpdateEnter() {
+        float t = Mathf.Clamp01(
+            (Time.time - phaseStartTime) / Mathf.Max(0.01f, config.EnterTimeS)
+        );
+        float eased = Mathf.SmoothStep(0f, 1f, t);
+        king.Place(
+            kingAngleDeg + config.EnterAngleDeg * (1f - eased),
+            kingY,
+            1f - eased
+        );
+        if (t >= 1f) {
+            king.Place(kingAngleDeg, kingY, 0f);
+            king.SetEyeGlow(0f);
+            EnterPhase(Phase.Appear);
         }
     }
 
