@@ -314,6 +314,12 @@ public sealed class SpiderKingRig {
     public System.Action onAttackStruck;
     public System.Action onSpiderHit;
     public System.Action onDefeated;
+    // & each charge as it begins (a web bullet, a slash, a dash's wind up),
+    // & each parry's clash
+    public System.Action onWebCharge;
+    public System.Action onSlashCharge;
+    public System.Action onDashWarn;
+    public System.Action onParried;
     public SpiderKingShot volleyCharge;
     // a volley's next bullet, charging
     public float callOutEndTime;

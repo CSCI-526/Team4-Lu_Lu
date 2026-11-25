@@ -28,6 +28,7 @@ Each script only reads the monkey's state and moves model bones. None touches a 
 - Limb stroke: a long stance planted on the bark, sliding down as the body rises, then a quick swing back up, lifted off the bark
 - Body: the hips sway onto the planted foot, the spine rolls against it, and the chest breathes
 - Sharing: `LimbCycle` hands the arms their share of the phase, so hands and feet never drift apart
+- Knocked down: while a hit stuns the monkey (`MonkeyController.IsStunned`) its slide down never drives the cycle; the phase settles the short way, at `knockedGripSettleHz`, to where both diagonal pairs overlap in stance, so all 4 limbs grip the bark and hold till control returns
 
 ## Arms
 

@@ -77,6 +77,20 @@ public class SpiderKingFightController: MonoBehaviour {
     /// <summary>raised when the beaten spider starts to fall</summary>
     public event System.Action Defeated;
 
+    /// <summary>raised as a web bullet begins to charge, each of a volley's
+    /// too</summary>
+    public event System.Action WebCharged;
+
+    /// <summary>raised as a slash begins to charge</summary>
+    public event System.Action SlashCharged;
+
+    /// <summary>raised as a dash begins its wind up, its lane shown</summary>
+    public event System.Action DashWarned;
+
+    /// <summary>raised at a parry's clash, as the tail meets the bullet or
+    /// the slash it bats back</summary>
+    public event System.Action Parried;
+
     /// <summary>
     /// Called by <see cref="CobraSensor"/> when the great cobra catches the
     /// monkey: in the fight it is a fatal hit, taken by the armor if worn.
@@ -222,6 +236,10 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.onAttackStruck = () => AttackStruck?.Invoke();
         rig.onSpiderHit = () => SpiderHit?.Invoke();
         rig.onDefeated = () => Defeated?.Invoke();
+        rig.onWebCharge = () => WebCharged?.Invoke();
+        rig.onSlashCharge = () => SlashCharged?.Invoke();
+        rig.onDashWarn = () => DashWarned?.Invoke();
+        rig.onParried = () => Parried?.Invoke();
         if (worldBalanceConfig == null || config.WebPrefab == null
             || config.BananaBranchPrefab == null) {
             Debug.LogError(
