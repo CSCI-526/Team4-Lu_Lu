@@ -173,6 +173,26 @@ public class CameraConfig: ScriptableObject {
     /// it releases it, capped by its duration</returns>
     public ShotSettings SpiderIntroShot => spiderIntroShot;
 
+    /// <returns>how far out from the monkey the spider intro camera stands,
+    /// horizontally; u</returns>
+    public float SpiderIntroDistanceU => spiderIntroDistanceU;
+
+    /// <returns>how far below the monkey the spider intro camera stands, so
+    /// it looks up at the king; u</returns>
+    public float SpiderIntroBelowU => spiderIntroBelowU;
+
+    /// <returns>room kept round the monkey and the king when the view is
+    /// fitted to them; above 1 is looser</returns>
+    public float SpiderIntroFitMargin => spiderIntroFitMargin;
+
+    /// <returns>widest field of view the spider intro may use to fit the
+    /// monkey and the king; deg</returns>
+    public float SpiderIntroMaxFovDeg => spiderIntroMaxFovDeg;
+
+    /// <returns>time the spider intro's aim and field of view take to follow
+    /// the king; s</returns>
+    public float SpiderIntroSmoothTimeS => spiderIntroSmoothTimeS;
+
     /// <returns>extra aim height during a leap; u</returns>
     public float LeapAimOffsetU => leapAimOffsetU;
 
@@ -395,6 +415,30 @@ public class CameraConfig: ScriptableObject {
     private ShotSettings spiderIntroShot =
         new ShotSettings(20f, 0.5f, 0f, 50);
 
+    [SerializeField]
+    [Tooltip("how far out from the monkey the intro camera stands, "
+        + "horizontally; u")]
+    private float spiderIntroDistanceU = 7f;
+
+    [SerializeField]
+    [Tooltip("how far below the monkey the intro camera stands, so it looks "
+        + "up at the king; u")]
+    private float spiderIntroBelowU = 1.5f;
+
+    [SerializeField]
+    [Tooltip("room kept round the monkey and the king when fitted; above 1 "
+        + "is looser")]
+    private float spiderIntroFitMargin = 1.3f;
+
+    [SerializeField]
+    [Tooltip("widest field of view the intro may use to fit both; deg")]
+    private float spiderIntroMaxFovDeg = 95f;
+
+    [SerializeField]
+    [Tooltip("time the intro's aim and field of view take to follow the "
+        + "king; s")]
+    private float spiderIntroSmoothTimeS = 0.3f;
+
     [Header("Shot: Pineapple Leap")]
     [SerializeField]
     [Tooltip("pineapple leap shot timing & priority; s")]
@@ -564,6 +608,11 @@ public class CameraConfig: ScriptableObject {
         cobraAlertFitMargin = Mathf.Max(1f, cobraAlertFitMargin);
         cobraAlertMaxFovDeg = Mathf.Clamp(cobraAlertMaxFovDeg, 30f, 150f);
         cobraAlertSmoothTimeS = Mathf.Max(0f, cobraAlertSmoothTimeS);
+        spiderIntroDistanceU = Mathf.Max(0.5f, spiderIntroDistanceU);
+        spiderIntroBelowU = Mathf.Max(0f, spiderIntroBelowU);
+        spiderIntroFitMargin = Mathf.Max(1f, spiderIntroFitMargin);
+        spiderIntroMaxFovDeg = Mathf.Clamp(spiderIntroMaxFovDeg, 30f, 150f);
+        spiderIntroSmoothTimeS = Mathf.Max(0f, spiderIntroSmoothTimeS);
         leapDistanceScale = Mathf.Max(1f, leapDistanceScale);
         leapFollowLagS = Mathf.Max(0f, leapFollowLagS);
         leapAimLagS = Mathf.Max(0f, leapAimLagS);
