@@ -19,6 +19,8 @@ public static class OutlineMaterialBuilder {
     private const string SHADER_PATH = ROOT + "Shaders/Outline/OutlineHull.shader";
     private const string STYLE_PATH =
         ROOT + "Settings/FruitOutline/FruitOutlineStyle.asset";
+    private const string GHOST_SHADER_PATH =
+        ROOT + "Shaders/Outline/OutlineSeeThrough.shader";
     private const string MONKEY_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Monkey.mat";
 
@@ -39,6 +41,7 @@ public static class OutlineMaterialBuilder {
 
         FruitOutlineStyle style = LoadOrCreateStyle(shader);
         BuildMonkeyMaterial(shader, style);
+        BuildGhostMaterials(style);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("OutlineMaterialBuilder:\toutline materials built");
@@ -96,6 +99,38 @@ public static class OutlineMaterialBuilder {
         mat.SetColor("_Outline_Color", style.MonkeyColor);
         mat.SetFloat("_Outline_Width", style.MonkeyWidthU);
         EditorUtility.SetDirty(mat);
+    }
+
+    // 1 shared ghost material per fruit kind, in its Reachable color
+    private static void BuildGhostMaterials(FruitOutlineStyle style) {
+        var ghostShader = AssetDatabase.LoadAssetAtPath<Shader>(
+            GHOST_SHADER_PATH
+        );
+        if (ghostShader == null) {
+            Debug.LogError(
+                "OutlineMaterialBuilder:	fail to load Shader: "
+                    + GHOST_SHADER_PATH
+            );
+            return;
+        }
+
+        foreach (FruitKind kind in System.Enum.GetValues(typeof(FruitKind))) {
+            string path = ROOT + $"Materials/Outline/Outline_Ghost_{kind}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null) {
+                mat = new Material(ghostShader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = ghostShader;
+            mat.SetColor(
+                "_Ghost_Color", style.GetTierColor(kind, OutlineTier.Reachable)
+            );
+            mat.SetFloat("_Ghost_FillAlpha", style.GhostFillAlpha);
+            mat.SetFloat("_Ghost_RimAlpha", style.GhostRimAlpha);
+            mat.SetFloat("_Ghost_RimPower", style.GhostRimPower);
+            mat.SetFloat("_Ghost_Push", style.GhostPushU);
+            EditorUtility.SetDirty(mat);
+        }
     }
 
     // makes each missing folder of an Assets/ path, parent first
