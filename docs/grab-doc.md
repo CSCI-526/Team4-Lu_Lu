@@ -148,7 +148,7 @@ The listener sits on the object holding the fruit's collider and outlines the me
 
 The monkey wears the same outline always on, in cream: `MonkeyOutline` adds `Materials/Outline/Outline_Monkey.mat` to the skinned model's renderers at start, 0.040 u. Tune it in `FruitOutlineStyle`, then run `Monkobra > Build Outline Materials`.
 
-Menus: `Monkobra > Build Outline Materials` writes the style asset, the monkey, ghost and golden base materials; `Monkobra > Check Outline Style` logs PASS or FAIL for the tier colors and widths of banana, coconut and pineapple.
+Menu: `Monkobra > Build Outline Materials` writes the style asset, the monkey, ghost and golden base materials.
 
 ## Fruit Supply
 

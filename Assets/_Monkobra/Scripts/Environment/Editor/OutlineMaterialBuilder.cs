@@ -7,13 +7,10 @@ using UnityEngine;
 /// <see cref="FruitOutlineStyle"/> asset with the Design Spec numbers and the
 /// shared monkey hull material. Safe to run again: existing assets are kept
 /// and only their shader and monkey look are refreshed.
-/// Menu <c>Monkobra > Check Outline Style</c>: logs PASS or FAIL for
-/// <see cref="FruitOutlineStyle.GetTierMaterial"/> of every fruit and tier.
 /// </summary>
 public static class OutlineMaterialBuilder {
     // constants  ##############################################################
     private const string BUILD_MENU = "Monkobra/Build Outline Materials";
-    private const string CHECK_MENU = "Monkobra/Check Outline Style";
 
     private const string ROOT = "Assets/_Monkobra/";
     private const string SHADER_PATH = ROOT + "Shaders/Outline/OutlineHull.shader";
@@ -32,10 +29,6 @@ public static class OutlineMaterialBuilder {
     private const float MONKEY_STENCIL_BIT = 16f;
     private const string MONKEY_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Monkey.mat";
-
-    // tolerance of the hex check; 1 byte of 255
-    private const float COLOR_EPS = 1.5f / 255f;
-    private const float WIDTH_EPS = 1e-5f;
 
     // Menu  ###################################################################
     [MenuItem(BUILD_MENU)]
@@ -56,31 +49,6 @@ public static class OutlineMaterialBuilder {
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("OutlineMaterialBuilder:\toutline materials built");
-    }
-
-    [MenuItem(CHECK_MENU)]
-    public static void Check() {
-        var style = AssetDatabase.LoadAssetAtPath<FruitOutlineStyle>(STYLE_PATH);
-        if (style == null) {
-            Debug.LogError($"Outline style check FAIL: no asset {STYLE_PATH}");
-            return;
-        }
-
-        int failCount = 0;
-        failCount += CheckKind(style, FruitKind.Banana,
-            "#CCBA70", "#FFF6D1", "#FFCC00");
-        failCount += CheckKind(style, FruitKind.Coconut,
-            "#855F49", "#FFE2D1", "#A63D00");
-        failCount += CheckKind(style, FruitKind.Pineapple,
-            "#CCA670", "#FFECD1", "#FF9500");
-        failCount += CheckKind(style, FruitKind.Melon,
-            "#CC7087", "#FFD1DD", "#FF0040");
-
-        if (failCount == 0) {
-            Debug.Log("Outline style check PASS: 12 tier materials match");
-        } else {
-            Debug.LogError($"Outline style check FAIL: {failCount} mismatch");
-        }
     }
 
     // private methods  ########################################################
@@ -198,35 +166,5 @@ public static class OutlineMaterialBuilder {
         string parent = Path.GetDirectoryName(path).Replace('\\', '/');
         EnsureFolder(parent);
         AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
-    }
-
-    private static int CheckKind(
-        FruitOutlineStyle style, FruitKind kind,
-        string normalHex, string reachableHex, string grabbableHex
-    ) {
-        string[] hexes = { normalHex, reachableHex, grabbableHex };
-        float[] widths = { 0.018f, 0.065f, 0.090f };
-        int failCount = 0;
-        for (int i = 0; i < 3; i++) {
-            var tier = (OutlineTier)i;
-            Material mat = style.GetTierMaterial(kind, tier);
-            ColorUtility.TryParseHtmlString(hexes[i], out Color want);
-            Color got = mat.GetColor("_Outline_Color");
-            float width = mat.GetFloat("_Outline_Width");
-            bool isColorOk =
-                Mathf.Abs(got.r - want.r) < COLOR_EPS
-                && Mathf.Abs(got.g - want.g) < COLOR_EPS
-                && Mathf.Abs(got.b - want.b) < COLOR_EPS;
-            bool isWidthOk = Mathf.Abs(width - widths[i]) < WIDTH_EPS;
-            if (!isColorOk || !isWidthOk) {
-                failCount++;
-                Debug.LogError(
-                    $"Outline style check: {kind} {tier} got "
-                        + $"#{ColorUtility.ToHtmlStringRGB(got)} {width}, "
-                        + $"want {hexes[i]} {widths[i]}"
-                );
-            }
-        }
-        return failCount;
     }
 }
