@@ -327,8 +327,8 @@ behaviour, identity limits and emulator verification are in
 
 `LeaderboardNameEditor` saves a display nickname in project-scoped PlayerPrefs
 and requests a resubmission through `LeaderboardWidget`. Identity remains the
-anonymous UID, including across name changes. `UIStyleBuilder.LeaderboardNames`
-builds the field/button through Editor APIs. `TextInputFocus` guards
+anonymous UID, including across name changes. The field/button
+live in `Leaderboard.prefab`. `TextInputFocus` guards
 `RunController`, `RunScreenMenu` and the centralized hack-key reader during text
 entry so a typed shortcut cannot restart a run or trigger a hack.
 The nickname editor runs after TMP's LateUpdate to suspend IME composition for

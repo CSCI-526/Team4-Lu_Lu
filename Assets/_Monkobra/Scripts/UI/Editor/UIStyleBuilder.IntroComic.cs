@@ -60,6 +60,34 @@ public static partial class UIStyleBuilder {
         return button;
     }
 
+    // The plate: a rounded Panel fill, see-through, and a gold rim drawn by
+    // its own child. Not an Outline effect: that repeats the whole fill
+    // under it in gold, which shows through a see-through plate.
+    private static void MakePlate(Image plate, float alpha) {
+        foreach (Shadow effect in plate.GetComponents<Shadow>()) {
+            Object.DestroyImmediate(effect); // Outline is a Shadow too
+        }
+        plate.sprite = Load<Sprite>(SPRITES + "Plate_Fill.png");
+        plate.type = Image.Type.Sliced;
+        plate.pixelsPerUnitMultiplier = 1f;
+        Color fill = UIStyle.Panel;
+        fill.a = alpha;
+        plate.color = fill;
+        plate.raycastTarget = false;
+
+        RectTransform rimRect = FindOrCreate("Rim", plate.transform);
+        rimRect.SetAsFirstSibling();
+        rimRect.anchorMin = Vector2.zero;
+        rimRect.anchorMax = Vector2.one;
+        rimRect.offsetMin = rimRect.offsetMax = Vector2.zero;
+        Image rim = GetOrAdd<Image>(rimRect.gameObject);
+        rim.sprite = Load<Sprite>(SPRITES + "Plate_Rim.png");
+        rim.type = Image.Type.Sliced;
+        rim.pixelsPerUnitMultiplier = 1f;
+        rim.color = UIStyle.Gold;
+        rim.raycastTarget = false;
+    }
+
     // constants  ##############################################################
     // as the leaderboard's small SAVE button
     private const float INTRO_SKIP_SIZE = 22f;

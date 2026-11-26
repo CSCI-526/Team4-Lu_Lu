@@ -74,9 +74,8 @@ a player's refresh token in that asset.
   after TMP's activation step, and restores the prior IME mode on deselection
   or disable. This avoids Microsoft Zhuyin Shift-mode conflicts. Button hover
   does not steal selection while a text field is focused; explicit clicks work.
-- `Monkobra > UI Style > 6. Build Leaderboard Name Input` rebuilds the controls;
-  Firebase Prepare and the shared screen styling menu also apply that builder.
-  An Editor domain reload installs the controls if the old prefab lacks them.
+- The nickname input and SAVE button are part of `Leaderboard.prefab`; no menu
+  builds them.
 
 ## Cost and trust limits
 
