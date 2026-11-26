@@ -380,7 +380,7 @@ The tutorial in `GameplayScene` holds one group per control style under `Tutoria
 How many live falling cobras stay cheap. What each part does is in [Mobs](mob-doc.md#performance).
 
 - Tuning: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` 4, `trailClearancePasses` 2, `spineFairMaxPasses` 64, `spineFairToleranceU` 0.002; `bodyPrefab` is set only by the body menu
-- Menus: `Monkobra > Set Up Falling Cobra Layers` and `Monkobra > Build Falling Cobra Body`, each also callable in batch mode (`-executeMethod FallingCobraLayerSetup.Run`, `FallingCobraBodyBuilder.Run`)
+- Menu: `Monkobra > Build Falling Cobra Body`, also callable in batch mode (`-executeMethod FallingCobraBodyBuilder.Run`)
 - Layers: `Player` (6) and `FallingCobra` (7); in the collision matrix `FallingCobra` collides with `Player` only; Maximum Allowed Timestep is 0.1 s (was 0.333 s)
 
 ## Conventions
@@ -389,7 +389,7 @@ How many live falling cobras stay cheap. What each part does is in [Mobs](mob-do
 - Start Over Awake: a consumer that may start before its singleton reads it in `Start`, so Awake order never matters
 - Events Over Calls: detection scripts forward trigger events (`Entered`, `Exited`, `BranchHit`) rather than calling their consumers, and a segment announces its branches with `BranchesGenerated` rather than calling its decorators
 - Tags: `Branch`, `FruitCollider`, and `Player` drive trigger matching. Webs match by a Rigidbody component instead
-- Layers: the monkey is on `Player` and the falling cobra on `FallingCobra`, the only pair that collides for the cobra; everything else stays on `Default`. Set by `Monkobra > Set Up Falling Cobra Layers`, see [Falling Cobra Performance](#falling-cobra-performance)
+- Layers: the monkey is on `Player` and the falling cobra on `FallingCobra`, the only pair that collides for the cobra; everything else stays on `Default`. Saved in `ProjectSettings` & both prefabs, see [Falling Cobra Performance](#falling-cobra-performance)
 - Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig`, score values in `ScoreConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives
