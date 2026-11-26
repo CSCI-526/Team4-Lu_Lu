@@ -90,7 +90,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         // dev switch skips the intro too
         if (GameController.I != null
             && GameController.I.Mode != RunMode.Full
-            || TutorialSkipSwitch.IsSkipping) {
+            || TutorialSkipManager.IsSkipping) {
             enabled = false;
             return;
         }

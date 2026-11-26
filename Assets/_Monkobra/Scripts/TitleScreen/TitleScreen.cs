@@ -105,7 +105,11 @@ public class TitleScreen: MonoBehaviour {
         if (startAction.WasPressedThisFrame()) {
             // the dev switch skips the intro comic like a played one
             SceneNames.Load(
-                IntroComicScreen.HasPlayed || TutorialSkipSwitch.IsSkipping
+                IntroComicScreen.HasPlayed
+                    || (TutorialSkipManager.I != null
+                        && TutorialSkipManager.I.ShouldSkip(
+                            TutorialItem.IntroComic
+                        ))
                     ? SceneNames.LEVEL_SELECT : SceneNames.INTRO_COMIC
             );
         }

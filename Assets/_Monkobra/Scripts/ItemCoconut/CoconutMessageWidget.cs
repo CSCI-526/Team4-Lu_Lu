@@ -46,7 +46,10 @@ public class CoconutMessageWidget: MonoBehaviour {
     // this session knows how and never sees it
     private void OnCollected() {
         if (!CoconutManager.HasUsedThisSession
-            && !TutorialSkipSwitch.IsSkipping) {
+            && !(TutorialSkipManager.I != null
+                && TutorialSkipManager.I.ShouldSkip(
+                    TutorialItem.CoconutDoubleTap
+                ))) {
             Show(PopUpId.CoconutFirst);
         }
     }

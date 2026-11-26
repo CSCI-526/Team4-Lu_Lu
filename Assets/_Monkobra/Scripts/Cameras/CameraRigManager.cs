@@ -387,7 +387,7 @@ public class CameraRigManager: MonoBehaviour {
         }
         // the dev switch skips this cut scene; the cobra keeps its normal
         // exit boost, as no start creep is banked
-        if (TutorialSkipSwitch.IsSkipping) {
+        if (TutorialSkipManager.IsSkipping) {
             return;
         }
         // the shot is a journey: pull away, look, pull back the same way

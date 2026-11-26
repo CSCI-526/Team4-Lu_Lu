@@ -305,7 +305,7 @@ public class RunController: MonoBehaviour {
     private void UpdateStartKey() {
         if (
             State == GameState.Tutorial
-            && (TutorialSkipSwitch.IsSkipping
+            && (TutorialSkipManager.IsSkipping
                 || startRunAction != null
                 && startRunAction.action.WasPressedThisFrame())
         ) {

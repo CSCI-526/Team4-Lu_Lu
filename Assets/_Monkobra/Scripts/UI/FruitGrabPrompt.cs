@@ -173,7 +173,6 @@ public class FruitGrabPrompt: MonoBehaviour {
 
     private bool CanShowPrompt() {
         return game != null && sensor != null
-            && !TutorialSkipSwitch.IsSkipping
             && game.IsRunLive && Time.timeScale > 0f
             && !game.IsLeaping
             && (monkey == null || !monkey.IsHeld)
@@ -185,12 +184,26 @@ public class FruitGrabPrompt: MonoBehaviour {
         return boss != null && boss.isActiveAndEnabled && boss.IsInArena;
     }
 
+    // if the player grabbed this kind, or the manager skips its pop up
     private bool IsLearned(FruitKind kind) {
+        TutorialSkipManager skip = TutorialSkipManager.I;
+        if (skip != null && kind != FruitKind.None
+            && skip.ShouldSkip(GetTutorialItem(kind))) {
+            return true;
+        }
         return kind switch {
             FruitKind.Banana => hasGrabbedBanana,
             FruitKind.Pineapple => hasGrabbedPineapple,
             FruitKind.Coconut => hasGrabbedCoconut,
             _ => true
+        };
+    }
+
+    private static TutorialItem GetTutorialItem(FruitKind kind) {
+        return kind switch {
+            FruitKind.Pineapple => TutorialItem.PineappleGrab,
+            FruitKind.Coconut => TutorialItem.CoconutGrab,
+            _ => TutorialItem.BananaGrab
         };
     }
 

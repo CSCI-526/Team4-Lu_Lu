@@ -56,5 +56,5 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b7e2c94a1d84f6e9c03d8a7e1f46b25, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipSwitch
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipManager
   isSkippingTutorialsAndCutscenes: 0

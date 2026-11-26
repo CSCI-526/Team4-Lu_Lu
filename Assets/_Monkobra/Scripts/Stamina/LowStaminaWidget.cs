@@ -43,7 +43,8 @@ public class LowStaminaWidget: MonoBehaviour {
     private void OnLowStaminaMoveAttempted() {
         UnsubscribeStamina();
 
-        if (TutorialSkipSwitch.IsSkipping) {
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(TutorialItem.LowStaminaHint)) {
             return;
         }
         if (PopUpManager.I == null) {
