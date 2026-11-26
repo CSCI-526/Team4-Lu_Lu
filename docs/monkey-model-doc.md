@@ -50,7 +50,7 @@ Every few seconds the monkey turns its head over a shoulder and looks down the t
 
 ## Outline
 
-`MonkeyOutline` appends the cream `Outline_Monkey` material as an extra slot on every skinned or mesh renderer under the model root, the same world-unit inverted hull a fruit wears, see [Grab System](grab-doc.md#feedback). The width is 0.025 u, in world units, so the model scale never changes it; tune the color and width in `FruitOutlineStyle`, then run `Monkobra > Build Outline Materials`.
+`MonkeyOutline` appends the cream `Outline_Monkey` material as an extra slot on every skinned or mesh renderer under the model root, the same world-unit inverted hull a fruit wears, see [Grab System](grab-doc.md#feedback). The width is 0.040 u, in world units, so the model scale never changes it; tune the color and width in `FruitOutlineStyle`, then run `Monkobra > Build Outline Materials`.
 
 ## Tuning
 

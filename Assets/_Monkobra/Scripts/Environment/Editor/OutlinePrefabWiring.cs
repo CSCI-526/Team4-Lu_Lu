@@ -14,6 +14,9 @@ public static class OutlinePrefabWiring {
     private const string MONKEY_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Monkey.mat";
 
+    private const string MONKEY_MASK_MAT_PATH =
+        ROOT + "Materials/Outline/Outline_MonkeyMask.mat";
+
     private const string GOLDEN_BASE_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Banana_Grabbable.mat";
     private static readonly string[] GOLDEN_CONFIGS = {
@@ -122,6 +125,10 @@ public static class OutlinePrefabWiring {
             }
             var serialized = new SerializedObject(outline);
             serialized.FindProperty("outlineMat").objectReferenceValue = mat;
+            serialized.FindProperty("maskMat").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Material>(
+                    MONKEY_MASK_MAT_PATH
+                );
             serialized.ApplyModifiedPropertiesWithoutUndo();
             PrefabUtility.SaveAsPrefabAsset(root, MONKEY_PREFAB);
         } finally {

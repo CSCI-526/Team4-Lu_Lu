@@ -33,17 +33,17 @@ public class FruitOutlineStyle: ScriptableObject {
 
     public Shader GhostShader => ghostShader;
 
+    public Shader MaskShader => maskShader;
+
     public Color MonkeyColor => monkeyColor;
 
     public float MonkeyWidthU => monkeyWidthU;
 
-    public float GhostFillAlpha => ghostFillAlpha;
+    public float GhostHaloAlpha => ghostHaloAlpha;
 
-    public float GhostRimAlpha => ghostRimAlpha;
+    public float GhostHaloSigma => ghostHaloSigma;
 
-    public float GhostRimPower => ghostRimPower;
-
-    public float GhostPushU => ghostPushU;
+    public float GhostHaloReachU => ghostHaloReachU;
 
     /// <summary>World-unit outline width of a tier; u.</summary>
     public float GetWidthU(OutlineTier tier) {
@@ -53,7 +53,12 @@ public class FruitOutlineStyle: ScriptableObject {
     /// <summary>Tier color, HSV of the kind's hue at the tier's S and V.</summary>
     public Color GetTierColor(FruitKind kind, OutlineTier tier) {
         int i = (int)tier;
-        return Color.HSVToRGB(GetHueDeg(kind) / 360f, sat[i], val[i]);
+        FruitHue entry = GetEntry(kind);
+        // the whitish Reachable tier keeps full value; the others darken
+        float v = tier == OutlineTier.Reachable
+            ? val[i]
+            : val[i] * entry.valueScale;
+        return Color.HSVToRGB(entry.hueDeg / 360f, sat[i], v);
     }
 
     /// <summary>
@@ -87,6 +92,29 @@ public class FruitOutlineStyle: ScriptableObject {
     }
 
     /// <summary>
+    /// Shared mask material every fruit mesh wears: it marks the fruit's
+    /// body in the stencil so its hull shows only on the silhouette.
+    /// </summary>
+    public Material GetMaskMaterial() {
+        if (maskMaterial != null) {
+            return maskMaterial;
+        }
+        if (maskShader == null) {
+            Debug.LogError(
+                "FruitOutlineStyle: must assign Inspector Field: "
+                    + "maskShader",
+                this
+            );
+            return null;
+        }
+        maskMaterial = new Material(maskShader) {
+            name = "Outline_Mask",
+            hideFlags = HideFlags.HideAndDontSave,
+        };
+        return maskMaterial;
+    }
+
+    /// <summary>
     /// Shared see-through ghost material of a kind; it wears the Reachable
     /// color, or the Grabbable one while the fruit is grabbable.
     /// </summary>
@@ -114,10 +142,9 @@ public class FruitOutlineStyle: ScriptableObject {
             hideFlags = HideFlags.HideAndDontSave,
         };
         mat.SetColor(GHOST_COLOR, GetTierColor(kind, tier));
-        mat.SetFloat(GHOST_FILL_ALPHA, ghostFillAlpha);
-        mat.SetFloat(GHOST_RIM_ALPHA, ghostRimAlpha);
-        mat.SetFloat(GHOST_RIM_POWER, ghostRimPower);
-        mat.SetFloat(GHOST_PUSH, ghostPushU);
+        mat.SetFloat(GHOST_HALO_ALPHA, ghostHaloAlpha);
+        mat.SetFloat(GHOST_HALO_SIGMA, ghostHaloSigma);
+        mat.SetFloat(GHOST_HALO_REACH, ghostHaloReachU);
         ghostCache[key] = mat;
         return mat;
     }
@@ -132,27 +159,31 @@ public class FruitOutlineStyle: ScriptableObject {
     [Tooltip("depth-Greater see-through ghost shader")]
     private Shader ghostShader;
 
+    [SerializeField]
+    [Tooltip("stencil mask: outlines the whole fruit, not each part")]
+    private Shader maskShader;
+
     [Header("Fruit Tiers (Normal, Reachable, Grabbable)")]
     [SerializeField]
     [Tooltip("outline width per tier, same for every fruit; u")]
-    private float[] widthU = { 0.015f, 0.025f, 0.040f };
+    private float[] widthU = { 0.018f, 0.065f, 0.090f };
 
     [SerializeField]
-    [Tooltip("HSV saturation per tier; lower = paler")]
-    private float[] sat = { 0.35f, 0.70f, 1f };
+    [Tooltip("HSV saturation per tier; Reachable is whitish, Grabbable is full")]
+    private float[] sat = { 0.45f, 0.18f, 1f };
 
     [SerializeField]
     [Tooltip("HSV value per tier")]
-    private float[] val = { 0.85f, 1f, 1f };
+    private float[] val = { 0.80f, 1f, 1f };
 
     [Header("Fruit Hues")]
     [SerializeField]
-    [Tooltip("hue per fruit kind; deg")]
+    [Tooltip("hue per fruit kind, deg; valueScale darkens Normal & Grabbable")]
     private FruitHue[] hues = {
-        new FruitHue { kind = FruitKind.Banana, hueDeg = 48f },
-        new FruitHue { kind = FruitKind.Coconut, hueDeg = 24f },
-        new FruitHue { kind = FruitKind.Pineapple, hueDeg = 335f },
-        new FruitHue { kind = FruitKind.Melon, hueDeg = 190f },
+        new FruitHue { kind = FruitKind.Banana, hueDeg = 48f, valueScale = 1f },
+        new FruitHue { kind = FruitKind.Coconut, hueDeg = 22f, valueScale = 0.65f },
+        new FruitHue { kind = FruitKind.Pineapple, hueDeg = 35f, valueScale = 1f },
+        new FruitHue { kind = FruitKind.Melon, hueDeg = 345f, valueScale = 1f },
     };
 
     [Header("Monkey")]
@@ -162,32 +193,29 @@ public class FruitOutlineStyle: ScriptableObject {
 
     [SerializeField]
     [Tooltip("monkey outline width; u")]
-    private float monkeyWidthU = 0.025f;
+    private float monkeyWidthU = 0.040f;
 
-    [Header("See-Through Ghost")]
+    [Header("See-Through Ghost (misty halo, fruit shape cut out)")]
     [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("fill alpha where something nearer covers the fruit")]
-    private float ghostFillAlpha = 0.30f;
+    [Tooltip("halo alpha right next to the fruit")]
+    private float ghostHaloAlpha = 0.1f;
 
     [SerializeField]
-    [Range(0f, 1f)]
-    [Tooltip("alpha of the Fresnel rim")]
-    private float ghostRimAlpha = 0.90f;
+    [Range(0.1f, 1f)]
+    [Tooltip("Gaussian blur width of the halo; higher = softer, wider mist")]
+    private float ghostHaloSigma = 0.9f;
 
     [SerializeField]
-    [Tooltip("Fresnel rim power; higher = thinner rim")]
-    private float ghostRimPower = 3f;
-
-    [SerializeField]
-    [Tooltip("shell pushed out so the rim hugs the silhouette; u")]
-    private float ghostPushU = 0.008f;
+    [Tooltip("how far the halo reaches beyond the fruit; u")]
+    private float ghostHaloReachU = 0.14f;
 
     // private members  ########################################################
     [Serializable]
     private struct FruitHue {
         public FruitKind kind;
         public float hueDeg;
+        public float valueScale;
     }
 
     // names the boss golden fruit code also sets
@@ -198,14 +226,15 @@ public class FruitOutlineStyle: ScriptableObject {
 
     private static readonly int GHOST_COLOR =
         Shader.PropertyToID("_Ghost_Color");
-    private static readonly int GHOST_FILL_ALPHA =
-        Shader.PropertyToID("_Ghost_FillAlpha");
-    private static readonly int GHOST_RIM_ALPHA =
-        Shader.PropertyToID("_Ghost_RimAlpha");
-    private static readonly int GHOST_RIM_POWER =
-        Shader.PropertyToID("_Ghost_RimPower");
-    private static readonly int GHOST_PUSH =
-        Shader.PropertyToID("_Ghost_Push");
+    private static readonly int GHOST_HALO_ALPHA =
+        Shader.PropertyToID("_Ghost_HaloAlpha");
+    private static readonly int GHOST_HALO_SIGMA =
+        Shader.PropertyToID("_Ghost_HaloSigma");
+    private static readonly int GHOST_HALO_REACH =
+        Shader.PropertyToID("_Ghost_HaloReach");
+
+    [NonSerialized]
+    private Material maskMaterial;
 
     [NonSerialized]
     private readonly Dictionary<(FruitKind, bool), Material> ghostCache =
@@ -216,16 +245,16 @@ public class FruitOutlineStyle: ScriptableObject {
         new Dictionary<(FruitKind, OutlineTier), Material>();
 
     // private methods  ########################################################
-    private float GetHueDeg(FruitKind kind) {
+    private FruitHue GetEntry(FruitKind kind) {
         foreach (FruitHue entry in hues) {
             if (entry.kind == kind) {
-                return entry.hueDeg;
+                return entry;
             }
         }
         Debug.LogWarning(
             $"FruitOutlineStyle:\tno hue for {kind}, using 0",
             this
         );
-        return 0f;
+        return new FruitHue { kind = kind, hueDeg = 0f, valueScale = 1f };
     }
 }

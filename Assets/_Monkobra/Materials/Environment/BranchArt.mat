@@ -38,7 +38,7 @@ Material:
     - _MossScale: 0.9
     - _MossStretch: 1
     - _MossUp: 0.7
-    - _OutlineWidth: 0.03
+    - _OutlineWidth: 0.05
     - _ScribbleDensity: 0.15
     - _ScribbleStrength: 0.45
     - _ShadeSoftness: 0.14
