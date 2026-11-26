@@ -154,17 +154,16 @@ The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 a
 
 ### Tutorial Skip Switch
 
-One dev checkbox skips every tutorial pop up and cut scene, so a play test reaches the climb at once. It is `isSkippingTutorialsAndCutscenes` on the `TutorialSkipSwitch` component of the `Resources/TutorialSkipSwitch` prefab, which `PersistentBootstrapLoader` creates once per launch and keeps across scene loads, so the title, the intro comic and the gameplay scene read the same box. Open the prefab in the Editor and tick the box; it is off by default.
+One dev checkbox skips every tutorial pop up and cut scene, so a play test reaches the climb at once. It is `isSkippingTutorialsAndCutscenes` on the `TutorialSkipSwitch` component on the root object of the `GameController` prefab, so `GameplayScene` holds it and the title scene does not. Open `Prefabs/GameController/GameController.prefab` in the Editor and tick the box; it is off by default.
 
 The gate is `TutorialSkipSwitch.IsSkipping`: true only when `Debug.isDebugBuild` (the Editor or a development build) and the box is ticked, so a release build never skips, whatever the box says. What it skips:
 
-- the intro comic after the title (`TitleScreen`)
 - the great cobra's chase-start cut scene (`CameraRigManager.RequestCobraAlert`); the cobra then runs its normal exit boost
 - the Spider King's first-encounter web intro (`SpiderWebIntroEvent`)
 - the run-start tutorial screen (`GameController.UpdateStartKey`), so a run opens straight in the starting zone
 - the pop ups that teach: each fruit's grab (`FruitGrabPrompt`), the coconut double-tap (`CoconutMessageWidget`), the web escape hint (`SpiderWebWidget`) and the low stamina hint (`LowStaminaWidget`)
 
-Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene must check `IsSkipping` too. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
+Not yet skipped: the intro comic after the title, which has no switch in its scene. Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene must check `IsSkipping` too. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
 
 ## Game Balance
 
