@@ -7,6 +7,8 @@ Bug erik boss make energy bar gone, better ways to indicate 1 kill
 Fixme erik mpv tutorial for boss fight
 Fixme erik b/t boss fight, better randomization
 
+Hack general gap review, optimize & clean up helper scripts
+
 todo lighting improvement
 todo vertical version adaptation
 todo chinese version
