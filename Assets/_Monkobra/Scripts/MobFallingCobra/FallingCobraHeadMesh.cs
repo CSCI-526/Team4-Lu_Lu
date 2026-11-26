@@ -392,19 +392,23 @@ public sealed class FallingCobraHeadMesh {
         return worst;
     }
 
-    // the rigid head from the source mesh, and the baked skinned body the
-    // spine poses each frame
-    public void BuildFallingReference(Mesh source, GameObject body) {
-        rig.swimPhaseOffset =
-            (float)new System.Random(rig.host.GetInstanceID()).NextDouble()
-                * Mathf.PI * 2f;
-        if (!body.TryGetComponent(out SkinnedMeshRenderer skinned)
-            || skinned.bones.Length != BodyRings) {
-            Debug.LogError("FallingCobraHeadMesh:\tbody prefab needs a "
-                + "SkinnedMeshRenderer of " + BodyRings + " bones, run "
-                + "Monkobra > Build > Falling Cobra Body", rig.host);
+    /// <summary>builds the shared head template of a config ahead of the
+    /// first cobra, so its spawn finds it cached; does nothing w/o a baked
+    /// body or a reference head mesh</summary>
+    public static void PrewarmHeadTemplate(FallingCobraConfig config) {
+        GameObject reference = config.CartoonAppearance.referenceBody;
+        if (!config.CartoonAppearance.enabled || config.BodyPrefab == null
+            || reference == null
+            || !reference.TryGetComponent(out MeshFilter headSource)
+            || headSource.sharedMesh == null) {
             return;
         }
+        new FallingCobraHeadMesh(new FallingCobraRig(null, config))
+            .GetHeadTemplate(headSource.sharedMesh);
+    }
+
+    // the cached head template of a source mesh, built on the first ask
+    private HeadTemplate GetHeadTemplate(Mesh source) {
         float size =
             config.HitRadiusU * 2f * config.ReferenceSizeMultiplier
                 / Mathf.Max(source.bounds.size.x, source.bounds.size.z);
@@ -423,6 +427,23 @@ public sealed class FallingCobraHeadMesh {
                     + " ms (" + template.supportPoints.Length + " points)");
             }
         }
+        return template;
+    }
+
+    // the rigid head from the source mesh, and the baked skinned body the
+    // spine poses each frame
+    public void BuildFallingReference(Mesh source, GameObject body) {
+        rig.swimPhaseOffset =
+            (float)new System.Random(rig.host.GetInstanceID()).NextDouble()
+                * Mathf.PI * 2f;
+        if (!body.TryGetComponent(out SkinnedMeshRenderer skinned)
+            || skinned.bones.Length != BodyRings) {
+            Debug.LogError("FallingCobraHeadMesh:\tbody prefab needs a "
+                + "SkinnedMeshRenderer of " + BodyRings + " bones, run "
+                + "Monkobra > Build > Falling Cobra Body", rig.host);
+            return;
+        }
+        HeadTemplate template = GetHeadTemplate(source);
         rig.headSupportPoints = template.supportPoints;
         rig.originalHeadFront = template.front;
         rig.originalHeadFaceBasis = template.faceBasis;

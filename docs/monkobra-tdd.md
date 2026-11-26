@@ -399,7 +399,8 @@ The `Monkobra` menu is the one layout reference; every other doc names an item b
 How many live falling cobras stay cheap. What each part does is in [Mobs](mob-doc.md#performance).
 
 - Tuning: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` 4, `trailClearancePasses` 2, `spineFairMaxPasses` 64, `spineFairToleranceU` 0.002; `bodyPrefab` is set only by the body menu
-- Menu: `Monkobra > Build > Falling Cobra Body`, also callable in batch mode (`-executeMethod FallingCobraBodyBuilder.Run`)
+- Menu: `Monkobra > Build > Falling Cobra Body`, also callable in batch mode (`-executeMethod FallingCobraBodyBuilder.Run`); it also logs the head support points' worst depth error
+- Head Template: built once per run by `FallingCobraSpawner.OnEnable` (`FallingCobraController.PrewarmHeadTemplate`), never at the first cobra's spawn; a new place that spawns cobras before the spawner is enabled must call it first
 - Layers: `Player` (6) and `FallingCobra` (7); in the collision matrix `FallingCobra` collides with `Player` only; Maximum Allowed Timestep is 0.1 s (was 0.333 s)
 
 ## Conventions
