@@ -10,13 +10,15 @@ using UnityEngine.SceneManagement;
 /// per boss, as copies of <c>GameplayScene</c> with a
 /// <see cref="BossDevStart"/> object added, so each plays like the player's
 /// first meeting with that boss. The boss is moved down, never the monkey up:
-/// the menu copies the main <see cref="WorldBalanceConfig"/> into a DEV asset
-/// whose boss heights are lowered per <see cref="BossDevStartConfig"/>, and
-/// points every reference to the main one in the scenes at the copy. Run it
-/// again after the main scene or the balance changes: each scene and the copy
-/// are rebuilt from them, keeping their <c>.meta</c>. The main scene and the
-/// main balance asset are never edited or saved. The dev scenes are listed,
-/// disabled, in the Editor Build Settings.
+/// the menu copies the main <see cref="WorldBalanceConfig"/> into one DEV
+/// asset per scene whose boss heights put the boss under test just above the
+/// player per <see cref="BossDevStartConfig"/>, points every reference to the
+/// main one in the scene at its copy, and moves the ramp base to the
+/// monkey's start so the scene has no starting zone. Run it again after the
+/// main scene or the balance changes: each scene and copy are rebuilt from
+/// them, keeping their <c>.meta</c>. The main scene and the main balance
+/// asset are never edited or saved. The dev scenes are listed, disabled, in
+/// the Editor Build Settings.
 /// </summary>
 public static class BossDevSceneBuilder {
     // private methods  ########################################################
@@ -39,10 +41,17 @@ public static class BossDevSceneBuilder {
         }
 
         EnsureConfig();
-        RefreshWorldCopy();
-        BuildScene(COBRA_KING_SCENE_PATH, Boss.CobraKing);
-        BuildScene(SPIDER_KING_SCENE_PATH, Boss.SpiderKing);
+        BuildScene(
+            COBRA_KING_SCENE_PATH, COBRA_KING_WORLD_PATH, Boss.CobraKing
+        );
+        BuildScene(
+            SPIDER_KING_SCENE_PATH, SPIDER_KING_WORLD_PATH, Boss.SpiderKing
+        );
         ListInBuildSettings(COBRA_KING_SCENE_PATH, SPIDER_KING_SCENE_PATH);
+        // the single balance copy of the first version, no scene uses it now
+        if (AssetDatabase.DeleteAsset(OLD_WORLD_COPY_PATH)) {
+            Debug.Log("BossDevSceneBuilder:\tdeleted " + OLD_WORLD_COPY_PATH);
+        }
 
         // back to the main scene, so the Editor is left where it was found
         EditorSceneManager.OpenScene(MAIN_SCENE_PATH, OpenSceneMode.Single);
@@ -71,58 +80,122 @@ public static class BossDevSceneBuilder {
         Debug.Log("BossDevSceneBuilder:\tcreated " + CONFIG_PATH);
     }
 
-    // makes the DEV balance asset a fresh copy of the main one, then lowers
-    // each king's group of heights so its zone starts at the config's target;
-    // the group keeps its spacing, the order cobra < spider is kept
-    private static void RefreshWorldCopy() {
+    // makes the scene's DEV balance asset a fresh copy of the main one, then
+    // places the kings' groups of heights: the boss under test has its zone
+    // start just above the player; the other king stays out of the way, the
+    // Spider King's above the Cobra King's, the Cobra King's, if skipped,
+    // collapsed to 0; each group keeps its spacing
+    private static void RefreshWorldCopy(string copyPath, Boss boss) {
         var main =
             AssetDatabase.LoadAssetAtPath<WorldBalanceConfig>(WORLD_PATH);
         var config =
             AssetDatabase.LoadAssetAtPath<BossDevStartConfig>(CONFIG_PATH);
         var copy =
-            AssetDatabase.LoadAssetAtPath<WorldBalanceConfig>(WORLD_COPY_PATH);
+            AssetDatabase.LoadAssetAtPath<WorldBalanceConfig>(copyPath);
         if (copy == null) {
             copy = Object.Instantiate(main);
-            AssetDatabase.CreateAsset(copy, WORLD_COPY_PATH);
-            Debug.Log("BossDevSceneBuilder:\tcreated " + WORLD_COPY_PATH);
+            AssetDatabase.CreateAsset(copy, copyPath);
+            Debug.Log("BossDevSceneBuilder:\tcreated " + copyPath);
         } else {
             EditorUtility.CopySerialized(main, copy);
         }
-        copy.name = Path.GetFileNameWithoutExtension(WORLD_COPY_PATH);
+        copy.name = Path.GetFileNameWithoutExtension(copyPath);
 
-        float cobraShiftU = main.BossZoneStartU - config.CobraZoneStartU;
-        float spiderShiftU = main.SpiderZoneStartU - config.SpiderZoneStartU;
         var serialized = new SerializedObject(copy);
-        LowerHeight(serialized, "bossZoneStartU", cobraShiftU);
-        LowerHeight(serialized, "bossTriggerHeightU", cobraShiftU);
-        LowerHeight(serialized, "bossZoneEndU", cobraShiftU);
-        LowerHeight(serialized, "spiderZoneStartU", spiderShiftU);
-        LowerHeight(serialized, "spiderTriggerHeightU", spiderShiftU);
-        LowerHeight(serialized, "spiderZoneEndU", spiderShiftU);
-        LowerHeight(serialized, "spiderJumpHeightU", spiderShiftU);
+        float cobraStartU;
+        float spiderStartU;
+        if (boss == Boss.CobraKing) {
+            cobraStartU = config.BossZoneStartU;
+            float cobraEndU = cobraStartU
+                + main.BossZoneEndU - main.BossZoneStartU;
+            spiderStartU = cobraEndU + config.OtherKingGapU;
+            PlaceCobraGroup(serialized, main, cobraStartU);
+        } else {
+            spiderStartU = config.BossZoneStartU;
+            CollapseCobraGroup(serialized);
+        }
+        PlaceSpiderGroup(serialized, main, spiderStartU);
         serialized.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(copy);
         AssetDatabase.SaveAssets();
         Debug.Log(
-            $"BossDevSceneBuilder:\tboss heights lowered, Cobra King by "
-                + $"{cobraShiftU} u, Spider King by {spiderShiftU} u"
+            $"BossDevSceneBuilder:\t{boss} balance, zone starts: Cobra King "
+                + $"{copy.BossZoneStartU} u, Spider King "
+                + $"{copy.SpiderZoneStartU} u"
         );
     }
 
-    private static void LowerHeight(
-        SerializedObject serialized, string field, float shiftU
+    // the Cobra King's start, trigger & end, spaced as in the main asset
+    private static void PlaceCobraGroup(
+        SerializedObject serialized, WorldBalanceConfig main, float startU
     ) {
-        SerializedProperty prop = serialized.FindProperty(field);
-        prop.floatValue = Mathf.Max(0f, prop.floatValue - shiftU);
+        float baseU = main.BossZoneStartU;
+        SetHeight(serialized, "bossZoneStartU", startU);
+        SetHeight(serialized, "bossTriggerHeightU",
+            startU + main.BossTriggerHeightU - baseU);
+        SetHeight(serialized, "bossZoneEndU",
+            startU + main.BossZoneEndU - baseU);
+    }
+
+    // a skipped Cobra King leaves no zone, so the Spider King can sit low
+    private static void CollapseCobraGroup(SerializedObject serialized) {
+        SetHeight(serialized, "bossZoneStartU", 0f);
+        SetHeight(serialized, "bossTriggerHeightU", 0f);
+        SetHeight(serialized, "bossZoneEndU", 0f);
+    }
+
+    // the Spider King's start, jump height, trigger & end, spaced as in the
+    // main asset
+    private static void PlaceSpiderGroup(
+        SerializedObject serialized, WorldBalanceConfig main, float startU
+    ) {
+        float baseU = main.SpiderZoneStartU;
+        SetHeight(serialized, "spiderZoneStartU", startU);
+        SetHeight(serialized, "spiderJumpHeightU",
+            startU + main.SpiderJumpHeightU - baseU);
+        SetHeight(serialized, "spiderTriggerHeightU",
+            startU + main.SpiderTriggerHeightU - baseU);
+        SetHeight(serialized, "spiderZoneEndU",
+            startU + main.SpiderZoneEndU - baseU);
+    }
+
+    // a height never goes under the player's start
+    private static void SetHeight(
+        SerializedObject serialized, string field, float heightU
+    ) {
+        serialized.FindProperty(field).floatValue = Mathf.Max(0f, heightU);
+    }
+
+    // there is no starting zone in a dev scene: the ramp base, where the
+    // starting zone ends, sits at the monkey's start, so nothing is below it
+    private static void MoveRampBaseToStart() {
+        var ramp = Object.FindFirstObjectByType<RampedDifficultyManager>();
+        var monkey = Object.FindFirstObjectByType<MonkeyController>();
+        if (ramp == null || monkey == null) {
+            Debug.LogError(
+                "BossDevSceneBuilder:\tno RampedDifficultyManager or "
+                    + "MonkeyController in the scene"
+            );
+            return;
+        }
+
+        var go = new GameObject(RAMP_BASE_NAME);
+        go.transform.position = new Vector3(
+            0f, monkey.transform.position.y, 0f
+        );
+        var serialized = new SerializedObject(ramp);
+        serialized.FindProperty("rampBase").objectReferenceValue =
+            go.transform;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
     }
 
     // points each reference to the main balance asset, on any component of
     // the open scene, at the DEV copy; a prefab instance gets an override
-    private static int RepointWorldConfig(Scene scene) {
+    private static int RepointWorldConfig(Scene scene, string copyPath) {
         var main =
             AssetDatabase.LoadAssetAtPath<WorldBalanceConfig>(WORLD_PATH);
         var copy =
-            AssetDatabase.LoadAssetAtPath<WorldBalanceConfig>(WORLD_COPY_PATH);
+            AssetDatabase.LoadAssetAtPath<WorldBalanceConfig>(copyPath);
         int count = 0;
         foreach (GameObject root in scene.GetRootGameObjects()) {
             foreach (
@@ -154,8 +227,11 @@ public static class BossDevSceneBuilder {
         return count;
     }
 
-    // copies the main scene to the path, then adds the boss's start object
-    private static void BuildScene(string path, Boss boss) {
+    // copies the main scene to the path, then adds the boss's start object,
+    // moves the ramp base to the start & repoints the balance
+    private static void BuildScene(
+        string path, string worldCopyPath, Boss boss
+    ) {
         Scene main = EditorSceneManager.OpenScene(
             MAIN_SCENE_PATH, OpenSceneMode.Single
         );
@@ -178,7 +254,10 @@ public static class BossDevSceneBuilder {
         serialized.FindProperty("config").objectReferenceValue = config;
         serialized.ApplyModifiedPropertiesWithoutUndo();
 
-        int count = RepointWorldConfig(scene);
+        RefreshWorldCopy(worldCopyPath, boss);
+        MoveRampBaseToStart();
+        // the scene must have been opened before the copy is loaded for it
+        int count = RepointWorldConfig(scene, worldCopyPath);
         if (count == 0) {
             Debug.LogError(
                 "BossDevSceneBuilder:\tno balance reference to repoint in "
@@ -214,8 +293,15 @@ public static class BossDevSceneBuilder {
         "Assets/_Monkobra/Settings/Environment/WorldBalanceConfig.asset";
     private const string CONFIG_PATH =
         "Assets/_Monkobra/Settings/DevScenes/DEVBossStartConfig.asset";
-    private const string WORLD_COPY_PATH =
+    private const string COBRA_KING_WORLD_PATH =
+        "Assets/_Monkobra/Settings/DevScenes/"
+        + "DEVBossCobraKingWorldBalanceConfig.asset";
+    private const string SPIDER_KING_WORLD_PATH =
+        "Assets/_Monkobra/Settings/DevScenes/"
+        + "DEVBossSpiderKingWorldBalanceConfig.asset";
+    private const string OLD_WORLD_COPY_PATH =
         "Assets/_Monkobra/Settings/DevScenes/DEVBossWorldBalanceConfig.asset";
+    private const string RAMP_BASE_NAME = "DEVRampBase";
     private const string COBRA_KING_SCENE_PATH =
         "Assets/_Monkobra/Scenes/DEVBossCobraKingScene.unity";
     private const string SPIDER_KING_SCENE_PATH =
