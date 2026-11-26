@@ -1,6 +1,10 @@
 # Monkobra CHANGELOG
 
 <!--
+BUG fix looking of the ghosting
+BUG fix outline color to make sense
+BUG fix outline color width more obvious
+
 Bug make leaderboard works
 
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
