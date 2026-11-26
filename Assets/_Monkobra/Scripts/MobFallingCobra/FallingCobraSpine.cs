@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 using static FallingCobraRig;
 using static FallingCobraMath;
@@ -36,6 +37,28 @@ public sealed class FallingCobraSpine {
     }
     private readonly FrameState ctx = new();
 
+    // profiler markers, one per pipeline step  --------------------------------
+    private static readonly ProfilerMarker SPINE_MARKER =
+        new("FallingCobra.Spine");
+    private static readonly ProfilerMarker BLENDS_MARKER =
+        new("FallingCobra.UpdateBlends");
+    private static readonly ProfilerMarker BODY_PATH_MARKER =
+        new("FallingCobra.BuildBodyPath");
+    private static readonly ProfilerMarker HEAD_POSE_MARKER =
+        new("FallingCobra.ChooseHeadPose");
+    private static readonly ProfilerMarker NECK_CURVE_MARKER =
+        new("FallingCobra.FitNeckCurve");
+    private static readonly ProfilerMarker NECK_SPINE_MARKER =
+        new("FallingCobra.PlaceNeckSpine");
+    private static readonly ProfilerMarker TUBE_MESH_MARKER =
+        new("FallingCobra.BuildTubeMesh");
+    private static readonly ProfilerMarker PUBLISH_MARKER =
+        new("FallingCobra.PublishMesh");
+    private static readonly ProfilerMarker FAIR_MARKER =
+        new("FallingCobra.FairSpineCorners");
+    private static readonly ProfilerMarker ROUND_NECK_MARKER =
+        new("FallingCobra.RoundNeckSurface");
+
 
     public FallingCobraSpine(FallingCobraRig rig) {
         this.rig = rig;
@@ -45,6 +68,7 @@ public sealed class FallingCobraSpine {
     // Public Methods  #########################################################
     /// <summary>Poses the whole snake for this frame.</summary>
     public void Update() {
+        using var _ = SPINE_MARKER.Auto();
         UpdateBlends();
         BuildBodyPath();
         ChooseHeadPose();
@@ -56,6 +80,7 @@ public sealed class FallingCobraSpine {
 
     // Pipeline Steps  ########################################################
     private void UpdateBlends() {
+        using var _ = BLENDS_MARKER.Auto();
         ctx.following = rig.state == FallingCobraState.Falling;
         ctx.poseDelta = Mathf.Max(0f, Time.time - rig.lastHeadPoseTime);
         rig.lastHeadPoseTime = Time.time;
@@ -80,6 +105,7 @@ public sealed class FallingCobraSpine {
         }
     }
     private void BuildBodyPath() {
+        using var _ = BODY_PATH_MARKER.Auto();
         ctx.phase =
             Time.time * config.BodyWaveSpeedHz * .3f * Mathf.PI * 2f
                 + rig.swimPhaseOffset;
@@ -132,6 +158,7 @@ public sealed class FallingCobraSpine {
 
     }
     private void ChooseHeadPose() {
+        using var _ = HEAD_POSE_MARKER.Auto();
         Vector3 crawlHead = rig.spineCenters[0];
         Vector3 headOut =
             new Vector3(crawlHead.x - rig.axisXZ.x, 0f,
@@ -256,6 +283,7 @@ public sealed class FallingCobraSpine {
 
     }
     private void FitNeckCurve() {
+        using var _ = NECK_CURVE_MARKER.Auto();
         ctx.raisedLength =
             Mathf.Min(config.StandingNeckLengthU,
                 config.SmoothBodyLengthU * .7f);
@@ -356,6 +384,7 @@ public sealed class FallingCobraSpine {
         }
     }
     private void PlaceNeckSpine() {
+        using var _ = NECK_SPINE_MARKER.Auto();
         float handle = ctx.continuousFreeNeck
             ?Vector3.Distance(ctx.headCenter, ctx.curveEnd) * .9f
             :Mathf.Max(Vector3.Distance(ctx.headCenter, ctx.curveEnd) * .75f,
@@ -450,6 +479,7 @@ public sealed class FallingCobraSpine {
 
     }
     private void BuildTubeMesh() {
+        using var _ = TUBE_MESH_MARKER.Auto();
         float collarLoftU = config.NeckCollarLengthU;
         Vector3 headOutward =
             new Vector3(ctx.headCenter.x - rig.axisXZ.x, 0f,
@@ -536,6 +566,7 @@ public sealed class FallingCobraSpine {
         RoundNeckSurface(ctx.endRing);
     }
     private void PublishMesh() {
+        using var _ = PUBLISH_MARKER.Auto();
         int tip = BodyRings * BodyStride, neckCap = tip + 1;
         rig.referenceWaveVertices[tip] =
             ctx.toLocal.MultiplyPoint3x4(rig.spineCenters[BodyRings - 1]
@@ -590,6 +621,7 @@ public sealed class FallingCobraSpine {
 
     // Neck And Tube Helpers  ##################################################
     private void RoundNeckSurface(int neckEnd) {
+        using var _ = ROUND_NECK_MARKER.Auto();
         if (rig.neckSurfaceBuffer == null
             || rig.neckSurfaceBuffer.Length
                 != rig.referenceWaveVertices.Length) {
@@ -780,6 +812,7 @@ public sealed class FallingCobraSpine {
         rig.relaxedNeck = swap;
     }
     private void FairSpineCorners(bool following, int neckEnd) {
+        using var _ = FAIR_MARKER.Auto();
         if (rig.fairSpine == null || rig.fairSpine.Length != BodyRings) {
             rig.fairSpine = new Vector3[BodyRings];
         }
