@@ -59,8 +59,6 @@ public sealed class FallingCobraRig {
     public float branchHeadSideSign = 1f;
     public float perchedAimSide = 1f;
     public float perchedCoilPhaseDegrees;
-    public Vector2[] neckTextureUV;
-    public Vector3[] neckSourceNormals;
     public float headNeckRadiusU;
     public Quaternion originalHeadFaceBasis;
     public Quaternion standingHeadRotation;
@@ -128,11 +126,9 @@ public sealed class FallingCobraRig {
     public Transform referenceVisual;
     public bool HasBody => referenceRenderer != null
         && bodyBones != null;
-    public Vector3[] originalHeadVertices;
     public Vector3[] headSupportPoints;
     public Transform referenceHeadVisual;
     public Renderer referenceHeadRenderer;
-    public int headVertexCount;
     public Vector3[] neckRim;
     public Vector3[] spineCenters;
     public float[] spineRadii;

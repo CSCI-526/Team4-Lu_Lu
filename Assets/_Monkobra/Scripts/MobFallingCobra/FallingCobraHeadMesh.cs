@@ -398,15 +398,11 @@ public sealed class FallingCobraHeadMesh {
             template = CreateHeadTemplate(source, size);
             headTemplates.Add(key, template);
         }
-        rig.originalHeadVertices = template.vertices;
         rig.headSupportPoints = template.supportPoints;
-        rig.headVertexCount = template.vertices.Length;
         rig.originalHeadFront = template.front;
         rig.originalHeadFaceBasis = template.faceBasis;
         rig.originalHeadFaceCenter = template.faceCenter;
         rig.neckRim = template.rim;
-        rig.neckTextureUV = template.rimUV;
-        rig.neckSourceNormals = template.rimNormals;
         rig.originalHeadBounds = template.bounds;
         foreach (Vector3 p in rig.neckRim) {
             rig.headNeckRadiusU = Mathf.Max(rig.headNeckRadiusU, p.magnitude);

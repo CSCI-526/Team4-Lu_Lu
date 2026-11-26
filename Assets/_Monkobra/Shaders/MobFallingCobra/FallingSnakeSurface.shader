@@ -5,14 +5,12 @@ Shader "Monkobra/FallingSnakeSurface" {
         _SkinColor("Skin", Color) = (0.12,0.55,0.025,1)
         _BellyColor("Belly", Color) = (0.9,0.75,0.2,1)
         _SpotColor("Body markings", Color) = (0.34,0.70,0.06,1)
-        _SmoothBody("Smooth body pattern", Range(0,1)) = 1
         _HeadWatch("Raised watch pose", Range(0,1)) = 0
         _BellyThreshold("Belly stripe narrowness", Range(0,0.95)) = .85
         _YellowRetention("Original yellow retained", Range(0,1)) = .45
         _HeadBellyPhase("Head belly alignment", Float) = 0
         _CollarLength("Head palette transition length", Float) = .75
         _BodyLength("Body length", Float) = 5.8
-        _NeckTextureBlendU("Original neck texture blend distance", Float) = .65
         _TreeAxis("Tree axis", Vector) = (0,0,0,0)
         _HeadBellyDirection("Head underside direction", Vector) = (0,-1,0,0)
         _BranchUp("Branch up", Vector) = (0,1,0,0)
@@ -32,8 +30,8 @@ Shader "Monkobra/FallingSnakeSurface" {
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
                 half4 _BaseColor, _SkinColor, _BellyColor, _SpotColor;
-                half _SmoothBody, _HeadWatch, _BellyThreshold, _YellowRetention;
-                float _BodyLength, _NeckTextureBlendU, _HeadBellyPhase, _CollarLength;
+                half _HeadWatch, _BellyThreshold, _YellowRetention;
+                float _BodyLength, _HeadBellyPhase, _CollarLength;
                 float4 _TreeAxis, _HeadBellyDirection, _BranchUp, _PaintBranchRange;
             CBUFFER_END
             struct Attributes {float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;float2 neckUV:TEXCOORD1;half4 color:COLOR;};
@@ -67,7 +65,6 @@ Shader "Monkobra/FallingSnakeSurface" {
                 float3 surfaceFacing=normalize(cross(ddx(input.positionWS),ddy(input.positionWS)));
                 if(dot(surfaceFacing,viewDirection)<0)surfaceFacing=-surfaceFacing;
                 normal=normalize(lerp(surfaceFacing,normal,smoothstep(-.2,.15,dot(normal,viewDirection))));
-                float3 inward=normalize(float3(_TreeAxis.x-input.positionWS.x,0,_TreeAxis.z-input.positionWS.z));
                 half3 bellyDirection=normalize(lerp(_HeadBellyDirection.xyz,input.bellyDirectionWS,input.body));
                 half3 original=CorrectSourceSkin(SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,input.uv).rgb,normal,bellyDirection);
                 // Both sides of the cut share the same palette and angular stripe at the join.
