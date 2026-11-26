@@ -15,15 +15,15 @@ MonoBehaviour:
   hullShader: {fileID: 4800000, guid: 0495448d97bbd234daa0e057cdf86407, type: 3}
   ghostShader: {fileID: 4800000, guid: 00d49148d6725614b9335931b6c9b31a, type: 3}
   widthU:
-  - 0.015
-  - 0.025
+  - 0.018
   - 0.04
+  - 0.065
   sat:
-  - 0.35
-  - 0.7
+  - 0.45
+  - 0.18
   - 1
   val:
-  - 0.85
+  - 0.8
   - 1
   - 1
   hues:
@@ -36,7 +36,7 @@ MonoBehaviour:
   - kind: 3
     hueDeg: 190
   monkeyColor: {r: 1, g: 0.949, b: 0.824, a: 1}
-  monkeyWidthU: 0.025
+  monkeyWidthU: 0.04
   ghostFillAlpha: 0.3
   ghostRimAlpha: 0.9
   ghostRimPower: 3

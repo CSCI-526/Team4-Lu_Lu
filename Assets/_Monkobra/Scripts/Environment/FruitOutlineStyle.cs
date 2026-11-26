@@ -135,15 +135,15 @@ public class FruitOutlineStyle: ScriptableObject {
     [Header("Fruit Tiers (Normal, Reachable, Grabbable)")]
     [SerializeField]
     [Tooltip("outline width per tier, same for every fruit; u")]
-    private float[] widthU = { 0.015f, 0.025f, 0.040f };
+    private float[] widthU = { 0.018f, 0.040f, 0.065f };
 
     [SerializeField]
-    [Tooltip("HSV saturation per tier; lower = paler")]
-    private float[] sat = { 0.35f, 0.70f, 1f };
+    [Tooltip("HSV saturation per tier; Reachable is whitish, Grabbable is full")]
+    private float[] sat = { 0.45f, 0.18f, 1f };
 
     [SerializeField]
     [Tooltip("HSV value per tier")]
-    private float[] val = { 0.85f, 1f, 1f };
+    private float[] val = { 0.80f, 1f, 1f };
 
     [Header("Fruit Hues")]
     [SerializeField]
@@ -162,7 +162,7 @@ public class FruitOutlineStyle: ScriptableObject {
 
     [SerializeField]
     [Tooltip("monkey outline width; u")]
-    private float monkeyWidthU = 0.025f;
+    private float monkeyWidthU = 0.040f;
 
     [Header("See-Through Ghost")]
     [SerializeField]

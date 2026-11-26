@@ -61,11 +61,11 @@ public static class OutlineMaterialBuilder {
 
         int failCount = 0;
         failCount += CheckKind(style, FruitKind.Banana,
-            "#D9CA8D", "#FFDB4D", "#FFCC00");
+            "#CCBA70", "#FFF6D1", "#FFCC00");
         failCount += CheckKind(style, FruitKind.Coconut,
-            "#D9AB8D", "#FF944D", "#FF6600");
+            "#CC9570", "#FFE3D1", "#FF6600");
         failCount += CheckKind(style, FruitKind.Pineapple,
-            "#D98DAD", "#FF4D97", "#FF006A");
+            "#CC7096", "#FFD1E4", "#FF006A");
 
         if (failCount == 0) {
             Debug.Log("Outline style check PASS: 9 tier materials match");
@@ -172,7 +172,7 @@ public static class OutlineMaterialBuilder {
         string normalHex, string reachableHex, string grabbableHex
     ) {
         string[] hexes = { normalHex, reachableHex, grabbableHex };
-        float[] widths = { 0.015f, 0.025f, 0.040f };
+        float[] widths = { 0.018f, 0.040f, 0.065f };
         int failCount = 0;
         for (int i = 0; i < 3; i++) {
             var tier = (OutlineTier)i;

@@ -128,13 +128,13 @@ For a quick test use the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns 
 
 ## Feedback
 
-`FruitOutlineListener` adds extra material slots in three tiers. Each tier is a hue per fruit kind at a concentration: the lower the tier, the paler and thinner the outline. Widths are in world units, the same for every fruit and the monkey, so a scaled model never thickens it.
+`FruitOutlineListener` adds extra material slots in three tiers. Each tier is a hue per fruit kind at a concentration: the lower the tier, the thinner the outline: Normal is muted, Reachable is whitish, Grabbable is fully saturated. Widths are in world units, the same for every fruit and the monkey, so a scaled model never thickens it.
 
 | Tier | When | Priority | Width | Concentration |
 | --- | --- | --- | --- | --- |
-| Normal | at rest, no hand near | lowest | 0.015 u | pale (S 0.35, V 0.85) |
-| Reachable | the fruit is `ReachTarget`, the one a reach would aim at | middle | 0.025 u | medium (S 0.70, V 1.0) |
-| Grabbable | a hand overlaps the fruit, so a release would grab it | highest, wins | 0.040 u | full (S 1.0, V 1.0) |
+| Normal | at rest, no hand near | lowest | 0.018 u | muted (S 0.45, V 0.80) |
+| Reachable | the fruit is `ReachTarget`, the one a reach would aim at | middle | 0.040 u | whitish (S 0.18, V 1.0) |
+| Grabbable | a hand overlaps the fruit, so a release would grab it | highest, wins | 0.065 u | saturated (S 1.0, V 1.0) |
 
 Hues: banana 48 deg, coconut 24 deg, pineapple 335 deg (magenta, so it never reads as the green cobra), melon 190 deg. Every number lives in one asset, `Settings/FruitOutline/FruitOutlineStyle.asset` (`FruitOutlineStyle`): retune the widths, the tier S and V, a hue, the monkey look or the ghost there, no code change. `FruitOutlineStyle.GetTierMaterial(kind, tier)` builds and caches 1 shared hull material per fruit kind and tier, so every banana shares one. The hull shader is `Shaders/Outline/OutlineHull`, hand written, which cancels the object's scale so the width stays in world units; it keeps the property names `_Outline_Color` and `_Outline_Width`, which the boss golden fruit sets.
 
@@ -144,7 +144,7 @@ The listener sits on the object holding the fruit's collider and outlines the me
 
 **Golden fruit**: the boss golden banana and melon clone `Materials/Outline/Outline_Banana_Grabbable.mat` (the Grabbable width), set the gold color and scale the width by `goldenOutlineWidthScale`, as before.
 
-The monkey wears the same outline always on, in cream: `MonkeyOutline` adds `Materials/Outline/Outline_Monkey.mat` to the skinned model's renderers at start, 0.025 u. Tune it in `FruitOutlineStyle`, then run `Monkobra > Build Outline Materials`.
+The monkey wears the same outline always on, in cream: `MonkeyOutline` adds `Materials/Outline/Outline_Monkey.mat` to the skinned model's renderers at start, 0.040 u. Tune it in `FruitOutlineStyle`, then run `Monkobra > Build Outline Materials`.
 
 Menus: `Monkobra > Build Outline Materials` writes the style asset, the monkey, ghost and golden base materials; `Monkobra > Check Outline Style` logs PASS or FAIL for the tier colors and widths of banana, coconut and pineapple.
 
