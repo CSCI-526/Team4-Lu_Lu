@@ -1,10 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-BUG fix looking of the ghosting
-BUG fix outline color to make sense
-BUG fix outline color width more obvious
-
 Bug make leaderboard works
 
 Bug erik boss make energy bar gone, better ways to indicate 1 kill
@@ -39,11 +35,14 @@ todo add 3x fruit
 
 ##### Erik
 
-- uniform outline design: banana, coconut, pineapple and the monkey share
-  world-unit widths; a fruit wears 3 tiers (normal at rest, reachable,
-  grabbable) in its own hue, paler at the lower tier; a fruit hidden by
-  the trunk, a branch or the monkey shows a see-through ghost; all values
-  in 1 asset, `FruitOutlineStyle`
+- uniform outline design: banana, coconut, pineapple, the Spider King arena
+  melons and the monkey share world-unit widths and are outlined once round
+  the whole shape, never per mesh part; a fruit wears 3 tiers in its own hue:
+  muted at rest, whitish and thicker when reachable, saturated and thickest
+  when grabbable (banana yellow, pineapple orange-gold, coconut brown, melon
+  reddish pink); a fruit hidden by the trunk, a branch or the monkey shows a
+  soft out-of-focus halo with its own shape cut out; all values in 1 asset,
+  `FruitOutlineStyle`
 - Spider King web intro: once per Normal Play run, at 250 u climbed, the
   camera eases to the bare trunk, the king scuttles in round it from the far
   side, glows, and spits a web that traps the monkey, so the first web is
@@ -70,6 +69,7 @@ todo add 3x fruit
 
 ##### Erik
 
+- branch bark outline thicker, 0.03 → 0.05 u
 - F3 dev speed buff 3x → 5x
 - `GameController` split: `RunController` (renamed, `GameplayScene` only) keeps
   the run state, a new across-scene `GameController` (`Resources/`) holds the
