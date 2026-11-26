@@ -206,22 +206,56 @@ public static class BossDevSceneBuilder {
         return count;
     }
 
-    // the Loop Override the scene at the path holds now, 1 when it has none
-    private static int ReadLoopOverride(string path) {
+    // what a rebuild keeps of the scene at the path: its Loop Override, 1
+    // when it has none, & the skip box of its TutorialSkipManager, not ticked
+    // when it has none: ticked skips the boss fight's tutorials too
+    private static void ReadKeptSettings(
+        string path, out int loopOverride, out bool isSkippingTutorials
+    ) {
+        loopOverride = 1;
+        isSkippingTutorials = false;
         if (!File.Exists(path)) {
-            return 1;
+            return;
         }
         Scene old = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-        int loop = 1;
         foreach (GameObject root in old.GetRootGameObjects()) {
             BossDevStart start = root.GetComponentInChildren<BossDevStart>();
             if (start != null) {
-                loop = new SerializedObject(start)
+                loopOverride = new SerializedObject(start)
                     .FindProperty("loopOverride").intValue;
-                break;
+            }
+            TutorialSkipManager skip =
+                root.GetComponentInChildren<TutorialSkipManager>(true);
+            if (skip != null) {
+                isSkippingTutorials = new SerializedObject(skip)
+                    .FindProperty(SKIP_BOX_FIELD).boolValue;
             }
         }
-        return loop;
+    }
+
+    // the kept skip box written on the scene's TutorialSkipManager, as an
+    // override of the GameController instance; the copy of the main scene
+    // would otherwise bring the main scene's own value
+    private static void WriteSkipBox(Scene scene, bool isSkippingTutorials) {
+        foreach (GameObject root in scene.GetRootGameObjects()) {
+            TutorialSkipManager skip =
+                root.GetComponentInChildren<TutorialSkipManager>(true);
+            if (skip == null) {
+                continue;
+            }
+            var serialized = new SerializedObject(skip);
+            serialized.FindProperty(SKIP_BOX_FIELD).boolValue =
+                isSkippingTutorials;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            Debug.Log(
+                "BossDevSceneBuilder:	skip box "
+                    + (isSkippingTutorials ? "ticked" : "not ticked")
+            );
+            return;
+        }
+        Debug.LogWarning(
+            "BossDevSceneBuilder:	no TutorialSkipManager, skip box not set"
+        );
     }
 
     // copies the main scene to the path, then adds the boss's start object,
@@ -229,8 +263,10 @@ public static class BossDevSceneBuilder {
     private static void BuildScene(
         string path, string worldCopyPath, Boss boss
     ) {
-        // the scene's Loop Override outlives the rebuild
-        int loopOverride = ReadLoopOverride(path);
+        // the scene's Loop Override & skip box outlive the rebuild
+        ReadKeptSettings(
+            path, out int loopOverride, out bool isSkippingTutorials
+        );
         Scene main = EditorSceneManager.OpenScene(
             MAIN_SCENE_PATH, OpenSceneMode.Single
         );
@@ -253,6 +289,7 @@ public static class BossDevSceneBuilder {
         serialized.FindProperty("config").objectReferenceValue = config;
         serialized.FindProperty("loopOverride").intValue = loopOverride;
         serialized.ApplyModifiedPropertiesWithoutUndo();
+        WriteSkipBox(scene, isSkippingTutorials);
 
         RefreshWorldCopy(worldCopyPath, boss);
         MoveRampBaseToStart();
@@ -287,6 +324,8 @@ public static class BossDevSceneBuilder {
     }
 
     // constants  ##############################################################
+    // serialized name of the skip box on TutorialSkipManager
+    private const string SKIP_BOX_FIELD = "isSkippingTutorialsAndCutscenes";
     private const string MAIN_SCENE_PATH =
         "Assets/_Monkobra/Scenes/GameplayScene.unity";
     private const string WORLD_PATH =
