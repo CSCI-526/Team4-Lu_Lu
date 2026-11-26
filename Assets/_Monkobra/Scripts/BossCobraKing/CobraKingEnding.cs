@@ -275,6 +275,10 @@ public sealed class CobraKingEnding {
     public void Defeat() {
         rig.phase = CobraKingPhase.Defeated;
         ProgressStore.MarkBossBeaten();
+        // only a win ends the lessons, so a lost fight teaches again
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.CobraKingLesson);
+        }
         rig.Feedback.ClearMarkers();
         rig.Feedback.ClearAttackObjects();
         rig.Arena.RemoveArenaFruit();

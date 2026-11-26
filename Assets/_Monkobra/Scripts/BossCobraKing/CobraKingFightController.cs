@@ -720,12 +720,15 @@ public class CobraKingFightController: MonoBehaviour {
         // the monkey starts in the gold armor, a spare life against the
         // king; the golden banana brings it back once lost
         rig.hasShield = true;
-        // the armor's words only the first time the player ever gets it, in
-        // any run of either mode; after that, or at a later boss of the
+        // the armor's words only the first time the player gets it in a
+        // session, in either mode; after that, or at a later boss of the
         // endless run's rush, the king only names itself
+        TutorialSkipManager skip = TutorialSkipManager.I;
         if (rig.rushEncounter <= 0
-            && !ProgressStore.HasSeen(ProgressStore.ARMOR_INTRO)) {
-            ProgressStore.MarkSeen(ProgressStore.ARMOR_INTRO);
+            && !(skip != null && skip.ShouldSkip(TutorialItem.ArmorWords))) {
+            if (skip != null) {
+                skip.MarkSeen(TutorialItem.ArmorWords);
+            }
             rig.hud.ShowBannerFor(config.ArmorIntroTitle,
                 config.ArmorIntroLine, config.GoldenColor, 0f);
         } else {

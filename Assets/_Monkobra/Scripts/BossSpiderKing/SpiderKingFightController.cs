@@ -554,6 +554,14 @@ public class SpiderKingFightController: MonoBehaviour {
         // flashes as the Cobra King's: at the start, the last blow & a
         // spent armor; never on a revive or a reward
         rig.hud.Flash();
+        // a seen or dev-skipped lesson counts both lessons as taught
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(
+                TutorialItem.SpiderKingLesson
+            )) {
+            rig.hasTaughtWeb = true;
+            rig.hasTaughtSlash = true;
+        }
         // only web bullets till the first parry is done, then the fight; the
         // first slash later teaches its own parry
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done

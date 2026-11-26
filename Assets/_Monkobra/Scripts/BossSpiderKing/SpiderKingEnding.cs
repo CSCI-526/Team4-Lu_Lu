@@ -234,6 +234,10 @@ public sealed class SpiderKingEnding {
 
     // Win  --------------------------------------------------------------------
     public void Defeat() {
+        // only a win ends the lessons, so a lost fight teaches again
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.SpiderKingLesson);
+        }
         rig.phase = SpiderKingPhase.Defeated;
         rig.onDefeated?.Invoke();
         rig.defeatTimeS = 0f;
