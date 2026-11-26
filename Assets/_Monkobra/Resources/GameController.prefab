@@ -58,3 +58,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipManager
   isSkippingTutorialsAndCutscenes: 0
+  config: {fileID: 11400000, guid: b71e4c08d5a2493f8c6e0a1d9f32b574, type: 2}

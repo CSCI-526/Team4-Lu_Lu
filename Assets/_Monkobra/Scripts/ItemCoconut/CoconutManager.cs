@@ -58,10 +58,6 @@ public class CoconutManager: MonoBehaviour {
     public static bool IsRunLive =>
         RunController.I == null || RunController.I.IsRunLive;
 
-    /// <returns>if a coconut was used since the app launched, so the how-to
-    /// is no longer needed</returns>
-    public static bool HasUsedThisSession => hasUsedThisSession;
-
     /// <summary>
     /// Raised w/ the new count whenever it changes: a pickup or a use.
     /// </summary>
@@ -283,15 +279,6 @@ public class CoconutManager: MonoBehaviour {
         UpdateFreezeHud();
     }
 
-    // a session is one app run: restarts reload the scene, statics stay;
-    // reset on Play too, for an Editor w/o domain reload
-    [RuntimeInitializeOnLoadMethod(
-        RuntimeInitializeLoadType.SubsystemRegistration
-    )]
-    private static void ResetSession() {
-        hasUsedThisSession = false;
-    }
-
     // Editor Validation  ######################################################
     private void OnValidate() {
         webEscapeGraceS = Mathf.Max(0f, webEscapeGraceS);
@@ -336,8 +323,6 @@ public class CoconutManager: MonoBehaviour {
     private const string PLAYER_TAG = "Player";
 
     // private members  ########################################################
-    private static bool hasUsedThisSession; // a coconut was used since launch
-
     private int count;
     private CobraMotor cobra;
     private CoconutWidget coconutHud; // its object is the HUD root
@@ -386,7 +371,9 @@ public class CoconutManager: MonoBehaviour {
         }
 
         SetCount(count - 1);
-        hasUsedThisSession = true;
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.CoconutDoubleTap);
+        }
         Used?.Invoke();
 
         if (projectilePrefab == null || player == null) {

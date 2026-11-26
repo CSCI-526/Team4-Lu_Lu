@@ -45,11 +45,9 @@ public class CoconutMessageWidget: MonoBehaviour {
     // the popup itself is once-per-scene, a player who used a coconut already
     // this session knows how and never sees it
     private void OnCollected() {
-        if (!CoconutManager.HasUsedThisSession
-            && !(TutorialSkipManager.I != null
-                && TutorialSkipManager.I.ShouldSkip(
-                    TutorialItem.CoconutDoubleTap
-                ))) {
+        if (!(TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(TutorialItem.CoconutDoubleTap))
+        ) {
             Show(PopUpId.CoconutFirst);
         }
     }

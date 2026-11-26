@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -19,9 +20,14 @@ public class TutorialSkipManager: MonoBehaviour {
     }
 
     /// <param name="item">the tutorial or cut scene asking</param>
-    /// <returns>if the item is skipped now, ie the dev switch is on</returns>
+    /// <returns>if the item is skipped now, ie the dev switch is on, or it was
+    /// seen this session and the config skips it once seen</returns>
     public bool ShouldSkip(TutorialItem item) {
-        return Debug.isDebugBuild && isSkippingTutorialsAndCutscenes;
+        if (Debug.isDebugBuild && isSkippingTutorialsAndCutscenes) {
+            return true;
+        }
+        return seen.Contains(item)
+            && (config == null || config.IsSkippedOnceSeen(item));
     }
 
     /// <summary>
@@ -29,7 +35,7 @@ public class TutorialSkipManager: MonoBehaviour {
     /// </summary>
     /// <param name="item">the tutorial or cut scene that was seen</param>
     public void MarkSeen(TutorialItem item) {
-        // TODO: record the item in the session set
+        seen.Add(item);
     }
 
     // Inspector Fields  #######################################################
@@ -38,6 +44,10 @@ public class TutorialSkipManager: MonoBehaviour {
     [Tooltip("skip tutorial pop ups & cut scenes; only in the Editor or a "
         + "development build, a release build never skips")]
     private bool isSkippingTutorialsAndCutscenes;
+
+    [SerializeField]
+    [Tooltip("whether each item skips once seen; none skips every seen item")]
+    private TutorialSkipConfig config;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -61,4 +71,8 @@ public class TutorialSkipManager: MonoBehaviour {
             I = null;
         }
     }
+
+    // private members  ########################################################
+    // items seen since launch; lives w/ this object, so only a close clears it
+    private readonly HashSet<TutorialItem> seen = new();
 }

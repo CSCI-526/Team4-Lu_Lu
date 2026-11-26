@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// the title screen: Space, E, Enter, a click or a tap opens the intro comic
-/// the first time a launch (<see cref="IntroComicScreen.HasPlayed"/>), else
+/// the first time a launch (<see cref="TutorialItem.IntroComic"/>), else
 /// the level selection; the prompt pulses on unscaled time. Its picture is
 /// the last frame of the WebGL loading page (FitWindow template), which it
 /// tells to fade out once drawn, so the browser hands over to the game
@@ -105,11 +105,10 @@ public class TitleScreen: MonoBehaviour {
         if (startAction.WasPressedThisFrame()) {
             // the dev switch skips the intro comic like a played one
             SceneNames.Load(
-                IntroComicScreen.HasPlayed
-                    || (TutorialSkipManager.I != null
-                        && TutorialSkipManager.I.ShouldSkip(
-                            TutorialItem.IntroComic
-                        ))
+                TutorialSkipManager.I != null
+                    && TutorialSkipManager.I.ShouldSkip(
+                        TutorialItem.IntroComic
+                    )
                     ? SceneNames.LEVEL_SELECT : SceneNames.INTRO_COMIC
             );
         }

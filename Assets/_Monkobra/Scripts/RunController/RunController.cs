@@ -312,6 +312,9 @@ public class RunController: MonoBehaviour {
                 || startRunAction != null
                 && startRunAction.action.WasPressedThisFrame())
         ) {
+            if (TutorialSkipManager.I != null) {
+                TutorialSkipManager.I.MarkSeen(TutorialItem.RunStartTutorial);
+            }
             SetState(GameState.StartingZone);
         }
     }
