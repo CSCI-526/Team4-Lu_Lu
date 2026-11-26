@@ -62,6 +62,10 @@ todo add 3x fruit
 - dev checkbox on `Resources/GameController.prefab` (off by default): skips
   every item at once, the intro comic too; only in Editor/development build,
   never in a release build
+- 2 boss dev scenes, `DEVBossCobraKingScene` & `DEVBossSpiderKingScene`: each
+  plays the first meeting with one boss from the normal start, with no
+  starting zone, the boss moved down to 5 u above the start through its own
+  DEV copy of `WorldBalanceConfig`; built by `Monkobra > Build Boss Dev Scenes`
 
 ### Changed
 
@@ -105,6 +109,8 @@ todo add 3x fruit
 
 - 5 unused fields of the falling cobra config: body twist, neck thickness &
   neck rounding (3)
+- hack keys 1 and 2, the jumps to the boss zone and to the Spider King: the
+  boss dev scenes replace them
 
 ### Fixed
 
