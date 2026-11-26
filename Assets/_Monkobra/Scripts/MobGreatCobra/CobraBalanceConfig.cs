@@ -12,13 +12,10 @@ using UnityEngine;
 )]
 public class CobraBalanceConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>falling cobra creation attempts rolled per segment</returns>
-    public int FallingCobraAttemptCount => fallingCobraAttemptCount;
-
-    /// <returns>x: ramped difficulty 0~3; y: chance 0~1 that one attempt
-    /// creates a falling cobra</returns>
-    public AnimationCurve FallingCobraSpawnProbabilityCurve =>
-        fallingCobraSpawnProbabilityCurve;
+    /// <returns>x: ramped difficulty 0~3; y: expected falling cobras per
+    /// <see cref="TrunkScatter.DENSITY_SPAN_U"/> of trunk</returns>
+    public AnimationCurve FallingCobraDensityCurve =>
+        fallingCobraDensityCurve;
 
     /// <returns>vertical fall speed of a falling cobra; u/s</returns>
     public float FallingCobraFallSpeedU => fallingCobraFallSpeedU;
@@ -116,17 +113,12 @@ public class CobraBalanceConfig: ScriptableObject {
     // Inspector Fields  #######################################################
     [Header("Falling Cobra")]
     [SerializeField]
-    [Min(0)]
-    [Tooltip("falling cobra creation attempts rolled per segment")]
-    private int fallingCobraAttemptCount = 2;
-
-    [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~3; y: chance 0~1 that one attempt "
-            + "creates a falling cobra"
+        "x: ramped difficulty 0~3; y: expected falling cobras per 10 u "
+            + "of trunk"
     )]
-    private AnimationCurve fallingCobraSpawnProbabilityCurve =
-        AnimationCurve.Linear(0f, 0f, 1f, 0.5f);
+    private AnimationCurve fallingCobraDensityCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
     [SerializeField]
     [Tooltip("vertical fall speed of a falling cobra; u/s")]
@@ -253,7 +245,6 @@ public class CobraBalanceConfig: ScriptableObject {
     private void OnValidate() {
         fallingCobraAttackDistanceU = Mathf.Max(.1f,
             fallingCobraAttackDistanceU);
-        fallingCobraAttemptCount = Mathf.Max(0, fallingCobraAttemptCount);
         fallingCobraFallSpeedU = Mathf.Max(0f, fallingCobraFallSpeedU);
         fallingCobraHorizontalSpeedU = Mathf.Max(
             0f,

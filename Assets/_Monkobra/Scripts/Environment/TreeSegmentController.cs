@@ -63,6 +63,37 @@ public class TreeSegmentController: MonoBehaviour {
         hasGenerated = true;
     }
 
+    /// <summary>
+    /// Appends every live branch, on any segment, whose segment overlaps
+    /// the world height range to <paramref name="results"/>.
+    /// </summary>
+    public static void GetLiveBranches(
+        float bottomY,
+        float topY,
+        List<BranchController> results
+    ) {
+        foreach (TreeSegmentController segment in liveSegments) {
+            if (!segment.isReady) {
+                continue;
+            }
+            Bounds bounds = segment.segmentCollider.bounds;
+            if (bounds.min.y > topY || bounds.max.y < bottomY) {
+                continue;
+            }
+            for (int i = 0; i < segment.transform.childCount; i++) {
+                Transform child = segment.transform.GetChild(i);
+                if (!child.gameObject.activeSelf) {
+                    continue;
+                }
+                BranchController branch =
+                    child.GetComponent<BranchController>();
+                if (branch != null) {
+                    results.Add(branch);
+                }
+            }
+        }
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("collider measuring segment height")]

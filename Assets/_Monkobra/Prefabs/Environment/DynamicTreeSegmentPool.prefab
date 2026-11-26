@@ -88,7 +88,7 @@ MonoBehaviour:
   cobraBalanceConfig: {fileID: 11400000, guid: ff31fb5b3aa328946be62febc8c0fd8d, type: 2}
   spawnRadiusU: 5.88
   minCobraSeparationU: 4
-  maxPlacementAttempts: 20
+  searchWindowU: 6
   ambushMinAboveBananaU: 3
   ambushMaxAboveBananaU: 6
 --- !u!114 &4417260983517402211
