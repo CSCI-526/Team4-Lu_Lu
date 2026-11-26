@@ -9,9 +9,10 @@ public enum Boss {
 /// <summary>
 /// Makes a dev scene play like the player's first meeting with one boss:
 /// marks the tutorials a player would have met on the climb as seen, and for
-/// the Spider King counts the Cobra King as beaten. The boss itself is moved
-/// down by the scene's own balance asset, so the monkey climbs from its
-/// normal start; nothing here moves it. Sits only in the dev scenes built by
+/// the Spider King counts the Cobra King as beaten, and ends the starting
+/// zone at once. The boss itself is moved down by the scene's own balance
+/// asset, so the monkey climbs from its normal start; nothing here moves it.
+/// Sits only in the dev scenes built by
 /// <c>Monkobra > Build Boss Dev Scenes</c>, never in <c>GameplayScene</c>.
 /// <para>
 /// The seen set lives in <see cref="TutorialSkipManager"/> and is empty at
@@ -52,9 +53,11 @@ public class BossDevStart: MonoBehaviour {
             return;
         }
 
+        // the skip first: the Cobra King trigger fires only in Playing
         if (boss == Boss.SpiderKing) {
             CountCobraKingBeaten();
         }
+        EndStartingZone();
         enabled = false;
     }
 
@@ -82,6 +85,14 @@ public class BossDevStart: MonoBehaviour {
                 $"BossDevStart:\t{boss} scene, {items.Count} items pre-seen",
                 this
             );
+        }
+    }
+
+    // the dev scene has no starting zone: the run is a normal climb at once
+    private void EndStartingZone() {
+        RunController.I.EndStartingZone();
+        if (Debug.isDebugBuild) {
+            Debug.Log("BossDevStart:\tstarting zone ended", this);
         }
     }
 
