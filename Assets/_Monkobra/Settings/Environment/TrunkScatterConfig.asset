@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78ee1b3433844fd0b2c41b411c92b331, type: 3}
   m_Name: TrunkScatterConfig
   m_EditorClassIdentifier: Assembly-CSharp::TrunkScatterConfig
-  jitterFraction: 0.5
+  jitterFraction: 0.35
   yawJitterDeg: 25
   maxRetries: 12
   integrationStepU: 0.5
