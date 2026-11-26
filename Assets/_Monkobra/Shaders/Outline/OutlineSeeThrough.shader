@@ -5,7 +5,7 @@ Shader "Monkobra/Outline/OutlineSeeThrough"
     Properties
     {
         _Ghost_Color ("Halo Color", Color) = (1, 0.86, 0.3, 1)
-        _Ghost_HaloAlpha ("Halo Peak Alpha", Range(0, 1)) = 0.55
+        _Ghost_HaloAlpha ("Halo Peak Alpha", Range(0, 1)) = 0.1
         _Ghost_HaloSigma ("Halo Blur Sigma", Range(0.1, 1)) = 0.9
         _Ghost_HaloReach ("Halo Reach (world units)", Float) = 0.14
     }

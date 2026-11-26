@@ -170,7 +170,7 @@ public class FruitOutlineStyle: ScriptableObject {
     [SerializeField]
     [Range(0f, 1f)]
     [Tooltip("halo alpha right next to the fruit")]
-    private float ghostHaloAlpha = 0.55f;
+    private float ghostHaloAlpha = 0.1f;
 
     [SerializeField]
     [Range(0.1f, 1f)]
