@@ -79,18 +79,21 @@ public class SpiderWebIntroConfig: ScriptableObject {
     [SerializeField]
     [Min(0.1f)]
     [Tooltip("time the king takes to scuttle in round the trunk; s")]
-    private float enterTimeS = 1.6f;
+    private float enterTimeS = 2.4f;
 
     [SerializeField]
     [Range(0f, 180f)]
-    [Tooltip("how far round the trunk from its resting spot the king starts "
-        + "its scuttle in, behind the trunk from the camera; deg")]
-    private float enterAngleDeg = 70f;
+    [Tooltip("how far round the trunk from its resting spot, above the "
+        + "monkey, the king starts its scuttle in: 120 starts it hidden "
+        + "behind the trunk from the camera, & it comes round the trunk's "
+        + "edge, so it never appears out of nowhere; 180 is the opposite "
+        + "side; deg")]
+    private float enterAngleDeg = 120f;
 
     [SerializeField]
     [Min(0f)]
     [Tooltip("time the king's eyes take to glow up before the throw; s")]
-    private float windUpS = 2f;
+    private float windUpS = 0.8f;
 
     [SerializeField]
     [Min(0.1f)]

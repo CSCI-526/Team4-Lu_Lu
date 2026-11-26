@@ -15,9 +15,9 @@ MonoBehaviour:
   triggerClimbedHeightU: 250
   kingAboveU: 7
   establishS: 1
-  enterTimeS: 1.6
-  enterAngleDeg: 70
-  windUpS: 2
+  enterTimeS: 2.4
+  enterAngleDeg: 120
+  windUpS: 0.8
   exitTimeS: 2.2
   exitSpeedU: 9
   throwTimeS: 1.3
