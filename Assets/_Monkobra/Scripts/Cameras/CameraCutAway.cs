@@ -5,14 +5,16 @@ using UnityEngine.UI;
 
 /// <summary>
 /// How a cut away from the monkey looks (the cobra alert): the game's UI
-/// goes and black cinema bars grow slowly in from the top & bottom; as the
-/// camera cuts back the UI is back at once and the bars slowly draw back out
-/// under it, so the player sees at once this is a look
+/// goes and black cinema bars grow slowly in from the top & bottom; the bars
+/// slowly draw back out as the camera starts moving back to the monkey
+/// (<see cref="CameraRigManager.CutAwayReturning"/>), and the UI is back the
+/// moment the shot ends, so the player sees at once this is a look
 /// elsewhere, not the climb, and that the controls wait while it lasts
 /// (<see cref="CameraRigManager"/> locks them).
 /// <para>
 /// Next to <see cref="CameraRigManager"/> on the <c>Cameras</c> prefab's
-/// <c>CameraRig</c>; it only listens to <see cref="CameraRigManager.ShotChanged"/>.
+/// <c>CameraRig</c>; it only listens to <see cref="CameraRigManager.ShotChanged"/>
+/// & <see cref="CameraRigManager.CutAwayReturning"/>.
 /// The UI is hidden by switching off every screen space canvas but its own,
 /// so their scripts & timers run on; any pause or the run's end brings the
 /// UI straight back, so the pause menu & the lose screen always show. The
@@ -25,8 +27,8 @@ using UnityEngine.UI;
 public class CameraCutAway: MonoBehaviour {
     // Public Members  #########################################################
     /// <returns>if the camera is cut away from the monkey: the UI is hidden
-    /// till this ends, the very moment the shot does; the bars then draw back
-    /// out under the returned UI</returns>
+    /// till the shot ends; the bars may start drawing out before that, as the
+    /// camera starts back</returns>
     public bool IsCutAway => isCutAway;
 
     // Inspector Fields  #######################################################
@@ -51,6 +53,7 @@ public class CameraCutAway: MonoBehaviour {
     private void OnEnable() {
         if (rig != null) {
             rig.ShotChanged += OnShotChanged;
+            rig.CutAwayReturning += OnCutAwayReturning;
         }
     }
 
@@ -66,6 +69,7 @@ public class CameraCutAway: MonoBehaviour {
     private void OnDisable() {
         if (rig != null) {
             rig.ShotChanged -= OnShotChanged;
+            rig.CutAwayReturning -= OnCutAwayReturning;
         }
         isCutAway = false;
         ShowGameUI();
@@ -200,6 +204,13 @@ public class CameraCutAway: MonoBehaviour {
         isCutAway = isLive;
         target = isLive ? 1f : 0f;
         Refresh();
+    }
+
+    // the camera starts back: the bars draw out, the UI waits for the shot end
+    private void OnCutAwayReturning(CameraRigManager.ShotKind kind) {
+        if (kind == CameraRigManager.ShotKind.CobraAlert && isCutAway) {
+            target = 0f;
+        }
     }
 
     private void OnPauseChanged(bool isPaused) {
