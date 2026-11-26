@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7245103388614930002}
   - component: {fileID: 7245103388614930003}
+  - component: {fileID: 7245103388614930004}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -44,3 +45,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d1e7a3b94c24f60a8b2c6e0f1d37a95, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::GameController
+--- !u!114 &7245103388614930004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7245103388614930001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b7e2c94a1d84f6e9c03d8a7e1f46b25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipSwitch
+  isSkippingTutorialsAndCutscenes: 0

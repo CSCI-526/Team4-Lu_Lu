@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 7414378922096876825}
   - component: {fileID: 1544209386470739513}
   - component: {fileID: 5415272717504592885}
-  - component: {fileID: 2269083903314885017}
   m_Layer: 0
   m_Name: RunController
   m_TagString: RunController
@@ -116,16 +115,3 @@ MonoBehaviour:
   projectilePrefab: {fileID: 3193414950012080867, guid: a7152f7943c4475b9c75ec098acb3658, type: 3}
   throwStartBelowU: 1.5
   webEscapeGraceS: 1.5
---- !u!114 &2269083903314885017
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4732386835657357497}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b7e2c94a1d84f6e9c03d8a7e1f46b25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipSwitch
-  isSkippingTutorialsAndCutscenes: 1
