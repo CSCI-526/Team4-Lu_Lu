@@ -91,6 +91,15 @@ public class FallingCobraController: MonoBehaviour {
     private FallingCobraSpine spine;
     private FallingCobraCulling.Handle cullingHandle;
 
+    // Public Methods  #########################################################
+    /// <summary>builds the shared head template now, off the first cobra's
+    /// spawn; callable on the prefab asset, w/o an instance</summary>
+    public void PrewarmHeadTemplate() {
+        if (config != null) {
+            FallingCobraHeadMesh.PrewarmHeadTemplate(config);
+        }
+    }
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------

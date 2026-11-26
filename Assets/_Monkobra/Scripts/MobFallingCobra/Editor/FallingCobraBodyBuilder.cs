@@ -60,6 +60,11 @@ public static class FallingCobraBodyBuilder {
                 config);
             template = new FallingCobraHeadMesh(rig).CreateHeadTemplate(source,
                 size);
+            Debug.Log("FallingCobraBodyBuilder:\thead support "
+                + template.supportPoints.Length + " points of "
+                + template.vertices.Length + " vertices, worst depth error "
+                + FallingCobraHeadMesh.WorstSupportError(template.vertices,
+                    template.supportPoints) + " u");
         } finally {
             Object.DestroyImmediate(scratch);
         }

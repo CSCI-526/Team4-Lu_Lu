@@ -125,6 +125,9 @@ todo add 3x fruit
 
 - Spider King intro: legs keep walking while the king scuttles round the trunk,
   following its speed; new `EnterWalk` config sets the peak
+- first falling cobra no longer stalls the game: head template (about 0.6 s)
+  builds at scene start, support scan skips duplicate vertices, error check
+  runs only in `Falling Cobra Body` build
 
 ##### Houdong Pan
 
