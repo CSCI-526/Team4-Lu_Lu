@@ -134,6 +134,9 @@ public class SpiderWebWidget: MonoBehaviour {
     }
 
     private void ShowHint() {
+        if (TutorialSkipSwitch.IsSkipping) {
+            return;
+        }
         if (PopUpManager.I == null) {
             Debug.LogWarning(
                 "SpiderWebWidget:\tfail to get singleton: PopUpManager", this);

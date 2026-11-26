@@ -152,6 +152,19 @@ The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 a
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and `ToggleHints` turns the hack layer on or off: one shared static state (`HackShortcutConfig.TryToggleLayer`, off at every play start) that shows the list and lets every other hack key run, so a tester never triggers one by accident. `ToggleHints` reads only when `AreHintsShown`, so it never works in a release build, where the other keys stay live. The state holds across scenes, but only the gameplay scene's panel can flip it. A new hack key is a new `HackAction` plus an entry in the asset.
 
+### Tutorial Skip Switch
+
+One dev checkbox skips every tutorial pop up and cut scene, so a play test reaches the climb at once. It is `isSkippingTutorialsAndCutscenes` on the `TutorialSkipSwitch` component on the root object of the `GameController` prefab, so `GameplayScene` holds it and the title scene does not. Open `Prefabs/GameController/GameController.prefab` in the Editor and tick the box; it is off by default.
+
+The gate is `TutorialSkipSwitch.IsSkipping`: true only when `Debug.isDebugBuild` (the Editor or a development build) and the box is ticked, so a release build never skips, whatever the box says. What it skips:
+
+- the great cobra's chase-start cut scene (`CameraRigManager.RequestCobraAlert`); the cobra then runs its normal exit boost
+- the Spider King's first-encounter web intro (`SpiderWebIntroEvent`)
+- the run-start tutorial screen (`GameController.UpdateStartKey`), so a run opens straight in the starting zone
+- the pop ups that teach: each fruit's grab (`FruitGrabPrompt`), the coconut double-tap (`CoconutMessageWidget`), the web escape hint (`SpiderWebWidget`) and the low stamina hint (`LowStaminaWidget`)
+
+Not yet skipped: the intro comic after the title, which has no switch in its scene. Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene must check `IsSkipping` too. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
+
 ## Game Balance
 
 Game balance numbers live in 3 assets plus the score config, split by what they tune (how height becomes spawn chances is in [Balance Design](balance-doc.md)): `Settings/Player/PlayerBalanceConfig.asset` for the player's run, `Settings/Environment/WorldBalanceConfig.asset` for the generated world, and `Settings/MobGreatCobra/CobraBalanceConfig.asset` for both cobras, instances of the `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig` ScriptableObjects. Every score value lives in `Settings/Scoring/ScoreConfig.asset`, an instance of the `ScoreConfig` ScriptableObject, the one asset outside these 3 that holds balance numbers. To tweak the game's feel, edit these 4 files and nothing else: no balance value is hard-coded in a script.
@@ -347,12 +360,21 @@ Menu buttons swap sprites by state (Transition: Sprite Swap) over the [UI Style]
 The tutorial in `GameplayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. A dark Background wash dims the game behind the tutorial to show that the run has not started; its words are Baloo 2 and its keys keycaps, per the [UI Style](ui-style-doc.md#hud), and `ScreensManager` shows and hides the whole panel.
 
 
+## Falling Cobra Performance
+
+How many live falling cobras stay cheap. What each part does is in [Mobs](mob-doc.md#performance).
+
+- Tuning: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` 4, `trailClearancePasses` 2, `spineFairMaxPasses` 64, `spineFairToleranceU` 0.002; `bodyPrefab` is set only by the body menu
+- Menus: `Monkobra > Set Up Falling Cobra Layers` and `Monkobra > Build Falling Cobra Body`, each also callable in batch mode (`-executeMethod FallingCobraLayerSetup.Run`, `FallingCobraBodyBuilder.Run`)
+- Layers: `Player` (6) and `FallingCobra` (7); in the collision matrix `FallingCobra` collides with `Player` only; Maximum Allowed Timestep is 0.1 s (was 0.333 s)
+
 ## Conventions
 
 - Singletons: scene-scoped and first-wins. `TreeManager`, `UpwardFruitSensor`, `StaminaBarController`, `FruitFlyEffect`, and `ScoreManager` destroy a duplicate component only. `GameController` and `ScreensManager` destroy the duplicate's whole GameObject
 - Start Over Awake: a consumer that may start before its singleton reads it in `Start`, so Awake order never matters
 - Events Over Calls: detection scripts forward trigger events (`Entered`, `Exited`, `BranchHit`) rather than calling their consumers, and a segment announces its branches with `BranchesGenerated` rather than calling its decorators
 - Tags: `Branch`, `FruitCollider`, and `Player` drive trigger matching. Webs match by a Rigidbody component instead
+- Layers: the monkey is on `Player` and the falling cobra on `FallingCobra`, the only pair that collides for the cobra; everything else stays on `Default`. Set by `Monkobra > Set Up Falling Cobra Layers`, see [Falling Cobra Performance](#falling-cobra-performance)
 - Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig`, score values in `ScoreConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives

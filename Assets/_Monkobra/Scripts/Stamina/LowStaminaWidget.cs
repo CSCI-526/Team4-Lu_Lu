@@ -43,6 +43,9 @@ public class LowStaminaWidget: MonoBehaviour {
     private void OnLowStaminaMoveAttempted() {
         UnsubscribeStamina();
 
+        if (TutorialSkipSwitch.IsSkipping) {
+            return;
+        }
         if (PopUpManager.I == null) {
             Debug.LogWarning(
                 "LowStaminaWidget:\tfail to get singleton: PopUpManager",

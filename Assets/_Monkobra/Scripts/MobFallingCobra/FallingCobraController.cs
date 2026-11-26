@@ -32,11 +32,11 @@ public class FallingCobraController: MonoBehaviour {
     // Public Members  #########################################################
     /// <returns>pivot to the far end of the snake, hit radius included; u
     /// </returns>
-    public float LengthU => rig.animatedReferenceMesh != null
+    public float LengthU => rig.HasBody
         ?config.SmoothBodyLengthU:rig.hitCollider.height;
 
     /// <returns>how far the snake's tail reaches below its pivot; u</returns>
-    public float TailBelowPivotU => rig.animatedReferenceMesh != null
+    public float TailBelowPivotU => rig.HasBody
         ? rig.referenceHeadBelowPivotU : config.HitRadiusU;
 
     // Public Methods  #########################################################
@@ -89,6 +89,7 @@ public class FallingCobraController: MonoBehaviour {
     private FallingCobraEyes eyes;
     private FallingCobraSwimTrail trail;
     private FallingCobraSpine spine;
+    private FallingCobraCulling.Handle cullingHandle;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -183,7 +184,16 @@ public class FallingCobraController: MonoBehaviour {
         rig.lastHeadPoseTime = Time.time;
     }
 
+    private void OnEnable() {
+        // a cobra switched back on re-joins; a new one joins when perched
+        if (rig != null && rig.perchBound) {
+            JoinCullingGroup();
+        }
+    }
+
     private void OnDisable() {
+        FallingCobraCulling.Unregister(cullingHandle);
+        cullingHandle = null;
         if (rig.hissSource != null) {
             rig.hissSource.Stop();
         }
@@ -199,9 +209,6 @@ public class FallingCobraController: MonoBehaviour {
         }
         if (rig.eyePupilMesh != null) {
             Destroy(rig.eyePupilMesh);
-        }
-        if (rig.animatedReferenceMesh != null) {
-            Destroy(rig.animatedReferenceMesh);
         }
     }
 
@@ -294,6 +301,7 @@ public class FallingCobraController: MonoBehaviour {
             && Vector3.Dot(rig.player.position - root, rig.branchSide) < -.01f
                 ? -1f : 1f;
         rig.perchBound = true;
+        JoinCullingGroup();
         if (rig.referenceRenderer != null) {
             rig.referenceRenderer.enabled = true;
         }
@@ -306,8 +314,8 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void LateUpdate() {
-        if (rig.animatedReferenceMesh == null
-            || rig.state == FallingCobraState.Done || !rig.perchBound) {
+        if (!rig.HasBody || rig.state == FallingCobraState.Done
+            || !rig.perchBound) {
             return;
         }
         if (IsDormantAndIdle()) {
@@ -319,8 +327,8 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     // a perched cobra holds its last pose, so skip the spine rebuild, the
-    // costly part of a cobra (its whole body mesh made again on the CPU),
-    // while it is off screen or beyond its wake & tracking range; the
+    // costly part of a cobra, while the shared culling group says it is off
+    // the gameplay camera's view or beyond its wake & tracking range; the
     // margin lets any head turn finish first. Waking (Update) never waits
     // on it, and an awake cobra always rebuilds
     private bool IsDormantAndIdle() {
@@ -328,16 +336,34 @@ public class FallingCobraController: MonoBehaviour {
             || rig.player == null) {
             return false;
         }
-        if (rig.referenceRenderer != null && !rig.referenceRenderer.isVisible) {
-            return true;
+        return FallingCobraCulling.IsIdle(cullingHandle, CullingCenter(),
+            rig.player);
+    }
+
+    // seats the cobra in the shared culling group, once
+    private void JoinCullingGroup() {
+        if (cullingHandle != null) {
+            return;
         }
         float rangeU = Mathf.Max(config.HeadTrackingRangeU,
             config.TriggerDistanceU, rig.reachWakeDistanceU);
+        float radiusU = config.SmoothBodyLengthU * CULLING_RADIUS_SHARE;
+        // the group measures to the sphere, so the gate grows by its radius
         float gateU = rangeU + config.HeadTrackingExitPaddingU
-            + IDLE_MARGIN_U;
-        return (rig.player.position - transform.position).sqrMagnitude
-            > gateU * gateU;
+            + IDLE_MARGIN_U + radiusU;
+        cullingHandle = FallingCobraCulling.Register(CullingCenter(),
+            radiusU, gateU);
     }
+
+    private Vector3 CullingCenter() {
+        return transform.position + Vector3.up * CULLING_LIFT_U;
+    }
+
+    // the culling sphere's radius, as a share of the body length
+    private const float CULLING_RADIUS_SHARE = .5f;
+
+    // how far above the pivot the culling sphere sits; u
+    private const float CULLING_LIFT_U = 2f;
 
     // past the wake & tracking range, how far a perched cobra still
     // rebuilds its pose, so a head turn ends smoothly; u

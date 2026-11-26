@@ -49,3 +49,7 @@ Each popup is one entry of `Settings/PopUp/PopUpCatalog`; open the asset and edi
 3. Call `PopUpManager.I.Show(PopUpId.<Entry>, args)` from the listener of the event that should raise it
 
 An id with no definition logs a warning and shows nothing.
+
+## Dev Skip
+
+The tutorial skip switch (`TutorialSkipSwitch.IsSkipping`, a dev checkbox, never in a release build) keeps 6 teaching pop ups from showing: the fruit grabs (`BananaFirst`, `PineappleFirst`, `CoconutGrab`), `CoconutFirst`, `SpiderWebHint` and `LowStaminaHint`. The feedback pop ups still show. A new teaching pop up must check the switch, see [Tutorial Skip Switch](monkobra-tdd.md#tutorial-skip-switch).

@@ -303,12 +303,14 @@ public class GameController: MonoBehaviour {
     }
 
     // private methods  ########################################################
-    // only the start key leaves the tutorial; any other key does nothing
+    // only the start key leaves the tutorial; any other key does nothing; the
+    // dev switch leaves it at once, w/o a key
     private void UpdateStartKey() {
         if (
             State == GameState.Tutorial
-            && startRunAction != null
-            && startRunAction.action.WasPressedThisFrame()
+            && (TutorialSkipSwitch.IsSkipping
+                || startRunAction != null
+                && startRunAction.action.WasPressedThisFrame())
         ) {
             SetState(GameState.StartingZone);
         }

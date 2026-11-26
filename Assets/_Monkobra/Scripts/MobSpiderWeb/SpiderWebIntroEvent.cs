@@ -86,9 +86,11 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     }
 
     private void Start() {
-        // a climb in the endless run has its own boss rush, no intro
+        // a climb in the endless run has its own boss rush, no intro; the
+        // dev switch skips the intro too
         if (GameController.I != null
-            && GameController.I.Mode != RunMode.Full) {
+            && GameController.I.Mode != RunMode.Full
+            || TutorialSkipSwitch.IsSkipping) {
             enabled = false;
             return;
         }

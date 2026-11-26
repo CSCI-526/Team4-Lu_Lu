@@ -54,6 +54,11 @@ todo add 3x fruit
   pull away down the trunk round the tree to the cobra, a long look and the
   same way back; the cobra climbs 7 u/s during the pull away, then chases at
   normal speed; UI and "Run!" return the moment the shot ends
+- dev switch `TutorialSkipSwitch` (checkbox on the `GameController` prefab,
+  off by default): skips run-start tutorial screen, great cobra
+  start cut scene, Spider King web intro & the fruit grab, coconut double-tap,
+  web escape & low stamina hints; only in Editor/development build, never in a
+  release build
 
 ### Changed
 
@@ -64,6 +69,9 @@ todo add 3x fruit
 ##### Erik
 
 - F3 dev speed buff 3x → 5x
+- falling cobras lighter again: skinned body posed by bones, one shared culling
+  group for sleepers, own physics layers, capped trail & smoothing work; frame
+  8.4 → 4.2 ms with about 3 live cobras
 
 ##### Houdong Pan
 
@@ -86,6 +94,11 @@ todo add 3x fruit
 ### Deprecated
 
 ### Removed
+
+##### Erik
+
+- 5 unused fields of the falling cobra config: body twist, neck thickness &
+  neck rounding (3)
 
 ### Fixed
 

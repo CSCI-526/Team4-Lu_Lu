@@ -47,9 +47,6 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>how far the chest lifts while standing; u</returns>
     public float StandingChestLiftU => standingChestLiftU;
 
-    /// <returns>body twist along its length while standing; deg/u</returns>
-    public float BodyTwistDegPerU => bodyTwistDegPerU;
-
     /// <returns>steepest belly angle the supporting coil may take;
     /// deg</returns>
     public float MaximumSupportBellyAngleDeg => maximumSupportBellyAngleDeg;
@@ -106,10 +103,6 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>how fast the perched head turns to aim; higher is
     /// quicker</returns>
     public float PerchedAimSharpness => perchedAimSharpness;
-
-    /// <returns>thinnest the neck may get, as a share of body
-    /// thickness; 0.6~1</returns>
-    public float MinimumNeckThicknessShare => minimumNeckThicknessShare;
 
     /// <returns>sway of the free neck; u</returns>
     public float FreeNeckSwayU => freeNeckSwayU;
@@ -342,14 +335,25 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>length over which head contact blends; u</returns>
     public float HeadContactBlendLengthU => headContactBlendLengthU;
 
-    /// <returns>neck length that is rounded; u</returns>
-    public float RoundedNeckLengthU => roundedNeckLengthU;
+    /// <returns>the skinned body prefab baked by Monkobra > Build Falling
+    /// Cobra Body</returns>
+    public GameObject BodyPrefab => bodyPrefab;
 
-    /// <returns>smoothing passes over the rounded neck</returns>
-    public int RoundedNeckPasses => roundedNeckPasses;
+    /// <returns>most head samples the swim trail takes in one frame, however
+    /// slow the frame</returns>
+    public int MaxTrailSamplesPerFrame => maxTrailSamplesPerFrame;
 
-    /// <returns>largest offset the rounding may add; u</returns>
-    public float RoundedNeckMaxOffsetU => roundedNeckMaxOffsetU;
+    /// <returns>times the swim trail re-clears each head sample of the
+    /// branches</returns>
+    public int TrailClearancePasses => trailClearancePasses;
+
+    /// <returns>most smoothing passes over the spine corners in one frame
+    /// </returns>
+    public int SpineFairMaxPasses => spineFairMaxPasses;
+
+    /// <returns>the smoothing stops once no ring moves farther than this in
+    /// a pass; u</returns>
+    public float SpineFairToleranceU => spineFairToleranceU;
 
     // Inspector Fields  #######################################################
     [Header("Trigger")]
@@ -404,10 +408,6 @@ public class FallingCobraConfig: ScriptableObject {
     [SerializeField, Min(0f)]
     [Tooltip("how far the chest lifts while standing; u")]
     private float standingChestLiftU = .4f;
-
-    [SerializeField, Min(1f)]
-    [Tooltip("body twist along its length while standing; deg/u")]
-    private float bodyTwistDegPerU = 480f;
 
     [SerializeField, Range(0f, 89f)]
     [Tooltip("steepest belly angle the supporting coil may take; deg")]
@@ -481,10 +481,6 @@ public class FallingCobraConfig: ScriptableObject {
     [SerializeField, Min(.1f)]
     [Tooltip("how fast the perched head turns to aim; higher is quicker")]
     private float perchedAimSharpness = 7f;
-
-    [SerializeField, Range(.6f, 1f)]
-    [Tooltip("thinnest the neck may get, as a share of body thickness; 0.6~1")]
-    private float minimumNeckThicknessShare = .85f;
 
     [SerializeField, Min(0f)]
     [Tooltip("sway of the free neck; u")]
@@ -716,6 +712,11 @@ public class FallingCobraConfig: ScriptableObject {
     private CartoonCobraVisual.Settings cartoonAppearance = new();
 
     [Header("Falling Snake Visual")]
+    [SerializeField]
+    [Tooltip("skinned body of the snake; set only by Monkobra > Build "
+        + "Falling Cobra Body")]
+    private GameObject bodyPrefab;
+
     [SerializeField, Min(0.1f)]
     [Tooltip("scale of the snake against its reference size")]
     private float referenceSizeMultiplier = 1.5f;
@@ -790,17 +791,24 @@ public class FallingCobraConfig: ScriptableObject {
     [Tooltip("length over which head contact blends; u")]
     private float headContactBlendLengthU = .45f;
 
-    [SerializeField, Min(.2f)]
-    [Tooltip("neck length that is rounded; u")]
-    private float roundedNeckLengthU = 1.8f;
+    [Header("Work Caps")]
+    [SerializeField, Range(1, 64)]
+    [Tooltip("most head samples the swim trail takes in one frame; "
+        + "a lower cap keeps a slow frame from taking longer still")]
+    private int maxTrailSamplesPerFrame = 4;
 
-    [SerializeField, Range(1, 32)]
-    [Tooltip("smoothing passes over the rounded neck")]
-    private int roundedNeckPasses = 20;
+    [SerializeField, Range(1, 4)]
+    [Tooltip("times each trail sample is re-cleared of the branches")]
+    private int trailClearancePasses = 2;
 
-    [SerializeField, Min(.01f)]
-    [Tooltip("largest offset the rounding may add; u")]
-    private float roundedNeckMaxOffsetU = .12f;
+    [SerializeField, Range(1, 128)]
+    [Tooltip("most smoothing passes over the spine corners per frame")]
+    private int spineFairMaxPasses = 64;
+
+    [SerializeField, Min(0f)]
+    [Tooltip("spine smoothing stops once no ring moves farther than this "
+        + "in a pass; u")]
+    private float spineFairToleranceU = .002f;
 
     // Editor Validation  ######################################################
     private void OnValidate() {

@@ -10,6 +10,13 @@ public sealed class FallingCobraHeadMesh {
     private readonly FallingCobraRig rig;
     private readonly FallingCobraConfig config;
 
+    // directions the head's extreme points are taken in
+    private const int SUPPORT_DIRECTIONS = 512;
+
+    // the random directions that check the support points, and their seed
+    private const int SUPPORT_CHECKS = 1000;
+    private const int SUPPORT_CHECK_SEED = 7;
+
     public FallingCobraHeadMesh(FallingCobraRig rig) {
         this.rig = rig;
         config = rig.config;
@@ -34,18 +41,22 @@ public sealed class FallingCobraHeadMesh {
             || !segments[0].TryGetComponent(out Renderer source)) {
             return;
         }
-        if (config.CartoonAppearance.referenceBody != null) {
+        GameObject reference = config.CartoonAppearance.referenceBody;
+        if (reference != null && config.BodyPrefab == null) {
+            Debug.LogWarning("FallingCobraHeadMesh:\tno skinned body, run "
+                + "Monkobra > Build Falling Cobra Body", rig.host);
+        }
+        if (reference != null && config.BodyPrefab != null
+            && reference.TryGetComponent(out MeshFilter headSource)) {
             foreach (Transform segment in segments) {
                 if (segment.TryGetComponent(out Renderer renderer)) {
                     renderer.enabled = false;
                 }
             }
-            GameObject visual =
-                Object.Instantiate(config.CartoonAppearance.referenceBody,
-                    rig.host);
+            GameObject visual = Object.Instantiate(config.BodyPrefab,
+                rig.host);
             visual.name = "CartoonSnakeBody";
-            MeshFilter meshFilter = visual.GetComponent<MeshFilter>();
-            BuildFallingReference(meshFilter);
+            BuildFallingReference(headSource.sharedMesh, visual);
             return;
         }
         rig.cartoonVisual =
@@ -88,6 +99,9 @@ public sealed class FallingCobraHeadMesh {
     public sealed class HeadTemplate {
         public Mesh mesh;
         public Vector3[] vertices, rim, rimNormals;
+        // the extreme vertices of the head, in about SUPPORT_DIRECTIONS
+        // directions; FitHeadToBark scans these, not every vertex
+        public Vector3[] supportPoints;
         public Vector2[] rimUV;
         public Bounds bounds;
         public float front;
@@ -289,6 +303,7 @@ public sealed class FallingCobraHeadMesh {
             template.rimNormals[side] =
                 new Vector3(direction.x, 0f, direction.y);
         }
+        template.supportPoints = BuildSupportPoints(template.vertices);
         template.mesh = new Mesh {
             name = "Original rigid snake head", hideFlags = HideFlags.DontSave,
             indexFormat = UnityEngine.Rendering.IndexFormat.UInt32,
@@ -301,11 +316,78 @@ public sealed class FallingCobraHeadMesh {
         return template;
     }
 
-    public void BuildFallingReference(MeshFilter filter) {
+    // for each of SUPPORT_DIRECTIONS evenly spread directions, the head vertex
+    // farthest against it; a vertex wanted by several directions counts once.
+    // The least dot product of these points with any direction is the head's
+    // support depth there, to within the spread of the directions
+    private static Vector3[] BuildSupportPoints(Vector3[] vertices) {
+        List<Vector3> points = new List<Vector3>();
+        HashSet<int> chosen = new HashSet<int>();
+        float goldenAngle = Mathf.PI * (3f - Mathf.Sqrt(5f));
+        for (int k = 0; k < SUPPORT_DIRECTIONS; k++) {
+            float y = 1f - 2f * (k + .5f) / SUPPORT_DIRECTIONS;
+            float ring = Mathf.Sqrt(1f - y * y);
+            Vector3 direction =
+                new Vector3(Mathf.Cos(goldenAngle * k) * ring, y,
+                    Mathf.Sin(goldenAngle * k) * ring);
+            int best = 0;
+            float bestDot = float.PositiveInfinity;
+            for (int i = 0; i < vertices.Length; i++) {
+                float dot = Vector3.Dot(vertices[i], direction);
+                if (dot < bestDot) {
+                    bestDot = dot;
+                    best = i;
+                }
+            }
+            if (chosen.Add(best)) {
+                points.Add(vertices[best]);
+            }
+        }
+        if (Debug.isDebugBuild) {
+            Debug.Log("FallingCobraHeadMesh:	head support "
+                + points.Count + " points of " + vertices.Length
+                + " vertices, worst depth error "
+                + WorstSupportError(vertices, points) + " u");
+        }
+        return points.ToArray();
+    }
+
+    // largest gap between the support depth of all vertices and of the
+    // support points, over fixed random directions; u
+    private static float WorstSupportError(Vector3[] vertices,
+        List<Vector3> points) {
+        System.Random random = new System.Random(SUPPORT_CHECK_SEED);
+        float worst = 0f;
+        for (int k = 0; k < SUPPORT_CHECKS; k++) {
+            Vector3 direction =
+                new Vector3((float)random.NextDouble() - .5f,
+                    (float)random.NextDouble() - .5f,
+                    (float)random.NextDouble() - .5f).normalized;
+            float all = float.PositiveInfinity, few = float.PositiveInfinity;
+            foreach (Vector3 vertex in vertices) {
+                all = Mathf.Min(all, Vector3.Dot(vertex, direction));
+            }
+            foreach (Vector3 point in points) {
+                few = Mathf.Min(few, Vector3.Dot(point, direction));
+            }
+            worst = Mathf.Max(worst, few - all);
+        }
+        return worst;
+    }
+
+    // the rigid head from the source mesh, and the baked skinned body the
+    // spine poses each frame
+    public void BuildFallingReference(Mesh source, GameObject body) {
         rig.swimPhaseOffset =
             (float)new System.Random(rig.host.GetInstanceID()).NextDouble()
                 * Mathf.PI * 2f;
-        Mesh source = filter.sharedMesh;
+        if (!body.TryGetComponent(out SkinnedMeshRenderer skinned)
+            || skinned.bones.Length != BodyRings) {
+            Debug.LogError("FallingCobraHeadMesh:\tbody prefab needs a "
+                + "SkinnedMeshRenderer of " + BodyRings + " bones, run "
+                + "Monkobra > Build Falling Cobra Body", rig.host);
+            return;
+        }
         float size =
             config.HitRadiusU * 2f * config.ReferenceSizeMultiplier
                 / Mathf.Max(source.bounds.size.x, source.bounds.size.z);
@@ -316,76 +398,21 @@ public sealed class FallingCobraHeadMesh {
             template = CreateHeadTemplate(source, size);
             headTemplates.Add(key, template);
         }
-        rig.originalHeadVertices = template.vertices;
-        rig.headVertexCount = template.vertices.Length;
+        rig.headSupportPoints = template.supportPoints;
         rig.originalHeadFront = template.front;
         rig.originalHeadFaceBasis = template.faceBasis;
         rig.originalHeadFaceCenter = template.faceCenter;
         rig.neckRim = template.rim;
-        rig.neckTextureUV = template.rimUV;
-        rig.neckSourceNormals = template.rimNormals;
         rig.originalHeadBounds = template.bounds;
         foreach (Vector3 p in rig.neckRim) {
             rig.headNeckRadiusU = Mathf.Max(rig.headNeckRadiusU, p.magnitude);
         }
         Bounds headBounds = template.bounds;
-        int total = BodyRings * BodyStride + 2;
-        rig.referenceWaveVertices = new Vector3[total];
-        rig.referenceWaveNormals = new Vector3[total];
-        rig.paintedBellyDirections = new Vector3[total];
-        Vector2[] coordinates = new Vector2[total];
-        Vector2[] sourceUV = new Vector2[total];
-        Color[] colors = new Color[total];
-        List<int> indices = new List<int>(BodyRings * BodySides * 6);
-        for (int ring = 0; ring < BodyRings; ring++) {
-            float along = ring / (float)(BodyRings - 1);
-            for (int side = 0; side <= BodySides; side++) {
-                int vertex = ring * BodyStride + side;
-                coordinates[vertex] =
-                    new Vector2(side / (float)BodySides, along);
-                sourceUV[vertex] = rig.neckTextureUV[side];
-                colors[vertex] = new Color(1f, 0f, 0f, 1f);
-                if (ring + 1 < BodyRings && side < BodySides) {
-                    int next = vertex + BodyStride;
-                    indices.Add(vertex);
-                    indices.Add(next);
-                    indices.Add(vertex + 1);
-                    indices.Add(vertex + 1);
-                    indices.Add(next);
-                    indices.Add(next + 1);
-                }
-            }
-        }
-        int tip = total - 2;
-        int neckCap = total - 1;
-        colors[neckCap] = new Color(1f, 0f, 0f, 1f);
-        coordinates[neckCap] = new Vector2(.5f, 0f);
-        sourceUV[neckCap] = rig.neckTextureUV[0];
-        for (int side = 0; side < BodySides; side++) {
-            indices.Add(neckCap);
-            indices.Add(side);
-            indices.Add(side + 1);
-        }
-        colors[tip] = new Color(1f, 0f, 0f, 1f);
-        coordinates[tip] = new Vector2(.5f, 1f);
-        for (int side = 0; side < BodySides; side++) {
-            indices.Add((BodyRings - 1) * BodyStride + side);
-            indices.Add(tip);
-            indices.Add((BodyRings - 1) * BodyStride + side + 1);
-        }
-        rig.animatedReferenceMesh = new Mesh { name = "Smooth spine snake" };
-        rig.animatedReferenceMesh.MarkDynamic();
-        rig.animatedReferenceMesh.vertices = rig.referenceWaveVertices;
-        rig.animatedReferenceMesh.normals = rig.referenceWaveNormals;
-        rig.animatedReferenceMesh.uv = coordinates;
-        rig.animatedReferenceMesh.uv2 = sourceUV;
-        rig.animatedReferenceMesh.colors = colors;
-        rig.animatedReferenceMesh.triangles = indices.ToArray();
-        filter.sharedMesh = rig.animatedReferenceMesh;
-        rig.referenceVisual = filter.transform;
+        rig.bodyBones = skinned.bones;
+        rig.referenceVisual = body.transform;
         rig.referenceVisual.localScale = Vector3.one;
         rig.referenceVisual.localPosition = Vector3.zero;
-        rig.referenceRenderer = filter.GetComponent<Renderer>();
+        rig.referenceRenderer = skinned;
         rig.referenceHeadVisual =
             new GameObject("CartoonSnakeHead", typeof(MeshFilter),
                 typeof(MeshRenderer)).transform;
@@ -402,9 +429,7 @@ public sealed class FallingCobraHeadMesh {
             rig.referenceVisual.gameObject.layer;
         rig.surfaceBlock = new MaterialPropertyBlock();
         rig.spineCenters = new Vector3[BodyRings];
-        rig.spineTangents = new Vector3[BodyRings];
         rig.spineRadii = new float[BodyRings];
-        rig.spineContact = new float[BodyRings];
         rig.referenceHeadBelowPivotU =
             Mathf.Max(config.HitRadiusU, -headBounds.min.y + .05f);
         rig.hitCollider.radius =

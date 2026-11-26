@@ -173,6 +173,7 @@ public class FruitGrabPrompt: MonoBehaviour {
 
     private bool CanShowPrompt() {
         return game != null && sensor != null
+            && !TutorialSkipSwitch.IsSkipping
             && game.IsRunLive && Time.timeScale > 0f
             && !game.IsLeaping
             && (monkey == null || !monkey.IsHeld)

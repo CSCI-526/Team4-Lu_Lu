@@ -385,6 +385,11 @@ public class CameraRigManager: MonoBehaviour {
         if (config == null || cobra == null || cobra.IsGuarding) {
             return;
         }
+        // the dev switch skips this cut scene; the cobra keeps its normal
+        // exit boost, as no start creep is banked
+        if (TutorialSkipSwitch.IsSkipping) {
+            return;
+        }
         // the shot is a journey: pull away, look, pull back the same way
         float travelS = config.CobraAlertTravelS;
         float totalS = 2f * travelS + config.CobraAlertSeeS;

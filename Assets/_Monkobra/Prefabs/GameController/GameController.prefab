@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7414378922096876825}
   - component: {fileID: 1544209386470739513}
   - component: {fileID: 5415272717504592885}
+  - component: {fileID: 2269083903314885017}
   m_Layer: 0
   m_Name: GameController
   m_TagString: GameController
@@ -48,7 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86fb2bc84d004f242b0de1f8524ce0a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  restartInputDelay: 0.5
+  restartInputDelayS: 0.5
   startRunAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   pauseAction: {fileID: -1960936080266752685, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   restartAfterLoseAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -107,7 +108,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 020eca9c4269c428dbc4a58ae33e619d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoconutManager
   playerBalanceConfig: {fileID: 11400000, guid: 6ce5d249000443e49bba5365e143c660, type: 2}
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -115,3 +116,16 @@ MonoBehaviour:
   projectilePrefab: {fileID: 3193414950012080867, guid: a7152f7943c4475b9c75ec098acb3658, type: 3}
   throwStartBelowU: 1.5
   webEscapeGraceS: 1.5
+--- !u!114 &2269083903314885017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732386835657357497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b7e2c94a1d84f6e9c03d8a7e1f46b25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipSwitch
+  isSkippingTutorialsAndCutscenes: 1

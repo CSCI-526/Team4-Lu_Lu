@@ -24,7 +24,6 @@ MonoBehaviour:
   standingFaceHeightU: 2.2
   standingNeckLengthU: 1.8
   standingChestLiftU: 0.4
-  bodyTwistDegPerU: 480
   maximumSupportBellyAngleDeg: 75
   standingBaseHeightU: 1
   standingCoilOuterRadiusU: 0.8
@@ -43,7 +42,6 @@ MonoBehaviour:
   branchEscapeClearanceU: 0.12
   branchHeadSideU: 1.1
   perchedAimSharpness: 7
-  minimumNeckThicknessShare: 0.85
   freeNeckSwayU: 0.12
   bodyBarkSettleDropU: 1.2
   bodyBarkContactFeatherU: 0.05
@@ -108,6 +106,7 @@ MonoBehaviour:
     spots: {r: 0.52, g: 0.85, b: 0.16, a: 1}
     smoothness: 0.38
     headScale: 1
+  bodyPrefab: {fileID: 2689775342019903979, guid: 19a562d3b6ade374388ce510c35b380d, type: 3}
   referenceSizeMultiplier: 1.5
   referenceFaceDirection: {x: -0.435, y: -0.265, z: -0.861}
   bodyWaveSpeedHz: 1
@@ -126,6 +125,7 @@ MonoBehaviour:
   neckWaistScale: 0.74
   releaseCurveDurationS: 1.15
   headContactBlendLengthU: 0.45
-  roundedNeckLengthU: 1.8
-  roundedNeckPasses: 20
-  roundedNeckMaxOffsetU: 0.12
+  maxTrailSamplesPerFrame: 4
+  trailClearancePasses: 2
+  spineFairMaxPasses: 64
+  spineFairToleranceU: 0.002

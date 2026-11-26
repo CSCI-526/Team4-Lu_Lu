@@ -59,17 +59,12 @@ public sealed class FallingCobraRig {
     public float branchHeadSideSign = 1f;
     public float perchedAimSide = 1f;
     public float perchedCoilPhaseDegrees;
-    public Vector3[] roundedRingCenters;
-    public Vector3[] originalRingCenters;
-    public Vector2[] neckTextureUV;
-    public Vector3[] neckSourceNormals;
     public float headNeckRadiusU;
     public Quaternion originalHeadFaceBasis;
     public Quaternion standingHeadRotation;
     public Vector3 originalHeadFaceCenter;
     public Vector3 releaseTrailOffset;
     public float releaseStandingBlend;
-    public float[] spineContact;
     public AudioSource hissSource;
     public float nextHissTime;
     public float attackDistanceU;
@@ -127,20 +122,15 @@ public sealed class FallingCobraRig {
     public bool swimTrailReady;
     public bool spinePoseReady;
     public bool swimRotationInitialized;
-    public Mesh animatedReferenceMesh;
+    public Transform[] bodyBones;  // one per ring, posed each frame
     public Transform referenceVisual;
-    public Vector3[] referenceWaveVertices;
-    public Vector3[] referenceWaveNormals;
-    public Vector3[] neckSurfaceBuffer;
-    public Vector3[] neckSurfaceOriginal;
-    public Vector3[] paintedBellyDirections;
-    public Vector3[] originalHeadVertices;
+    public bool HasBody => referenceRenderer != null
+        && bodyBones != null;
+    public Vector3[] headSupportPoints;
     public Transform referenceHeadVisual;
     public Renderer referenceHeadRenderer;
-    public int headVertexCount;
     public Vector3[] neckRim;
     public Vector3[] spineCenters;
-    public Vector3[] spineTangents;
     public float[] spineRadii;
     public float originalHeadFront;
     public float referenceHeadBelowPivotU;
