@@ -324,7 +324,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
             (Time.time - phaseStartTime) / Mathf.Max(0.01f, config.EnterTimeS)
         );
         float eased = Mathf.SmoothStep(0f, 1f, t);
-        float walk = 4f * t * (1f - t);
+        float walk = config.EnterWalk * 4f * t * (1f - t);
         king.Place(
             kingAngleDeg + config.EnterAngleDeg * (1f - eased),
             kingY,
