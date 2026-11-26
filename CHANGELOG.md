@@ -52,6 +52,9 @@ todo add 3x fruit
 ##### Erik
 
 - F3 dev speed buff 3x → 5x
+- falling cobras lighter again: skinned body posed by bones, one shared culling
+  group for sleepers, own physics layers, capped trail & smoothing work; frame
+  8.4 → 4.2 ms with about 3 live cobras
 
 ##### Houdong Pan
 
@@ -74,6 +77,11 @@ todo add 3x fruit
 ### Deprecated
 
 ### Removed
+
+##### Erik
+
+- 5 unused fields of the falling cobra config: body twist, neck thickness &
+  neck rounding (3)
 
 ### Fixed
 
