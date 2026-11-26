@@ -34,7 +34,7 @@ todo add 3x fruit
 
 - beating a boss scores: 1000 points for the Cobra King and 2000 for the
   Spider King, added as the climb goes on after the reward, every win of the
-  endless boss rush included
+  Hardcore boss rush included
 
 ##### Houdong Pan
 
@@ -57,7 +57,7 @@ todo add 3x fruit
   camera eases to the bare trunk, the king scuttles in round it from the far
   side, glows, and spits a web that traps the monkey, so the first web is
   always met with its escape hint; the great cobra holds still until the
-  monkey breaks free; never in Endless mode
+  monkey breaks free; never in Hardcore mode
 - slower great cobra start: the camera flies its own smooth journey, an eased
   pull away down the trunk round the tree to the cobra, a long look and the
   same way back; the cobra climbs 7 u/s during the pull away, then chases at
