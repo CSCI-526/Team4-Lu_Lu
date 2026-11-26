@@ -134,7 +134,8 @@ public class SpiderWebWidget: MonoBehaviour {
     }
 
     private void ShowHint() {
-        if (TutorialSkipManager.IsSkipping) {
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(TutorialItem.WebEscapeHint)) {
             return;
         }
         if (PopUpManager.I == null) {

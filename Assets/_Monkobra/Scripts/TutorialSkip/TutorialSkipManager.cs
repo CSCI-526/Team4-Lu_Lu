@@ -18,13 +18,6 @@ public class TutorialSkipManager: MonoBehaviour {
         get; private set;
     }
 
-    /// <returns>if tutorials and cut scenes are skipped now, ie a development
-    /// build or the Editor w/ the checkbox on; never in a release build
-    /// </returns>
-    /// <remarks>temporary, until every reader asks by its own key</remarks>
-    public static bool IsSkipping =>
-        Debug.isDebugBuild && I != null && I.isSkippingTutorialsAndCutscenes;
-
     /// <param name="item">the tutorial or cut scene asking</param>
     /// <returns>if the item is skipped now, ie the dev switch is on</returns>
     public bool ShouldSkip(TutorialItem item) {
@@ -55,7 +48,7 @@ public class TutorialSkipManager: MonoBehaviour {
 
         I = this;
 
-        if (IsSkipping) {
+        if (Debug.isDebugBuild && isSkippingTutorialsAndCutscenes) {
             Debug.Log(
                 "TutorialSkipManager:\tskipping tutorials and cut scenes",
                 this
