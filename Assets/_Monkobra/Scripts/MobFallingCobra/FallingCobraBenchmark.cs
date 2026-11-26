@@ -60,6 +60,9 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
         public float meanDormant;
         public float meanWarning;
         public float meanFalling;
+        public float meanCullingRegistered;
+        public float meanCullingVisible;
+        public float meanCullingNear;
         public int hitCount;
         public List<NameCount> hitSources = new();
         public List<MetricStats> metrics = new();
@@ -238,6 +241,9 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
     private int dormantSum;
     private int warningSum;
     private int fallingSum;
+    private int cullingRegisteredSum;
+    private int cullingVisibleSum;
+    private int cullingNearSum;
     private int spawnedTotal;
     private ProfilerRecorder mainThread;
     private readonly List<Metric> recorders = new();
@@ -358,6 +364,10 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
                 case FallingCobraState.Falling: falling++; break;
             }
         }
+        FallingCobraCulling.Count(out int visible, out int near);
+        cullingRegisteredSum += FallingCobraCulling.RegisteredCount;
+        cullingVisibleSum += visible;
+        cullingNearSum += near;
         checkCount++;
         liveSum += live;
         dormantSum += dormant;
@@ -553,6 +563,10 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
             report.meanDormant = dormantSum / (float)checkCount;
             report.meanWarning = warningSum / (float)checkCount;
             report.meanFalling = fallingSum / (float)checkCount;
+            report.meanCullingRegistered =
+                cullingRegisteredSum / (float)checkCount;
+            report.meanCullingVisible = cullingVisibleSum / (float)checkCount;
+            report.meanCullingNear = cullingNearSum / (float)checkCount;
         }
         foreach (KeyValuePair<string, int> entry in hitSources) {
             report.hitSources.Add(new NameCount { name = entry.Key,
