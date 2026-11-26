@@ -29,12 +29,16 @@ MonoBehaviour:
   hues:
   - kind: 0
     hueDeg: 48
+    valueScale: 1
   - kind: 1
-    hueDeg: 24
+    hueDeg: 22
+    valueScale: 0.65
   - kind: 2
-    hueDeg: 335
+    hueDeg: 35
+    valueScale: 1
   - kind: 3
     hueDeg: 190
+    valueScale: 1
   monkeyColor: {r: 1, g: 0.949, b: 0.824, a: 1}
   monkeyWidthU: 0.04
   ghostHaloAlpha: 0.55

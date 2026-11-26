@@ -63,9 +63,9 @@ public static class OutlineMaterialBuilder {
         failCount += CheckKind(style, FruitKind.Banana,
             "#CCBA70", "#FFF6D1", "#FFCC00");
         failCount += CheckKind(style, FruitKind.Coconut,
-            "#CC9570", "#FFE3D1", "#FF6600");
+            "#855F49", "#FFE2D1", "#A63D00");
         failCount += CheckKind(style, FruitKind.Pineapple,
-            "#CC7096", "#FFD1E4", "#FF006A");
+            "#CCA670", "#FFECD1", "#FF9500");
 
         if (failCount == 0) {
             Debug.Log("Outline style check PASS: 9 tier materials match");

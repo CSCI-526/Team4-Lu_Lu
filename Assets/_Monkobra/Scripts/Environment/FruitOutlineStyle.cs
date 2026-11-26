@@ -51,7 +51,12 @@ public class FruitOutlineStyle: ScriptableObject {
     /// <summary>Tier color, HSV of the kind's hue at the tier's S and V.</summary>
     public Color GetTierColor(FruitKind kind, OutlineTier tier) {
         int i = (int)tier;
-        return Color.HSVToRGB(GetHueDeg(kind) / 360f, sat[i], val[i]);
+        FruitHue entry = GetEntry(kind);
+        // the whitish Reachable tier keeps full value; the others darken
+        float v = tier == OutlineTier.Reachable
+            ? val[i]
+            : val[i] * entry.valueScale;
+        return Color.HSVToRGB(entry.hueDeg / 360f, sat[i], v);
     }
 
     /// <summary>
@@ -144,12 +149,12 @@ public class FruitOutlineStyle: ScriptableObject {
 
     [Header("Fruit Hues")]
     [SerializeField]
-    [Tooltip("hue per fruit kind; deg")]
+    [Tooltip("hue per fruit kind, deg; valueScale darkens Normal & Grabbable")]
     private FruitHue[] hues = {
-        new FruitHue { kind = FruitKind.Banana, hueDeg = 48f },
-        new FruitHue { kind = FruitKind.Coconut, hueDeg = 24f },
-        new FruitHue { kind = FruitKind.Pineapple, hueDeg = 335f },
-        new FruitHue { kind = FruitKind.Melon, hueDeg = 190f },
+        new FruitHue { kind = FruitKind.Banana, hueDeg = 48f, valueScale = 1f },
+        new FruitHue { kind = FruitKind.Coconut, hueDeg = 22f, valueScale = 0.65f },
+        new FruitHue { kind = FruitKind.Pineapple, hueDeg = 35f, valueScale = 1f },
+        new FruitHue { kind = FruitKind.Melon, hueDeg = 190f, valueScale = 1f },
     };
 
     [Header("Monkey")]
@@ -180,6 +185,7 @@ public class FruitOutlineStyle: ScriptableObject {
     private struct FruitHue {
         public FruitKind kind;
         public float hueDeg;
+        public float valueScale;
     }
 
     // names the boss golden fruit code also sets
@@ -206,16 +212,16 @@ public class FruitOutlineStyle: ScriptableObject {
         new Dictionary<(FruitKind, OutlineTier), Material>();
 
     // private methods  ########################################################
-    private float GetHueDeg(FruitKind kind) {
+    private FruitHue GetEntry(FruitKind kind) {
         foreach (FruitHue entry in hues) {
             if (entry.kind == kind) {
-                return entry.hueDeg;
+                return entry;
             }
         }
         Debug.LogWarning(
             $"FruitOutlineStyle:\tno hue for {kind}, using 0",
             this
         );
-        return 0f;
+        return new FruitHue { kind = kind, hueDeg = 0f, valueScale = 1f };
     }
 }
