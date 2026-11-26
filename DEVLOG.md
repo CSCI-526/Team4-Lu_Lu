@@ -2,6 +2,93 @@
 
 <!-- Todo devlog -->
 
+## Week 15
+
+Many live falling cobras slowed the game, CPU-bound. Reading the code found 7 causes; a benchmark built this week then measured each fix against the old commit.
+
+Findings:
+
+- CPU Tube Rebuild: 1,632 body vertices rebuilt in C# every frame a cobra moved, w/ about 3,300 native `Slerp` calls (about 94% no-ops), 20 full-array neck copies & a legacy mesh upload
+- Head Scan: `FitHeadToBark` re-scanned all 41,046 head vertices on almost every call
+- Trail Spiral: `AdvanceSwimTrail` took `ceil(frameTime × 120)` samples a frame (up to 64) × 4 clearance passes, so each snake cost more as the frame rate fell
+- Fixed Smoothing: `FairSpineCorners` always ran 64 passes, never stopping early
+- Physics Spiral: Maximum Allowed Timestep 0.333 s allowed up to 16 FixedUpdates in a slow frame
+- Dormant Gate: `Renderer.isVisible` counts shadow maps & the Scene view, so off screen sleeping snakes kept rebuilding
+- Trigger Tests: the monkey & the cobra were both on `Default`, so a cobra's trigger tested the trunk, branches & fruit
+
+Our fixes:
+
+- CPU Tube Rebuild → Skinned Body: the tube is baked in the Editor (`Monkobra > Build Falling Cobra Body`) into a `SkinnedMeshRenderer` w/ 1 bone per ring (96). The spine only sets bone poses & the engine skins it; the shader takes the belly paint from the trunk axis, `uv.y` & per-renderer branch values, since the per-vertex belly direction is gone. Initially 2-bone weights; changed to 1 bone per vertex at full weight, because the old tube was rigid per ring, so it matches exactly. The blend weight stays a constant at 0
+- Dormant Gate → Culling Group: 1 shared `CullingGroup` (gameplay camera, the monkey as distance reference, 1 band at the old gate) replaces `isVisible`. Shadows stay on
+- Head Scan → Support Points: the head template keeps the extreme vertex of 512 directions, 188 unique points, worst depth error 0.004 u
+- Trail Spiral → Capped Work: 4 samples a frame & 2 clearance passes, both in `FallingCobraConfig`
+- Fixed Smoothing → Early Stop: smoothing stops once no ring moves farther than `spineFairToleranceU`. Initially 0.0005 u, which cut `FairSpineCorners` only 9%; changed to 0.002 u (under 1% of the body radius), which cut it 45%
+- Physics Spiral → Timestep 0.1 s
+- Trigger Tests → Layers: `Player` & `FallingCobra`; the collision matrix lets the cobra meet `Player` only, & the head sweep follows the matrix
+
+How we measured:
+
+- Harness: a dev-build-only `FallingCobraBenchmark` (`-fallingCobraBenchmark <folder>`) loads the gameplay scene, holds the monkey beside the cobras, times the `FallingCobra.*` profiler markers & physics with `ProfilerRecorder` (no Profiler window), then writes JSON & screenshots. Frames that spawned a cobra are left out
+- Protocol: 3 s warm-up, 12 s recorded, fixed seed, 3 runs per side. Initially 300 frames; changed to game time, since at 4 ms a frame 420 frames end before a snake's 2.5 s warning, so no snake ever struck (0 hits)
+- Baseline: the old commit `85f33f7` built in a temporary worktree w/ the same harness copied in, so both sides ran the same protocol & scene
+- GPU: Unity picked the integrated GPU by default; `-force-device-index 1` put it on the RX 7900 XTX, checked in the player log & Windows GPU counters (431 MB on the dGPU, 2 MB on the iGPU)
+- Check: a hit must land from the same monkey part as before; 6 hits per run, all from `Entities/_Monkey`, on both sides
+- Limits: the placement rules (4 u separation, real branches) keep only about 3 cobras live near the monkey, not the 12 the harness asks for (about 1.5 perched, 1.3 warning & 0.25 falling). GPU skinning cost is not measured, & the trail spiral never shows at about 240 fps
+- Raw JSON, logs & screenshots of every run stay outside the repository, in `benchmark/` next to it
+
+Results, ms per frame, mean of 3 runs:
+
+| Metric | Before | After | Change |
+| --- | --- | --- | --- |
+| Whole frame, main thread | 8.44 | 4.22 | -50% |
+| Cobra `LateUpdate` | 5.26 | 1.16 | -78% |
+| Tube mesh build → bone pose | 2.72 | 0.11 | -96% |
+| `PlaceNeckSpine` | 1.15 | 0.68 | -41% |
+| `FairSpineCorners` | 1.05 | 0.58 | -45% |
+| `RoundNeckSurface` | 0.94 | 0.00 | -100% |
+| `AdvanceSwimTrail` | 0.27 | 0.00 | -98% |
+| `Physics.Simulate` | 0.08 | 0.04 | -47% |
+
+```mermaid
+xychart-beta
+    title "Before: ms per frame"
+    x-axis ["Frame", "LateUpdate", "Tube", "PlaceNeck", "Fair", "RoundNeck", "Trail"]
+    y-axis "ms" 0 --> 9
+    bar [8.44, 5.26, 2.72, 1.15, 1.05, 0.94, 0.27]
+```
+
+```mermaid
+xychart-beta
+    title "After: ms per frame"
+    x-axis ["Frame", "LateUpdate", "Pose", "PlaceNeck", "Fair", "RoundNeck", "Trail"]
+    y-axis "ms" 0 --> 9
+    bar [4.22, 1.16, 0.11, 0.68, 0.58, 0.00, 0.00]
+```
+
+Also this week:
+
+- Tooling: 3 Editor menus, each also callable in batch mode: `Set Up Falling Cobra Layers`, `Build Falling Cobra Body` & `Run Falling Cobra Benchmark`
+- Docs: the Mobs doc gained a Performance section; the TDD, CONTEXT & AGENTS follow, w/ the rule that the layers & the body are set only through their menus
+
+Not addressed yet:
+
+- `Spine` still costs 1.14 ms a frame (`PlaceNeckSpine` 0.68, `FairSpineCorners` 0.58), & some frames still run 4 to 5 snakes through it at once
+- Hack key 5's cobra never attaches to a branch, so by the code it stays hidden & never wakes; the benchmark perches cobras through the spawner instead
+- For review: the neck outline is a touch less smooth now that the per-vertex neck rounding is gone, & the belly may sink up to 0.024 u into the bark. The `RoundedNeck*` config values are unused
+- The 12 live cobras the plan aimed for: the placement rules would have to loosen
+
+![Warning snake before, head & neck close up](./devlog-assets/wk15-cobra-warning-close-before.png)
+*Before: CPU tube; hooded head, collar, belly paint & coil*
+
+![Warning snake after, head & neck close up](./devlog-assets/wk15-cobra-warning-close-after.png)
+*After: skinned body; same head, collar & paint, the neck outline a touch less smooth on its left edge*
+
+![Falling snake before](./devlog-assets/wk15-cobra-falling-before.png)
+*Before: a cobra 0.5 s into its fall, uncoiling off its branch, w/ the monkey below*
+
+![Falling snake after](./devlog-assets/wk15-cobra-falling-after.png)
+*After: the same moment of the fall, shape & paint matching; the heads turn a little differently since each run shoots another instant of the head turn*
+
 ## Week 13: Beta `1.0.0-beta`
 
 This week closes out the findings still open from the 2026-11-03 in-class pod playtest & the Alpha survey:
