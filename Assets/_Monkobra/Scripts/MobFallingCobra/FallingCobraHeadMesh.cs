@@ -326,42 +326,53 @@ public sealed class FallingCobraHeadMesh {
     private static Vector3[] BuildSupportPoints(Vector3[] vertices) {
         System.Diagnostics.Stopwatch timer =
             System.Diagnostics.Stopwatch.StartNew();
+        // the head is a triangle soup, so scan each position once; the first
+        // occurrence keeps its order, so ties pick the same vertex as before
+        HashSet<Vector3> seen = new HashSet<Vector3>();
+        List<Vector3> unique = new List<Vector3>();
+        foreach (Vector3 vertex in vertices) {
+            if (seen.Add(vertex)) {
+                unique.Add(vertex);
+            }
+        }
+        int count = unique.Count;
+        float[] xs = new float[count], ys = new float[count],
+            zs = new float[count];
+        for (int i = 0; i < count; i++) {
+            xs[i] = unique[i].x;
+            ys[i] = unique[i].y;
+            zs[i] = unique[i].z;
+        }
         List<Vector3> points = new List<Vector3>();
         HashSet<int> chosen = new HashSet<int>();
         float goldenAngle = Mathf.PI * (3f - Mathf.Sqrt(5f));
         for (int k = 0; k < SUPPORT_DIRECTIONS; k++) {
             float y = 1f - 2f * (k + .5f) / SUPPORT_DIRECTIONS;
             float ring = Mathf.Sqrt(1f - y * y);
-            Vector3 direction =
-                new Vector3(Mathf.Cos(goldenAngle * k) * ring, y,
-                    Mathf.Sin(goldenAngle * k) * ring);
+            float dx = Mathf.Cos(goldenAngle * k) * ring, dy = y,
+                dz = Mathf.Sin(goldenAngle * k) * ring;
             int best = 0;
             float bestDot = float.PositiveInfinity;
-            for (int i = 0; i < vertices.Length; i++) {
-                float dot = Vector3.Dot(vertices[i], direction);
+            for (int i = 0; i < count; i++) {
+                float dot = xs[i] * dx + ys[i] * dy + zs[i] * dz;
                 if (dot < bestDot) {
                     bestDot = dot;
                     best = i;
                 }
             }
             if (chosen.Add(best)) {
-                points.Add(vertices[best]);
+                points.Add(unique[best]);
             }
         }
         supportMs = timer.Elapsed.TotalMilliseconds;
-        if (Debug.isDebugBuild) {
-            Debug.Log("FallingCobraHeadMesh:	head support "
-                + points.Count + " points of " + vertices.Length
-                + " vertices, worst depth error "
-                + WorstSupportError(vertices, points) + " u");
-        }
         return points.ToArray();
     }
 
-    // largest gap between the support depth of all vertices and of the
-    // support points, over fixed random directions; u
-    private static float WorstSupportError(Vector3[] vertices,
-        List<Vector3> points) {
+    /// <summary>largest gap between the support depth of all vertices and of
+    /// the support points, over fixed random directions; u. Costly, so only
+    /// the body builder calls it</summary>
+    public static float WorstSupportError(Vector3[] vertices,
+        Vector3[] points) {
         System.Random random = new System.Random(SUPPORT_CHECK_SEED);
         float worst = 0f;
         for (int k = 0; k < SUPPORT_CHECKS; k++) {
@@ -409,7 +420,7 @@ public sealed class FallingCobraHeadMesh {
                 Debug.Log("FallingCobraHeadMesh:\thead template built in "
                     + timer.Elapsed.TotalMilliseconds.ToString("F1")
                     + " ms, support points " + supportMs.ToString("F1")
-                    + " ms");
+                    + " ms (" + template.supportPoints.Length + " points)");
             }
         }
         rig.headSupportPoints = template.supportPoints;
