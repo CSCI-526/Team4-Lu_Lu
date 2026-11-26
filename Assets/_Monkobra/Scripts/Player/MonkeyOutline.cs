@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Keeps the skinned monkey model outlined at all times, with the same
-/// inverted-hull <c>FruitOutline</c> look as a grabbable fruit, in white.
+/// world-unit inverted-hull outline a fruit wears, in cream.
 /// The outline is an extra material slot on every renderer under the model.
 /// </summary>
 public class MonkeyOutline: MonoBehaviour {
@@ -12,7 +12,7 @@ public class MonkeyOutline: MonoBehaviour {
     private Transform modelRoot;
 
     [SerializeField]
-    [Tooltip("always-on outline material, white")]
+    [Tooltip("always-on outline material, cream, world-unit width")]
     private Material outlineMat;
 
     // MonoBehaviour Lifecycle  ################################################
