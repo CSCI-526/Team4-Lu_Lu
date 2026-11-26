@@ -14,6 +14,18 @@ todo add 3x fruit
 -->
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## [Unreleased]
 
 ### Added
@@ -87,6 +99,18 @@ todo add 3x fruit
 
 [unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.5...dev
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## [1.0.0-beta.5] - 2026-11-24
 
 ### Added
@@ -151,6 +175,18 @@ todo add 3x fruit
   errors
 
 [1.0.0-beta.5]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.4...v1.0.0-beta.5
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## [1.0.0-beta.4] - 2026-11-17
 
