@@ -74,13 +74,9 @@ public class WorldBalanceConfig: ScriptableObject {
     public AnimationCurve RoughBarkSpawnProbabilityCurve =>
         roughBarkSpawnProbabilityCurve;
 
-    /// <returns>web creation attempts rolled per segment</returns>
-    public int WebAttemptCount => webAttemptCount;
-
-    /// <returns>x: ramped difficulty 0~3; y: chance 0~1 that one attempt
-    /// creates a web</returns>
-    public AnimationCurve WebSpawnProbabilityCurve =>
-        webSpawnProbabilityCurve;
+    /// <returns>x: ramped difficulty 0~3; y: expected webs per
+    /// <see cref="TrunkScatter.DENSITY_SPAN_U"/> of trunk</returns>
+    public AnimationCurve WebDensityCurve => webDensityCurve;
 
     /// <returns>climbed height where the Cobra King zone begins: the ramp
     /// reaches 1 here and nothing unrelated to the fight is generated from
@@ -303,17 +299,11 @@ public class WorldBalanceConfig: ScriptableObject {
 
     [Header("Spider Web")]
     [SerializeField]
-    [Min(0)]
-    [Tooltip("web creation attempts rolled per segment")]
-    private int webAttemptCount = 2;
-
-    [SerializeField]
     [Tooltip(
-        "x: ramped difficulty 0~3; y: chance 0~1 that one attempt "
-            + "creates a web"
+        "x: ramped difficulty 0~3; y: expected webs per 10 u of trunk"
     )]
-    private AnimationCurve webSpawnProbabilityCurve =
-        AnimationCurve.Linear(0f, 0f, 1f, 0.5f);
+    private AnimationCurve webDensityCurve =
+        AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
     [Header("Boss Fight")]
     [SerializeField]
@@ -436,7 +426,6 @@ public class WorldBalanceConfig: ScriptableObject {
         );
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
         roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
-        webAttemptCount = Mathf.Max(0, webAttemptCount);
         // the zone is ordered: start <= trigger <= end
         bossZoneStartU = Mathf.Max(0f, bossZoneStartU);
         bossTriggerHeightU = Mathf.Max(bossZoneStartU, bossTriggerHeightU);

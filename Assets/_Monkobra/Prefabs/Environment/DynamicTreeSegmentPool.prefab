@@ -70,9 +70,8 @@ MonoBehaviour:
   surfaceOffsetU: 0.02
   minWebSeparationU: 4
   clearanceU: 0.3
-  maxPlacementAttempts: 30
   useTestOverride: 0
-  testSpawnChance: 1
+  testDensity: 3
 --- !u!114 &2395132498185291626
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,6 +90,7 @@ MonoBehaviour:
   minCobraSeparationU: 4
   maxPlacementAttempts: 20
   ambushMinAboveBananaU: 3
+  ambushMaxAboveBananaU: 6
 --- !u!114 &4417260983517402211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106,4 +106,3 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: e4a28ba4bfa949ae8101f8623af67167, type: 2}
   useFixedSeed: 0
   fixedSeed: 12345
-  ambushMaxAboveBananaU: 6

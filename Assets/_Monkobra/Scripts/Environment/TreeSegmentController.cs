@@ -22,6 +22,12 @@ public class TreeSegmentController: MonoBehaviour {
         BranchesGenerated;
 
     // Public Methods  #########################################################
+    /// <returns>the segment's world-space bounds, read from its Collider
+    /// </returns>
+    public Bounds GetBounds() {
+        return segmentCollider.bounds;
+    }
+
     /// <returns>the segment's world-space height, read from its Collider
     /// bounds</returns>
     public float GetHeight() {
@@ -141,12 +147,6 @@ public class TreeSegmentController: MonoBehaviour {
         isReady = true;
     }
 
-    // wait for Start, so TreeManager.I is set whatever the Awake order
-    private void Start() {
-        if (!enabled || hasGenerated) {
-            return;
-        }
-        hasGenerated = true;
     private void OnEnable() {
         liveSegments.Add(this);
     }
@@ -155,6 +155,12 @@ public class TreeSegmentController: MonoBehaviour {
         liveSegments.Remove(this);
     }
 
+    // wait for Start, so TreeManager.I is set whatever the Awake order
+    private void Start() {
+        if (!enabled || hasGenerated) {
+            return;
+        }
+        hasGenerated = true;
         if (TreeManager.I == null) {
             Debug.LogWarning(
                 "TreeSegmentController:\tno TreeManager in scene, "
@@ -181,17 +187,17 @@ public class TreeSegmentController: MonoBehaviour {
     private readonly HashSet<Transform> prefabChildren = new();
     private bool isReady; // if Awake passed the Inspector guard
     private bool hasGenerated; // if branches were rolled once already
+    private readonly List<ScatterItem> scatterItems = new();
+
+    // every enabled segment, so branches keep clear across joints
+    private static readonly List<TreeSegmentController> liveSegments =
+        new();
 
     // private methods  ########################################################
     // inactive first, Destroy only lands at the end of the frame and the
     // dead branches must not block physics queries on the restart frame
     private void ClearDecorations() {
         for (int i = transform.childCount - 1; i >= 0; i--) {
-    private readonly List<ScatterItem> scatterItems = new();
-
-    // every enabled segment, so branches keep clear across joints
-    private static readonly List<TreeSegmentController> liveSegments =
-        new();
             Transform child = transform.GetChild(i);
             if (prefabChildren.Contains(child)) {
                 continue;
@@ -278,12 +284,6 @@ public class TreeSegmentController: MonoBehaviour {
             : 0f;
     }
 
-    private GameObject GetBranchPrefab(BranchKind kind) {
-        return kind switch {
-            BranchKind.Empty => branchEmptyPrefab,
-            BranchKind.Banana => branchBananaPrefab,
-            BranchKind.Coconut => branchCoconutPrefab,
-            BranchKind.Pineapple => branchPineapplePrefab,
     private static ScatterChannel GetScatterChannel(BranchKind kind) {
         return kind switch {
             BranchKind.Banana => ScatterChannel.BananaBranch,
@@ -325,6 +325,12 @@ public class TreeSegmentController: MonoBehaviour {
         return positions;
     }
 
+    private GameObject GetBranchPrefab(BranchKind kind) {
+        return kind switch {
+            BranchKind.Empty => branchEmptyPrefab,
+            BranchKind.Banana => branchBananaPrefab,
+            BranchKind.Coconut => branchCoconutPrefab,
+            BranchKind.Pineapple => branchPineapplePrefab,
             _ => null
         };
     }
@@ -433,13 +439,13 @@ public class TreeSegmentController: MonoBehaviour {
             ) {
                 break;
             }
+            isClear = isClear && isCloseAccepted;
         }
 
         // no spot clear of the monkey and the others: skip
         if (!isClear) {
             return;
         }
-            isClear = isClear && isCloseAccepted;
 
         placedPositions.Add(branchPosition);
 
