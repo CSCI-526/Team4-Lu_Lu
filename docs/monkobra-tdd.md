@@ -37,9 +37,9 @@ A system gets its own document when it spans several scripts and carries rules a
 | Scene | Purpose |
 | --- | --- |
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
-| `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build Intro Comic` from `tools/comic/panels/` |
+| `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build > Intro Comic` from `tools/comic/panels/` |
 | `LevelSelectScene` | Normal Play, Hardcore Mode (locked until the Cobra King has been beaten once), Back |
-| `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `GameplayScene` | both run modes (see Run mode below); its root is 8 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `GameController`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
 graph LR
@@ -59,7 +59,7 @@ Every scene change goes through `SceneNames.Load`, which resets the time scale a
 
 Run mode: `GameController.Mode` (`RunMode.Full` or `Hardcore`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Hardcore` the run is a boss rush (`HardcoreBossRush`, see [Mobs](mob-doc.md#hardcore-boss-rush)): the Cobra King and the Spider King take turns every `hardcoreBossIntervalU` (100 u), each repeat a harder Loop, starting without armor as Normal Play does; the monkey and the great cobra climb at normal speed (`hardcoreSpeedScale`, 1); `RampedDifficultyManager` holds Normal Play's plateau (`PlateauValue`) from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
 
-Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Hardcore out until it is set. The Editor menu items `Monkobra/Unlock Hardcore` and `Monkobra/Reset Progress` flip it for testing.
+Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Hardcore out until it is set. The Editor menu items `Monkobra/Progress/Unlock Hardcore` and `Monkobra/Progress/Reset Progress` flip it for testing.
 
 Personal copies of `GameplayScene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
@@ -91,7 +91,7 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 
 ## Run Lifecycle
 
-`RunController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event, and only `GameplayScene` has it. A run ends in a loss, or in a win by defeating the Cobra King. What any scene may need, so far the run `Mode`, sits on the across-scene `GameController` instead (prefab in `Resources/`, created by `PersistentBootstrapLoader`, kept across scene loads).
+`RunController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event, and only `GameplayScene` has it. A run ends in a loss, or in a win by defeating the Cobra King. What any scene may need, so far the run `Mode`, sits on the across-scene `GameController` instead (prefab `Prefabs/GameController/`, in every scene, kept across scene loads); it also carries the launch managers `AnalyticsManager`, `ControlStyleManager`, `MusicManager` and `TutorialSkipManager` as components, runs first (execution order -1000, the managers' -990), and is the one class that destroys a duplicate or calls `DontDestroyOnLoad`.
 
 ```mermaid
 stateDiagram-v2
@@ -124,7 +124,7 @@ Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and the 
 
 ## Analytics
 
-`AnalyticsManager` is a singleton component on its own `Analytics` prefab, one per scene, and the first one is kept across every scene load: one session and file per launch, menus included. A scene load closes an open run as `Interrupted`, and each run is tagged with the scene's run mode. It observes the run (`RunController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
+`AnalyticsManager` is a singleton component of the `GameController` prefab, one per scene, and the first one is kept across every scene load: one session and file per launch, menus included. A scene load closes an open run as `Interrupted`, and each run is tagged with the scene's run mode. It observes the run (`RunController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
 
 A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB filesystem), so the download key renders the session in memory and `WebDownload` hands it to the browser through `Plugins/WebGL/Download.jslib`. A run still open is rendered as it stands and keeps recording. Elsewhere the same key saves the session file and logs its path.
 
@@ -162,14 +162,14 @@ The keys group by use: F1~F3 cheats that toggle, 3~6 spawns, F8~F10 analytics, F
 
 ### Tutorial Skip Manager
 
-One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Resources/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
+One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Prefabs/GameController/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
 
 - `ShouldSkip(TutorialItem)`: true if the dev checkbox is on, or the item was already seen this session and its entry in `TutorialSkipConfig` (`Settings/TutorialSkip/TutorialSkipConfig.asset`) skips it once seen; a release build never honours the checkbox
 - `MarkSeen(TutorialItem)`: the item calls it once it has shown or been completed
 
 The scope is once per session, with nothing saved: an item shows on the first run of a launch and skips on every later run and scene load until the game is closed. The session set lives on the persistent `GameController`, so it survives a restart. To make one item show every run again, untick its entry in `TutorialSkipConfig`; no recompile.
 
-The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by default and honoured only when `Debug.isDebugBuild` (the Editor or a development build): open `Resources/GameController.prefab` and tick it to skip every item at once. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
+The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by default and honoured only when `Debug.isDebugBuild` (the Editor or a development build): open `Prefabs/GameController/GameController.prefab` and tick it to skip every item at once. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
 
 | `TutorialItem` | Item | Marked seen |
 | --- | --- | --- |
@@ -314,7 +314,7 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 
 ### Control Style
 
-`ControlStyleManager` (prefab `ControlStyleManager`, kept in every scene and also created by `PersistentBootstrapLoader` from `Resources/` before the first scene when none exists; the first instance is kept across loads, and a later copy destroys itself with a warning that is expected) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
+`ControlStyleManager` (a component of the `GameController` prefab, in every scene; the first instance is kept across loads, and a later copy is destroyed by its `GameController` before it wakes) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
 
 - `ControlStyleLabel`: one text under a keyboard and a touch wording, blank hides it; `Configure` sets both from code
 - `ControlStyleSwitch`: shows a keyboard group or a touch group of objects, eg the tutorial's keyboard icons and its touch guide, or a key icon that only a keyboard needs
@@ -335,8 +335,8 @@ behaviour, identity limits and emulator verification are in
 
 `LeaderboardNameEditor` saves a display nickname in project-scoped PlayerPrefs
 and requests a resubmission through `LeaderboardWidget`. Identity remains the
-anonymous UID, including across name changes. `UIStyleBuilder.LeaderboardNames`
-builds the field/button through Editor APIs. `TextInputFocus` guards
+anonymous UID, including across name changes. The field/button
+live in `Leaderboard.prefab`. `TextInputFocus` guards
 `RunController`, `RunScreenMenu` and the centralized hack-key reader during text
 entry so a typed shortcut cannot restart a run or trigger a hack.
 The nickname editor runs after TMP's LateUpdate to suspend IME composition for
@@ -383,12 +383,32 @@ Menu buttons swap sprites by state (Transition: Sprite Swap) over the [UI Style]
 The tutorial in `GameplayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. A dark Background wash dims the game behind the tutorial to show that the run has not started; its words are Baloo 2 and its keys keycaps, per the [UI Style](ui-style-doc.md#hud), and `ScreensManager` shows and hides the whole panel.
 
 
+## Editor Menu
+
+The `Monkobra` menu is the one layout reference; every other doc names an item by its path here. A separator marks a priority gap above 10.
+
+| Menu | Item | Does |
+| --- | --- | --- |
+| `Build` | `UI Fonts` | Baloo 2 font assets, Title material, TMP default font |
+| `Build` | `UI Button Prefabs` | `MenuButton` & `IconButton` |
+| `Build` | `Title Screen` | the `TitleScreen` prefab picture |
+| `Build` | `Intro Comic` | the intro comic sprites, config, prefab & scene |
+| `Build` | `Outline Materials` | outline style asset & base materials |
+| `Build` | `Outline Prefab Wiring` | outline style & kind on the fruit & monkey prefabs |
+| `Build` | `Falling Cobra Body` | the falling cobra's skinned body mesh & prefab |
+| `Progress` | `Unlock Endless`, `Reset Progress` | the saved Endless unlock |
+| top level | `Report Trunk Scatter` | per-channel trunk scatter report |
+| top level | `Reset Leaderboard Emulator Identity` | forget the demo emulator's refresh token |
+
+`Build` items regenerate an asset from its source, top-down in dependency order (fonts before the title & comic, materials before wiring).
+
 ## Falling Cobra Performance
 
 How many live falling cobras stay cheap. What each part does is in [Mobs](mob-doc.md#performance).
 
 - Tuning: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` 4, `trailClearancePasses` 2, `spineFairMaxPasses` 64, `spineFairToleranceU` 0.002; `bodyPrefab` is set only by the body menu
-- Menus: `Monkobra > Set Up Falling Cobra Layers` and `Monkobra > Build Falling Cobra Body`, each also callable in batch mode (`-executeMethod FallingCobraLayerSetup.Run`, `FallingCobraBodyBuilder.Run`)
+- Menu: `Monkobra > Build > Falling Cobra Body`, also callable in batch mode (`-executeMethod FallingCobraBodyBuilder.Run`); it also logs the head support points' worst depth error
+- Head Template: built once per run by `FallingCobraSpawner.OnEnable` (`FallingCobraController.PrewarmHeadTemplate`), never at the first cobra's spawn; a new place that spawns cobras before the spawner is enabled must call it first
 - Layers: `Player` (6) and `FallingCobra` (7); in the collision matrix `FallingCobra` collides with `Player` only; Maximum Allowed Timestep is 0.1 s (was 0.333 s)
 
 ## Conventions
@@ -397,7 +417,7 @@ How many live falling cobras stay cheap. What each part does is in [Mobs](mob-do
 - Start Over Awake: a consumer that may start before its singleton reads it in `Start`, so Awake order never matters
 - Events Over Calls: detection scripts forward trigger events (`Entered`, `Exited`, `BranchHit`) rather than calling their consumers, and a segment announces its branches with `BranchesGenerated` rather than calling its decorators
 - Tags: `Branch`, `FruitCollider`, and `Player` drive trigger matching. Webs match by a Rigidbody component instead
-- Layers: the monkey is on `Player` and the falling cobra on `FallingCobra`, the only pair that collides for the cobra; everything else stays on `Default`. Set by `Monkobra > Set Up Falling Cobra Layers`, see [Falling Cobra Performance](#falling-cobra-performance)
+- Layers: the monkey is on `Player` and the falling cobra on `FallingCobra`, the only pair that collides for the cobra; everything else stays on `Default`. Saved in `ProjectSettings` & both prefabs, see [Falling Cobra Performance](#falling-cobra-performance)
 - Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig`, score values in `ScoreConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives

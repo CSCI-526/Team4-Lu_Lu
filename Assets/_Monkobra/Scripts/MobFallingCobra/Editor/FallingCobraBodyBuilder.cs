@@ -5,7 +5,7 @@ using UnityEngine;
 using static FallingCobraRig;
 
 /// <summary>
-/// <c>Monkobra/Build Falling Cobra Body</c> bakes the falling cobra's body
+/// <c>Monkobra/Build/Falling Cobra Body</c> bakes the falling cobra's body
 /// tube into a skinned mesh, so the engine skins it from one bone per ring
 /// instead of the CPU building its 1632 vertices each frame. The bind pose is
 /// the tube stretched straight along +Y from the head's neck rim, with the
@@ -30,7 +30,7 @@ public static class FallingCobraBodyBuilder {
     }
 
     // private methods  ########################################################
-    [MenuItem("Monkobra/Build Falling Cobra Body")]
+    [MenuItem("Monkobra/Build/Falling Cobra Body", false, 70)]
     private static void RunFromMenu() {
         Build();
     }
@@ -60,6 +60,11 @@ public static class FallingCobraBodyBuilder {
                 config);
             template = new FallingCobraHeadMesh(rig).CreateHeadTemplate(source,
                 size);
+            Debug.Log("FallingCobraBodyBuilder:\thead support "
+                + template.supportPoints.Length + " points of "
+                + template.vertices.Length + " vertices, worst depth error "
+                + FallingCobraHeadMesh.WorstSupportError(template.vertices,
+                    template.supportPoints) + " u");
         } finally {
             Object.DestroyImmediate(scratch);
         }

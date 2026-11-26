@@ -44,7 +44,7 @@ Dev keys (their hints and the dev-only UI show only in development builds and th
 
 ## Getting Started
 
-Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `TitleScene` and press Play (or open `GameplayScene` to start a run directly). Hardcore Mode unlocks after the Cobra King is beaten once; for testing use the Editor menu `Monkobra/Unlock Hardcore`. The game also runs in the browser from the WebGL export served by GitHub Pages; the builds are described in [Build](docs/build-doc.md).
+Open the repository folder through Unity Hub with Editor `6000.3.22f1` (Unity 6, URP), then open `TitleScene` and press Play (or open `GameplayScene` to start a run directly). Hardcore Mode unlocks after the Cobra King is beaten once; for testing use the Editor menu `Monkobra/Progress/Unlock Hardcore`. The game also runs in the browser from the WebGL export served by GitHub Pages; the builds are described in [Build](docs/build-doc.md).
 
 ### Testing the Coconut
 
@@ -55,7 +55,7 @@ The real values live in the Coconut group of `Settings/Player/PlayerBalanceConfi
 ### Optional Online Leaderboard
 
 The lose screen supports Firebase's Spark free plan for persistent top scores.
-Run `Monkobra > Leaderboard > Prepare Firebase Leaderboard`, then follow
+The config asset and its prefab wiring already exist; follow
 [Firebase Leaderboard](docs/leaderboard-doc.md) to enable Anonymous Auth, publish
 the rules and enter the public client settings. Until configured it shows the
 original simulated **PRACTICE** board. Local emulators allow testing without a

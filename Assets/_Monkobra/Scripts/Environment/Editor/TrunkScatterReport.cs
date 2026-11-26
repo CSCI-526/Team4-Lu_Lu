@@ -27,7 +27,7 @@ public static class TrunkScatterReport {
     private const float STACK_BOTTOM_U = -45f;
 
     // Menu  ###################################################################
-    [MenuItem(MENU_PATH)]
+    [MenuItem(MENU_PATH, false, 200)]
     public static void Run() {
         WorldBalanceConfig world = LoadAsset<WorldBalanceConfig>(
             "Settings/Environment/WorldBalanceConfig.asset"

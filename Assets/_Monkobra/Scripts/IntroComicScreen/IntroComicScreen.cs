@@ -18,7 +18,7 @@ public class IntroComicScreen: MonoBehaviour {
     // Public Members  #########################################################
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("the panels, written by Monkobra/Build Intro Comic")]
+    [Tooltip("the panels, written by Monkobra/Build/Intro Comic")]
     private IntroComicConfig config;
 
     [Header("Input")]

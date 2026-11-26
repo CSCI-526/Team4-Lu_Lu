@@ -15,7 +15,7 @@ Profile settings (Pages cannot set response headers):
 - Splash Screen: "Show Splash Screen" off (Player Settings > Splash Image), so the loading page hands straight over to the title
 - Development Build: on, since the hack hints and dev-only UI need it ([Dev Keys](#dev-keys)); the cost is a larger, slower export
 - Default Canvas: 1280×720 (720p), only the starting size, since `FitWindow` resizes the canvas to the window; the `GameplayScene` Canvas Scaler uses the same 1280×720 reference, so the UI lays out the same at any size
-- Scenes: the global list, in order `TitleScene` (the startup scene), `IntroComicScene`, `LevelSelectScene`, `GameplayScene`; `Monkobra > Build Intro Comic` puts the comic scene after the title
+- Scenes: the global list, in order `TitleScene` (the startup scene), `IntroComicScene`, `LevelSelectScene`, `GameplayScene`; `Monkobra > Build > Intro Comic` puts the comic scene after the title
 
 Phones: iOS browsers (all WebKit) have no Fullscreen API for a canvas and cannot lock the orientation. The `FitWindow` template therefore hides the Fullscreen button there and shows an Add to Home Screen hint, links `manifest.webmanifest` for a chrome-less launch from the home screen, and, on a touch phone held in portrait, covers the page with a rotate message and calls `RunController.PauseFromBrowser`, so a live run waits behind the pause screen
 
@@ -58,7 +58,7 @@ Both WebGL builds open on a loading page drawn by `FitWindow/index.html` (HTML a
 - Hand-over: its last frame is the `TitleScreen` prefab picture, with "Loading" where the title shows its start prompt; `TitleScreen` calls `Plugins/WebGL/TitleScreenLoader.jslib` after its first frame and the page then fades out, or after 8 s if no call comes
 - Input: while the page is up it takes every click, tap and key, so none reaches Unity underneath and starts the title unseen; keys keep their browser default
 - Art: `WebGLLoaderArt` (Editor script) copies `Sprites/TitleScreen/*.png` and the UI font (`Fonts/Baloo2/Baloo2-SemiBold.ttf`, see [UI Style](ui-style-doc.md)) into the build's `TemplateData/TitleScreen/` after every WebGL build, so the page and the prefab share one set of files
-- Layout: one 1280×720 table, written twice: the `LAYOUT` block of `index.html` and the table in `TitleScreenLayoutBuilder` (Editor script), which builds the `TitleScreen` prefab picture from `Monkobra > Build Title Screen`; change both together and rebuild, or the hand-over shows a jump
+- Layout: one 1280×720 table, written twice: the `LAYOUT` block of `index.html` and the table in `TitleScreenLayoutBuilder` (Editor script), which builds the `TitleScreen` prefab picture from `Monkobra > Build > Title Screen`; change both together and rebuild, or the hand-over shows a jump
 
 The Windows build has no page: it opens on the title and shows no team logos.
 

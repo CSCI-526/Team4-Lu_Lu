@@ -59,7 +59,7 @@ A panel that shows what is behind it: `Sprites/UI/Plate_Fill`, tinted Panel at a
 
 ## Key Icons
 
-The input icons (`Sprites/InputIcons/`) stay, worn as keycaps: the icon's Image draws the matching `*_keycap` silhouette in Brown with a Shadow component (2 right, 3 down, Shadow color), and a child `Outline` Image draws the original outline in Cream on top (`UIStyleBuilder.MakeKeycap`). The fill has no holes, so the shadow never shows through the key.
+The input icons (`Sprites/InputIcons/`) stay, worn as keycaps: the icon's Image draws the matching `*_keycap` silhouette in Brown with a Shadow component (2 right, 3 down, Shadow color), and a child `Outline` Image draws the original outline in Cream on top. The fill has no holes, so the shadow never shows through the key.
 
 A Space icon with a press clip keeps its keycap on the root Image and draws the key on the `Outline` child, so the clip's sprite curve points at `Outline`; the finger icons are no keys and only take the Cream. An animated input icon (the `InputIcon_Key` and `InputIcon_Touch` entities in `Prefabs/InputIcons/`, driven by the controllers in `Animations/InputIcons/`) is sized by its rect, never by its scale: its press clip writes the scale (1, 0.92, back to 1), so a scaled icon looks right in the Editor and shrinks back in Play. `UIStyleBuilder.SizeAnimatedIcons` moves any such scale into the rect.
 
@@ -67,24 +67,18 @@ A Space icon with a press clip keeps its keycap on the root Image and draws the 
 
 - Lay out against the 1280×720 Canvas Scaler (match 0.5) with anchors, layout groups, and a 24 unit margin from the screen edge, never a fixed position that only fits 16:9; check 16:9, 16:10, and 4:3
 - Full-screen menus hang the loading page's vines (`TitleScreenLayoutBuilder.BuildVines`), so they read as the same place
-- A `ControlStyleSwitch` picks its keyboard or touch group only in Play, so the Editor would show both rows on top of each other; the builders leave the keyboard group on and the touch group off (`UIStyleBuilder.ShowKeyboardGroups`), and Play switches them as usual
+- A `ControlStyleSwitch` picks its keyboard or touch group only in Play, so the Editor would show both rows on top of each other; leave the keyboard group on and the touch group off in the prefab, and Play switches them as usual
 
 ## Applying It
 
-All of it is built by Editor menus, never by editing prefab YAML:
+Only the fonts and the buttons are built by Editor menus, never by editing prefab YAML:
 
-1. `Monkobra > UI Style > 1. Build Fonts`: the two TMP font assets, the Title material, and the TMP default font; existing font assets are kept, since a rebuild would change their GUIDs
-2. `Monkobra > UI Style > 2. Build Button Prefabs`: `MenuButton` and `IconButton`
-3. `Monkobra > UI Style > 3. Style Level Select`: the level selection and its key hint rows
-4. `Monkobra > UI Style > 4. Style HUD`: the input icons, the HUD prefabs, the popups, the tutorial, and the font overrides of both gameplay scenes
-5. `Monkobra > UI Style > 5. Style Pause and Lose Screens`: the pause screen, the lose screen, and the leaderboard
-6. `Monkobra > Build Title Screen`: the title picture, whose start prompt words take the loading page's font
-7. `Monkobra > UI Style > 6. Build Leaderboard Name Input`: the Baloo 2 nickname
-   field and gold MenuButton SAVE control; the screen and Firebase setup builders
-   apply it too. The same ten rows use 27-unit spacing to leave room for the input
-   and a small-print hint inside the existing plate.
+1. `Monkobra > Build > UI Fonts`: the two TMP font assets, the Title material, and the TMP default font; existing font assets are kept, since a rebuild would change their GUIDs
+2. `Monkobra > Build > UI Button Prefabs`: `MenuButton` and `IconButton`
+3. `Monkobra > Build > Title Screen`: the title picture, whose start prompt words take the loading page's font
+4. `Monkobra > Build > Intro Comic`: the comic's caption plate and Skip button
 
-`Build All` runs steps 1 to 3. To change the character set, cut the fonts again from the Google Fonts variable `Baloo2[wght].ttf` with fontTools (instance at weight 600 and 800, then subset), delete the two SDF assets, and run step 1.
+The level selection, HUD, popups, tutorial, pause and lose screens and the leaderboard were restyled once with this look and now keep it in their prefabs; a new element follows this document by hand in the Editor, using the shared helpers of `UIStyleBuilder` where they fit. To change the character set, cut the fonts again from the Google Fonts variable `Baloo2[wght].ttf` with fontTools (instance at weight 600 and 800, then subset), delete the two SDF assets, and run step 1.
 
 ## HUD
 

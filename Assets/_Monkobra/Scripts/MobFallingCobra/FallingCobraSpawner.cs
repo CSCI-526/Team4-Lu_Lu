@@ -104,6 +104,8 @@ public class FallingCobraSpawner: MonoBehaviour {
             return;
         }
         listener = this;
+        // before any segment rolls, so the 1st cobra finds the head cached
+        cobraPrefab.PrewarmHeadTemplate();
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
     }
 

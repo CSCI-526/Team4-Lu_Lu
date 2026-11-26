@@ -4,8 +4,6 @@
 FIXME erik mpv tutorial for boss fight
 FIXME erik b/t boss fight, better randomization
 
-Hack general gap review, optimize & clean up helper scripts
-
 bug make leaderboard works
 todo lighting improvement
 todo vertical version adaptation
@@ -67,7 +65,7 @@ todo add 3x fruit
   was already seen; `TutorialSkipConfig` turns one item back to every run; a
   boss lesson counts as seen only once that boss is beaten, and the saved
   armor words key is gone
-- dev checkbox on `Resources/GameController.prefab` (off by default): skips
+- dev checkbox on `Prefabs/GameController/GameController.prefab` (off by default): skips
   every item at once, the intro comic too; only in Editor/development build,
   never in a release build
 - 2 boss dev scenes, `DEVBossCobraKingScene` & `DEVBossSpiderKingScene`: each
@@ -84,10 +82,17 @@ todo add 3x fruit
 ##### Erik
 
 - branch bark outline thicker, 0.03 → 0.05 u
+- one `GameController` prefab in every scene now carries the launch singletons
+  as components (`AnalyticsManager`, `ControlStyleManager`, `MusicManager`,
+  `TutorialSkipManager`); no `Resources.Load`, only it destroys a duplicate &
+  keeps itself across loads, so the duplicate warnings are gone
+- `Monkobra` menu regrouped: `Build` (UI Fonts, UI Button Prefabs, Title
+  Screen, Intro Comic, Outline Materials, Outline Prefab Wiring, Falling Cobra
+  Body), `Progress` (Unlock Endless, Reset Progress), then Report Trunk
+  Scatter & Reset Leaderboard Emulator Identity
 - F3 dev speed buff 3x → 5x
 - `GameController` split: `RunController` (renamed, `GameplayScene` only) keeps
-  the run state, a new across-scene `GameController` (`Resources/`) holds the
-  run mode
+  the run state, a new across-scene `GameController` holds the run mode
 - falling cobras lighter again: skinned body posed by bones, one shared culling
   group for sleepers, own physics layers, capped trail & smoothing work; frame
   8.4 → 4.2 ms with about 3 live cobras
@@ -121,6 +126,11 @@ todo add 3x fruit
 
 ##### Erik
 
+- one-shot Editor menus already applied: UI Style 3~6 & Build All (level
+  select, HUD, pause & lose screens, nickname input), Set Up Falling Cobra
+  Layers, Check Outline Style, Prepare Firebase Leaderboard
+- `PersistentBootstrapLoader` & the `Resources/` prefabs of the 3 managers
+- tracked `tools/music/__pycache__` bytecode
 - 5 unused fields of the falling cobra config: body twist, neck thickness &
   neck rounding (3)
 - hack keys 1 and 2, the jumps to the boss zone and to the Spider King: the
@@ -132,6 +142,9 @@ todo add 3x fruit
 
 - Spider King intro: legs keep walking while the king scuttles round the trunk,
   following its speed; new `EnterWalk` config sets the peak
+- first falling cobra no longer stalls the game: head template (about 0.6 s)
+  builds at scene start, support scan skips duplicate vertices, error check
+  runs only in `Falling Cobra Body` build
 
 ##### Houdong Pan
 

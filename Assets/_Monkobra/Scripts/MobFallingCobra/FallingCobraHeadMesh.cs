@@ -25,6 +25,9 @@ public sealed class FallingCobraHeadMesh {
     private static readonly Dictionary<(Mesh, float, Vector3, float),
         HeadTemplate> headTemplates = new();
 
+    // time of the last support point scan, for the build timing log; ms
+    private static double supportMs;
+
     // Public Methods  #########################################################
     public void BuildCartoonVisual() {
         if (!config.CartoonAppearance.enabled) {
@@ -44,7 +47,7 @@ public sealed class FallingCobraHeadMesh {
         GameObject reference = config.CartoonAppearance.referenceBody;
         if (reference != null && config.BodyPrefab == null) {
             Debug.LogWarning("FallingCobraHeadMesh:\tno skinned body, run "
-                + "Monkobra > Build Falling Cobra Body", rig.host);
+                + "Monkobra > Build > Falling Cobra Body", rig.host);
         }
         if (reference != null && config.BodyPrefab != null
             && reference.TryGetComponent(out MeshFilter headSource)) {
@@ -321,41 +324,55 @@ public sealed class FallingCobraHeadMesh {
     // The least dot product of these points with any direction is the head's
     // support depth there, to within the spread of the directions
     private static Vector3[] BuildSupportPoints(Vector3[] vertices) {
+        System.Diagnostics.Stopwatch timer =
+            System.Diagnostics.Stopwatch.StartNew();
+        // the head is a triangle soup, so scan each position once; the first
+        // occurrence keeps its order, so ties pick the same vertex as before
+        HashSet<Vector3> seen = new HashSet<Vector3>();
+        List<Vector3> unique = new List<Vector3>();
+        foreach (Vector3 vertex in vertices) {
+            if (seen.Add(vertex)) {
+                unique.Add(vertex);
+            }
+        }
+        int count = unique.Count;
+        float[] xs = new float[count], ys = new float[count],
+            zs = new float[count];
+        for (int i = 0; i < count; i++) {
+            xs[i] = unique[i].x;
+            ys[i] = unique[i].y;
+            zs[i] = unique[i].z;
+        }
         List<Vector3> points = new List<Vector3>();
         HashSet<int> chosen = new HashSet<int>();
         float goldenAngle = Mathf.PI * (3f - Mathf.Sqrt(5f));
         for (int k = 0; k < SUPPORT_DIRECTIONS; k++) {
             float y = 1f - 2f * (k + .5f) / SUPPORT_DIRECTIONS;
             float ring = Mathf.Sqrt(1f - y * y);
-            Vector3 direction =
-                new Vector3(Mathf.Cos(goldenAngle * k) * ring, y,
-                    Mathf.Sin(goldenAngle * k) * ring);
+            float dx = Mathf.Cos(goldenAngle * k) * ring, dy = y,
+                dz = Mathf.Sin(goldenAngle * k) * ring;
             int best = 0;
             float bestDot = float.PositiveInfinity;
-            for (int i = 0; i < vertices.Length; i++) {
-                float dot = Vector3.Dot(vertices[i], direction);
+            for (int i = 0; i < count; i++) {
+                float dot = xs[i] * dx + ys[i] * dy + zs[i] * dz;
                 if (dot < bestDot) {
                     bestDot = dot;
                     best = i;
                 }
             }
             if (chosen.Add(best)) {
-                points.Add(vertices[best]);
+                points.Add(unique[best]);
             }
         }
-        if (Debug.isDebugBuild) {
-            Debug.Log("FallingCobraHeadMesh:	head support "
-                + points.Count + " points of " + vertices.Length
-                + " vertices, worst depth error "
-                + WorstSupportError(vertices, points) + " u");
-        }
+        supportMs = timer.Elapsed.TotalMilliseconds;
         return points.ToArray();
     }
 
-    // largest gap between the support depth of all vertices and of the
-    // support points, over fixed random directions; u
-    private static float WorstSupportError(Vector3[] vertices,
-        List<Vector3> points) {
+    /// <summary>largest gap between the support depth of all vertices and of
+    /// the support points, over fixed random directions; u. Costly, so only
+    /// the body builder calls it</summary>
+    public static float WorstSupportError(Vector3[] vertices,
+        Vector3[] points) {
         System.Random random = new System.Random(SUPPORT_CHECK_SEED);
         float worst = 0f;
         for (int k = 0; k < SUPPORT_CHECKS; k++) {
@@ -375,6 +392,44 @@ public sealed class FallingCobraHeadMesh {
         return worst;
     }
 
+    /// <summary>builds the shared head template of a config ahead of the
+    /// first cobra, so its spawn finds it cached; does nothing w/o a baked
+    /// body or a reference head mesh</summary>
+    public static void PrewarmHeadTemplate(FallingCobraConfig config) {
+        GameObject reference = config.CartoonAppearance.referenceBody;
+        if (!config.CartoonAppearance.enabled || config.BodyPrefab == null
+            || reference == null
+            || !reference.TryGetComponent(out MeshFilter headSource)
+            || headSource.sharedMesh == null) {
+            return;
+        }
+        new FallingCobraHeadMesh(new FallingCobraRig(null, config))
+            .GetHeadTemplate(headSource.sharedMesh);
+    }
+
+    // the cached head template of a source mesh, built on the first ask
+    private HeadTemplate GetHeadTemplate(Mesh source) {
+        float size =
+            config.HitRadiusU * 2f * config.ReferenceSizeMultiplier
+                / Mathf.Max(source.bounds.size.x, source.bounds.size.z);
+        (Mesh, float, Vector3, float) key =
+            (source, size, config.ReferenceFaceDirection,
+                config.NeckWaistScale);
+        if (!headTemplates.TryGetValue(key, out HeadTemplate template)) {
+            System.Diagnostics.Stopwatch timer =
+                System.Diagnostics.Stopwatch.StartNew();
+            template = CreateHeadTemplate(source, size);
+            headTemplates.Add(key, template);
+            if (Debug.isDebugBuild) {
+                Debug.Log("FallingCobraHeadMesh:\thead template built in "
+                    + timer.Elapsed.TotalMilliseconds.ToString("F1")
+                    + " ms, support points " + supportMs.ToString("F1")
+                    + " ms (" + template.supportPoints.Length + " points)");
+            }
+        }
+        return template;
+    }
+
     // the rigid head from the source mesh, and the baked skinned body the
     // spine poses each frame
     public void BuildFallingReference(Mesh source, GameObject body) {
@@ -385,19 +440,10 @@ public sealed class FallingCobraHeadMesh {
             || skinned.bones.Length != BodyRings) {
             Debug.LogError("FallingCobraHeadMesh:\tbody prefab needs a "
                 + "SkinnedMeshRenderer of " + BodyRings + " bones, run "
-                + "Monkobra > Build Falling Cobra Body", rig.host);
+                + "Monkobra > Build > Falling Cobra Body", rig.host);
             return;
         }
-        float size =
-            config.HitRadiusU * 2f * config.ReferenceSizeMultiplier
-                / Mathf.Max(source.bounds.size.x, source.bounds.size.z);
-        (Mesh, float, Vector3, float) key =
-            (source, size, config.ReferenceFaceDirection,
-                config.NeckWaistScale);
-        if (!headTemplates.TryGetValue(key, out HeadTemplate template)) {
-            template = CreateHeadTemplate(source, size);
-            headTemplates.Add(key, template);
-        }
+        HeadTemplate template = GetHeadTemplate(source);
         rig.headSupportPoints = template.supportPoints;
         rig.originalHeadFront = template.front;
         rig.originalHeadFaceBasis = template.faceBasis;

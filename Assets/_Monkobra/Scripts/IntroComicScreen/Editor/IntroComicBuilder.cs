@@ -11,7 +11,7 @@ using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 /// <summary>
-/// <c>Monkobra/Build Intro Comic</c> brings the comic drawn by
+/// <c>Monkobra/Build/Intro Comic</c> brings the comic drawn by
 /// <c>tools/comic/make_panels.py</c> into the game, through Unity, never by
 /// hand-editing YAML: it copies each layer's 2x PNG into
 /// <c>Sprites/IntroComicScreen</c> as a crunched sprite, writes the panels of
@@ -24,7 +24,7 @@ using Object = UnityEngine.Object;
 /// </summary>
 public static class IntroComicBuilder {
     // private methods  ########################################################
-    [MenuItem("Monkobra/Build Intro Comic")]
+    [MenuItem("Monkobra/Build/Intro Comic", false, 31)]
     private static void Build() {
         string source = Path.Combine(ProjectRoot, SOURCE);
         string jsonPath = Path.Combine(source, "panels.json");
@@ -39,7 +39,7 @@ public static class IntroComicBuilder {
             UIStyleBuilder.SemiBold == null || UIStyleBuilder.ExtraBold == null
         ) {
             Debug.LogError(
-                "IntroComicBuilder:\trun Monkobra/UI Style/1. Build Fonts first"
+                "IntroComicBuilder:\trun Monkobra/Build/UI Fonts first"
             );
             return;
         }
@@ -450,8 +450,7 @@ public static class IntroComicBuilder {
     private static readonly string[] SHELL = {
         "Assets/_Monkobra/Prefabs/World/MenuCamera.prefab",
         "Assets/_Monkobra/Prefabs/World/EventSystem_Menu.prefab",
-        "Assets/_Monkobra/Resources/Analytics.prefab",
-        "Assets/_Monkobra/Resources/ControlStyleManager.prefab",
+        "Assets/_Monkobra/Prefabs/GameController/GameController.prefab",
     };
 
     // the 1280x720 page, and the art at 2x squeezed to fit 2048, crunched,

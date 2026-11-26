@@ -18,10 +18,9 @@ UnityWebRequest and REST, without a native Firebase SDK or Cloud Functions.
 5. Under Project settings > General, register a Web app if needed to see its
    configuration. Copy `projectId` and `apiKey`. These are public client settings,
    **never** a service-account JSON file or private key.
-6. In Unity, run `Monkobra > Leaderboard > Prepare Firebase Leaderboard`. This
-   creates `Settings/Scoring/FirebaseLeaderboardConfig.asset` and assigns it to
-   `Prefabs/LoseScreen/Leaderboard.prefab` through Unity's prefab API. Re-running
-   keeps existing settings and builds the nickname input with the UI style API.
+6. The config `Settings/Scoring/FirebaseLeaderboardConfig.asset` already exists
+   and is assigned to `Prefabs/LoseScreen/Leaderboard.prefab`; no menu step is
+   needed.
 7. Enter Project Id and Web Api Key in that asset, leave Use Emulators off, and
    enable Use Online Leaderboard. Save and play `GameplayScene`.
 8. Finish a run, then finish a lower-scoring run: the saved highest score should
@@ -77,9 +76,8 @@ a player's refresh token in that asset.
   after TMP's activation step, and restores the prior IME mode on deselection
   or disable. This avoids Microsoft Zhuyin Shift-mode conflicts. Button hover
   does not steal selection while a text field is focused; explicit clicks work.
-- `Monkobra > UI Style > 6. Build Leaderboard Name Input` rebuilds the controls;
-  Firebase Prepare and the shared screen styling menu also apply that builder.
-  An Editor domain reload installs the controls if the old prefab lacks them.
+- The nickname input and SAVE button are part of `Leaderboard.prefab`; no menu
+  builds them.
 
 ## Cost and trust limits
 
@@ -130,7 +128,7 @@ Editor and lose a run. The demo project and loopback endpoints are selected
 automatically. **Use Emulators exists only in the Editor**; an exported build
 needs real public Firebase settings. Emulator data is temporary by default.
 After restarting empty emulators, run
-`Monkobra > Leaderboard > Reset Local Emulator Identity` before playing again.
+`Monkobra > Reset Leaderboard Emulator Identity` before playing again.
 This clears only the demo refresh token and keeps pending scores.
 Unity may ask to allow local HTTP requests for this Editor-only test; if so set
 Player > Other Settings > Allow downloads over HTTP to Development Only locally.

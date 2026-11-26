@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 7245103388614930002}
   - component: {fileID: 7245103388614930003}
   - component: {fileID: 7245103388614930004}
+  - component: {fileID: 7245103388614930005}
+  - component: {fileID: 7245103388614930006}
+  - component: {fileID: 7245103388614930007}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -59,3 +62,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipManager
   isSkippingTutorialsAndCutscenes: 1
   config: {fileID: 11400000, guid: b71e4c08d5a2493f8c6e0a1d9f32b574, type: 2}
+--- !u!114 &7245103388614930005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7245103388614930001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e520f59043585fa448c2a99df01cd5e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnalyticsManager
+  config: {fileID: 11400000, guid: 7d9a3e5c1b4f4a2e8c6d0f1b3a5e7c35, type: 2}
+  hackShortcuts: {fileID: 11400000, guid: 6f67fb399ca4433b8cfe8ef24d234f71, type: 2}
+--- !u!114 &7245103388614930006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7245103388614930001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a7fac77f07742fcb23e87beaee4108d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ControlStyleManager
+--- !u!114 &7245103388614930007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7245103388614930001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 123f487b13ad4baa916740a4c38c34b8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MusicManager
+  climbLoop: {fileID: 8300000, guid: e8956245bce54b6a8173bf97dfb87c68, type: 3}
+  bossLoop: {fileID: 8300000, guid: abdf387a30ed4b4287b399af217d4373, type: 3}
+  volume: 0.5
+  crossfadeS: 1.2
