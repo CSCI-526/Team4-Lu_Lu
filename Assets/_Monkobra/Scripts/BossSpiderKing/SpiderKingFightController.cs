@@ -42,6 +42,16 @@ public class SpiderKingFightController: MonoBehaviour {
     /// King's leftover armor logic leaves it alone</returns>
     public bool IsFraming => rig.IsInArena;
 
+    /// <summary>
+    /// Test hook for the boss dev scenes (<see cref="BossDevStart"/>): this
+    /// fight plays <paramref name="loop"/>, 0 EASY, 1 Normal, 2 and up
+    /// grown; a revive keeps Normal Play's rule.
+    /// </summary>
+    public void SetLoopOverride(int loop) {
+        rig.overrideLoop = Mathf.Max(0, loop);
+        rig.ResetLoop();
+    }
+
     /// <returns>scale on this fight's defeat points, by its Loop</returns>
     public float PointsScale => rig.PointsScale;
 

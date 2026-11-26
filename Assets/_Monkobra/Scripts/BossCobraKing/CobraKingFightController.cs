@@ -59,6 +59,16 @@ public class CobraKingFightController: MonoBehaviour {
             ? rig.body.BuildFigure(config.MarkerFigureScale) : null;
     }
 
+    /// <summary>
+    /// Test hook for the boss dev scenes (<see cref="BossDevStart"/>): this
+    /// fight plays <paramref name="loop"/>, 0 EASY, 1 Normal, 2 and up
+    /// grown; a revive keeps Normal Play's rule.
+    /// </summary>
+    public void SetLoopOverride(int loop) {
+        rig.overrideLoop = Mathf.Max(0, loop);
+        rig.ResetLoop();
+    }
+
     /// <returns>scale on this fight's defeat points, by its Loop</returns>
     public float PointsScale => rig.PointsScale;
 
@@ -679,6 +689,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.entryPosition = rig.monkey.position;
         rig.entryRotation = rig.monkey.rotation;
         rig.coilBottomY = rig.entryY + config.NestHeightU;
+        rig.ResetLoop();
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.phase = CobraKingPhase.Fighting;

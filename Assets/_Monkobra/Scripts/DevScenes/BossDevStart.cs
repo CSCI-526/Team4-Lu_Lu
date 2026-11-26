@@ -30,6 +30,13 @@ public class BossDevStart: MonoBehaviour {
     [Tooltip("the tutorials pre-seen per boss")]
     private BossDevStartConfig config;
 
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("Loop Override: Play opens this boss's fight at this Loop; 0 is "
+        + "EASY, 1 Normal, 2 and up grown by the Loop Growth, w/ its hearts "
+        + "and no lessons; the revive card keeps Normal Play's rule")]
+    private int loopOverride = 1;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -57,6 +64,7 @@ public class BossDevStart: MonoBehaviour {
         if (boss == Boss.SpiderKing) {
             CountCobraKingBeaten();
         }
+        ApplyLoopOverride();
         EndStartingZone();
         enabled = false;
     }
@@ -80,11 +88,31 @@ public class BossDevStart: MonoBehaviour {
         foreach (TutorialItem item in items) {
             skip.MarkSeen(item);
         }
+        // no lessons past Loop 1
+        if (loopOverride >= 2) {
+            skip.MarkSeen(TutorialItem.CobraKingLesson);
+            skip.MarkSeen(TutorialItem.SpiderKingLesson);
+            skip.MarkSeen(TutorialItem.ArmorWords);
+        }
         if (Debug.isDebugBuild) {
             Debug.Log(
                 $"BossDevStart:\t{boss} scene, {items.Count} items pre-seen",
                 this
             );
+        }
+    }
+
+    // the boss under test plays the Loop set on this component
+    private void ApplyLoopOverride() {
+        if (boss == Boss.CobraKing && CobraKingFightController.I != null) {
+            CobraKingFightController.I.SetLoopOverride(loopOverride);
+        } else if (boss == Boss.SpiderKing
+            && SpiderKingFightController.I != null) {
+            SpiderKingFightController.I.SetLoopOverride(loopOverride);
+        }
+        if (Debug.isDebugBuild) {
+            Debug.Log($"BossDevStart:\t{boss} plays Loop {loopOverride}",
+                this);
         }
     }
 

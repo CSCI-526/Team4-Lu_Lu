@@ -204,11 +204,31 @@ public static class BossDevSceneBuilder {
         return count;
     }
 
+    // the Loop Override the scene at the path holds now, 1 when it has none
+    private static int ReadLoopOverride(string path) {
+        if (!File.Exists(path)) {
+            return 1;
+        }
+        Scene old = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+        int loop = 1;
+        foreach (GameObject root in old.GetRootGameObjects()) {
+            BossDevStart start = root.GetComponentInChildren<BossDevStart>();
+            if (start != null) {
+                loop = new SerializedObject(start)
+                    .FindProperty("loopOverride").intValue;
+                break;
+            }
+        }
+        return loop;
+    }
+
     // copies the main scene to the path, then adds the boss's start object,
     // moves the ramp base to the start & repoints the balance
     private static void BuildScene(
         string path, string worldCopyPath, Boss boss
     ) {
+        // the scene's Loop Override outlives the rebuild
+        int loopOverride = ReadLoopOverride(path);
         Scene main = EditorSceneManager.OpenScene(
             MAIN_SCENE_PATH, OpenSceneMode.Single
         );
@@ -229,6 +249,7 @@ public static class BossDevSceneBuilder {
         var serialized = new SerializedObject(start);
         serialized.FindProperty("boss").enumValueIndex = (int)boss;
         serialized.FindProperty("config").objectReferenceValue = config;
+        serialized.FindProperty("loopOverride").intValue = loopOverride;
         serialized.ApplyModifiedPropertiesWithoutUndo();
 
         RefreshWorldCopy(worldCopyPath, boss);

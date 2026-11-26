@@ -286,7 +286,10 @@ public sealed class CobraKingRig {
     /// <returns>the Loop a fight plays unless EASY is picked: 1 on Normal, its
     /// own in the hardcore run's rush</returns>
     public int NormalLoop => IsRush
-        ? HardcoreBossRush.LoopOf(rushEncounter) : 1;
+        ? HardcoreBossRush.LoopOf(rushEncounter) : overrideLoop;
+
+    // the Loop a dev scene forces on its boss, 1 in the game
+    public int overrideLoop = 1;
 
     /// <returns>hearts the monkey has in this fight: the config's at Loop 0 &
     /// 1, fewer from Loop 2 on</returns>
