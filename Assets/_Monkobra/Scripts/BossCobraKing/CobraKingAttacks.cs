@@ -282,6 +282,14 @@ public sealed class CobraKingAttacks {
             KnockDown(rig.body.HeadCollider);
             return;
         }
+        // no armor: a heart takes it, the same knock down; none left, the
+        // fight is lost
+        if (MonkeyHearts.TryLose()) {
+            rig.hud.PopText("Heart lost!", rig.monkey.position,
+                config.GoldenColor);
+            KnockDown(rig.body.HeadCollider);
+            return;
+        }
         rig.Ending.StartFinisher(false);
     }
 

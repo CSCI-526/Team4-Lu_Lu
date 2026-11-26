@@ -93,7 +93,7 @@ public sealed class SpiderKingDamage {
         }
         // the armor saves as in the Cobra King's arena: "Saved!" & the usual
         // knock down; the spider goes on
-        if (TrySpendArmor()) {
+        if (TryAbsorb()) {
             if (rig.mode == SpiderKingMode.Cocooning) {
                 rig.Movement.SetMode(SpiderKingMode.Idle);
                 rig.nextAttackTime = Time.time + rig.Movement.RestNow();
@@ -186,6 +186,22 @@ public sealed class SpiderKingDamage {
         rig.monkeyController.PullTo(rig.returnTarget,
             config.ReviveReturnSpeedU);
         rig.isReturningToStart = true;
+    }
+
+    // the armor saves first, else a heart: either takes the fatal hit
+    public bool TryAbsorb() {
+        if (TrySpendArmor()) {
+            return true;
+        }
+        if (!MonkeyHearts.TryLose()) {
+            return false;
+        }
+        rig.saveGraceEndTime = Time.time + config.SaveGraceS;
+        if (rig.struggle != null) {
+            rig.struggle.ForceRelease();
+        }
+        rig.hud.PopText("Heart lost!", rig.monkey.position, config.WarnColor);
+        return true;
     }
 
     // the Cobra King's leftover armor, if worn; frees the monkey too

@@ -336,6 +336,14 @@ After a revive, as in the Cobra King's arena: time stops on the plain difficulty
 
 The hardcore run is a boss rush (`HardcoreBossRush`): every `hardcoreBossIntervalU` (300 u) of climbed height a boss waits, the Cobra King first (300, 900, 1500, ...), then the Spider King (600, 1200, ...), taking turns, each with its height marker. The monkey and the great cobra climb at their normal speed (`hardcoreSpeedScale`, 1; `HardcoreBossRush.ClimbSpeedScale`, read by `MonkeyController` & `CobraMotor`, fights included). Every hardcore boss has the same moves as in Normal Play; only its Loop changes how hard it is, see Hardcore Loops below. The run starts in the gold armor; a won armor saves on the climb b/t bosses as after a win. After a win the king waits again two bosses on (`ArmNextRush`): the Cobra King is cleared & rebuilt, its last crown making way for the new one; the Spider King's gloves' effect stays. Each coming arena is kept bare as the tree grows toward it (`RampedDifficultyManager.SetExtraBossZone`, one range per boss), and what grew there b4 is cleared at its start.
 
+## Monkey Hearts
+
+In a boss fight the monkey has hearts (`MonkeyHearts`, shared by both kings), `monkeyHearts` (3) at Loop 0 & 1, fewer from Loop 2 on (`hearts` in the Loop Growth sets: 3 / 2 / 2 / 1 / 1 at Loop 2 ~ 6, never under 1). They start full with each fight & again on a revive, and end with the fight; the climb shows none.
+
+- A fatal fight hit (a bite, sweep or minion, the Spider King's bullet, slash, dash or touch, the guard cobra's catch): the gold armor takes it first, as before, else it costs 1 heart; either way the existing save runs (the knock down or `ReturnToStart`, untouchable till landed)
+- 0 hearts lose the fight, by the finisher & the revive offer as before; at Loop 1 the monkey survives 2 hits & the 3rd ends the fight, the armor adding one more save
+- The climb is unchanged: a great cobra catch ends the run, the armor saves once
+
 ## Hardcore Loops
 
 Each repeat of a king in the hardcore run is a Loop, counted per king (`HardcoreBossRush.LoopOf`, encounter / 2 + 1): Cobra King Loop 1 at 300 u, Spider King Loop 1 at 600 u, Cobra King Loop 2 at 900 u, ~. A fight reads its Loop from `bossLoop` on its rig, 1 int that replaces the old EASY flag:

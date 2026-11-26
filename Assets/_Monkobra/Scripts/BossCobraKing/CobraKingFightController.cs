@@ -238,20 +238,29 @@ public class CobraKingFightController: MonoBehaviour {
         if (!canSave) {
             return false;
         }
+        // no armor in the fight: a heart takes the catch, the same save as the
+        // armor's; none left, a boss fight loss, w/ its slow motion & the
+        // revive offer, not a plain end of the run
+        bool isHeartSave = false;
         if (!rig.hasShield) {
-            // caught by the guard in the fight: a boss fight loss, w/ its
-            // slow motion & the revive offer, not a plain end of the run
             if (rig.phase == CobraKingPhase.Fighting) {
-                ending.StartFinisher(false);
-                return true;
+                if (!MonkeyHearts.TryLose()) {
+                    ending.StartFinisher(false);
+                    return true;
+                }
+                isHeartSave = true;
+            } else {
+                return false;
             }
-            return false;
         }
-        rig.hasShield = false;
-        ArmorAbsorbed?.Invoke();
-        rig.hud.ShowArmorBadge(false);
+        if (!isHeartSave) {
+            rig.hasShield = false;
+            ArmorAbsorbed?.Invoke();
+            rig.hud.ShowArmorBadge(false);
+        }
         rig.cobraSaveGraceEndTime = Time.time + 1f;
-        rig.hud.PopText("Saved!", rig.monkey.position, config.GoldenColor);
+        rig.hud.PopText(isHeartSave ? "Heart lost!" : "Saved!",
+            rig.monkey.position, config.GoldenColor);
         rig.hud.Flash(config.GoldenColor);
         // in the fight that is the guard below: its peek ends & the monkey
         // flies back up to where the fight began, never left under the guard,
@@ -717,6 +726,7 @@ public class CobraKingFightController: MonoBehaviour {
 
         rig.hud.Show(config.BossName);
         rig.hud.SetHealth(rig.health, rig.maxHealth);
+        MonkeyHearts.Begin(rig.HeartsNow);
         rig.hud.Flash();
         // the monkey starts in the gold armor, a spare life against the
         // king; the golden banana brings it back once lost

@@ -467,6 +467,13 @@ public sealed class SpiderKingRig {
     public int NormalLoop => IsRush
         ? HardcoreBossRush.LoopOf(rushEncounter) : 1;
 
+    /// <returns>hearts the monkey has in this fight: the config's at Loop 0 &
+    /// 1, fewer from Loop 2 on</returns>
+    public int HeartsNow => bossLoop < 2 ? worldBalanceConfig.MonkeyHeartCount
+        : Mathf.Max(1, Mathf.RoundToInt(
+            worldBalanceConfig.SpiderKingLoopGrowth.hearts
+                .Evaluate(worldBalanceConfig.MonkeyHeartCount, bossLoop)));
+
     /// <summary>Plays the Normal Loop of this fight again.</summary>
     public void ResetLoop() {
         bossLoop = NormalLoop;

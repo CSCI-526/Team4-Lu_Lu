@@ -186,6 +186,7 @@ public sealed class CobraKingEnding {
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(rig.health, rig.maxHealth);
+        MonkeyHearts.Begin(rig.HeartsNow);
         rig.hasShield = true;
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
@@ -274,6 +275,7 @@ public sealed class CobraKingEnding {
     // Victory  ----------------------------------------------------------------
     public void Defeat() {
         rig.phase = CobraKingPhase.Defeated;
+        MonkeyHearts.End();
         ProgressStore.MarkBossBeaten();
         // only a win ends the lessons, so a lost fight teaches again
         if (TutorialSkipManager.I != null) {

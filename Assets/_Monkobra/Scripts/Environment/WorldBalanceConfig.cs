@@ -125,6 +125,10 @@ public class WorldBalanceConfig: ScriptableObject {
     /// <returns>health of the Spider King</returns>
     public int SpiderMaxHealth => spiderMaxHealth;
 
+    /// <returns>hearts the monkey starts a boss fight with at Loop 0 & 1
+    /// </returns>
+    public int MonkeyHeartCount => monkeyHearts;
+
     /// <returns>how the Cobra King's features grow from Loop 2 on</returns>
     public CobraKingLoopGrowth CobraKingLoopGrowth => cobraKingLoopGrowth;
 
@@ -343,6 +347,13 @@ public class WorldBalanceConfig: ScriptableObject {
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
     private int spiderMaxHealth = 15;
 
+    [Header("Monkey Hearts")]
+    [SerializeField]
+    [Min(1)]
+    [Tooltip("hearts the monkey starts a boss fight with at Loop 0 & 1; a "
+        + "fatal hit the gold armor does not take costs one")]
+    private int monkeyHearts = 3;
+
     [Header("Loop Growth")]
     [SerializeField]
     [Tooltip("the Cobra King at Loop 2 and up: v(n) = clamp(round(v1 + step "
@@ -466,11 +477,14 @@ public struct CobraKingLoopGrowth {
     [Tooltip("scale on wind ups, warnings & rests, v1 = 1")]
     public LoopGrowth time;
     public LoopGrowth minionWaves;
+    [Tooltip("monkey hearts per fight, v1 = monkeyHearts")]
+    public LoopGrowth hearts;
 
     public static CobraKingLoopGrowth Default => new CobraKingLoopGrowth {
         health = new LoopGrowth(2.5f, LoopRounding.Ceil, false, 0f),
         time = new LoopGrowth(-0.12f, LoopRounding.None, true, 0.5f),
         minionWaves = new LoopGrowth(0.75f, LoopRounding.Ceil, true, 8f),
+        hearts = new LoopGrowth(-0.5f, LoopRounding.Ceil, true, 1f),
     };
 
     public void Validate() { }
@@ -486,6 +500,8 @@ public struct SpiderKingLoopGrowth {
     public LoopGrowth speed;
     public LoopGrowth slashesStage2;
     public LoopGrowth slashesStage3;
+    [Tooltip("monkey hearts per fight, v1 = monkeyHearts")]
+    public LoopGrowth hearts;
 
     public static SpiderKingLoopGrowth Default => new SpiderKingLoopGrowth {
         health = new LoopGrowth(5f, LoopRounding.Ceil, false, 0f),
@@ -493,6 +509,7 @@ public struct SpiderKingLoopGrowth {
         speed = new LoopGrowth(0.1f, LoopRounding.None, true, 1.5f),
         slashesStage2 = new LoopGrowth(0.5f, LoopRounding.Ceil, true, 5f),
         slashesStage3 = new LoopGrowth(1f, LoopRounding.Floor, true, 5f),
+        hearts = new LoopGrowth(-0.5f, LoopRounding.Ceil, true, 1f),
     };
 
     public void Validate() { }

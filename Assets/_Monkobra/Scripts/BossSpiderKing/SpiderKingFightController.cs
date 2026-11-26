@@ -114,7 +114,7 @@ public class SpiderKingFightController: MonoBehaviour {
         if (Time.time < rig.saveGraceEndTime) {
             return true;
         }
-        if (damage.TrySpendArmor()) {
+        if (damage.TryAbsorb()) {
             if (rig.greatCobra != null) {
                 rig.greatCobra.KnockBack(0f);
             }
@@ -549,6 +549,7 @@ public class SpiderKingFightController: MonoBehaviour {
 
         rig.hud.Show(config.BossName);
         rig.hud.SetHealth(rig.health, rig.maxHealth);
+        MonkeyHearts.Begin(rig.HeartsNow);
         // flashes as the Cobra King's: at the start, the last blow & a
         // spent armor; never on a revive or a reward
         rig.hud.Flash();

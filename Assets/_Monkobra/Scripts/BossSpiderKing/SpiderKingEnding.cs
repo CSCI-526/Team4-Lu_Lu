@@ -182,6 +182,7 @@ public sealed class SpiderKingEnding {
         rig.ResetLoop();
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
+        MonkeyHearts.Begin(rig.HeartsNow);
         // a plain difficulty card, time stopped till a pick; the spider
         // waits meanwhile
         rig.teach = SpiderKingTeachStep.Choose;
@@ -239,6 +240,7 @@ public sealed class SpiderKingEnding {
             TutorialSkipManager.I.MarkSeen(TutorialItem.SpiderKingLesson);
         }
         rig.phase = SpiderKingPhase.Defeated;
+        MonkeyHearts.End();
         rig.onDefeated?.Invoke();
         rig.defeatTimeS = 0f;
         rig.hud.SetHealth(0, rig.maxHealth);
