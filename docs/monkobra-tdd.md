@@ -152,18 +152,31 @@ The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 a
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and `ToggleHints` turns the hack layer on or off: one shared static state (`HackShortcutConfig.TryToggleLayer`, off at every play start) that shows the list and lets every other hack key run, so a tester never triggers one by accident. `ToggleHints` reads only when `AreHintsShown`, so it never works in a release build, where the other keys stay live. The state holds across scenes, but only the gameplay scene's panel can flip it. A new hack key is a new `HackAction` plus an entry in the asset.
 
-### Tutorial Skip Switch
+### Tutorial Skip Manager
 
-One dev checkbox skips every tutorial pop up and cut scene, so a play test reaches the climb at once. It is `isSkippingTutorialsAndCutscenes` on the `TutorialSkipSwitch` component on the root object of the `GameController` prefab, so `GameplayScene` holds it and the title scene does not. Open `Prefabs/GameController/GameController.prefab` in the Editor and tick the box; it is off by default.
+One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Resources/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
 
-The gate is `TutorialSkipSwitch.IsSkipping`: true only when `Debug.isDebugBuild` (the Editor or a development build) and the box is ticked, so a release build never skips, whatever the box says. What it skips:
+- `ShouldSkip(TutorialItem)`: true if the dev checkbox is on, or the item was already seen this session and its entry in `TutorialSkipConfig` (`Settings/TutorialSkip/TutorialSkipConfig.asset`) skips it once seen; a release build never honours the checkbox
+- `MarkSeen(TutorialItem)`: the item calls it once it has shown or been completed
 
-- the great cobra's chase-start cut scene (`CameraRigManager.RequestCobraAlert`); the cobra then runs its normal exit boost
-- the Spider King's first-encounter web intro (`SpiderWebIntroEvent`)
-- the run-start tutorial screen (`RunController.UpdateStartKey`), so a run opens straight in the starting zone
-- the pop ups that teach: each fruit's grab (`FruitGrabPrompt`), the coconut double-tap (`CoconutMessageWidget`), the web escape hint (`SpiderWebWidget`) and the low stamina hint (`LowStaminaWidget`)
+The scope is once per session, with nothing saved: an item shows on the first run of a launch and skips on every later run and scene load until the game is closed. The session set lives on the persistent `GameController`, so it survives a restart. To make one item show every run again, untick its entry in `TutorialSkipConfig`; no recompile.
 
-Not yet skipped: the intro comic after the title, which has no switch in its scene. Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene must check `IsSkipping` too. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
+The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by default and honoured only when `Debug.isDebugBuild` (the Editor or a development build): open `Resources/GameController.prefab` and tick it to skip every item at once. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
+
+| `TutorialItem` | Item | Marked seen |
+| --- | --- | --- |
+| `IntroComic` | intro comic after the title | when the comic opens |
+| `RunStartTutorial` | run-start tutorial screen (`RunController.UpdateStartKey`) | when the run leaves it |
+| `BananaGrab`, `PineappleGrab`, `CoconutGrab` | fruit grab pop ups (`FruitGrabPrompt`) | when that fruit is grabbed |
+| `CoconutDoubleTap` | coconut double-tap pop up and use hint (`CoconutMessageWidget`, `CoconutWidget`) | when a coconut is used |
+| `WebEscapeHint` | web escape hint (`SpiderWebWidget`) | when the monkey escapes a web |
+| `LowStaminaHint` | low stamina hint (`LowStaminaWidget`) | when it is shown |
+| `CobraChaseStart` | great cobra chase-start cut scene (`CameraRigManager.RequestCobraAlert`) | when the shot starts |
+| `SpiderWebIntro` | Spider King web intro (`SpiderWebIntroEvent`, Normal Play only) | when the event begins |
+| `CobraKingLesson`, `SpiderKingLesson` | each boss's lessons | when that boss is beaten, so a lost fight teaches again |
+| `ArmorWords` | the Cobra King's armor words | when they are shown |
+
+Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene adds a `TutorialItem`, asks the manager before it shows and marks itself seen; it never keeps a flag of its own.
 
 ## Game Balance
 
