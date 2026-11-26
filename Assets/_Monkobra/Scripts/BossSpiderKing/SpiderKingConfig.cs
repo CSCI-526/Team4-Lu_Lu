@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
@@ -197,17 +198,17 @@ public class SpiderKingConfig: ScriptableObject {
     public Vector3Int WebShotsPerStage => webShotsPerStage;
 
     /// <returns>slashes in a row in stages 1, 2 & 3; one at a time, a
-    /// row of them only in the endless run's later fights</returns>
+    /// row of them only in the hardcore run's later fights</returns>
     public Vector3Int SlashesPerStage => slashesPerStage;
 
     /// <returns>the most slashes in a row in stages 1, 2 & 3 in the
-    /// endless run's boss rush: each later Spider King fight adds
+    /// hardcore run's boss rush: each later Spider King fight adds
     /// one, up to these</returns>
-    public Vector3Int EndlessSlashesPerStage => endlessSlashesPerStage;
+    public Vector3Int HardcoreSlashesPerStage => hardcoreSlashesPerStage;
 
-    /// <returns>scale on a slash's width in the endless run's boss
+    /// <returns>scale on a slash's width in the hardcore run's boss
     /// rush, where the monkey is quicker to step out of its way</returns>
-    public float EndlessSlashWidthScale => endlessSlashWidthScale;
+    public float HardcoreSlashWidthScale => hardcoreSlashWidthScale;
 
     /// <returns>the long gap b/t two bullets of a volley; s</returns>
     public float VolleySlowGapS => volleySlowGapS;
@@ -666,20 +667,22 @@ public class SpiderKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("slashes in a row in stages 1, 2 & 3; one at a time, a row of "
-        + "them only in the endless run's later fights")]
+        + "them only in the hardcore run's later fights")]
     private Vector3Int slashesPerStage = new Vector3Int(1, 1, 1);
 
     [SerializeField]
-    [Tooltip("the most slashes in a row in stages 1, 2 & 3 in the endless "
+    [Tooltip("the most slashes in a row in stages 1, 2 & 3 in the hardcore "
         + "run's boss rush: each later Spider King fight adds one, up to "
         + "these")]
-    private Vector3Int endlessSlashesPerStage = new Vector3Int(1, 2, 3);
+    [FormerlySerializedAs("endlessSlashesPerStage")]
+    private Vector3Int hardcoreSlashesPerStage = new Vector3Int(1, 2, 3);
 
     [SerializeField]
-    [Tooltip("scale on a slash's width in the endless run's boss rush, where "
+    [Tooltip("scale on a slash's width in the hardcore run's boss rush, where "
         + "the monkey is quicker to step out of its way")]
     [Min(1f)]
-    private float endlessSlashWidthScale = 1f;
+    [FormerlySerializedAs("endlessSlashWidthScale")]
+    private float hardcoreSlashWidthScale = 1f;
 
     [SerializeField]
     [Tooltip("the long gap b/t two bullets of a volley; s")]

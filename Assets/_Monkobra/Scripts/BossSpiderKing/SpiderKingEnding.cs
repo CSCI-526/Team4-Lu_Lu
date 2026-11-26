@@ -322,7 +322,7 @@ public sealed class SpiderKingEnding {
         }
     }
 
-    // Endless Boss Rush  ------------------------------------------------------
+    // Hardcore Boss Rush  ------------------------------------------------------
     // the spider waits again two bosses on, the Cobra King's in b/t, harder;
     // the gloves' effect stays on
     public void ArmNextRush() {

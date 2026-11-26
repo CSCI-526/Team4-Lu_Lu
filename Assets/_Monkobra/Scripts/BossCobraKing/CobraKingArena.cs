@@ -102,7 +102,7 @@ public sealed class CobraKingArena {
     // zone, where nothing else is generated
     public void WarnIfArenaLeavesZone() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        // the endless run's rush keeps its own bare range
+        // the hardcore run's rush keeps its own bare range
         if (ramp == null || rig.IsRush) {
             return;
         }
@@ -119,8 +119,8 @@ public sealed class CobraKingArena {
         }
     }
 
-    // Endless Boss Rush -------------------------------------------------------
-    // the world y range a boss of the endless run's rush keeps bare, from
+    // Hardcore Boss Rush -------------------------------------------------------
+    // the world y range a boss of the hardcore run's rush keeps bare, from
     // under its guard to over its coil
     public Vector2 RushRange(float entryY) {
         return new Vector2(entryY - config.GuardDepthU - 4f,
@@ -134,7 +134,7 @@ public sealed class CobraKingArena {
             return;
         }
         Vector2 range = RushRange(
-            EndlessBossRush.TriggerWorldY(rig.rushEncounter));
+            HardcoreBossRush.TriggerWorldY(rig.rushEncounter));
         ramp.SetExtraBossZone(rig.owner, range.x, range.y);
     }
 
@@ -145,7 +145,7 @@ public sealed class CobraKingArena {
         }
     }
 
-    // what the endless tree grew in the arena b4 it was reserved goes:
+    // what the hardcore tree grew in the arena b4 it was reserved goes:
     // branches w/ their fruit, webs, falling cobras, rough bark
     public void ClearRushArena() {
         Vector2 range = RushRange(rig.entryY);
@@ -200,7 +200,7 @@ public sealed class CobraKingArena {
     public void ClearBranchesNearNest(BranchController[] branches) {
         float minY =
             rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
-        // the endless run's rush: only up to its arena's top, the climb
+        // the hardcore run's rush: only up to its arena's top, the climb
         // above keeps its branches
         float maxY = rig.IsRush ? RushRange(rig.entryY).y
             : float.PositiveInfinity;

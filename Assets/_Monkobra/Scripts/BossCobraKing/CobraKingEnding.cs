@@ -288,7 +288,7 @@ public sealed class CobraKingEnding {
         rig.hud.SetPrompt(false, Vector3.zero);
         rig.hud.SetHealth(0, rig.maxHealth);
 
-        // a later boss of the endless run's rush: the last crown makes way
+        // a later boss of the hardcore run's rush: the last crown makes way
         if (rig.crown != null) {
             UnityEngine.Object.Destroy(rig.crown.gameObject);
             rig.crown = null;
@@ -419,7 +419,7 @@ public sealed class CobraKingEnding {
         }
     }
 
-    // Endless Boss Rush  ------------------------------------------------------
+    // Hardcore Boss Rush  ------------------------------------------------------
     // the king waits again two bosses on, the Spider King's in b/t, harder;
     // the won armor stays on & the crown on the monkey's head
     public void ArmNextRush() {

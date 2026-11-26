@@ -41,9 +41,9 @@ public class CobraKingFightController: MonoBehaviour {
     }
 
     /// <returns>if the monkey is in the boss arena, fighting or done; never
-    /// in the endless run, which skips the fight</returns>
+    /// in the hardcore run, which skips the fight</returns>
     public bool IsInArena => rig.phase != CobraKingPhase.Waiting
-        && !rig.isEndlessStart;
+        && !rig.isHardcoreStart;
 
     /// <returns>if the fight is on, from its start to its reward; not once
     /// done & the climb goes on</returns>
@@ -203,7 +203,7 @@ public class CobraKingFightController: MonoBehaviour {
     /// <summary>
     /// Test hook for the Spider King dev scene (<see cref="BossDevStart"/>): a
     /// fight not begun yet is skipped as if beaten, in the armor, like the
-    /// endless start.
+    /// hardcore start.
     /// </summary>
     public void SkipForTest() {
         if (rig.phase == CobraKingPhase.Waiting) {
@@ -227,7 +227,7 @@ public class CobraKingFightController: MonoBehaviour {
         ) {
             return true;
         }
-        // waiting for the next boss of the endless run's rush, the won armor
+        // waiting for the next boss of the hardcore run's rush, the won armor
         // saves on the climb b/t as after a win
         bool canSave = rig.phase == CobraKingPhase.Fighting
             || rig.phase == CobraKingPhase.Defeated
@@ -481,13 +481,13 @@ public class CobraKingFightController: MonoBehaviour {
         arena.ChooseMode(isEasy);
     }
 
-    // the endless run starts in the armor, the boss rush's first fight, the
+    // the hardcore run starts in the armor, the boss rush's first fight, the
     // king's, waiting a boss interval up
     private void Start() {
         if (I == this && GameController.I != null
-            && GameController.I.Mode == RunMode.Endless) {
+            && GameController.I.Mode == RunMode.Hardcore) {
             StartAsDone();
-            rig.isEndlessStart = false;
+            rig.isHardcoreStart = false;
             rig.rushEncounter = 0;
             rig.phase = CobraKingPhase.Waiting;
         }
@@ -540,7 +540,7 @@ public class CobraKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == CobraKingPhase.Waiting) {
-            // the endless run's rush keeps the coming arena bare; kept up
+            // the hardcore run's rush keeps the coming arena bare; kept up
             // every frame, as the run's start y is only known after a Start
             arena.ReserveRushRange();
             // armor lent to the Spider King test fight b4 this one; the
@@ -615,7 +615,7 @@ public class CobraKingFightController: MonoBehaviour {
             && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
     }
 
-    // the endless start: the armor worn, hazards on, the fight already over;
+    // the hardcore start: the armor worn, hazards on, the fight already over;
     // no arena, no FightStarted, and never marks the king beaten
     private void StartAsDone() {
         MonkeyController monkeyController = MonkeyController.I;
@@ -636,7 +636,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         rig.struggle = FindFirstObjectByType<SpiderWebStruggle>();
 
-        rig.isEndlessStart = true;
+        rig.isHardcoreStart = true;
         armor.BuildShieldRing();
         rig.hasShield = true;
         rig.phase = CobraKingPhase.Done;
@@ -646,7 +646,7 @@ public class CobraKingFightController: MonoBehaviour {
         // no chase call: the cobra is already after the monkey
         rig.hasWarnedChase = true;
         if (Debug.isDebugBuild) {
-            Debug.Log("CobraKingFightController:\tendless start in armor",
+            Debug.Log("CobraKingFightController:\thardcore start in armor",
                 this);
         }
     }
@@ -677,7 +677,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.loop = CobraKingLoop.Intro;
 
         arena.WarnIfArenaLeavesZone();
-        // the endless tree grew here b4 the rush reserved it: cleared
+        // the hardcore tree grew here b4 the rush reserved it: cleared
         if (rig.IsRush) {
             arena.ClearRushArena();
         }
@@ -707,7 +707,7 @@ public class CobraKingFightController: MonoBehaviour {
         if (rig.struggle != null) {
             rig.struggle.EscapeGainScale = config.WebEscapeGainScale;
         }
-        // a later fight of the endless run's rush keeps the ones it has
+        // a later fight of the hardcore run's rush keeps the ones it has
         if (rig.dots == null) {
             armor.BuildDots();
         }
@@ -723,7 +723,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.hasShield = true;
         // the armor's words only the first time the player gets it in a
         // session, in either mode; after that, or at a later boss of the
-        // endless run's rush, the king only names itself
+        // hardcore run's rush, the king only names itself
         TutorialSkipManager skip = TutorialSkipManager.I;
         if (rig.rushEncounter <= 0
             && !(skip != null && skip.ShouldSkip(TutorialItem.ArmorWords))) {

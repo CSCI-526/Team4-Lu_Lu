@@ -72,8 +72,8 @@ public static class MockAnalyticsGenerator {
         float baseSkill = Range(rng, 0.1f, 0.35f);
         float capSkill = Range(rng, 0.55f, 0.92f);
         float learnRuns = Range(rng, 3f, 5f);
-        // a returning player already beat the king, so Endless is open
-        bool isEndlessOpen = rng.NextDouble() < RETURNING_PLAYER_CHANCE;
+        // a returning player already beat the king, so Hardcore is open
+        bool isHardcoreOpen = rng.NextDouble() < RETURNING_PLAYER_CHANCE;
 
         List<RunPlan> plans = new List<RunPlan>();
         float total = 0f;
@@ -87,12 +87,12 @@ public static class MockAnalyticsGenerator {
             }
             skill = Mathf.Clamp(skill, 0.05f, 1f);
 
-            bool isEndless = isEndlessOpen && rng.NextDouble() < 0.5;
-            RunPlan plan = new RunSim(skill, isEndless, rng).Run();
+            bool isHardcore = isHardcoreOpen && rng.NextDouble() < 0.5;
+            RunPlan plan = new RunSim(skill, isHardcore, rng).Run();
             // a few seconds on the lose screen and the tutorial b4 the next
             plan.GapS = Range(rng, 4f, 12f);
             if (plan.IsBossWon) {
-                isEndlessOpen = true;
+                isHardcoreOpen = true;
             }
             if (i == runCount - 1) {
                 CutShort(plan, Range(rng, 0.3f, 0.8f));
@@ -301,15 +301,15 @@ public static class MockAnalyticsGenerator {
 
     // the simulation of one run, a step at a time
     private sealed class RunSim {
-        public RunSim(float skill, bool isEndless, System.Random rng) {
-            this.skill = isEndless ? Mathf.Max(skill, 0.65f) : skill;
-            this.isEndless = isEndless;
+        public RunSim(float skill, bool isHardcore, System.Random rng) {
+            this.skill = isHardcore ? Mathf.Max(skill, 0.65f) : skill;
+            this.isHardcore = isHardcore;
             this.rng = rng;
-            plan.Mode = isEndless ? RunMode.Endless : RunMode.Full;
+            plan.Mode = isHardcore ? RunMode.Hardcore : RunMode.Full;
             stamina = MAX_STAMINA * ZONE_START_STAMINA_FRACTION;
             cobraY = -START_GAP_U;
-            // endless starts in the armor a king win leaves
-            hasArmor = isEndless;
+            // hardcore starts in the armor a king win leaves
+            hasArmor = isHardcore;
         }
 
         /// <returns>the run, played until the cobra got the monkey</returns>
@@ -318,7 +318,7 @@ public static class MockAnalyticsGenerator {
             while (t < MAX_RUN_S) {
                 t += STEP_S;
                 float ramp = GetRamp(height);
-                bool isInBossZone = !isEndless
+                bool isInBossZone = !isHardcore
                     && ((height >= BOSS_START_U && height <= BOSS_END_U)
                         || (height >= SPIDER_START_U
                             && height <= SPIDER_END_U));
@@ -354,7 +354,7 @@ public static class MockAnalyticsGenerator {
                     SpendArmor();
                 }
                 if (
-                    !isEndless
+                    !isHardcore
                     && !isBossDone
                     && height >= BOSS_TRIGGER_U
                 ) {
@@ -366,7 +366,7 @@ public static class MockAnalyticsGenerator {
                 // the Spider King waits above the Cobra King, only for a
                 // monkey that beat it
                 if (
-                    !isEndless
+                    !isHardcore
                     && plan.IsBossWon
                     && !isSpiderDone
                     && height >= SPIDER_TRIGGER_U
@@ -387,7 +387,7 @@ public static class MockAnalyticsGenerator {
         // private members  ####################################################
         private readonly RunPlan plan = new RunPlan();
         private readonly float skill;
-        private readonly bool isEndless;
+        private readonly bool isHardcore;
         private readonly System.Random rng;
 
         private float t;
@@ -426,7 +426,7 @@ public static class MockAnalyticsGenerator {
             if (y < ZONE_EXIT_U) {
                 return 0f;
             }
-            if (isEndless) {
+            if (isHardcore) {
                 return 2f + POST_BOSS_RAMP_PER_U * (y - ZONE_EXIT_U);
             }
             if (y < BOSS_START_U) {

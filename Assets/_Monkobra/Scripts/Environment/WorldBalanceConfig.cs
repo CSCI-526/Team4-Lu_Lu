@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Balance of the generated world: the ramped difficulty curves that every
@@ -135,44 +136,44 @@ public class WorldBalanceConfig: ScriptableObject {
     /// <returns>health of the Spider King</returns>
     public int SpiderMaxHealth => spiderMaxHealth;
 
-    /// <returns>climbed height b/t two bosses in the endless run's boss
+    /// <returns>climbed height b/t two bosses in the hardcore run's boss
     /// rush; u</returns>
-    public float EndlessBossIntervalU => endlessBossIntervalU;
+    public float HardcoreBossIntervalU => hardcoreBossIntervalU;
 
     /// <returns>scale on the monkey's & the great cobra's climb in the
-    /// endless run, outside a boss fight</returns>
-    public float EndlessSpeedScale => endlessSpeedScale;
+    /// hardcore run, outside a boss fight</returns>
+    public float HardcoreSpeedScale => hardcoreSpeedScale;
 
     /// <returns>a boss's extra health per earlier fight of the same king in
-    /// the endless run, a share of its base health</returns>
-    public float EndlessHealthStep => endlessHealthStep;
+    /// the hardcore run, a share of its base health</returns>
+    public float HardcoreHealthStep => hardcoreHealthStep;
 
     /// <returns>how much shorter a boss's wind ups, warnings & rests get per
-    /// earlier fight of the same king in the endless run, a share</returns>
-    public float EndlessTimeStep => endlessTimeStep;
+    /// earlier fight of the same king in the hardcore run, a share</returns>
+    public float HardcoreTimeStep => hardcoreTimeStep;
 
-    /// <returns>the shortest those times get in the endless run, a share
+    /// <returns>the shortest those times get in the hardcore run, a share
     /// </returns>
-    public float EndlessMinTimeScale => endlessMinTimeScale;
+    public float HardcoreMinTimeScale => hardcoreMinTimeScale;
 
     /// <returns>how much faster a boss's shots & dashes get per earlier
-    /// fight of the same king in the endless run, a share</returns>
-    public float EndlessSpeedStep => endlessSpeedStep;
+    /// fight of the same king in the hardcore run, a share</returns>
+    public float HardcoreSpeedStep => hardcoreSpeedStep;
 
-    /// <returns>the fastest they get in the endless run, a scale</returns>
-    public float EndlessMaxSpeedScale => endlessMaxSpeedScale;
+    /// <returns>the fastest they get in the hardcore run, a scale</returns>
+    public float HardcoreMaxSpeedScale => hardcoreMaxSpeedScale;
 
-    /// <returns>every endless boss's health, a scale, before the per boss
+    /// <returns>every hardcore boss's health, a scale, before the per boss
     /// step: the monkey is 3x as fast in its fights too</returns>
-    public float EndlessFightHealthScale => endlessFightHealthScale;
+    public float HardcoreFightHealthScale => hardcoreFightHealthScale;
 
-    /// <returns>every endless boss's wind ups, warnings & rests, a scale,
+    /// <returns>every hardcore boss's wind ups, warnings & rests, a scale,
     /// before the per boss step</returns>
-    public float EndlessFightTimeScale => endlessFightTimeScale;
+    public float HardcoreFightTimeScale => hardcoreFightTimeScale;
 
-    /// <returns>every endless boss's crawl, shot, slash & dash speeds, a
+    /// <returns>every hardcore boss's crawl, shot, slash & dash speeds, a
     /// scale, before the per boss step</returns>
-    public float EndlessFightSpeedScale => endlessFightSpeedScale;
+    public float HardcoreFightSpeedScale => hardcoreFightSpeedScale;
 
     // Inspector Fields  #######################################################
     [Header("Ramped Difficulty")]
@@ -403,57 +404,67 @@ public class WorldBalanceConfig: ScriptableObject {
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
     private int spiderMaxHealth = 15;
 
-    [Header("Endless Boss Rush")]
+    [Header("Hardcore Boss Rush")]
     [SerializeField]
-    [Tooltip("climbed height b/t two bosses in the endless run: the Cobra "
+    [Tooltip("climbed height b/t two bosses in the hardcore run: the Cobra "
         + "King first, then the Spider King, taking turns; u")]
-    private float endlessBossIntervalU = 300f;
+    [FormerlySerializedAs("endlessBossIntervalU")]
+    private float hardcoreBossIntervalU = 300f;
 
     [SerializeField]
-    [Tooltip("scale on the monkey's & the great cobra's climb in the endless "
+    [Tooltip("scale on the monkey's & the great cobra's climb in the hardcore "
         + "run, outside a boss fight")]
-    private float endlessSpeedScale = 1f;
+    [FormerlySerializedAs("endlessSpeedScale")]
+    private float hardcoreSpeedScale = 1f;
 
     [SerializeField]
     [Tooltip("a boss's extra health per earlier fight of the same king in "
-        + "the endless run, a share of its base health; each king's first "
+        + "the hardcore run, a share of its base health; each king's first "
         + "fight is as its normal one")]
-    private float endlessHealthStep = 0.4f;
+    [FormerlySerializedAs("endlessHealthStep")]
+    private float hardcoreHealthStep = 0.4f;
 
     [SerializeField]
     [Tooltip("how much shorter a boss's wind ups, warnings & rests get per "
-        + "earlier fight of the same king in the endless run, a share")]
-    private float endlessTimeStep = 0.12f;
+        + "earlier fight of the same king in the hardcore run, a share")]
+    [FormerlySerializedAs("endlessTimeStep")]
+    private float hardcoreTimeStep = 0.12f;
 
     [SerializeField]
     [Tooltip("the shortest a boss's wind ups, warnings & rests get in the "
-        + "endless run, a share of normal")]
-    private float endlessMinTimeScale = 0.6f;
+        + "hardcore run, a share of normal")]
+    [FormerlySerializedAs("endlessMinTimeScale")]
+    private float hardcoreMinTimeScale = 0.6f;
 
     [SerializeField]
     [Tooltip("how much faster a boss's shots & dashes get per earlier fight "
-        + "of the same king in the endless run, a share")]
-    private float endlessSpeedStep = 0.1f;
+        + "of the same king in the hardcore run, a share")]
+    [FormerlySerializedAs("endlessSpeedStep")]
+    private float hardcoreSpeedStep = 0.1f;
 
     [SerializeField]
-    [Tooltip("the fastest a boss's shots & dashes get in the endless run, a "
+    [Tooltip("the fastest a boss's shots & dashes get in the hardcore run, a "
         + "scale of normal")]
-    private float endlessMaxSpeedScale = 1.5f;
+    [FormerlySerializedAs("endlessMaxSpeedScale")]
+    private float hardcoreMaxSpeedScale = 1.5f;
 
     [SerializeField]
-    [Tooltip("every endless boss's health, a scale, before the per boss "
+    [Tooltip("every hardcore boss's health, a scale, before the per boss "
         + "step: the monkey is as fast in its fights as on the climb")]
-    private float endlessFightHealthScale = 1f;
+    [FormerlySerializedAs("endlessFightHealthScale")]
+    private float hardcoreFightHealthScale = 1f;
 
     [SerializeField]
-    [Tooltip("every endless boss's wind ups, warnings & rests, a scale, "
+    [Tooltip("every hardcore boss's wind ups, warnings & rests, a scale, "
         + "before the per boss step")]
-    private float endlessFightTimeScale = 1f;
+    [FormerlySerializedAs("endlessFightTimeScale")]
+    private float hardcoreFightTimeScale = 1f;
 
     [SerializeField]
-    [Tooltip("every endless boss's crawl, shot, slash & dash speeds, a scale, "
+    [Tooltip("every hardcore boss's crawl, shot, slash & dash speeds, a scale, "
         + "before the per boss step")]
-    private float endlessFightSpeedScale = 1f;
+    [FormerlySerializedAs("endlessFightSpeedScale")]
+    private float hardcoreFightSpeedScale = 1f;
 
     // Editor Validation  ######################################################
     private void OnValidate() {
@@ -488,15 +499,15 @@ public class WorldBalanceConfig: ScriptableObject {
             spiderJumpHeightU, bossZoneEndU, spiderTriggerHeightU
         );
         spiderMaxHealth = Mathf.Max(1, spiderMaxHealth);
-        endlessBossIntervalU = Mathf.Max(50f, endlessBossIntervalU);
-        endlessSpeedScale = Mathf.Max(0.1f, endlessSpeedScale);
-        endlessHealthStep = Mathf.Max(0f, endlessHealthStep);
-        endlessTimeStep = Mathf.Max(0f, endlessTimeStep);
-        endlessMinTimeScale = Mathf.Clamp(endlessMinTimeScale, 0.1f, 1f);
-        endlessSpeedStep = Mathf.Max(0f, endlessSpeedStep);
-        endlessMaxSpeedScale = Mathf.Max(1f, endlessMaxSpeedScale);
-        endlessFightHealthScale = Mathf.Max(0.1f, endlessFightHealthScale);
-        endlessFightTimeScale = Mathf.Clamp(endlessFightTimeScale, 0.1f, 2f);
-        endlessFightSpeedScale = Mathf.Max(0.1f, endlessFightSpeedScale);
+        hardcoreBossIntervalU = Mathf.Max(50f, hardcoreBossIntervalU);
+        hardcoreSpeedScale = Mathf.Max(0.1f, hardcoreSpeedScale);
+        hardcoreHealthStep = Mathf.Max(0f, hardcoreHealthStep);
+        hardcoreTimeStep = Mathf.Max(0f, hardcoreTimeStep);
+        hardcoreMinTimeScale = Mathf.Clamp(hardcoreMinTimeScale, 0.1f, 1f);
+        hardcoreSpeedStep = Mathf.Max(0f, hardcoreSpeedStep);
+        hardcoreMaxSpeedScale = Mathf.Max(1f, hardcoreMaxSpeedScale);
+        hardcoreFightHealthScale = Mathf.Max(0.1f, hardcoreFightHealthScale);
+        hardcoreFightTimeScale = Mathf.Clamp(hardcoreFightTimeScale, 0.1f, 2f);
+        hardcoreFightSpeedScale = Mathf.Max(0.1f, hardcoreFightSpeedScale);
     }
 }

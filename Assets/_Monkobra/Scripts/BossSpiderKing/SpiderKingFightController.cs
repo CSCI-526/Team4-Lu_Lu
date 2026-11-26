@@ -285,10 +285,10 @@ public class SpiderKingFightController: MonoBehaviour {
         }
     }
 
-    // the endless run: the boss rush's second fight, & every other one
+    // the hardcore run: the boss rush's second fight, & every other one
     // after, is the spider's
     private void Start() {
-        if (I == this && EndlessBossRush.IsOn) {
+        if (I == this && HardcoreBossRush.IsOn) {
             rig.rushEncounter = 1;
         }
     }
@@ -357,7 +357,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == SpiderKingPhase.Waiting) {
-            // the endless run's rush keeps the coming arena bare; kept up
+            // the hardcore run's rush keeps the coming arena bare; kept up
             // every frame, as the run's start y is only known after a Start
             arena.ReserveRushRange();
             UpdatePreview(game);
@@ -410,7 +410,7 @@ public class SpiderKingFightController: MonoBehaviour {
     }
 
     // Setup  ------------------------------------------------------------------
-    // after the Cobra King, never mid leap; in the endless run at its turn
+    // after the Cobra King, never mid leap; in the hardcore run at its turn
     // of the boss rush
     private bool CanBegin(RunController game) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
@@ -421,7 +421,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return game.State == GameState.Playing
                 && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
         }
-        if (GameController.I.Mode == RunMode.Endless) {
+        if (GameController.I.Mode == RunMode.Hardcore) {
             return false;
         }
         if (config.IsTestAtStart) {
@@ -460,11 +460,11 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (!game.IsRunLive
-            || (GameController.I.Mode == RunMode.Endless && !rig.IsRush)) {
+            || (GameController.I.Mode == RunMode.Hardcore && !rig.IsRush)) {
             return;
         }
         // seen waiting from a bit below: the jump height, or 50 u below the
-        // fight in the endless run's rush
+        // fight in the hardcore run's rush
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         float seenFromU = rig.IsRush ? rig.TriggerClimbU - 50f
             : worldBalanceConfig.SpiderJumpHeightU - 5f;

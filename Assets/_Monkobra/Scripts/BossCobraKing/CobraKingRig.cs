@@ -128,7 +128,7 @@ public sealed class CobraKingRig {
     public CobraKingEnding Ending;
     public CobraKingFeedback Feedback;
     public CobraKingPhase phase = CobraKingPhase.Waiting;
-    // the endless run's boss rush: this fight's encounter (0, 2, 4, ...), -1
+    // the hardcore run's boss rush: this fight's encounter (0, 2, 4, ...), -1
     // outside the rush
     public int rushEncounter = -1;
     public CobraKingLoop loop;
@@ -174,8 +174,8 @@ public sealed class CobraKingRig {
     // the monkey has landed a first hit
     public bool hasShield;
     // the golden banana's shield is up
-    public bool isEndlessStart;
-    // the endless run skips the fight
+    public bool isHardcoreStart;
+    // the hardcore run skips the fight
     public bool hasThrown;
     // the first banana has been thrown
     public bool isReturningToStart;
@@ -273,29 +273,29 @@ public sealed class CobraKingRig {
             : 1f;
 
     // easy mode warns a notch longer: its last third as normal's start; a
-    // later boss of the endless run's rush warns shorter
+    // later boss of the hardcore run's rush warns shorter
     public float WarnScale => (isEasy
         ? (Third >= 2 ? 1f : config.EasyWarnScale)
         : (Third >= 2 ? config.FinalWarnScale : 1f)) * RushTimeScale;
 
-    /// <returns>if this fight is a boss of the endless run's rush</returns>
+    /// <returns>if this fight is a boss of the hardcore run's rush</returns>
     public bool IsRush => rushEncounter >= 0;
 
-    /// <returns>scale on the warnings & rests of a boss of the endless
+    /// <returns>scale on the warnings & rests of a boss of the hardcore
     /// run's rush, 1 outside it</returns>
     public float RushTimeScale => IsRush
-        ? EndlessBossRush.TimeScale(rushEncounter) : 1f;
+        ? HardcoreBossRush.TimeScale(rushEncounter) : 1f;
 
     /// <returns>the king's full health on normal: more for a later boss of
-    /// the endless run's rush</returns>
+    /// the hardcore run's rush</returns>
     public int BaseMaxHealth => Mathf.Max(1, Mathf.RoundToInt(
         worldBalanceConfig.BossMaxHealth
-            * (IsRush ? EndlessBossRush.HealthScale(rushEncounter) : 1f)));
+            * (IsRush ? HardcoreBossRush.HealthScale(rushEncounter) : 1f)));
 
     /// <returns>climbed height the fight begins at: the config's, or this
-    /// boss's in the endless run's rush; u</returns>
+    /// boss's in the hardcore run's rush; u</returns>
     public float TriggerClimbU => IsRush
-        ? EndlessBossRush.TriggerU(rushEncounter)
+        ? HardcoreBossRush.TriggerU(rushEncounter)
         : worldBalanceConfig.BossTriggerHeightU;
 
     public int MinionWaves => isEasy ? config.EasyMinionWaves

@@ -265,7 +265,7 @@ GameObject:
   - component: {fileID: 5595596824045352500}
   - component: {fileID: 3137320397568927534}
   m_Layer: 5
-  m_Name: EndlessModeButton
+  m_Name: HardcoreModeButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -485,7 +485,7 @@ GameObject:
   - component: {fileID: 5309676153989706688}
   - component: {fileID: 7500000000000000001}
   m_Layer: 5
-  m_Name: EndlessLockedHint
+  m_Name: HardcoreLockedHint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1121,9 +1121,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelSelectScreen
   normalButton: {fileID: 2846752827122573894}
-  endlessButton: {fileID: 2005429892500857342}
+  hardcoreButton: {fileID: 2005429892500857342}
   backButton: {fileID: 5893629709805034084}
-  endlessLockedHint: {fileID: 5309676153989706688}
+  hardcoreLockedHint: {fileID: 5309676153989706688}
   cancelAction: {fileID: 7727032971491509709, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!114 &6080459022021576504
 MonoBehaviour:
@@ -1782,7 +1782,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Endless Mode
+  m_text: Hardcore Mode
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}
   m_sharedMaterial: {fileID: 5833252848989689727, guid: b8840775c70d5cd4db148e6e3b2b7a34, type: 2}

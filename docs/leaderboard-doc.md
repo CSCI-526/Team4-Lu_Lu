@@ -37,7 +37,9 @@ a player's refresh token in that asset.
 ## What is saved
 
 - `/leaderboards/normal/scores/{uid}` and
-  `/leaderboards/endless/scores/{uid}` hold separate rankings.
+  `/leaderboards/endless/scores/{uid}` hold separate rankings; the `endless`
+  board is Hardcore Mode's, its key kept from the old mode name (HACK, rename
+  with the rules later).
 - Each document contains only `displayName` and integer `score`. Before a nickname
   is saved, it uses `Climber <first six UID characters>`. The lose screen has a
   name field and SAVE button; Enter also saves while editing. Names accept 1–16

@@ -5,7 +5,7 @@ public enum RunMode {
     Full,
 
     /// <summary>post-boss start, no boss fight, hazards keep ramping</summary>
-    Endless,
+    Hardcore,
 }
 
 /// <summary>

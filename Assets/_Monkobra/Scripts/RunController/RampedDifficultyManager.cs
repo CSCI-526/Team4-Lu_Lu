@@ -48,7 +48,7 @@ public class RampedDifficultyManager: MonoBehaviour {
         return y < RampBaseYPosition;
     }
 
-    /// <returns>the world balance tuning this reads, eg for the endless
+    /// <returns>the world balance tuning this reads, eg for the hardcore
     /// boss rush; null if unassigned</returns>
     public WorldBalanceConfig WorldBalanceConfig => worldBalanceConfig;
 
@@ -75,14 +75,14 @@ public class RampedDifficultyManager: MonoBehaviour {
     /// anything</returns>
     public bool IsInBossZoneY(float y) {
         // a fight's own arena, eg the Spider King's test fight near the start
-        // or a boss of the endless run's boss rush
+        // or a boss of the hardcore run's boss rush
         foreach (Vector2 zone in extraBossZones.Values) {
             if (y >= zone.x && y <= zone.y) {
                 return true;
             }
         }
-        // the endless tree has no boss zone, so no hazard-free gap
-        if (worldBalanceConfig == null || IsEndless) {
+        // the hardcore tree has no boss zone, so no hazard-free gap
+        if (worldBalanceConfig == null || IsHardcore) {
             return false;
         }
         float climbedY = GetClimbedYDistance(y);
@@ -111,8 +111,8 @@ public class RampedDifficultyManager: MonoBehaviour {
         }
         float climbedY = GetClimbedYDistance(y);
         float exitClimbedY = GetClimbedYDistance(RampBaseYPosition);
-        if (IsEndless) {
-            // endless opens at the post Spider King level at the exit and
+        if (IsHardcore) {
+            // hardcore opens at the post Spider King level at the exit and
             // keeps ramping from there
             return climbedY < exitClimbedY ? 0f : GetPostSpiderValue(
                 climbedY - exitClimbedY + worldBalanceConfig.SpiderZoneEndU
@@ -223,10 +223,10 @@ public class RampedDifficultyManager: MonoBehaviour {
     private Transform player;
 
     // private methods  ########################################################
-    // if this scene plays the endless run
-    private bool IsEndless =>
+    // if this scene plays the hardcore run
+    private bool IsHardcore =>
         GameController.I != null
-            && GameController.I.Mode == RunMode.Endless;
+            && GameController.I.Mode == RunMode.Hardcore;
 
     // from the Cobra King zone start on: 1 through its zone, the mid boss
     // curve to the Spider King zone start, then the post Spider King value

@@ -428,7 +428,7 @@ public class CoconutManager: MonoBehaviour {
             return false;
         }
         // a double-tap in a boss fight is a grab or a parry, not a coconut
-        if (EndlessBossRush.IsFightOn) {
+        if (HardcoreBossRush.IsFightOn) {
             return false;
         }
         return struggle == null

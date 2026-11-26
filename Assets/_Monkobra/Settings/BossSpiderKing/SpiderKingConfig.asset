@@ -66,8 +66,8 @@ MonoBehaviour:
   stageLostShares: {x: 0.5, y: 0.8}
   webShotsPerStage: {x: 1, y: 2, z: 2}
   slashesPerStage: {x: 1, y: 1, z: 1}
-  endlessSlashesPerStage: {x: 1, y: 2, z: 3}
-  endlessSlashWidthScale: 1
+  hardcoreSlashesPerStage: {x: 1, y: 2, z: 3}
+  hardcoreSlashWidthScale: 1
   volleySlowGapS: 1.1
   volleyFastGapS: 0.7
   lateSpeedScale: 1.25

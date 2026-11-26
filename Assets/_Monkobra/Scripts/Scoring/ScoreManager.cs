@@ -250,7 +250,7 @@ public class ScoreManager: MonoBehaviour {
     }
 
     // a king's FightEnded is raised only once it is beaten & its reward
-    // taken, every fight of the endless run's rush included; the points wait
+    // taken, every fight of the hardcore run's rush included; the points wait
     // for LateUpdate, since ScoreHeightBossHider brings the score HUD the
     // Cobra King's fight hid back in a later listener of the same event, and
     // the "+N" popup under it only hears a reward while shown

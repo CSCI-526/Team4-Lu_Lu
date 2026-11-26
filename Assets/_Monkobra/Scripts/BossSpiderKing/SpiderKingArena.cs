@@ -160,14 +160,14 @@ public sealed class SpiderKingArena {
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
     }
 
-    // the endless run's rush: the coming fight's range is kept bare as the
+    // the hardcore run's rush: the coming fight's range is kept bare as the
     // tree grows toward it, as the arena will be
     public void ReserveRushRange() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp == null || !rig.IsRush) {
             return;
         }
-        float entryY = EndlessBossRush.TriggerWorldY(rig.rushEncounter);
+        float entryY = HardcoreBossRush.TriggerWorldY(rig.rushEncounter);
         ramp.SetExtraBossZone(rig.owner, entryY - config.GuardDepthU - 4f,
             entryY + config.ArenaHeightU + 6f);
     }

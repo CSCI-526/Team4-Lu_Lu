@@ -249,7 +249,7 @@ public class CobraKingBody: MonoBehaviour {
 
     /// <summary>
     /// Removes the (shattered) king, so it can be built again, eg for the
-    /// next boss of the endless run's rush; a freed crown is left as it is.
+    /// next boss of the hardcore run's rush; a freed crown is left as it is.
     /// </summary>
     public void Clear() {
         if (root != null) {

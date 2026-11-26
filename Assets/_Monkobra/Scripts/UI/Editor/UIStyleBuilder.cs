@@ -353,14 +353,14 @@ public static partial class UIStyleBuilder {
                 StyleMenuButton(button);
             }
 
-            // the unlock hint goes right under the Endless button, inside
+            // the unlock hint goes right under the Hardcore button, inside
             // the column, so it never overlaps a button
-            Transform endless = buttons.Find("EndlessModeButton");
-            Transform hint = panel.Find("EndlessLockedHint")
-                ?? buttons.Find("EndlessLockedHint");
-            if (hint != null && endless != null) {
+            Transform hardcore = buttons.Find("HardcoreModeButton");
+            Transform hint = panel.Find("HardcoreLockedHint")
+                ?? buttons.Find("HardcoreLockedHint");
+            if (hint != null && hardcore != null) {
                 hint.SetParent(buttons, false);
-                hint.SetSiblingIndex(endless.GetSiblingIndex() + 1);
+                hint.SetSiblingIndex(hardcore.GetSiblingIndex() + 1);
                 RectTransform hintRect = (RectTransform)hint;
                 hintRect.sizeDelta = new Vector2(
                     MENU_FACE.x + MARGIN_LEFT + MARGIN_RIGHT, HINT_HEIGHT

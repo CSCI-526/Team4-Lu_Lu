@@ -139,8 +139,10 @@ public class LeaderboardWidget: MonoBehaviour {
     private async void ShowOnline(long score, int version) {
         FirebaseLeaderboardClient client =
             new FirebaseLeaderboardClient(firebaseConfig);
+        // HACK: Hardcore scores post to the old "endless" board key, rename
+        // it w/ the Firebase rules & client in one later change
         string board = GameController.I != null
-            && GameController.I.Mode == RunMode.Endless ? "endless" : "normal";
+            && GameController.I.Mode == RunMode.Hardcore ? "endless" : "normal";
         long best = client.RememberScore(board, score);
         ShowPersonalBest(best);
         playerRankLabel.text = "CONNECTING...";

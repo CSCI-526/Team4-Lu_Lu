@@ -38,7 +38,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | --- | --- |
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build Intro Comic` from `tools/comic/panels/` |
-| `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
+| `LevelSelectScene` | Normal Play, Hardcore Mode (locked until the Cobra King has been beaten once), Back |
 | `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
@@ -47,7 +47,7 @@ graph LR
   Title -->|Space, click, tap, later| Select[LevelSelectScene]
   Comic -->|last page, Esc, Skip| Select
   Select -->|Normal Play| Play[GameplayScene, Full]
-  Select -->|Endless Mode, unlocked| Play2[GameplayScene, Endless]
+  Select -->|Hardcore Mode, unlocked| Play2[GameplayScene, Hardcore]
   Select -->|Back, Esc| Title
   Play -->|R restarts| Play
   Play2 -->|R restarts| Play2
@@ -57,9 +57,9 @@ graph LR
 
 Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`EventSystem_Menu`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `StartPress` (Space, left click, a touch, gamepad start) serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
 
-Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the run is a boss rush (`EndlessBossRush`, see [Mobs](mob-doc.md#endless-boss-rush)): the Cobra King and the Spider King take turns every `endlessBossIntervalU` (300 u), each harder than the last, starting in the gold armor; the monkey and the great cobra climb at normal speed (`endlessSpeedScale`, 1); `RampedDifficultyManager` reads the post boss curve from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
+Run mode: `GameController.Mode` (`RunMode.Full` or `Hardcore`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Hardcore` the run is a boss rush (`HardcoreBossRush`, see [Mobs](mob-doc.md#hardcore-boss-rush)): the Cobra King and the Spider King take turns every `hardcoreBossIntervalU` (300 u), each harder than the last, starting in the gold armor; the monkey and the great cobra climb at normal speed (`hardcoreSpeedScale`, 1); `RampedDifficultyManager` reads the post boss curve from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
 
-Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Unlock Endless` and `Monkobra/Reset Progress` flip it for testing.
+Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Hardcore out until it is set. The Editor menu items `Monkobra/Unlock Hardcore` and `Monkobra/Reset Progress` flip it for testing.
 
 Personal copies of `GameplayScene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
@@ -255,7 +255,7 @@ All values live in `Settings/Player/PlayerBalanceConfig.asset`.
 
 - Distance Score: whole meters of the highest point climbed, read from `RampedDifficultyManager.CurrentPlayerClimbedYDistance`, refreshed every frame (player y minus the y at game start), times points per meter. Only a new high counts, so falling and re-climbing earns nothing
 - Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups. A coconut's `ScorePickup` (kind `Coconut`) adds the config's coconut points instead, kept in `ScoreManager.RewardScoreOf(RewardKind.Coconut)`, counted in `CoconutCollectedCount`, and raises `CoconutCollected`
-- Other Rewards: `ScoreManager.AddReward(RewardKind)` adds to Reward Score for every good deed that is not a fruit pickup, a pineapple grab, a cobra freeze (`CoconutManager.Frozen`), a new height marker reached (`HeightMarkerSystem.MarkerReached`, once per marker above the highest already reached) a spider web escaped (`SpiderWebStruggle.Escaped`), and a king beaten (`CobraKingFightController.FightEnded`, `SpiderKingFightController.FightEnded`, raised only on a win once its reward is taken, so every win of the endless rush pays too), granted in the next `LateUpdate` so the score HUD the Cobra King's fight hid is back for its popup; each grant raises `RewardAdded(RewardKind, points)`, which the score popup reads. The point values are in `ScoreConfig`
+- Other Rewards: `ScoreManager.AddReward(RewardKind)` adds to Reward Score for every good deed that is not a fruit pickup, a pineapple grab, a cobra freeze (`CoconutManager.Frozen`), a new height marker reached (`HeightMarkerSystem.MarkerReached`, once per marker above the highest already reached) a spider web escaped (`SpiderWebStruggle.Escaped`), and a king beaten (`CobraKingFightController.FightEnded`, `SpiderKingFightController.FightEnded`, raised only on a win once its reward is taken, so every win of the hardcore rush pays too), granted in the next `LateUpdate` so the score HUD the Cobra King's fight hid is back for its popup; each grant raises `RewardAdded(RewardKind, points)`, which the score popup reads. The point values are in `ScoreConfig`
 - Gate: `CanScore` is true only after start, before `EndRun`, while unpaused, and while the game is not over
 - Display: `ScoreWidget` shows the total on the HUD and on the lose panel
 - Units: `unitsPerMeter` only converts climbed world units to the meters the distance score pays for. Every height the player reads is plain world units: the trunk height markers and the progress bar's cobra gap label them `m`, and the lose panel's final height shows the bare number
@@ -326,7 +326,7 @@ The lose-screen leaderboard optionally uses Firebase Anonymous Auth and Firestor
 REST. `FirebaseLeaderboardConfig` enables it without a native SDK; the existing
 practice board remains when unconfigured. `FirebaseLeaderboardClient` persists a
 pending best before uploading, uses an atomic maximum to preserve high scores,
-and loads the top ten separately for normal and endless modes. Setup, failure
+and loads the top ten separately for normal and hardcore modes. Setup, failure
 behaviour, identity limits and emulator verification are in
 [Firebase Leaderboard](leaderboard-doc.md).
 

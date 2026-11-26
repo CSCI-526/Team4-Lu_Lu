@@ -22,7 +22,7 @@ The code twin is `UIStyle` (`Scripts/UI/UIStyle.cs`). Gameplay signals keep thei
 
 ## Type
 
-One family, Baloo 2 (OFL, `Fonts/Baloo2/`), in two weights; weight and size make the levels. Three accent fonts sit on fixed text only: BadaBoom (`Fonts/badaboom/`) on the score numbers (HUD score, bonus popups, lose screen final score; digits, comma and plus only), Chewy (`Fonts/chewy/`) on the level-select labels and Download Analytic, Life Is Goofy (`Fonts/life-is-goofy/`) on the Endless unlock hint. The `UIStyleBuilder` HUD and screen builders set Baloo 2 on those objects again when rerun, so re-point them after a rerun.
+One family, Baloo 2 (OFL, `Fonts/Baloo2/`), in two weights; weight and size make the levels. Three accent fonts sit on fixed text only: BadaBoom (`Fonts/badaboom/`) on the score numbers (HUD score, bonus popups, lose screen final score; digits, comma and plus only), Chewy (`Fonts/chewy/`) on the level-select labels and Download Analytic, Life Is Goofy (`Fonts/life-is-goofy/`) on the Hardcore unlock hint. The `UIStyleBuilder` HUD and screen builders set Baloo 2 on those objects again when rerun, so re-point them after a rerun.
 
 - Files: `Baloo2-SemiBold.ttf` and `Baloo2-ExtraBold.ttf`, static instances of the variable font cut to the Latin set (Basic Latin, Latin-1, common punctuation), 37 KB each, so a WebGL build stays small
 - TMP: `Baloo2-SemiBold SDF` and `Baloo2-ExtraBold SDF`, static 1024 atlases of the same set; SemiBold is the TMP default, so text made in code without a font gets it, and a Bold style on SemiBold text draws the real ExtraBold; LiberationSans is the fallback for any glyph outside the set

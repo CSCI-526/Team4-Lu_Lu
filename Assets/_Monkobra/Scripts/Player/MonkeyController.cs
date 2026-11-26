@@ -352,10 +352,10 @@ public class MonkeyController: MonoBehaviour {
             : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
-        // rough bark slows the body, a boss arena, the endless run's boss
+        // rough bark slows the body, a boss arena, the hardcore run's boss
         // rush (outside a fight) & the dev speed buff multiply it
         float moveScale = roughBarkSpeedScale * ArenaSpeedScale
-            * EndlessBossRush.ClimbSpeedScale
+            * HardcoreBossRush.ClimbSpeedScale
             * (IsSpeedBuff ? SPEED_BUFF_SCALE : 1f);
 
         orbitAngleDeg -= directionalInput.x

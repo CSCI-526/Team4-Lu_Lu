@@ -2,18 +2,18 @@ using UnityEngine;
 
 /// <summary>
 /// what the player has achieved across launches, kept in PlayerPrefs, so
-/// Endless Mode unlocks once the Cobra King falls
+/// Hardcore Mode unlocks once the Cobra King falls
 /// </summary>
 public static class ProgressStore {
     // Public Members  #########################################################
     /// <summary>if the Cobra King has been beaten at least once</summary>
-    public static bool IsEndlessUnlocked =>
+    public static bool IsHardcoreUnlocked =>
         PlayerPrefs.GetInt(BOSS_BEATEN_KEY, 0) != 0;
 
     /// <summary>records the first king win; saved at once, as WebGL only
     /// flushes PlayerPrefs on request</summary>
     public static void MarkBossBeaten() {
-        if (IsEndlessUnlocked) {
+        if (IsHardcoreUnlocked) {
             return;
         }
 
@@ -21,7 +21,7 @@ public static class ProgressStore {
         PlayerPrefs.Save();
     }
 
-    /// <summary>forgets all progress, so Endless locks again</summary>
+    /// <summary>forgets all progress, so Hardcore locks again</summary>
     public static void ResetProgress() {
         PlayerPrefs.DeleteKey(BOSS_BEATEN_KEY);
         PlayerPrefs.Save();
