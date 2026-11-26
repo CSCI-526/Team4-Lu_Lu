@@ -43,6 +43,11 @@ public class FallingCobraController: MonoBehaviour {
     /// <returns>the cobra's current state</returns>
     public FallingCobraState CurrentState => rig.state;
 
+    /// <returns>where the snake's head is now, its pivot before it has one
+    /// </returns>
+    public Vector3 HeadPosition => rig.referenceHeadVisual != null
+        ? rig.referenceHeadVisual.position : transform.position;
+
     // Public Methods  #########################################################
     /// <summary>
     /// Arms the cobra. The ring it slides on is the horizontal distance from

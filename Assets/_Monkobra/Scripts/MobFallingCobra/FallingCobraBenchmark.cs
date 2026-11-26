@@ -191,6 +191,8 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
     private const float PULL_SPEED_U = 40f;
     private const float WARNING_SHOT_DELAY_S = 1.2f;
     private const float FALLING_SHOT_DELAY_S = .5f;
+    private const float CLOSE_DISTANCE_U = 3.5f;
+    private const float CLOSE_LIFT_U = .9f;
     private const float SHOT_DISTANCE_U = 10f;
     private const float SHOT_FOV_DEG = 40f;
     private const string HIT_LOG_PREFIX =
@@ -515,6 +517,20 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
         shotCamera.transform.SetPositionAndRotation(
             focus + outward * distanceU,
             Quaternion.LookRotation(-outward));
+        string name = state.ToString().ToLowerInvariant();
+        SaveShot(name);
+        // the head & neck close up, to judge the collar, paint & bark contact
+        Vector3 closeFocus = cobra.HeadPosition + Vector3.up
+            * (state == FallingCobraState.Falling ? CLOSE_LIFT_U
+                : -CLOSE_LIFT_U);
+        shotCamera.transform.SetPositionAndRotation(
+            closeFocus + outward * CLOSE_DISTANCE_U,
+            Quaternion.LookRotation(-outward));
+        SaveShot(name + "_close");
+    }
+
+    // renders the shot camera & saves it as a png of the output folder
+    private void SaveShot(string name) {
         shotCamera.Render();
         RenderTexture previous = RenderTexture.active;
         RenderTexture.active = shotTexture;
@@ -524,13 +540,12 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
         image.Apply();
         RenderTexture.active = previous;
         Directory.CreateDirectory(outputDir);
-        string path = Path.Combine(outputDir,
-            state.ToString().ToLowerInvariant() + ".png");
+        string path = Path.Combine(outputDir, name + ".png");
         File.WriteAllBytes(path, image.EncodeToPNG());
         Destroy(image);
         report.screenshots.Add(path);
         if (Debug.isDebugBuild) {
-            Debug.Log("FallingCobraBenchmark:\tscreenshot " + path);
+            Debug.Log("FallingCobraBenchmark:	screenshot " + path);
         }
     }
 
