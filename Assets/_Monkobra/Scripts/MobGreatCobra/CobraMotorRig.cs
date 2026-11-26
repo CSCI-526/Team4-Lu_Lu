@@ -72,7 +72,9 @@ public sealed class CobraMotorRig {
     public float exitBoostBankedS;
     // exit boost time kept through a start hold; s
     public float startCreepSpeedU;
-    // climb speed cap after the start hold, 0 for none; u/s
+    // climb speed set for the cut scene, 0 for none; u/s
+    public float startCreepMinGapU;
+    // the cut scene climb stops this near below the monkey; u
     public HitBranchSensor playerSensor;
     public SpiderWebStruggle playerStruggle;
     public Transform player;

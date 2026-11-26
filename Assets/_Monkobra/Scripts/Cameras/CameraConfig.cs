@@ -149,14 +149,16 @@ public class CameraConfig: ScriptableObject {
     /// away and the pull back; s</returns>
     public float CobraAlertSeeS => cobraAlertSeeS;
 
-    /// <returns>time the great cobra stays still, rearing & hissing, from
-    /// the camera's arrival at the cobra view before it creeps up; s
+    /// <returns>climb speed of the great cobra from the first moment the
+    /// camera pulls away until it arrives at the cobra, the monkey still
+    /// locked, far above the chase speed so the climb is plain to see; it
+    /// returns to the required chase speed on the camera's arrival; u/s
     /// </returns>
-    public float CobraAlertHoldS => cobraAlertHoldS;
-
-    /// <returns>top climb speed of the great cobra while it creeps in view,
-    /// the monkey still locked; u/s</returns>
     public float CobraAlertCreepSpeedU => cobraAlertCreepSpeedU;
+
+    /// <returns>how near below the monkey the boosted climb stops, so the
+    /// boost never reaches the locked monkey; u</returns>
+    public float CobraAlertMinGapU => cobraAlertMinGapU;
 
     /// <returns>how far the camera bulges away from the trunk half way
     /// through the pull away & the pull back, so it never nears the bark;
@@ -416,15 +418,18 @@ public class CameraConfig: ScriptableObject {
 
     [SerializeField]
     [Min(0f)]
-    [Tooltip("time the great cobra stays still, rearing & hissing, from the "
-        + "camera's arrival at the cobra view before it creeps up; s")]
-    private float cobraAlertHoldS = 1.2f;
+    [Tooltip("climb speed of the great cobra from the first moment the camera "
+        + "pulls away until it arrives, the monkey still locked: far above "
+        + "the chase speed so the climb is plain to see, back to the required "
+        + "chase speed on arrival; the faster, the more lead the monkey loses "
+        + "meanwhile; u/s")]
+    private float cobraAlertCreepSpeedU = 7f;
 
     [SerializeField]
     [Min(0f)]
-    [Tooltip("top climb speed of the great cobra while it creeps in view, the "
-        + "monkey still locked; the cap lifts when control returns; u/s")]
-    private float cobraAlertCreepSpeedU = 1.5f;
+    [Tooltip("how near below the monkey the boosted climb stops, so the boost "
+        + "never reaches the locked monkey; u")]
+    private float cobraAlertMinGapU = 6f;
 
     [SerializeField]
     [Min(0f)]

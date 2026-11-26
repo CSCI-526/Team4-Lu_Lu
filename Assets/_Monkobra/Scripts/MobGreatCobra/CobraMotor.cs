@@ -236,18 +236,39 @@ public class CobraMotor: MonoBehaviour {
     }
 
     /// <summary>
-    /// Caps the climb speed after a start hold, so the cobra may creep up in
-    /// view while the monkey is still locked; the banked exit boost waits.
-    /// 0 ends the cap and starts the banked boost, if the hold is lifted.
+    /// Starts the cut scene climb at once: the cobra jumps to
+    /// <paramref name="speedU"/>, far faster than its chase speed, so its
+    /// climb is plain to see while the monkey is locked; the exit boost's
+    /// time left is banked & waits for <see cref="ReleaseStartBoost"/>. 0
+    /// ends it, back to the required chase speed.
     /// </summary>
-    /// <param name="speedU">top climb speed while capped, 0 or less for no
-    /// cap; u/s</param>
-    public void SetStartCreep(float speedU) {
+    /// <param name="speedU">climb speed during the cut scene, 0 or less for
+    /// none; u/s</param>
+    /// <param name="minGapU">the climb stops this near below the monkey, so
+    /// the boost never reaches it; u</param>
+    public void SetStartCreep(float speedU, float minGapU = 0f) {
         if (rig == null) {
             return;
         }
+        bool wasOn = rig.startCreepSpeedU > 0f;
         rig.startCreepSpeedU = Mathf.Max(0f, speedU);
-        if (rig.startCreepSpeedU <= 0f && !rig.isStoryHeld) {
+        rig.startCreepMinGapU = Mathf.Max(0f, minGapU);
+        if (rig.startCreepSpeedU > 0f && !wasOn) {
+            rig.surgeStacks = 0;
+            rig.isCatchingUp = false;
+            rig.isStartEasing = false;
+            rig.exitBoostBankedS = Mathf.Max(rig.exitBoostBankedS,
+                rig.exitBoostEndTime - Time.time);
+            rig.exitBoostEndTime = 0f;
+            rig.currentClimbSpeed = rig.startCreepSpeedU;
+        }
+    }
+
+    /// <summary>
+    /// Gives back the exit boost the cut scene climb kept, to run now
+    /// </summary>
+    public void ReleaseStartBoost() {
+        if (rig != null && !rig.isStoryHeld) {
             RestoreBankedBoost();
         }
     }
@@ -473,10 +494,16 @@ public class CobraMotor: MonoBehaviour {
                 + cobraBalanceConfig.CobraExitBoostSpeedU;
         }
 
-        // the start creep never lets the cobra pass its cap
+        // while the camera shows it, the cobra climbs at the cut scene speed,
+        // set apart from the chase speed so the climb is plain to see
         if (rig.startCreepSpeedU > 0f) {
-            targetClimbSpeed = Mathf.Min(
-                targetClimbSpeed, rig.startCreepSpeedU);
+            // but never right up to the locked monkey
+            bool isTooClose = rig.player != null && rig.pathCenter != null
+                && chase.CalcDistanceBelowPlayer() <= rig.startCreepMinGapU;
+            targetClimbSpeed = isTooClose ? 0f : rig.startCreepSpeedU;
+            if (isTooClose) {
+                rig.currentClimbSpeed = 0f;
+            }
         }
 
         // ease toward the target, so a speed-up or a slow-down never jumps

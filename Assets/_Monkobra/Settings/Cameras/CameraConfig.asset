@@ -94,8 +94,8 @@ MonoBehaviour:
     priority: 20
   cobraAlertTravelS: 3
   cobraAlertSeeS: 3.5
-  cobraAlertHoldS: 1.2
-  cobraAlertCreepSpeedU: 1.5
+  cobraAlertCreepSpeedU: 7
+  cobraAlertMinGapU: 6
   cobraAlertPullOutU: 6
   cobraAlertDistanceU: 5
   cobraAlertYOffsetU: 3

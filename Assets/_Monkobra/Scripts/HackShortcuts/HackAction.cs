@@ -10,7 +10,7 @@ public enum HackAction {
     MaxStamina,
 
     /// <summary>toggles <see cref="MonkeyController.IsSpeedBuff"/>: all monkey
-    /// movement runs at 3 times its normal speed</summary>
+    /// movement runs at 5 times its normal speed</summary>
     SpeedBuff,
 
     /// <summary>teleports the monkey to the boss zone start, ending the
