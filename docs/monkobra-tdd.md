@@ -137,8 +137,6 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F1 | toggle `RunController.CobraNoClip`, the great cobra no longer kills | `RunController` |
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 5 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
-| 1 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
-| 2 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight, never in the endless run (its boss rush brings the Spider King itself) | `MonkeyController` |
 | 3 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
 | 4 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | 5 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
@@ -148,9 +146,18 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F10 | save a mock analytics session file | `AnalyticsManager` |
 | F12 | turn the hack layer on or off: this list on screen and every key above (dev build only, off when the game starts) | `HackShortcutPanel` |
 
-The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 analytics, F12 the switch. F4~F7 and F11 stay free, since F5 reloads and F11 fullscreens a WebGL page; 7~0 are free too.
+The keys group by use: F1~F3 cheats that toggle, 3~6 spawns, F8~F10 analytics, F12 the switch. F4~F7 and F11 stay free, since F5 reloads and F11 fullscreens a WebGL page; 1~2 and 7~0 are free too. The old boss jump keys 1 and 2 are gone: the [Boss Dev Scenes](#boss-dev-scenes) replace them, and their `HackAction` values 3 and 12 stay unused, since the asset stores the numbers.
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and `ToggleHints` turns the hack layer on or off: one shared static state (`HackShortcutConfig.TryToggleLayer`, off at every play start) that shows the list and lets every other hack key run, so a tester never triggers one by accident. `ToggleHints` reads only when `AreHintsShown`, so it never works in a release build, where the other keys stay live. The state holds across scenes, but only the gameplay scene's panel can flip it. A new hack key is a new `HackAction` plus an entry in the asset.
+
+### Boss Dev Scenes
+
+`DEVBossCobraKingScene` and `DEVBossSpiderKingScene` (in `Scenes/`) test the 2 boss fights, each playing like the player's **first** meeting with that boss. They are generated, never edited by hand: `Monkobra > Build Boss Dev Scenes` (`BossDevSceneBuilder`) copies `GameplayScene.unity` over them, so run it again after the main scene or the balance changes. It never edits the main scene or the main balance asset, and lists the 2 scenes, disabled, in the Editor Build Settings, so a restart by scene name finds them.
+
+- **The boss moves down, the monkey never teleports.** The builder copies `WorldBalanceConfig` into one DEV asset per scene (`Settings/DevScenes/DEVBossCobraKingWorldBalanceConfig.asset`, `DEVBossSpiderKingWorldBalanceConfig.asset`) and repoints every reference to the main asset in that scene. In the copy the boss under test has its zone start `bossZoneStartU` (5 u) above the player, its trigger and the other heights keeping their spacing. Cobra King scene: the Spider King zone starts `otherKingGapU` (50 u) above the Cobra King zone end. Spider King scene: the Cobra King group is collapsed to 0, since that king is skipped.
+- **No starting zone.** The builder adds a `DEVRampBase` object at the monkey's start and assigns it to the `rampBase` of `RampedDifficultyManager`, so no height counts as the starting zone, and `BossDevStart` ends the starting zone on the first live frame.
+- **First-time state, no saved data.** `BossDevStart` (one object per scene) sets the run mode to Full and tells `TutorialSkipManager.MarkSeen` for the items a player would have met on the climb, and leaves the boss's own items unseen: `ArmorWords` and `CobraKingLesson` in the Cobra King scene, `SpiderKingLesson` in the Spider King scene. The seen set is empty at every launch, so they show each time Play starts. `SpiderWebIntro` counts as seen, so the Spider King scene has no web intro, and it calls `CobraKingFightController.SkipForTest` so the Cobra King counts as beaten, its armor worn.
+- **Numbers in one asset.** `BossDevStartConfig` (`Settings/DevScenes/DEVBossStartConfig.asset`) holds `bossZoneStartU`, `otherKingGapU` and the 2 pre-seen lists; change it, then rebuild.
 
 ### Tutorial Skip Manager
 
