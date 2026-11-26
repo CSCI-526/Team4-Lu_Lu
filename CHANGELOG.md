@@ -35,6 +35,11 @@ todo add 3x fruit
 
 ##### Erik
 
+- uniform outline design: banana, coconut, pineapple and the monkey share
+  world-unit widths; a fruit wears 3 tiers (normal at rest, reachable,
+  grabbable) in its own hue, paler at the lower tier; a fruit hidden by
+  the trunk, a branch or the monkey shows a see-through ghost; all values
+  in 1 asset, `FruitOutlineStyle`
 - Spider King web intro: once per Normal Play run, at 250 u climbed, the
   camera eases to the bare trunk, the king scuttles in round it from the far
   side, glows, and spits a web that traps the monkey, so the first web is

@@ -196,8 +196,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FruitOutlineListener
   meshRoot: {fileID: 0}
-  reachableOutlineMat: {fileID: 2100000, guid: 1e8d8a8ab1047f04b814065e9a51c55e, type: 2}
-  grabbableOutlineMat: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
+  style: {fileID: 11400000, guid: 3abcf5659e73d554b891748f8df63288, type: 2}
+  kind: 0
 --- !u!1 &6536236179541086049
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,6 +395,27 @@ MonoBehaviour:
   bananaStem: {fileID: 7275201964349085657}
   fruitPrefab: {fileID: 0}
   fruitOffsetU: {x: 0, y: 0, z: 0}
+--- !u!114 &6127440958312087513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7489113642335787035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e42c305bcff04487b560b50fdaf7b9a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StylizedBranchArt
+  branchBox: {fileID: 496954062815779889}
+  fruitStem: {fileID: 5088038646071703649}
+  artMaterial: {fileID: 2100000, guid: 426742231c764ad28ec845947437a62c, type: 2}
+  baseThickness: 1.45
+  tipThickness: 0.6
+  collarFlare: 0.5
+  archU: 0.1
+  looks: 4
+  stalkRadiusU: 0.075
 --- !u!1 &9100000000000000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -485,18 +506,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6127440958312087513
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7489113642335787035}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e42c305bcff04487b560b50fdaf7b9a7, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::StylizedBranchArt
-  branchBox: {fileID: 496954062815779889}
-  fruitStem: {fileID: 5088038646071703649}
-  artMaterial: {fileID: 2100000, guid: 426742231c764ad28ec845947437a62c, type: 2}
