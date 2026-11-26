@@ -48,7 +48,7 @@ public class MusicManager: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-    // GameController destroys a duplicate before this runs; kept as a guard
+        // GameController destroys a duplicate before this runs; kept as a guard
         if (I != null && I != this) {
             return;
         }
