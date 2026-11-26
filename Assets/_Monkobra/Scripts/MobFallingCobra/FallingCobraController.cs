@@ -40,6 +40,9 @@ public class FallingCobraController: MonoBehaviour {
     public float TailBelowPivotU => rig.animatedReferenceMesh != null
         ? rig.referenceHeadBelowPivotU : config.HitRadiusU;
 
+    /// <returns>the cobra's current state</returns>
+    public FallingCobraState CurrentState => rig.state;
+
     // Public Methods  #########################################################
     /// <summary>
     /// Arms the cobra. The ring it slides on is the horizontal distance from
@@ -439,6 +442,10 @@ public class FallingCobraController: MonoBehaviour {
         if (sensor != null || !IsMonkeyPart(other)) {
             return;
         }
+        if (Debug.isDebugBuild) {
+            Debug.Log("FallingCobraController:	hit from monkey collider "
+                + ColliderPath(other), this);
+        }
         rig.state = FallingCobraState.Done;
         rig.hitCollider.enabled = false;
         HitBranchSensor receiver = sensor != null ? sensor : rig.playerSensor;
@@ -472,6 +479,20 @@ public class FallingCobraController: MonoBehaviour {
             }
         }
         return false;
+    }
+
+    // the collider's name chain up to the monkey root, to tell which
+    // part of the monkey a hit came from
+    private static string ColliderPath(Collider other) {
+        string path = other.name;
+        for (Transform t = other.transform.parent; t != null;
+            t = t.parent) {
+            path = t.name + "/" + path;
+            if (t.CompareTag(PLAYER_TAG)) {
+                break;
+            }
+        }
+        return path;
     }
 
     private void WatchMonkey() {
