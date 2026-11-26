@@ -3,14 +3,14 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Menu <c>Monkobra > Build Outline Materials</c>: writes the
+/// Menu <c>Monkobra > Build > Outline Materials</c>: writes the
 /// <see cref="FruitOutlineStyle"/> asset with the Design Spec numbers and the
 /// shared monkey hull material. Safe to run again: existing assets are kept
 /// and only their shader and monkey look are refreshed.
 /// </summary>
 public static class OutlineMaterialBuilder {
     // constants  ##############################################################
-    private const string BUILD_MENU = "Monkobra/Build Outline Materials";
+    private const string BUILD_MENU = "Monkobra/Build/Outline Materials";
 
     private const string ROOT = "Assets/_Monkobra/";
     private const string SHADER_PATH = ROOT + "Shaders/Outline/OutlineHull.shader";
@@ -31,7 +31,7 @@ public static class OutlineMaterialBuilder {
         ROOT + "Materials/Outline/Outline_Monkey.mat";
 
     // Menu  ###################################################################
-    [MenuItem(BUILD_MENU)]
+    [MenuItem(BUILD_MENU, false, 50)]
     public static void Build() {
         Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(SHADER_PATH);
         if (shader == null) {

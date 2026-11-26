@@ -73,10 +73,10 @@ A Space icon with a press clip keeps its keycap on the root Image and draws the 
 
 Only the fonts and the buttons are built by Editor menus, never by editing prefab YAML:
 
-1. `Monkobra > UI Style > 1. Build Fonts`: the two TMP font assets, the Title material, and the TMP default font; existing font assets are kept, since a rebuild would change their GUIDs
-2. `Monkobra > UI Style > 2. Build Button Prefabs`: `MenuButton` and `IconButton`
-3. `Monkobra > Build Title Screen`: the title picture, whose start prompt words take the loading page's font
-4. `Monkobra > Build Intro Comic`: the comic's caption plate and Skip button
+1. `Monkobra > Build > UI Fonts`: the two TMP font assets, the Title material, and the TMP default font; existing font assets are kept, since a rebuild would change their GUIDs
+2. `Monkobra > Build > UI Button Prefabs`: `MenuButton` and `IconButton`
+3. `Monkobra > Build > Title Screen`: the title picture, whose start prompt words take the loading page's font
+4. `Monkobra > Build > Intro Comic`: the comic's caption plate and Skip button
 
 The level selection, HUD, popups, tutorial, pause and lose screens and the leaderboard were restyled once with this look and now keep it in their prefabs; a new element follows this document by hand in the Editor, using the shared helpers of `UIStyleBuilder` where they fit. To change the character set, cut the fonts again from the Google Fonts variable `Baloo2[wght].ttf` with fontTools (instance at weight 600 and 800, then subset), delete the two SDF assets, and run step 1.
 

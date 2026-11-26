@@ -126,7 +126,7 @@ Editor and lose a run. The demo project and loopback endpoints are selected
 automatically. **Use Emulators exists only in the Editor**; an exported build
 needs real public Firebase settings. Emulator data is temporary by default.
 After restarting empty emulators, run
-`Monkobra > Leaderboard > Reset Local Emulator Identity` before playing again.
+`Monkobra > Reset Leaderboard Emulator Identity` before playing again.
 This clears only the demo refresh token and keeps pending scores.
 Unity may ask to allow local HTTP requests for this Editor-only test; if so set
 Player > Other Settings > Allow downloads over HTTP to Development Only locally.

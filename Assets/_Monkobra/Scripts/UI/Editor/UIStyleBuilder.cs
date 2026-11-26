@@ -56,7 +56,7 @@ public static partial class UIStyleBuilder {
 
     // private methods  ########################################################
     // fonts  ------------------------------------------------------------------
-    [MenuItem("Monkobra/UI Style/1. Build Fonts")]
+    [MenuItem("Monkobra/Build/UI Fonts", false, 10)]
     private static void BuildFonts() {
         TMP_FontAsset semi = BuildFont(SEMIBOLD_TTF, SEMIBOLD_SDF);
         TMP_FontAsset extra = BuildFont(EXTRABOLD_TTF, EXTRABOLD_SDF);
@@ -154,7 +154,7 @@ public static partial class UIStyleBuilder {
     }
 
     // button prefabs  ---------------------------------------------------------
-    [MenuItem("Monkobra/UI Style/2. Build Button Prefabs")]
+    [MenuItem("Monkobra/Build/UI Button Prefabs", false, 11)]
     private static void BuildButtons() {
         if (!AreFontsReady()) {
             return;
@@ -296,7 +296,7 @@ public static partial class UIStyleBuilder {
             return true;
         }
         Debug.LogError(
-            "UIStyleBuilder:\trun Monkobra/UI Style/1. Build Fonts first"
+            "UIStyleBuilder:\trun Monkobra/Build/UI Fonts first"
         );
         return false;
     }

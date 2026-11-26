@@ -70,7 +70,7 @@ public static class FirebaseLeaderboardSetup {
         }
     }
 
-    [MenuItem("Monkobra/Leaderboard/Reset Local Emulator Identity")]
+    [MenuItem("Monkobra/Reset Leaderboard Emulator Identity", false, 201)]
     public static void ResetEmulatorIdentity() {
         // Emulator Auth is empty after a restart unless explicitly exported.
         // Keep pending bests, but never reuse a vanished demo identity.

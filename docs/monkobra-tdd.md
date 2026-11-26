@@ -37,7 +37,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | Scene | Purpose |
 | --- | --- |
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
-| `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build Intro Comic` from `tools/comic/panels/` |
+| `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build > Intro Comic` from `tools/comic/panels/` |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
 | `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
@@ -59,7 +59,7 @@ Every scene change goes through `SceneNames.Load`, which resets the time scale a
 
 Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the run is a boss rush (`EndlessBossRush`, see [Mobs](mob-doc.md#endless-boss-rush)): the Cobra King and the Spider King take turns every `endlessBossIntervalU` (300 u), each harder than the last, starting in the gold armor; the monkey and the great cobra climb at normal speed (`endlessSpeedScale`, 1); `RampedDifficultyManager` reads the post boss curve from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
 
-Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Unlock Endless` and `Monkobra/Reset Progress` flip it for testing.
+Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Progress/Unlock Endless` and `Monkobra/Progress/Reset Progress` flip it for testing.
 
 Personal copies of `GameplayScene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
@@ -375,12 +375,31 @@ Menu buttons swap sprites by state (Transition: Sprite Swap) over the [UI Style]
 The tutorial in `GameplayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. A dark Background wash dims the game behind the tutorial to show that the run has not started; its words are Baloo 2 and its keys keycaps, per the [UI Style](ui-style-doc.md#hud), and `ScreensManager` shows and hides the whole panel.
 
 
+## Editor Menu
+
+The `Monkobra` menu is the one layout reference; every other doc names an item by its path here. A separator marks a priority gap above 10.
+
+| Menu | Item | Does |
+| --- | --- | --- |
+| `Build` | `UI Fonts` | Baloo 2 font assets, Title material, TMP default font |
+| `Build` | `UI Button Prefabs` | `MenuButton` & `IconButton` |
+| `Build` | `Title Screen` | the `TitleScreen` prefab picture |
+| `Build` | `Intro Comic` | the intro comic sprites, config, prefab & scene |
+| `Build` | `Outline Materials` | outline style asset & base materials |
+| `Build` | `Outline Prefab Wiring` | outline style & kind on the fruit & monkey prefabs |
+| `Build` | `Falling Cobra Body` | the falling cobra's skinned body mesh & prefab |
+| `Progress` | `Unlock Endless`, `Reset Progress` | the saved Endless unlock |
+| top level | `Report Trunk Scatter` | per-channel trunk scatter report |
+| top level | `Reset Leaderboard Emulator Identity` | forget the demo emulator's refresh token |
+
+`Build` items regenerate an asset from its source, top-down in dependency order (fonts before the title & comic, materials before wiring).
+
 ## Falling Cobra Performance
 
 How many live falling cobras stay cheap. What each part does is in [Mobs](mob-doc.md#performance).
 
 - Tuning: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` 4, `trailClearancePasses` 2, `spineFairMaxPasses` 64, `spineFairToleranceU` 0.002; `bodyPrefab` is set only by the body menu
-- Menu: `Monkobra > Build Falling Cobra Body`, also callable in batch mode (`-executeMethod FallingCobraBodyBuilder.Run`)
+- Menu: `Monkobra > Build > Falling Cobra Body`, also callable in batch mode (`-executeMethod FallingCobraBodyBuilder.Run`)
 - Layers: `Player` (6) and `FallingCobra` (7); in the collision matrix `FallingCobra` collides with `Player` only; Maximum Allowed Timestep is 0.1 s (was 0.333 s)
 
 ## Conventions

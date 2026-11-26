@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The intro comic's UI look, for <c>Monkobra/Build Intro Comic</c>
+/// The intro comic's UI look, for <c>Monkobra/Build/Intro Comic</c>
 /// (<see cref="IntroComicBuilder"/>): its caption on the plate, made opaque so
 /// the words read the same on the sunny panels and in the dark jungle, and a
 /// small Skip <c>MenuButton</c>.

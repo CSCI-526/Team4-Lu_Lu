@@ -44,7 +44,7 @@ public sealed class FallingCobraHeadMesh {
         GameObject reference = config.CartoonAppearance.referenceBody;
         if (reference != null && config.BodyPrefab == null) {
             Debug.LogWarning("FallingCobraHeadMesh:\tno skinned body, run "
-                + "Monkobra > Build Falling Cobra Body", rig.host);
+                + "Monkobra > Build > Falling Cobra Body", rig.host);
         }
         if (reference != null && config.BodyPrefab != null
             && reference.TryGetComponent(out MeshFilter headSource)) {
@@ -385,7 +385,7 @@ public sealed class FallingCobraHeadMesh {
             || skinned.bones.Length != BodyRings) {
             Debug.LogError("FallingCobraHeadMesh:\tbody prefab needs a "
                 + "SkinnedMeshRenderer of " + BodyRings + " bones, run "
-                + "Monkobra > Build Falling Cobra Body", rig.host);
+                + "Monkobra > Build > Falling Cobra Body", rig.host);
             return;
         }
         float size =
