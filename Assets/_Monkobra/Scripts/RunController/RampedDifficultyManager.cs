@@ -86,12 +86,9 @@ public class RampedDifficultyManager: MonoBehaviour {
             return false;
         }
         float climbedY = GetClimbedYDistance(y);
-        bool isInCobraZone = climbedY >= worldBalanceConfig.BossZoneStartU
-            && climbedY <= worldBalanceConfig.BossZoneEndU;
         // the Spider King's zone higher up is kept just as clear
-        bool isInSpiderZone = climbedY >= worldBalanceConfig.SpiderZoneStartU
-            && climbedY <= worldBalanceConfig.SpiderZoneEndU;
-        return isInCobraZone || isInSpiderZone;
+        return worldBalanceConfig.CobraKingLayout.Contains(climbedY)
+            || worldBalanceConfig.SpiderKingLayout.Contains(climbedY);
     }
 
     /// <summary>
@@ -115,10 +112,11 @@ public class RampedDifficultyManager: MonoBehaviour {
             // hardcore opens at the post Spider King level at the exit and
             // keeps ramping from there
             return climbedY < exitClimbedY ? 0f : GetPostSpiderValue(
-                climbedY - exitClimbedY + worldBalanceConfig.SpiderZoneEndU
+                climbedY - exitClimbedY
+                    + worldBalanceConfig.SpiderKingLayout.BareTopU
             );
         }
-        float zoneStartU = worldBalanceConfig.BossZoneStartU;
+        float zoneStartU = worldBalanceConfig.CobraKingLayout.BareBottomU;
         if (climbedY < exitClimbedY || zoneStartU <= exitClimbedY) {
             // a zone start at or under the exit leaves no pre boss stretch
             return climbedY < zoneStartU ? 0f : GetBossStagesValue(climbedY);
@@ -186,7 +184,7 @@ public class RampedDifficultyManager: MonoBehaviour {
         PlayerGameStartYPosition = player.position.y;
         if (
             worldBalanceConfig != null
-            && worldBalanceConfig.BossZoneStartU
+            && worldBalanceConfig.CobraKingLayout.BareBottomU
                 <= GetClimbedYDistance(RampBaseYPosition)
         ) {
             Debug.LogWarning(
@@ -231,8 +229,8 @@ public class RampedDifficultyManager: MonoBehaviour {
     // from the Cobra King zone start on: 1 through its zone, the mid boss
     // curve to the Spider King zone start, then the post Spider King value
     private float GetBossStagesValue(float climbedY) {
-        float cobraEndU = worldBalanceConfig.BossZoneEndU;
-        float spiderStartU = worldBalanceConfig.SpiderZoneStartU;
+        float cobraEndU = worldBalanceConfig.CobraKingLayout.BareTopU;
+        float spiderStartU = worldBalanceConfig.SpiderKingLayout.BareBottomU;
         if (climbedY <= cobraEndU) {
             return 1f;
         }
@@ -249,7 +247,7 @@ public class RampedDifficultyManager: MonoBehaviour {
 
     // 2 through the Spider King zone, the post boss curve past its end
     private float GetPostSpiderValue(float climbedY) {
-        float zoneEndU = worldBalanceConfig.SpiderZoneEndU;
+        float zoneEndU = worldBalanceConfig.SpiderKingLayout.BareTopU;
         if (climbedY <= zoneEndU) {
             return 2f;
         }

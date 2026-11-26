@@ -5,7 +5,7 @@ using static CobraKingRig;
 
 /// <summary>
 /// Runs the boss fight against the Cobra King. Once the monkey has climbed
-/// <see cref="WorldBalanceConfig.BossTriggerHeightU"/> the screen flashes and
+/// <see cref="WorldBalanceConfig.CobraKingLayout"/> the screen flashes and
 /// the run enters the boss arena: the king coils round the tree top above,
 /// the great cobra stops chasing and guards below, and the spawners of webs,
 /// falling cobras and wet bark stop. Banana branches grow on the trunk in
@@ -542,7 +542,7 @@ public class CobraKingFightController: MonoBehaviour {
         if (rig.phase == CobraKingPhase.Waiting) {
             // the hardcore run's rush keeps the coming arena bare; kept up
             // every frame, as the run's start y is only known after a Start
-            arena.ReserveRushRange();
+            arena.ReserveRushArena();
             // armor lent to the Spider King test fight b4 this one; the
             // ring update also hides it once spent
             if (rig.monkey != null && rig.armor != null) {
@@ -691,7 +691,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         rig.greatCobra = FindFirstObjectByType<CobraMotor>();
         if (rig.greatCobra != null) {
-            rig.greatCobra.StartGuard(rig.entryY - config.GuardDepthU);
+            rig.greatCobra.StartGuard(rig.GuardBottomY);
         }
 
         rig.body.Build(rig.trunkCenter, rig.coilBottomY,

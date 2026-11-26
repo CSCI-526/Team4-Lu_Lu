@@ -300,7 +300,7 @@ public sealed class SpiderKingEnding {
         rig.Arena.EndBareArena();
         if (rig.greatCobra != null) {
             rig.greatCobra.StopGuard();
-            rig.greatCobra.KnockBack(config.WinCobraDropU);
+            rig.greatCobra.KnockBack(rig.Layout.DropU);
         }
         if (rig.monkeyController != null) {
             rig.monkeyController.ClearHeightCeiling();
@@ -331,7 +331,7 @@ public sealed class SpiderKingEnding {
         rig.hud.ClearCallOut();
         rig.isEasy = false;
         rig.lastStage = 0;
-        rig.Arena.ReserveRushRange();
+        rig.Arena.ReserveRushArena();
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "SpiderKingFightController:\tnext rush fight at "

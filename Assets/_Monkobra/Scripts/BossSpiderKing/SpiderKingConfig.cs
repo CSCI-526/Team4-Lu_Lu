@@ -364,10 +364,6 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>web escape gain scale the silk gloves give</returns>
     public float GlovesEscapeGainScale => glovesEscapeGainScale;
 
-    /// <returns>how far down the great cobra restarts its chase after
-    /// a win; u</returns>
-    public float WinCobraDropU => winCobraDropU;
-
     /// <returns>title of the victory panel</returns>
     public string WinTitle => winTitle;
 
@@ -922,11 +918,6 @@ public class SpiderKingConfig: ScriptableObject {
     [Tooltip("web escape gain scale the silk gloves give")]
     [Min(1f)]
     private float glovesEscapeGainScale = 2f;
-
-    [SerializeField]
-    [Tooltip("how far down the great cobra restarts its chase after a win; u")]
-    [Min(0f)]
-    private float winCobraDropU = 45f;
 
     [SerializeField]
     [Tooltip("title of the victory panel")]

@@ -479,9 +479,27 @@ public sealed class SpiderKingRig {
 
     /// <returns>climbed height the fight begins at: the config's, or this
     /// boss's in the hardcore run's rush; u</returns>
-    public float TriggerClimbU => IsRush
-        ? HardcoreBossRush.TriggerU(rushEncounter)
-        : worldBalanceConfig.SpiderTriggerHeightU;
+    public float TriggerClimbU => Layout.locationU;
+
+    /// <returns>this fight's arena: the config's, or this boss's in the
+    /// hardcore run's rush</returns>
+    public BossArenaLayout Layout => IsRush
+        ? HardcoreBossRush.Layout(rushEncounter)
+        : worldBalanceConfig.SpiderKingLayout;
+
+    /// <returns>this fight's bare zone, bottom & top in world y</returns>
+    public Vector2 WorldBare {
+        get {
+            RampedDifficultyManager ramp = RampedDifficultyManager.I;
+            return Layout.WorldBare(
+                ramp != null ? ramp.PlayerGameStartYPosition : 0f);
+        }
+    }
+
+    /// <returns>world y of the guard cobra's head: the config's depth below
+    /// the start, never deeper than the layout allows</returns>
+    public float GuardBottomY => entryY
+        - Mathf.Min(config.GuardDepthU, Layout.heightU * 0.5f);
 
     /// <returns>slashes in a row now: one at a time, except in the hardcore
     /// run's rush, where each later Spider King fight adds one per stage, up

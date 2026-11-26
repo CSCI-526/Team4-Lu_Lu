@@ -24,7 +24,7 @@ public sealed class CobraKingArena {
             || config.BananaBranchPrefab == null) {
             return;
         }
-        float bottomY = rig.entryY - config.GuardDepthU;
+        float bottomY = rig.GuardBottomY;
         float topY =
             rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
         List<Vector3> placed = new List<Vector3>();
@@ -98,47 +98,41 @@ public sealed class CobraKingArena {
         }
     }
 
-    // the arena, guard cobra down to the king's nest, belongs inside the boss
-    // zone, where nothing else is generated
+    // the arena, guard cobra down to the king's nest, belongs inside the bare
+    // zone, where nothing else is generated: the guard hangs as deep as the
+    // layout allows, the nest must fit the half above the location
     public void WarnIfArenaLeavesZone() {
-        RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        // the hardcore run's rush keeps its own bare range
-        if (ramp == null || rig.IsRush) {
-            return;
-        }
-        float zoneStartY = ramp.PlayerGameStartYPosition
-            + rig.worldBalanceConfig.BossZoneStartU;
-        if (rig.entryY - config.GuardDepthU < zoneStartY) {
+        BossArenaLayout layout = rig.Layout;
+        if (config.GuardDepthU > layout.heightU * 0.5f) {
             Debug.LogWarning(
-                "CobraKingFightController:\tthe guard cobra hangs below the "
-                    + "boss "
-                + "zone start, ordinary hazards may reach the arena; move "
-                + "the trigger up or shorten guardDepthU",
+                "CobraKingFightController:\tguardDepthU is deeper than half "
+                    + "the arena height, the guard is held at half; raise "
+                    + "the arena height or shorten guardDepthU",
+                rig.owner
+            );
+        }
+        if (!layout.FitsAbove(config.NestHeightU)) {
+            Debug.LogWarning(
+                "CobraKingFightController:\tthe nest reaches over the bare "
+                    + "zone, ordinary hazards may reach it; raise the arena "
+                    + "height or lower NestHeightU",
                 rig.owner
             );
         }
     }
 
     // Hardcore Boss Rush -------------------------------------------------------
-    // the world y range a boss of the hardcore run's rush keeps bare, from
-    // under its guard to over its coil
-    public Vector2 RushRange(float entryY) {
-        return new Vector2(entryY - config.GuardDepthU - 4f,
-            entryY + config.NestHeightU + 10f);
-    }
-
-    // the coming fight's range is kept bare as the tree grows toward it
-    public void ReserveRushRange() {
+    // the coming fight's bare zone is kept bare as the tree grows toward it
+    public void ReserveRushArena() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp == null || !rig.IsRush) {
             return;
         }
-        Vector2 range = RushRange(
-            HardcoreBossRush.TriggerWorldY(rig.rushEncounter));
+        Vector2 range = rig.WorldBare;
         ramp.SetExtraBossZone(rig.owner, range.x, range.y);
     }
 
-    public void ReleaseRushRange() {
+    public void ReleaseRushArena() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
             ramp.ClearExtraBossZone(rig.owner);
@@ -148,8 +142,8 @@ public sealed class CobraKingArena {
     // what the hardcore tree grew in the arena b4 it was reserved goes:
     // branches w/ their fruit, webs, falling cobras, rough bark
     public void ClearRushArena() {
-        Vector2 range = RushRange(rig.entryY);
-        ReserveRushRangeAt(range);
+        Vector2 range = rig.WorldBare;
+        ReserveRangeAt(range);
         foreach (BranchController branch in
             UnityEngine.Object.FindObjectsByType<BranchController>(
                 FindObjectsSortMode.None)) {
@@ -172,7 +166,7 @@ public sealed class CobraKingArena {
         }
     }
 
-    private void ReserveRushRangeAt(Vector2 range) {
+    private void ReserveRangeAt(Vector2 range) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
             ramp.SetExtraBossZone(rig.owner, range.x, range.y);
@@ -202,7 +196,7 @@ public sealed class CobraKingArena {
             rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
         // the hardcore run's rush: only up to its arena's top, the climb
         // above keeps its branches
-        float maxY = rig.IsRush ? RushRange(rig.entryY).y
+        float maxY = rig.IsRush ? rig.WorldBare.y
             : float.PositiveInfinity;
         foreach (BranchController branch in branches) {
             float branchY = branch.transform.position.y;
@@ -362,7 +356,7 @@ public sealed class CobraKingArena {
         if (config.WebPrefab == null) {
             return;
         }
-        float bottomY = rig.entryY - config.GuardDepthU;
+        float bottomY = rig.GuardBottomY;
         float topY = rig.entryY - 3f;
         for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
             float sliceTopY = Mathf.Min(topY, sliceY + 10f);
@@ -438,7 +432,7 @@ public sealed class CobraKingArena {
         // as the climb's spawner: per 10 u a few rolls, each patch kept
         // clear of the others' heights, of branches & webs, & here of the
         // monkey's start spot
-        float bottomY = rig.entryY - config.GuardDepthU;
+        float bottomY = rig.GuardBottomY;
         float topY =
             rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
         List<Vector3> patches = new List<Vector3>();

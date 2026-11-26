@@ -109,7 +109,6 @@ MonoBehaviour:
   winDetailLine: It blocks 1 fatal hit
   armorKnockBackU: 20
   armorCobraFreezeS: 15
-  winCobraDropU: 45
   goldenFirstDelayS: 8
   goldenIntervalS: 15
   goldenShowS: 8

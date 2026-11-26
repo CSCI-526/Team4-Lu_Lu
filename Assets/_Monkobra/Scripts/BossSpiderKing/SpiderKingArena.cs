@@ -127,7 +127,7 @@ public sealed class SpiderKingArena {
     // cobras, rough bark
     public void MakeArenaBare() {
         // down past the guard: the whole boss area grows only the fight's
-        rig.bareBottomY = rig.entryY - config.GuardDepthU - 4f;
+        rig.bareBottomY = rig.GuardBottomY - 4f;
         rig.bareTopY = rig.entryY + config.ArenaHeightU + 6f;
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
@@ -162,14 +162,13 @@ public sealed class SpiderKingArena {
 
     // the hardcore run's rush: the coming fight's range is kept bare as the
     // tree grows toward it, as the arena will be
-    public void ReserveRushRange() {
+    public void ReserveRushArena() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp == null || !rig.IsRush) {
             return;
         }
-        float entryY = HardcoreBossRush.TriggerWorldY(rig.rushEncounter);
-        ramp.SetExtraBossZone(rig.owner, entryY - config.GuardDepthU - 4f,
-            entryY + config.ArenaHeightU + 6f);
+        Vector2 range = rig.WorldBare;
+        ramp.SetExtraBossZone(rig.owner, range.x, range.y);
     }
 
     public void RemoveIfInArena(GameObject thing) {

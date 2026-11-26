@@ -359,7 +359,7 @@ public class SpiderKingFightController: MonoBehaviour {
         if (rig.phase == SpiderKingPhase.Waiting) {
             // the hardcore run's rush keeps the coming arena bare; kept up
             // every frame, as the run's start y is only known after a Start
-            arena.ReserveRushRange();
+            arena.ReserveRushArena();
             UpdatePreview(game);
             if (CanBegin(game)) {
                 BeginFight();
@@ -434,7 +434,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return false;
         }
         return ramp.CurrentPlayerClimbedYDistance
-            >= worldBalanceConfig.SpiderTriggerHeightU;
+            >= rig.TriggerClimbU;
     }
 
     // from just below the spider jump height on, the Spider King already
@@ -463,11 +463,9 @@ public class SpiderKingFightController: MonoBehaviour {
             || (GameController.I.Mode == RunMode.Hardcore && !rig.IsRush)) {
             return;
         }
-        // seen waiting from a bit below: the jump height, or 50 u below the
-        // fight in the hardcore run's rush
+        // seen waiting from one arena height below the fight
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        float seenFromU = rig.IsRush ? rig.TriggerClimbU - 50f
-            : worldBalanceConfig.SpiderJumpHeightU - 5f;
+        float seenFromU = rig.Layout.SeenWaitingU;
         if (ramp == null || ramp.CurrentPlayerClimbedYDistance < seenFromU) {
             return;
         }
@@ -512,7 +510,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         rig.greatCobra = FindFirstObjectByType<CobraMotor>();
         if (rig.greatCobra != null) {
-            rig.greatCobra.StartGuard(rig.entryY - config.GuardDepthU);
+            rig.greatCobra.StartGuard(rig.GuardBottomY);
         }
         // a web breaks in as many presses as in the Cobra King's arena
         rig.struggle = FindFirstObjectByType<SpiderWebStruggle>();

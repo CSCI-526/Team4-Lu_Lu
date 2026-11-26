@@ -102,68 +102,45 @@ public static class BossDevSceneBuilder {
         copy.name = Path.GetFileNameWithoutExtension(copyPath);
 
         var serialized = new SerializedObject(copy);
-        float cobraStartU;
-        float spiderStartU;
+        float spiderBottomU;
         if (boss == Boss.CobraKing) {
-            cobraStartU = config.BossZoneStartU;
-            float cobraEndU = cobraStartU
-                + main.BossZoneEndU - main.BossZoneStartU;
-            spiderStartU = cobraEndU + config.OtherKingGapU;
-            PlaceCobraGroup(serialized, main, cobraStartU);
+            float cobraBottomU = config.BossZoneBottomU;
+            PlaceLayout(serialized, "cobraKingArena",
+                main.CobraKingLayout, cobraBottomU);
+            spiderBottomU = cobraBottomU + main.CobraKingLayout.heightU
+                + config.OtherKingGapU;
         } else {
-            spiderStartU = config.BossZoneStartU;
-            CollapseCobraGroup(serialized);
+            spiderBottomU = config.BossZoneBottomU;
+            CollapseCobraLayout(serialized);
         }
-        PlaceSpiderGroup(serialized, main, spiderStartU);
+        PlaceLayout(serialized, "spiderKingArena",
+            main.SpiderKingLayout, spiderBottomU);
         serialized.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(copy);
         AssetDatabase.SaveAssets();
         Debug.Log(
-            $"BossDevSceneBuilder:\t{boss} balance, zone starts: Cobra King "
-                + $"{copy.BossZoneStartU} u, Spider King "
-                + $"{copy.SpiderZoneStartU} u"
+            $"BossDevSceneBuilder:\t{boss} balance, zone bottoms: Cobra King "
+                + $"{copy.CobraKingLayout.BareBottomU} u, Spider King "
+                + $"{copy.SpiderKingLayout.BareBottomU} u"
         );
     }
 
-    // the Cobra King's start, trigger & end, spaced as in the main asset
-    private static void PlaceCobraGroup(
-        SerializedObject serialized, WorldBalanceConfig main, float startU
+    // a boss placed by location: its bare zone starts at bottomU, its height
+    // as in the main asset, so the location sits half a height above
+    private static void PlaceLayout(
+        SerializedObject serialized, string field, BossArenaLayout main,
+        float bottomU
     ) {
-        float baseU = main.BossZoneStartU;
-        SetHeight(serialized, "bossZoneStartU", startU);
-        SetHeight(serialized, "bossTriggerHeightU",
-            startU + main.BossTriggerHeightU - baseU);
-        SetHeight(serialized, "bossZoneEndU",
-            startU + main.BossZoneEndU - baseU);
+        serialized.FindProperty(field + ".heightU").floatValue = main.heightU;
+        serialized.FindProperty(field + ".locationU").floatValue =
+            Mathf.Max(0f, bottomU) + main.heightU * 0.5f;
     }
 
-    // a skipped Cobra King leaves no zone, so the Spider King can sit low
-    private static void CollapseCobraGroup(SerializedObject serialized) {
-        SetHeight(serialized, "bossZoneStartU", 0f);
-        SetHeight(serialized, "bossTriggerHeightU", 0f);
-        SetHeight(serialized, "bossZoneEndU", 0f);
-    }
-
-    // the Spider King's start, jump height, trigger & end, spaced as in the
-    // main asset
-    private static void PlaceSpiderGroup(
-        SerializedObject serialized, WorldBalanceConfig main, float startU
-    ) {
-        float baseU = main.SpiderZoneStartU;
-        SetHeight(serialized, "spiderZoneStartU", startU);
-        SetHeight(serialized, "spiderJumpHeightU",
-            startU + main.SpiderJumpHeightU - baseU);
-        SetHeight(serialized, "spiderTriggerHeightU",
-            startU + main.SpiderTriggerHeightU - baseU);
-        SetHeight(serialized, "spiderZoneEndU",
-            startU + main.SpiderZoneEndU - baseU);
-    }
-
-    // a height never goes under the player's start
-    private static void SetHeight(
-        SerializedObject serialized, string field, float heightU
-    ) {
-        serialized.FindProperty(field).floatValue = Mathf.Max(0f, heightU);
+    // a skipped Cobra King leaves a zone of 1 u at the start, so the Spider
+    // King can sit low
+    private static void CollapseCobraLayout(SerializedObject serialized) {
+        serialized.FindProperty("cobraKingArena.heightU").floatValue = 1f;
+        serialized.FindProperty("cobraKingArena.locationU").floatValue = 0.5f;
     }
 
     // there is no starting zone in a dev scene: the ramp base, where the

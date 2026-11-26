@@ -951,15 +951,14 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  bossZoneStartU: 500
-  bossTriggerHeightU: 525
-  bossZoneEndU: 550
+  cobraKingArena:
+    locationU: 525
+    heightU: 50
   bossMaxHealth: 12
   bossBananaDamage: 1
-  spiderZoneStartU: 975
-  spiderTriggerHeightU: 1000
-  spiderZoneEndU: 1050
-  spiderJumpHeightU: 950
+  spiderKingArena:
+    locationU: 1025
+    heightU: 50
   spiderMaxHealth: 15
   hardcoreBossIntervalU: 300
   hardcoreSpeedScale: 1

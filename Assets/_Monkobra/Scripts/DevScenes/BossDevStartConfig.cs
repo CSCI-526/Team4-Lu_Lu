@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Numbers and first-time state for the boss dev scenes: how far down each
@@ -10,13 +11,13 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Scriptable Objects/BossDevStartConfig")]
 public class BossDevStartConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>climbed height the boss under test has its zone start at in
-    /// its dev scene, just above the player; its trigger, jump height and
-    /// zone end keep their distance from it; u</returns>
-    public float BossZoneStartU => bossZoneStartU;
+    /// <returns>climbed height the boss under test has its bare zone start
+    /// at in its dev scene, just above the player; its location is half an
+    /// arena height above it; u</returns>
+    public float BossZoneBottomU => bossZoneBottomU;
 
     /// <returns>in the Cobra King scene, how far above the Cobra King zone
-    /// end the Spider King zone starts; u</returns>
+    /// top the Spider King zone starts; u</returns>
     public float OtherKingGapU => otherKingGapU;
 
     /// <returns>tutorials marked seen at the Cobra King scene start, ie
@@ -33,9 +34,11 @@ public class BossDevStartConfig: ScriptableObject {
     [Header("Boss Heights")]
     [SerializeField]
     [Min(0f)]
-    [Tooltip("where the boss under test has its zone start, above the "
-        + "player's start; its trigger sits 25 above this; u")]
-    private float bossZoneStartU = 5f;
+    [Tooltip("where the boss under test has its bare zone start, above the "
+        + "player's start; its location sits half an arena height above "
+        + "this; u")]
+    [FormerlySerializedAs("bossZoneStartU")]
+    private float bossZoneBottomU = 5f;
 
     [SerializeField]
     [Min(0f)]

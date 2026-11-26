@@ -95,19 +95,9 @@ public class WorldBalanceConfig: ScriptableObject {
     public AnimationCurve WebSpawnProbabilityCurve =>
         webSpawnProbabilityCurve;
 
-    /// <returns>climbed height where the Cobra King zone begins: the ramp
-    /// reaches 1 here and nothing unrelated to the fight is generated from
-    /// here on; u</returns>
-    public float BossZoneStartU => bossZoneStartU;
-
-    /// <returns>height climbed since game start at which the boss fight
-    /// begins; u</returns>
-    public float BossTriggerHeightU => bossTriggerHeightU;
-
-    /// <returns>climbed height where the Cobra King zone ends: ordinary
-    /// generation resumes and the ramp climbs from 1 toward 2 from here; u
-    /// </returns>
-    public float BossZoneEndU => bossZoneEndU;
+    /// <returns>where the Cobra King's fight stands & how tall its bare
+    /// arena is: its zone, marker & guard all derive from this</returns>
+    public BossArenaLayout CobraKingLayout => cobraKingArena;
 
     /// <returns>health of the Cobra King</returns>
     public int BossMaxHealth => bossMaxHealth;
@@ -116,22 +106,10 @@ public class WorldBalanceConfig: ScriptableObject {
     /// </returns>
     public int BossBananaDamage => bossBananaDamage;
 
-    /// <returns>climbed height where the Spider King's zone begins: the ramp
-    /// reaches 2 here and only its fight generates anything from here to its
-    /// zone end; u</returns>
-    public float SpiderZoneStartU => spiderZoneStartU;
-
-    /// <returns>climbed height at which the Spider King fight begins; u
-    /// </returns>
-    public float SpiderTriggerHeightU => spiderTriggerHeightU;
-
-    /// <returns>climbed height where the Spider King's zone ends: ordinary
-    /// generation resumes and the ramp climbs above 2 from here; u</returns>
-    public float SpiderZoneEndU => spiderZoneEndU;
-
-    /// <returns>climbed height from which the Spider King is seen waiting;
-    /// u</returns>
-    public float SpiderJumpHeightU => spiderJumpHeightU;
+    /// <returns>where the Spider King's fight stands & how tall its bare
+    /// arena is: its zone, marker, seen waiting height & guard all derive
+    /// from this</returns>
+    public BossArenaLayout SpiderKingLayout => spiderKingArena;
 
     /// <returns>health of the Spider King</returns>
     public int SpiderMaxHealth => spiderMaxHealth;
@@ -351,25 +329,11 @@ public class WorldBalanceConfig: ScriptableObject {
     [Header("Boss Fight")]
     [SerializeField]
     [Tooltip(
-        "climbed height, as the trunk markers show it, where the boss zone "
-            + "begins: the ramp reaches 1 here and only the boss fight "
-            + "generates anything from here to the zone end; u"
+        "the Cobra King's arena: location is the climbed height the fight "
+            + "starts at, where its height marker stands; height is the bare "
+            + "zone around it, location +- height / 2; u"
     )]
-    private float bossZoneStartU = 500f;
-
-    [SerializeField]
-    [Tooltip(
-        "height climbed since game start at which the boss fight begins, "
-            + "inside the boss zone; lower the zone to test; u"
-    )]
-    private float bossTriggerHeightU = 525f;
-
-    [SerializeField]
-    [Tooltip(
-        "climbed height where the boss zone ends: ordinary generation "
-            + "resumes and the ramp climbs above 1 from here; u"
-    )]
-    private float bossZoneEndU = 550f;
+    private BossArenaLayout cobraKingArena = new BossArenaLayout(525f, 50f);
 
     [SerializeField]
     [Tooltip("health of the Cobra King")]
@@ -382,23 +346,11 @@ public class WorldBalanceConfig: ScriptableObject {
     [Header("Spider Fight")]
     [SerializeField]
     [Tooltip(
-        "climbed height where the Spider King's zone begins: only its fight "
-            + "generates anything from here to its zone end; u"
+        "the Spider King's arena: location is the climbed height the fight "
+            + "starts at, height is the bare zone around it, and it is seen "
+            + "waiting from one height below the location; u"
     )]
-    private float spiderZoneStartU = 975f;
-
-    [SerializeField]
-    [Tooltip("climbed height at which the Spider King fight begins; u")]
-    private float spiderTriggerHeightU = 1000f;
-
-    [SerializeField]
-    [Tooltip("climbed height where the Spider King's zone ends; u")]
-    private float spiderZoneEndU = 1050f;
-
-    [SerializeField]
-    [Tooltip("climbed height from which the Spider King is seen waiting "
-        + "above its trigger height; u")]
-    private float spiderJumpHeightU = 950f;
+    private BossArenaLayout spiderKingArena = new BossArenaLayout(1025f, 50f);
 
     [SerializeField]
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
@@ -484,20 +436,17 @@ public class WorldBalanceConfig: ScriptableObject {
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
         roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
         webAttemptCount = Mathf.Max(0, webAttemptCount);
-        // the zone is ordered: start <= trigger <= end
-        bossZoneStartU = Mathf.Max(0f, bossZoneStartU);
-        bossTriggerHeightU = Mathf.Max(bossZoneStartU, bossTriggerHeightU);
-        bossZoneEndU = Mathf.Max(bossTriggerHeightU, bossZoneEndU);
+        // a layout keeps its bare zone above the start of the climb
+        cobraKingArena.heightU = Mathf.Max(1f, cobraKingArena.heightU);
+        cobraKingArena.locationU = Mathf.Max(
+            cobraKingArena.heightU * 0.5f, cobraKingArena.locationU);
         bossMaxHealth = Mathf.Max(1, bossMaxHealth);
         bossBananaDamage = Mathf.Max(1, bossBananaDamage);
-        // the spider zone sits above the cobra's, ordered the same way
-        spiderZoneStartU = Mathf.Max(bossZoneEndU, spiderZoneStartU);
-        spiderTriggerHeightU = Mathf.Max(
-            spiderZoneStartU, spiderTriggerHeightU);
-        spiderZoneEndU = Mathf.Max(spiderTriggerHeightU, spiderZoneEndU);
-        spiderJumpHeightU = Mathf.Clamp(
-            spiderJumpHeightU, bossZoneEndU, spiderTriggerHeightU
-        );
+        // the spider zone sits above the cobra's
+        spiderKingArena.heightU = Mathf.Max(1f, spiderKingArena.heightU);
+        spiderKingArena.locationU = Mathf.Max(
+            cobraKingArena.BareTopU + spiderKingArena.heightU * 0.5f,
+            spiderKingArena.locationU);
         spiderMaxHealth = Mathf.Max(1, spiderMaxHealth);
         hardcoreBossIntervalU = Mathf.Max(50f, hardcoreBossIntervalU);
         hardcoreSpeedScale = Mathf.Max(0.1f, hardcoreSpeedScale);

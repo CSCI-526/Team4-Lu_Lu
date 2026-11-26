@@ -397,7 +397,7 @@ public sealed class CobraKingEnding {
         // called out a moment after
         if (rig.greatCobra != null) {
             rig.greatCobra.StopGuard();
-            rig.greatCobra.KnockBack(config.WinCobraDropU);
+            rig.greatCobra.KnockBack(rig.Layout.DropU);
         }
         rig.chaseWarnTime = Time.time + 1f;
         rig.hasWarnedChase = false;
@@ -423,7 +423,7 @@ public sealed class CobraKingEnding {
     // the king waits again two bosses on, the Spider King's in b/t, harder;
     // the won armor stays on & the crown on the monkey's head
     public void ArmNextRush() {
-        rig.Arena.ReleaseRushRange();
+        rig.Arena.ReleaseRushArena();
         rig.rushEncounter += 2;
         rig.phase = CobraKingPhase.Waiting;
         rig.body.Clear();
@@ -458,7 +458,7 @@ public sealed class CobraKingEnding {
         if (rig.cameraFraming != null) {
             rig.cameraFraming.SetBossFraming(0f, 1f);
         }
-        rig.Arena.ReserveRushRange();
+        rig.Arena.ReserveRushArena();
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CobraKingFightController:\tnext rush fight at "

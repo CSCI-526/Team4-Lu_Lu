@@ -361,11 +361,6 @@ public class CobraKingConfig: ScriptableObject {
     /// reward; s</returns>
     public float ArmorCobraFreezeS => armorCobraFreezeS;
 
-    /// <returns>after a win the great cobra chases again from this
-    /// far further down the trunk than its guard spot, a head start;
-    /// u</returns>
-    public float WinCobraDropU => winCobraDropU;
-
     /// <returns>the golden banana first shows up this long after the
     /// first hit on the king; s</returns>
     public float GoldenFirstDelayS => goldenFirstDelayS;
@@ -930,11 +925,6 @@ public class CobraKingConfig: ScriptableObject {
         + "freeze, as the armor is the boss fight's one-off reward; s")]
     [Min(0f)]
     private float armorCobraFreezeS = 15f;
-
-    [SerializeField]
-    [Tooltip("after a win the great cobra chases again from this far further "
-        + "down the trunk than its guard spot, a head start; u")]
-    private float winCobraDropU = 45f;
 
     [SerializeField]
     [Tooltip("the golden banana first shows up this long after the first hit "

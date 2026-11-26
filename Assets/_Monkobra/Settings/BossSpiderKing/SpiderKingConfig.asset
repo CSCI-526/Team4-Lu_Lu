@@ -112,7 +112,6 @@ MonoBehaviour:
   reviveReturnSpeedU: 20
   defeatFallS: 2
   glovesEscapeGainScale: 2
-  winCobraDropU: 45
   winTitle: SPIDER KING DEFEATED!
   winLine: You got the Silk Gloves
   winDetailLine: Get out of webs 2x faster
