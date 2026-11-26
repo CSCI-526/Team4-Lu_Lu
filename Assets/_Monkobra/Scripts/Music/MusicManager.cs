@@ -6,10 +6,9 @@ using UnityEngine;
 /// first scene on, crossfading to the boss loop while a boss fight is on and
 /// back once it is over.
 /// <para>
-/// Lives across scene loads, so a restart never cuts the music. Created by
-/// <see cref="PersistentBootstrapLoader"/> from the
-/// <c>Resources/MusicManager</c> prefab. It only watches the fights'
-/// public state, nothing calls it.
+/// A component of the <see cref="GameController"/> prefab, so it lives across
+/// scene loads and a restart never cuts the music. It only watches the
+/// fights' public state, nothing calls it.
 /// </para>
 /// <para>
 /// The boss loop starts from its top each fight, while the climb loop is
@@ -18,6 +17,8 @@ using UnityEngine;
 /// every other sound.
 /// </para>
 /// </summary>
+[DefaultExecutionOrder(-990)]
+[RequireComponent(typeof(GameController))]
 public class MusicManager: MonoBehaviour {
     // Public Members  #########################################################
     public static MusicManager I {
@@ -47,14 +48,12 @@ public class MusicManager: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // GameController destroys a duplicate before this runs; kept as a guard
         if (I != null && I != this) {
-            Destroy(gameObject);
             return;
         }
 
         I = this;
-        // one stream of music spans the whole launch, across every scene load
-        DontDestroyOnLoad(gameObject);
 
         // Inspector Assignment Guard  -----------------------------------------
         if (climbLoop == null || bossLoop == null) {

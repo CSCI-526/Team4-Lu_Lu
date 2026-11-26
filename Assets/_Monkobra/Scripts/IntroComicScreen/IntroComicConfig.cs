@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// the intro comic's panels, written by <c>Monkobra/Build Intro Comic</c> from
+/// the intro comic's panels, written by <c>Monkobra/Build/Intro Comic</c> from
 /// <c>tools/comic/panels/panels.json</c>: each panel's caption, its layers back
 /// to front, the view its camera eases between, and the cue of each layer
 /// that moves on its own. Positions are 1280x720 canvas units from the
@@ -88,7 +88,7 @@ public class IntroComicConfig: ScriptableObject {
 
     // Inspector Fields  #######################################################
     [SerializeField]
-    [Tooltip("written by Monkobra/Build Intro Comic; edit panels.json and "
+    [Tooltip("written by Monkobra/Build/Intro Comic; edit panels.json and "
         + "build again rather than here")]
     private Panel[] panels = new Panel[0];
 

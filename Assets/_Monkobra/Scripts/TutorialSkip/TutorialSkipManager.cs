@@ -7,12 +7,14 @@ using UnityEngine;
 /// Editor or a development build (<see cref="Debug.isDebugBuild"/>) w/ its
 /// checkbox on; a release build never skips, whatever the checkbox says.
 /// <para>
-/// Sits on the across-scene <c>GameController</c> prefab (<c>Resources/</c>),
-/// so every scene has the checkbox; tick it on the prefab asset. Items ask
+/// A component of the across-scene <c>GameController</c> prefab, which every
+/// scene holds, so every scene has the checkbox; tick it on the prefab asset. Items ask
 /// <see cref="ShouldSkip"/> by their <see cref="TutorialItem"/> key and tell
 /// <see cref="MarkSeen"/> once shown or done.
 /// </para>
 /// </summary>
+[DefaultExecutionOrder(-990)]
+[RequireComponent(typeof(GameController))]
 public class TutorialSkipManager: MonoBehaviour {
     // Public Members  #########################################################
     public static TutorialSkipManager I {

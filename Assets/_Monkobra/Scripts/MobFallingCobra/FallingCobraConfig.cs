@@ -335,7 +335,7 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>length over which head contact blends; u</returns>
     public float HeadContactBlendLengthU => headContactBlendLengthU;
 
-    /// <returns>the skinned body prefab baked by Monkobra > Build Falling
+    /// <returns>the skinned body prefab baked by Monkobra > Build > Falling
     /// Cobra Body</returns>
     public GameObject BodyPrefab => bodyPrefab;
 
@@ -713,7 +713,7 @@ public class FallingCobraConfig: ScriptableObject {
 
     [Header("Falling Snake Visual")]
     [SerializeField]
-    [Tooltip("skinned body of the snake; set only by Monkobra > Build "
+    [Tooltip("skinned body of the snake; set only by Monkobra > Build > "
         + "Falling Cobra Body")]
     private GameObject bodyPrefab;
 

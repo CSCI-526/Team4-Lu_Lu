@@ -10,9 +10,9 @@ using UnityEngine.UI;
 /// Applies the logo-style UI (docs/ui-style-doc.md) through Unity, never by
 /// hand-editing YAML: builds the Baloo 2 font assets and the Title material,
 /// makes Baloo 2 the TMP default, builds the MenuButton and IconButton
-/// prefabs, and restyles the level selection in place, so every script
-/// reference and scene override survives. Each step can run again; a step
-/// keeps what it already made.
+/// prefabs, and holds the styling helpers the Title Screen and Intro Comic
+/// builders share. Each step can run again; a step keeps what it already
+/// made.
 /// </summary>
 public static partial class UIStyleBuilder {
     // Public Members  #########################################################
@@ -54,39 +54,9 @@ public static partial class UIStyleBuilder {
         }
     }
 
-    // a ControlStyleSwitch picks its group when it is enabled, so the Editor
-    // shows every group at once, one row over another; leave the keyboard
-    // group showing, the one a run starts with on a desktop
-    internal static void ShowKeyboardGroups(GameObject root) {
-        foreach (ControlStyleSwitch styleSwitch in
-            root.GetComponentsInChildren<ControlStyleSwitch>(true)) {
-            SerializedObject so = new SerializedObject(styleSwitch);
-            SetGroupActive(so.FindProperty("keyboardObjects"), true);
-            SetGroupActive(so.FindProperty("touchObjects"), false);
-        }
-    }
-
-    private static void SetGroupActive(SerializedProperty group, bool isOn) {
-        for (int i = 0; group != null && i < group.arraySize; i++) {
-            GameObject member =
-                group.GetArrayElementAtIndex(i).objectReferenceValue
-                    as GameObject;
-            if (member != null) {
-                member.SetActive(isOn);
-            }
-        }
-    }
-
     // private methods  ########################################################
-    [MenuItem("Monkobra/UI Style/Build All (Fonts, Buttons, Level Select)")]
-    private static void BuildAll() {
-        BuildFonts();
-        BuildButtons();
-        StyleLevelSelect();
-    }
-
     // fonts  ------------------------------------------------------------------
-    [MenuItem("Monkobra/UI Style/1. Build Fonts")]
+    [MenuItem("Monkobra/Build/UI Fonts", false, 10)]
     private static void BuildFonts() {
         TMP_FontAsset semi = BuildFont(SEMIBOLD_TTF, SEMIBOLD_SDF);
         TMP_FontAsset extra = BuildFont(EXTRABOLD_TTF, EXTRABOLD_SDF);
@@ -184,7 +154,7 @@ public static partial class UIStyleBuilder {
     }
 
     // button prefabs  ---------------------------------------------------------
-    [MenuItem("Monkobra/UI Style/2. Build Button Prefabs")]
+    [MenuItem("Monkobra/Build/UI Button Prefabs", false, 11)]
     private static void BuildButtons() {
         if (!AreFontsReady()) {
             return;
@@ -320,184 +290,13 @@ public static partial class UIStyleBuilder {
         );
     }
 
-    // level selection  --------------------------------------------------------
-    [MenuItem("Monkobra/UI Style/3. Style Level Select")]
-    private static void StyleLevelSelect() {
-        if (!AreFontsReady()) {
-            return;
-        }
-        GameObject root = PrefabUtility.LoadPrefabContents(LEVEL_SELECT);
-        try {
-            Transform panel = root.transform.Find("Panel");
-            Transform buttons = panel == null ? null : panel.Find("Buttons");
-            if (buttons == null) {
-                Debug.LogError(
-                    "UIStyleBuilder:\tno Panel/Buttons in " + LEVEL_SELECT
-                );
-                return;
-            }
-
-            // the loading page's vines, behind everything
-            TitleScreenLayoutBuilder.BuildVines(panel).SetSiblingIndex(0);
-
-            TMP_Text heading = panel.Find("Heading")?.GetComponent<TMP_Text>();
-            if (heading != null) {
-                StyleText(
-                    heading, ExtraBold, TITLE_SIZE, UIStyle.Cream, TitleMaterial
-                );
-            }
-
-            foreach (Button button in buttons.GetComponentsInChildren<Button>(
-                true
-            )) {
-                StyleMenuButton(button);
-            }
-
-            // the unlock hint goes right under the Endless button, inside
-            // the column, so it never overlaps a button
-            Transform endless = buttons.Find("EndlessModeButton");
-            Transform hint = panel.Find("EndlessLockedHint")
-                ?? buttons.Find("EndlessLockedHint");
-            if (hint != null && endless != null) {
-                hint.SetParent(buttons, false);
-                hint.SetSiblingIndex(endless.GetSiblingIndex() + 1);
-                RectTransform hintRect = (RectTransform)hint;
-                hintRect.sizeDelta = new Vector2(
-                    MENU_FACE.x + MARGIN_LEFT + MARGIN_RIGHT, HINT_HEIGHT
-                );
-                TMP_Text hintText = hint.GetComponent<TMP_Text>();
-                StyleText(hintText, SemiBold, HINT_SIZE, UIStyle.Cream);
-                hintText.text = "Defeat Cobra King to Unlock";
-                hintText.alignment = TextAlignmentOptions.Center;
-                hintText.textWrappingMode = TextWrappingModes.NoWrap;
-            }
-
-            // the column: faces 20 apart, the margins already add 22
-            VerticalLayoutGroup column =
-                buttons.GetComponent<VerticalLayoutGroup>();
-            column.spacing = BUTTON_GAP - (MARGIN_TOP + MARGIN_BOTTOM);
-            float height = 0f;
-            int count = 0;
-            foreach (RectTransform child in buttons) {
-                height += child.sizeDelta.y;
-                count++;
-            }
-            ((RectTransform)buttons).sizeDelta = new Vector2(
-                MENU_FACE.x + MARGIN_LEFT + MARGIN_RIGHT,
-                height + column.spacing * (count - 1)
-            );
-            ShowKeyboardGroups(root);
-
-            PrefabUtility.SaveAsPrefabAsset(root, LEVEL_SELECT);
-        } finally {
-            PrefabUtility.UnloadPrefabContents(root);
-        }
-
-        StyleHint(HINT_KEYBOARD);
-        StyleHint(HINT_TOUCH);
-        Debug.Log("UIStyleBuilder:\tstyled the level selection");
-    }
-
-    // a key hint row: keycaps, Baloo 2 words sized to fit
-    private static void StyleHint(string path) {
-        GameObject root = PrefabUtility.LoadPrefabContents(path);
-        try {
-            HorizontalLayoutGroup row =
-                root.GetComponent<HorizontalLayoutGroup>();
-            if (row != null) {
-                row.spacing = HINT_ROW_GAP;
-            }
-
-            // W and S side by side, in line with the words
-            Transform keys = root.transform.Find("Keys_WS");
-            if (keys != null) {
-                VerticalLayoutGroup stack =
-                    keys.GetComponent<VerticalLayoutGroup>();
-                if (stack != null) {
-                    Object.DestroyImmediate(stack);
-                }
-                HorizontalLayoutGroup pair = GetOrAdd<HorizontalLayoutGroup>(
-                    keys.gameObject
-                );
-                pair.spacing = KEY_PAIR_GAP;
-                pair.childAlignment = TextAnchor.MiddleCenter;
-                pair.childControlWidth = pair.childControlHeight = false;
-                pair.childForceExpandWidth = pair.childForceExpandHeight =
-                    false;
-                float keyWidth = 0f;
-                foreach (RectTransform key in keys) {
-                    keyWidth += key.sizeDelta.x;
-                }
-                ((RectTransform)keys).sizeDelta = new Vector2(
-                    keyWidth + KEY_PAIR_GAP * (keys.childCount - 1),
-                    ((RectTransform)keys.GetChild(0)).sizeDelta.y
-                );
-            }
-
-            foreach (Image icon in root.GetComponentsInChildren<Image>(true)) {
-                if (icon.name.StartsWith("Icon_")) {
-                    MakeKeycap(icon);
-                }
-            }
-            foreach (TMP_Text word in root.GetComponentsInChildren<TMP_Text>(
-                true
-            )) {
-                StyleText(word, SemiBold, HINT_WORD_SIZE, UIStyle.Cream);
-                word.textWrappingMode = TextWrappingModes.NoWrap;
-                RectTransform wordRect = word.rectTransform;
-                wordRect.sizeDelta = new Vector2(
-                    Mathf.Ceil(word.GetPreferredValues(word.text).x) + 4f,
-                    wordRect.sizeDelta.y
-                );
-            }
-            PrefabUtility.SaveAsPrefabAsset(root, path);
-        } finally {
-            PrefabUtility.UnloadPrefabContents(root);
-        }
-    }
-
-    // an outline key icon on a dark brown keycap: the icon's own Image takes
-    // the keycap fill & casts the brown shadow, a child draws the outline
-    // in cream on top, so the layout keeps the same element
-    internal static void MakeKeycap(Image icon) {
-        if (icon.transform.Find("Outline") != null) {
-            return; // already a keycap
-        }
-        Sprite outline = icon.sprite;
-        if (outline == null) {
-            return;
-        }
-        string keycapName = outline.name.Replace("_outline", "") + "_keycap";
-        Sprite keycap = Load<Sprite>(KEYCAPS + keycapName + ".png");
-        if (keycap == null) {
-            Debug.LogWarning(
-                "UIStyleBuilder:\tno keycap sprite " + keycapName, icon
-            );
-            return;
-        }
-
-        RectTransform child = NewChild("Outline", icon.transform);
-        child.anchorMin = Vector2.zero;
-        child.anchorMax = Vector2.one;
-        child.offsetMin = child.offsetMax = Vector2.zero;
-        Image outlineImage = child.gameObject.AddComponent<Image>();
-        outlineImage.sprite = outline;
-        outlineImage.preserveAspect = icon.preserveAspect;
-        outlineImage.color = UIStyle.Cream;
-        outlineImage.raycastTarget = false;
-
-        icon.sprite = keycap;
-        icon.color = UIStyle.Brown;
-        AddShadow(icon.gameObject, UIStyle.Shadow, KEYCAP_SHADOW);
-    }
-
     // helpers  ----------------------------------------------------------------
     private static bool AreFontsReady() {
         if (SemiBold != null && ExtraBold != null && TitleMaterial != null) {
             return true;
         }
         Debug.LogError(
-            "UIStyleBuilder:\trun Monkobra/UI Style/1. Build Fonts first"
+            "UIStyleBuilder:\trun Monkobra/Build/UI Fonts first"
         );
         return false;
     }
@@ -509,33 +308,6 @@ public static partial class UIStyleBuilder {
     private static T GetOrAdd<T>(GameObject go) where T : Component {
         T found = go.GetComponent<T>();
         return found != null ? found : go.AddComponent<T>();
-    }
-
-    // Outline is a Shadow, so each is found by its exact type, never the
-    // other's
-    private static T GetOrAddExact<T>(GameObject go) where T : Shadow {
-        foreach (T found in go.GetComponents<T>()) {
-            if (found.GetType() == typeof(T)) {
-                return found;
-            }
-        }
-        return go.AddComponent<T>();
-    }
-
-    // the logo's brown shadow, down-right, under a graphic
-    internal static void AddShadow(GameObject go, Color color, Vector2 offset) {
-        Shadow shadow = GetOrAddExact<Shadow>(go);
-        shadow.effectColor = color;
-        shadow.effectDistance = offset;
-        shadow.useGraphicAlpha = true;
-    }
-
-    // a thin rim around a graphic, eg a plate's border
-    internal static void AddOutline(GameObject go, Color color, float width) {
-        Outline outline = GetOrAddExact<Outline>(go);
-        outline.effectColor = color;
-        outline.effectDistance = new Vector2(width, -width);
-        outline.useGraphicAlpha = true;
     }
 
     private static RectTransform NewChild(string childName, Transform parent) {
@@ -580,12 +352,9 @@ public static partial class UIStyleBuilder {
     internal const float TITLE_SIZE = 64f;
     internal const float BUTTON_SIZE = 34f;
     internal const float BODY_SIZE = 30f;
-    private const float HINT_WORD_SIZE = 28f;
-    private const float HINT_SIZE = 22f;
 
     // buttons: the face, plus the ring & shadow margins baked in the sprites
     private const string SPRITES = "Assets/_Monkobra/Sprites/UI/";
-    private const string KEYCAPS = "Assets/_Monkobra/Sprites/InputIcons/";
     private static readonly Vector2 MENU_FACE = new Vector2(420f, 70f);
     private const float ICON_FACE = 64f;
     private const float GLYPH_SIZE = 36f;
@@ -594,20 +363,9 @@ public static partial class UIStyleBuilder {
     private const float MARGIN_TOP = 8f;
     private const float MARGIN_RIGHT = 13f;
     private const float MARGIN_BOTTOM = 14f;
-    private const float BUTTON_GAP = 20f;
-    private const float HINT_HEIGHT = 40f;
-    private const float HINT_ROW_GAP = 10f;
-    private const float KEY_PAIR_GAP = 6f;
-    private static readonly Vector2 KEYCAP_SHADOW = new Vector2(2f, -3f);
 
     private const string MENU_BUTTON_PREFAB =
         "Assets/_Monkobra/Prefabs/UI/MenuButton.prefab";
     private const string ICON_BUTTON_PREFAB =
         "Assets/_Monkobra/Prefabs/UI/IconButton.prefab";
-    private const string LEVEL_SELECT =
-        "Assets/_Monkobra/Prefabs/LevelSelectScreen/LevelSelectScreen.prefab";
-    private const string HINT_KEYBOARD =
-        "Assets/_Monkobra/Prefabs/UI/MenuHint_Keyboard.prefab";
-    private const string HINT_TOUCH =
-        "Assets/_Monkobra/Prefabs/UI/MenuHint_Touch.prefab";
 }

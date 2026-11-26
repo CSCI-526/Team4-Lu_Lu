@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// the same one the WebGL loading page draws as its last frame (the
 /// <c>LAYOUT</c> block of <c>WebGLTemplates/FitWindow/index.html</c>), so the
 /// browser hands over to the title without a visible jump. Run
-/// <c>Monkobra/Build Title Screen</c> again after changing the layout here and
+/// <c>Monkobra/Build/Title Screen</c> again after changing the layout here and
 /// there; it replaces the picture and keeps the root, the background and the
 /// whole start prompt (its CanvasGroup, which <see cref="TitleScreen"/>
 /// references, and the input icons the scene overrides), only moving it.
@@ -29,7 +29,7 @@ public static class TitleScreenLayoutBuilder {
     }
 
     // private methods  ########################################################
-    [MenuItem("Monkobra/Build Title Screen")]
+    [MenuItem("Monkobra/Build/Title Screen", false, 30)]
     private static void Build() {
         if (!AreSpritesFound()) {
             Debug.LogError(
@@ -122,7 +122,7 @@ public static class TitleScreenLayoutBuilder {
         if (font == null) {
             Debug.LogWarning(
                 "TitleScreenLayoutBuilder:\tprompt words kept their font, run "
-                    + "Monkobra/UI Style/1. Build Fonts first"
+                    + "Monkobra/Build/UI Fonts first"
             );
             return;
         }

@@ -2,13 +2,13 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Menu <c>Monkobra > Wire Outline Prefabs</c>: points the prefabs that wear
+/// Menu <c>Monkobra > Build > Outline Prefab Wiring</c>: points the prefabs that wear
 /// an outline at the shared <see cref="FruitOutlineStyle"/> look, through
 /// the serialized fields, never by hand in prefab YAML. Safe to run again.
 /// </summary>
 public static class OutlinePrefabWiring {
     // constants  ##############################################################
-    private const string MENU_PATH = "Monkobra/Wire Outline Prefabs";
+    private const string MENU_PATH = "Monkobra/Build/Outline Prefab Wiring";
     private const string ROOT = "Assets/_Monkobra/";
     private const string MONKEY_PREFAB = ROOT + "Prefabs/Player/_Monkey.prefab";
     private const string MONKEY_MAT_PATH =
@@ -34,7 +34,7 @@ public static class OutlinePrefabWiring {
     };
 
     // Menu  ###################################################################
-    [MenuItem(MENU_PATH)]
+    [MenuItem(MENU_PATH, false, 51)]
     public static void Run() {
         WireMonkey();
         WireFruits();
