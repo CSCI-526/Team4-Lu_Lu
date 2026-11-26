@@ -17,6 +17,10 @@ public static class PersistentBootstrapLoader {
         EnsureExists("Analytics", AnalyticsManager.I != null);
         EnsureExists("ControlStyleManager", ControlStyleManager.I != null);
         EnsureExists("MusicManager", MusicManager.I != null);
+        EnsureExists(
+            "TutorialSkipSwitch",
+            TutorialSkipSwitch.I != null
+        );
     }
 
     // creates the prefab named in Resources unless its object already exists

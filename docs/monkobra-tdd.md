@@ -152,6 +152,20 @@ The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 a
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and `ToggleHints` turns the hack layer on or off: one shared static state (`HackShortcutConfig.TryToggleLayer`, off at every play start) that shows the list and lets every other hack key run, so a tester never triggers one by accident. `ToggleHints` reads only when `AreHintsShown`, so it never works in a release build, where the other keys stay live. The state holds across scenes, but only the gameplay scene's panel can flip it. A new hack key is a new `HackAction` plus an entry in the asset.
 
+### Tutorial Skip Switch
+
+One dev checkbox skips every tutorial pop up and cut scene, so a play test reaches the climb at once. It is `isSkippingTutorialsAndCutscenes` on the `TutorialSkipSwitch` component of the `Resources/TutorialSkipSwitch` prefab, which `PersistentBootstrapLoader` creates once per launch and keeps across scene loads, so the title, the intro comic and the gameplay scene read the same box. Open the prefab in the Editor and tick the box; it is off by default.
+
+The gate is `TutorialSkipSwitch.IsSkipping`: true only when `Debug.isDebugBuild` (the Editor or a development build) and the box is ticked, so a release build never skips, whatever the box says. What it skips:
+
+- the intro comic after the title (`TitleScreen`)
+- the great cobra's chase-start cut scene (`CameraRigManager.RequestCobraAlert`); the cobra then runs its normal exit boost
+- the Spider King's first-encounter web intro (`SpiderWebIntroEvent`)
+- the run-start tutorial screen (`GameController.UpdateStartKey`), so a run opens straight in the starting zone
+- the pop ups that teach: each fruit's grab (`FruitGrabPrompt`), the coconut double-tap (`CoconutMessageWidget`), the web escape hint (`SpiderWebWidget`) and the low stamina hint (`LowStaminaWidget`)
+
+Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene must check `IsSkipping` too. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
+
 ## Game Balance
 
 Game balance numbers live in 3 assets plus the score config, split by what they tune (how height becomes spawn chances is in [Balance Design](balance-doc.md)): `Settings/Player/PlayerBalanceConfig.asset` for the player's run, `Settings/Environment/WorldBalanceConfig.asset` for the generated world, and `Settings/MobGreatCobra/CobraBalanceConfig.asset` for both cobras, instances of the `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig` ScriptableObjects. Every score value lives in `Settings/Scoring/ScoreConfig.asset`, an instance of the `ScoreConfig` ScriptableObject, the one asset outside these 3 that holds balance numbers. To tweak the game's feel, edit these 4 files and nothing else: no balance value is hard-coded in a script.

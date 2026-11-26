@@ -42,6 +42,11 @@ todo add 3x fruit
   pull away down the trunk round the tree to the cobra, a long look and the
   same way back; the cobra climbs 7 u/s during the pull away, then chases at
   normal speed; UI and "Run!" return the moment the shot ends
+- dev switch `TutorialSkipSwitch` (checkbox on `Resources/TutorialSkipSwitch`,
+  off by default): skips intro comic, run-start tutorial screen, great cobra
+  start cut scene, Spider King web intro & the fruit grab, coconut double-tap,
+  web escape & low stamina hints; only in Editor/development build, never in a
+  release build
 
 ### Changed
 

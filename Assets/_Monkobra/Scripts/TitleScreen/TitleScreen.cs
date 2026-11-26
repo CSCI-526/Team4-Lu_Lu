@@ -103,8 +103,11 @@ public class TitleScreen: MonoBehaviour {
         }
 
         if (startAction.WasPressedThisFrame()) {
-            SceneNames.Load(IntroComicScreen.HasPlayed
-                ? SceneNames.LEVEL_SELECT : SceneNames.INTRO_COMIC);
+            // the dev switch skips the intro comic like a played one
+            SceneNames.Load(
+                IntroComicScreen.HasPlayed || TutorialSkipSwitch.IsSkipping
+                    ? SceneNames.LEVEL_SELECT : SceneNames.INTRO_COMIC
+            );
         }
     }
 
