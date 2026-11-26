@@ -55,7 +55,7 @@ The real values live in the Coconut group of `Settings/Player/PlayerBalanceConfi
 ### Optional Online Leaderboard
 
 The lose screen supports Firebase's Spark free plan for persistent top scores.
-Run `Monkobra > Leaderboard > Prepare Firebase Leaderboard`, then follow
+The config asset and its prefab wiring already exist; follow
 [Firebase Leaderboard](docs/leaderboard-doc.md) to enable Anonymous Auth, publish
 the rules and enter the public client settings. Until configured it shows the
 original simulated **PRACTICE** board. Local emulators allow testing without a

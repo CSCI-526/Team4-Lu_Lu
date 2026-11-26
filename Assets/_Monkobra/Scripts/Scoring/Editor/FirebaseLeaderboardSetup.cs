@@ -2,43 +2,9 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>Wires the optional config through Unity's prefab API.</summary>
+/// <summary>Emulator checks and previews for the Firebase leaderboard.</summary>
 public static class FirebaseLeaderboardSetup {
     // Public Methods  #########################################################
-    [MenuItem("Monkobra/Leaderboard/Prepare Firebase Leaderboard")]
-    public static void Prepare() {
-        FirebaseLeaderboardConfig config =
-            AssetDatabase.LoadAssetAtPath<FirebaseLeaderboardConfig>(CONFIG);
-        if (config == null) {
-            config =
-                ScriptableObject.CreateInstance<FirebaseLeaderboardConfig>();
-            AssetDatabase.CreateAsset(config, CONFIG);
-        }
-        GameObject root = PrefabUtility.LoadPrefabContents(PREFAB);
-        try {
-            LeaderboardWidget widget =
-                root.GetComponentInChildren<LeaderboardWidget>(true);
-            if (widget == null) {
-                throw new InvalidOperationException(
-                    "LeaderboardWidget missing."
-                );
-            }
-            SerializedObject serialized = new SerializedObject(widget);
-            serialized.FindProperty("firebaseConfig").objectReferenceValue =
-                config;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            UIStyleBuilder.BuildLeaderboardNamesIn(root);
-            PrefabUtility.SaveAsPrefabAsset(root, PREFAB);
-        }
-        finally {
-            PrefabUtility.UnloadPrefabContents(root);
-        }
-        AssetDatabase.SaveAssets();
-        Selection.activeObject = config;
-        Debug.Log("Firebase leaderboard prepared; fill in the public settings "
-            + "and enable it after publishing tools/firebase/firestore.rules.");
-    }
-
     /// <summary>Batch-mode integration check against the demo
     /// emulators.</summary>
     public static async void VerifyEmulator() {
@@ -206,8 +172,6 @@ public static class FirebaseLeaderboardSetup {
     }
 
     // private members  ########################################################
-    private const string CONFIG = "Assets/_Monkobra/Settings/Scoring/"
-        + "FirebaseLeaderboardConfig.asset";
     private const string PREFAB = "Assets/_Monkobra/Prefabs/LoseScreen/"
         + "Leaderboard.prefab";
 

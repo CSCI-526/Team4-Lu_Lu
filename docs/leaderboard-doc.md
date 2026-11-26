@@ -18,10 +18,9 @@ UnityWebRequest and REST, without a native Firebase SDK or Cloud Functions.
 5. Under Project settings > General, register a Web app if needed to see its
    configuration. Copy `projectId` and `apiKey`. These are public client settings,
    **never** a service-account JSON file or private key.
-6. In Unity, run `Monkobra > Leaderboard > Prepare Firebase Leaderboard`. This
-   creates `Settings/Scoring/FirebaseLeaderboardConfig.asset` and assigns it to
-   `Prefabs/LoseScreen/Leaderboard.prefab` through Unity's prefab API. Re-running
-   keeps existing settings and builds the nickname input with the UI style API.
+6. The config `Settings/Scoring/FirebaseLeaderboardConfig.asset` already exists
+   and is assigned to `Prefabs/LoseScreen/Leaderboard.prefab`; no menu step is
+   needed.
 7. Enter Project Id and Web Api Key in that asset, leave Use Emulators off, and
    enable Use Online Leaderboard. Save and play `GameplayScene`.
 8. Finish a run, then finish a lower-scoring run: the saved highest score should
