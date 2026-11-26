@@ -9,12 +9,14 @@ using UnityEngine.InputSystem;
 /// <see cref="ControlStyle.Keyboard"/>; the mouse never switches, and the
 /// virtual controls write to a virtual gamepad, so they never read as a key.
 /// <para>
-/// Kept across scene loads (<c>DontDestroyOnLoad</c>, a later duplicate
-/// destroys itself), like <see cref="AnalyticsManager"/>. Readers never need
+/// A component of the <see cref="GameController"/> prefab, kept across scene
+/// loads with it, like <see cref="AnalyticsManager"/>. Readers never need
 /// the instance: <see cref="Current"/> and the static
 /// <see cref="StyleChanged"/> work from any scene.
 /// </para>
 /// </summary>
+[DefaultExecutionOrder(-990)]
+[RequireComponent(typeof(GameController))]
 public class ControlStyleManager: MonoBehaviour {
     // Public Members  #########################################################
     public static ControlStyleManager I {
@@ -34,20 +36,12 @@ public class ControlStyleManager: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+    // GameController destroys a duplicate before this runs; kept as a guard
         if (I != null && I != this) {
-            // a scene may keep its own copy, the first instance wins; the
-            // warning is expected and harmless
-            Debug.LogWarning(
-                "ControlStyleManager:\tduplicate instance destroyed",
-                this
-            );
-            Destroy(gameObject);
             return;
         }
 
         I = this;
-        // one style spans the whole launch, across every scene load
-        DontDestroyOnLoad(gameObject);
         SetStyle(PickStartStyle());
     }
 

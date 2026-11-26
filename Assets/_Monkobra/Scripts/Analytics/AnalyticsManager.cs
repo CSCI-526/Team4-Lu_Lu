@@ -15,10 +15,12 @@ using UnityEngine.SceneManagement;
 /// forces a fresh file mid-launch.
 /// </para>
 /// <para>
-/// Attach to a root GameObject of the first scene. It is kept across scene
-/// reloads, and the copy each reload brings in destroys itself.
+/// A component of the <see cref="GameController"/> prefab, which keeps it
+/// across scene loads and destroys each duplicate before it wakes.
 /// </para>
 /// </summary>
+[DefaultExecutionOrder(-990)]
+[RequireComponent(typeof(GameController))]
 public class AnalyticsManager: MonoBehaviour {
     // Public Members  #########################################################
     public static AnalyticsManager I {
@@ -121,6 +123,11 @@ public class AnalyticsManager: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+    // GameController destroys a duplicate before this runs; kept as a guard
+        if (I != null && I != this) {
+            return;
+        }
+
         // Inspector Assignment Guard  -----------------------------------------
         if (config == null) {
             Debug.LogWarning(
@@ -133,17 +140,7 @@ public class AnalyticsManager: MonoBehaviour {
                 this);
         }
 
-        if (I != null && I != this) {
-            // a scene may keep its own copy, the first instance wins; the
-            // warning is expected and harmless
-            Debug.LogWarning("Analytics:\tduplicate instance destroyed", this);
-            Destroy(gameObject);
-            return;
-        }
-
         I = this;
-        // one session spans the whole launch, across every scene load
-        DontDestroyOnLoad(gameObject);
         if (config == null) {
             config = ScriptableObject.CreateInstance<AnalyticsConfig>();
         }
