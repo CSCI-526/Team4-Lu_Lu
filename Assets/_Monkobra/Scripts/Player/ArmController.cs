@@ -559,8 +559,8 @@ public class ArmController: MonoBehaviour {
     // drop it from detection. Too short or past it, no overlap, no grab
     private void TryGrabFruit() {
         if (Time.timeScale <= 0f
-            || (GameController.I != null
-                && !GameController.I.IsRunLive)) {
+            || (RunController.I != null
+                && !RunController.I.IsRunLive)) {
             return;
         }//暂停或游戏结束后，不再摘水果
         if (!isReaching || reachFruit == null) {

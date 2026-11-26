@@ -152,7 +152,7 @@ public class SpiderWebTrap: MonoBehaviour {
         }
 
         // a leap passes through, not even an encounter for analytics
-        if (GameController.I != null && GameController.I.IsLeaping) {
+        if (RunController.I != null && RunController.I.IsLeaping) {
             return;
         }
 

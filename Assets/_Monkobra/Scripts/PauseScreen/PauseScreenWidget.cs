@@ -1,10 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Shows the pause panel while <see cref="GameController.IsPaused"/> is set.
+/// Shows the pause panel while <see cref="RunController.IsPaused"/> is set.
 /// <para>
 /// Put it on an always-active parent of the panel: it only toggles the panel,
-/// so its subscription to <see cref="GameController.PauseChanged"/> lives on
+/// so its subscription to <see cref="RunController.PauseChanged"/> lives on
 /// while the panel is hidden.
 /// </para>
 /// </summary>
@@ -33,10 +33,10 @@ public class PauseScreenWidget: MonoBehaviour {
     // the game controller is a singleton set in Awake, so it is read once
     // every Awake ran
     private void Start() {
-        gameController = GameController.I;
+        gameController = RunController.I;
         if (gameController == null) {
             Debug.LogError(
-                "PauseScreenWidget:\tfail to get singleton: GameController",
+                "PauseScreenWidget:\tfail to get singleton: RunController",
                 this
             );
             return;
@@ -62,5 +62,5 @@ public class PauseScreenWidget: MonoBehaviour {
 
     // private members  ########################################################
     // cached references  ------------------------------------------------------
-    private GameController gameController;
+    private RunController gameController;
 }

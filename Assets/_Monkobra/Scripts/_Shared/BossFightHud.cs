@@ -620,7 +620,7 @@ public class BossFightHud: MonoBehaviour {
         }
         rig.modeAgeS += Time.unscaledDeltaTime;
         ShowModePick();
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game != null && game.IsPaused) {
             return;
         }

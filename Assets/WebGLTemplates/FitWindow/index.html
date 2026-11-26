@@ -138,7 +138,7 @@
       var portraitQuery = window.matchMedia("(pointer: coarse) and (orientation: portrait) and (max-width: 900px)");
       function pauseIfPortrait() {
         if (unityInstance && portraitQuery.matches) {
-          unityInstance.SendMessage("GameController", "PauseFromBrowser");
+          unityInstance.SendMessage("RunController", "PauseFromBrowser");
         }
       }
       portraitQuery.addEventListener("change", pauseIfPortrait);

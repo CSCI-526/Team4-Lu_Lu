@@ -428,8 +428,8 @@ public class ProgressBarWidget: MonoBehaviour {
     // the marker flashes while the cobra catches up, only during a run
     private void UpdateCatchUpCue() {
         bool isPlaying =
-            GameController.I == null
-            || GameController.I.State == GameState.Playing;
+            RunController.I == null
+            || RunController.I.State == GameState.Playing;
         bool isCatchingUp = isPlaying && cobra != null && cobra.IsCatchingUp;
 
         // 0~1 pulse, frozen with the game clock

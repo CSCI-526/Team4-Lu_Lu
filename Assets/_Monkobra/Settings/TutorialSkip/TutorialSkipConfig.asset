@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6c1d92b84a4e7095a2d8c0e5b17f46, type: 3}
+  m_Name: TutorialSkipConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialSkipConfig
+  entries:
+  - item: 0
+    isSkippedOnceSeen: 1
+  - item: 1
+    isSkippedOnceSeen: 1
+  - item: 2
+    isSkippedOnceSeen: 1
+  - item: 3
+    isSkippedOnceSeen: 1
+  - item: 4
+    isSkippedOnceSeen: 1
+  - item: 5
+    isSkippedOnceSeen: 1
+  - item: 6
+    isSkippedOnceSeen: 1
+  - item: 7
+    isSkippedOnceSeen: 1
+  - item: 8
+    isSkippedOnceSeen: 1
+  - item: 9
+    isSkippedOnceSeen: 1
+  - item: 10
+    isSkippedOnceSeen: 1
+  - item: 11
+    isSkippedOnceSeen: 1
+  - item: 12
+    isSkippedOnceSeen: 1

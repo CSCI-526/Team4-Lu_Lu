@@ -1,0 +1,406 @@
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
+
+public class RunController: MonoBehaviour {
+    // Public Members  #########################################################
+    public static RunController I {
+        get; private set;
+    }
+
+    public GameState State {
+        get; private set;
+    }
+
+    public event Action<GameState> StateChanged;
+
+    /// <summary>
+    /// if the run is paused: time is frozen and the pause screen is up, while
+    /// <see cref="State"/> keeps its live value, so resuming is not a new
+    /// state change
+    /// </summary>
+    public bool IsPaused {
+        get; private set;
+    }
+
+    /// <summary>raised with the new value each time the pause toggles</summary>
+    public event Action<bool> PauseChanged;
+
+    /// <summary>
+    /// if a pineapple leap is under way: hazards leave the monkey alone, while
+    /// <see cref="State"/> keeps its live value, so a leap is no state change
+    /// </summary>
+    public bool IsLeaping {
+        get; private set;
+    }
+
+    /// <summary>raised with the new value each time a leap starts or ends
+    /// </summary>
+    public event Action<bool> LeapChanged;
+
+    /// <summary>
+    /// if the run is live, ie climbing and scoring work, whether or not the
+    /// monkey is still protected
+    /// </summary>
+    public bool IsRunLive =>
+        State == GameState.Playing || State == GameState.StartingZone;
+
+    /// <summary>
+    /// if the run has not reached <see cref="GameState.Playing"/> yet: the
+    /// tutorial screen or the starting zone
+    /// </summary>
+    public bool IsBeforePlaying =>
+        State == GameState.Tutorial || State == GameState.StartingZone;
+
+    /// <summary>if the starting zone is under way</summary>
+    public bool IsInStartingZone => State == GameState.StartingZone;
+
+    /// <summary>
+    /// whether cobra collisions are ignored entirely, a debug cheat; warns
+    /// each time it is switched on
+    /// </summary>
+    public bool CobraNoClip {
+        get => cobraNoClip;
+        set {
+            cobraNoClip = value;
+            WarnIfCobraNoClip();
+        }
+    }
+
+    /// <summary>
+    /// if the run is over and the restart input delay has passed, so a
+    /// restart press counts
+    /// </summary>
+    public bool CanRestartNow =>
+        (State == GameState.Lost || State == GameState.Won)
+        && Time.unscaledTime - lostTime >= restartInputDelayS;
+
+    // Public Methods  #########################################################
+    /// <summary>starts a fresh run in the same scene</summary>
+    public void RestartRun() {
+        ReloadScene();
+    }
+
+    public void EndStartingZone() {
+        if (State == GameState.StartingZone) {
+            SetState(GameState.Playing);
+        }
+    }
+
+    /// <summary>
+    /// pauses or resumes the run; a pause is ignored unless the run is live
+    /// </summary>
+    public void SetPaused(bool isPaused) {
+        if (isPaused == IsPaused || (isPaused && !IsRunLive)) {
+            return;
+        }
+
+        IsPaused = isPaused;
+        ApplyTimeScale();
+        AudioListener.pause = isPaused;
+        PauseChanged?.Invoke(isPaused);
+
+        if (Debug.isDebugBuild) {
+            Debug.Log("RunController:\tpaused " + isPaused, this);
+        }
+    }
+
+    /// <summary>
+    /// pauses the run on a call from the web page, eg the rotate overlay
+    /// of the WebGL template shown in portrait; named by `SendMessage`
+    /// </summary>
+    public void PauseFromBrowser() {
+        SetPaused(true);
+    }
+
+    /// <summary>
+    /// Ends a live run as a win, eg the Cobra King defeated: the score
+    /// settles, time freezes and the restart key plays again.
+    /// </summary>
+    public void WinGame() {
+        if (!IsRunLive) {
+            return;
+        }
+
+        if (ScoreManager.I != null) {
+            ScoreManager.I.EndRun();
+        }
+
+        SetState(GameState.Won);
+        if (Debug.isDebugBuild) {
+            Debug.Log("RunController:\tgame won", this);
+        }
+    }
+
+    /// <summary>
+    /// starts or ends a leap; a start is ignored unless the run is live, and
+    /// ends the starting zone, as a leap may carry the monkey past its exit
+    /// </summary>
+    public void SetLeaping(bool isLeaping) {
+        if (isLeaping == IsLeaping || (isLeaping && !IsRunLive)) {
+            return;
+        }
+
+        IsLeaping = isLeaping;
+        if (isLeaping) {
+            EndStartingZone();
+        }
+        LeapChanged?.Invoke(isLeaping);
+
+        if (Debug.isDebugBuild) {
+            Debug.Log("RunController:\tleaping " + isLeaping, this);
+        }
+    }
+
+    public void LoseGame() {
+        if (!IsRunLive) {
+            return;
+        }
+
+        // settle score first
+        if (ScoreManager.I != null) {
+            ScoreManager.I.EndRun();
+        }
+
+        SetState(GameState.Lost);
+        if (Debug.isDebugBuild) {
+            Debug.Log("RunController:\tgame lost", this);
+        }
+    }
+
+    // Inspector Fields  #######################################################
+    [SerializeField]
+    [FormerlySerializedAs("restartInputDelay")]
+    [Min(0f)]
+    [Tooltip("unscaled time the lose screen ignores restart input; s")]
+    private float restartInputDelayS = 0.5f;
+
+    [SerializeField]
+    [Tooltip("starts the run from the tutorial screen, the Player/Jump "
+        + "action (Space, E, Enter); no other key starts it")]
+    private InputActionReference startRunAction;
+
+    [SerializeField]
+    [Tooltip("toggles the pause while the run is live, the Player/Pause "
+        + "action (Esc or P)")]
+    private InputActionReference pauseAction;
+
+    [SerializeField]
+    [Tooltip("restarts the run from the lose screen, the "
+        + "Player/RestartAfterLose action (R)")]
+    private InputActionReference restartAfterLoseAction;
+
+    [SerializeField]
+    [Tooltip("restarts the run from the pause screen, the "
+        + "Player/RestartDuringPause action (R)")]
+    private InputActionReference restartDuringPauseAction;
+
+    [SerializeField]
+    [Tooltip("debug cheat: cobra collisions never kill the monkey")]
+    private bool cobraNoClip;
+
+    [SerializeField]
+    [Tooltip("dev/hack keys, its no-clip key works in a development build "
+        + "only")]
+    private HackShortcutConfig hackShortcuts;
+
+    // MonoBehaviour Lifecycle  ################################################
+    private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
+        if (startRunAction == null) {
+            Debug.LogError(
+                "RunController:\tmust assign Inspector Field: "
+                    + "Start Run Action",
+                this
+            );
+        }
+
+        if (pauseAction == null) {
+            Debug.LogError(
+                "RunController:\tmust assign Inspector Field: Pause Action",
+                this
+            );
+        }
+
+        if (restartAfterLoseAction == null) {
+            Debug.LogError(
+                "RunController:\tmust assign Inspector Field: "
+                    + "Restart After Lose Action",
+                this
+            );
+        }
+
+        if (restartDuringPauseAction == null) {
+            Debug.LogError(
+                "RunController:\tmust assign Inspector Field: "
+                    + "Restart During Pause Action",
+                this
+            );
+        }
+
+        if (I != null && I != this) {
+            Debug.LogWarning(
+                "RunController:\tduplicate instance destroyed",
+                this
+            );
+
+            Destroy(gameObject);
+            return;
+        }
+
+        I = this;
+        WarnIfCobraNoClip();
+        SetState(GameState.Tutorial);
+    }
+
+    private void OnEnable() {
+        // shared with the web escape press, so never disabled here
+        startRunAction?.action.Enable();
+        pauseAction?.action.Enable();
+        restartAfterLoseAction?.action.Enable();
+        restartDuringPauseAction?.action.Enable();
+    }
+
+    private void OnDisable() {
+        pauseAction?.action.Disable();
+        restartAfterLoseAction?.action.Disable();
+        restartDuringPauseAction?.action.Disable();
+    }
+
+    private void Update() {
+        if (TextInputFocus.BlocksShortcuts) {
+            return;
+        }
+        UpdateStartKey();
+        UpdateNoClipKey();
+        UpdatePauseKey();
+
+        bool isOver = State == GameState.Lost || State == GameState.Won;
+        if (!isOver || restartAfterLoseAction == null) {
+            return;
+        }
+
+        if (Time.unscaledTime - lostTime < restartInputDelayS) {
+            return;
+        }
+
+        if (restartAfterLoseAction.action.WasPressedThisFrame()) {
+            ReloadScene();
+        }
+    }
+
+    private void OnDestroy() {
+        if (I == this) {
+            I = null;
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+        }
+    }
+
+    // private methods  ########################################################
+    // only the start key leaves the tutorial; any other key does nothing; the
+    // dev switch leaves it at once, w/o a key
+    private void UpdateStartKey() {
+        if (
+            State == GameState.Tutorial
+            && ((TutorialSkipManager.I != null
+                && TutorialSkipManager.I.ShouldSkip(
+                    TutorialItem.RunStartTutorial
+                ))
+                || startRunAction != null
+                && startRunAction.action.WasPressedThisFrame())
+        ) {
+            if (TutorialSkipManager.I != null) {
+                TutorialSkipManager.I.MarkSeen(TutorialItem.RunStartTutorial);
+            }
+            SetState(GameState.StartingZone);
+        }
+    }
+
+    // the pause key toggles the pause; outside a live run it does nothing.
+    // The key that starts the run from the tutorial must not also pause it.
+    // While paused, the pause restart key reloads the scene for a fresh run
+    private void UpdatePauseKey() {
+        if (
+            IsPaused
+            && restartDuringPauseAction != null
+            && restartDuringPauseAction.action.WasPressedThisFrame()
+        ) {
+            if (Debug.isDebugBuild) {
+                Debug.Log("RunController:\trestart from pause", this);
+            }
+            ReloadScene();
+            return;
+        }
+
+        if (
+            pauseAction == null
+            || !pauseAction.action.WasPressedThisFrame()
+            || Time.frameCount == stateChangedFrame
+        ) {
+            return;
+        }
+
+        SetPaused(!IsPaused);
+    }
+
+    // a fresh run; OnDestroy resets the time scale and audio for the new scene
+    private static void ReloadScene() {
+        SceneNames.Load(SceneManager.GetActiveScene().name);
+    }
+
+    // frozen outside a live run and during a pause
+    private void ApplyTimeScale() {
+        Time.timeScale = IsRunLive && !IsPaused ? 1f : 0f;
+    }
+
+    // dev/hack key toggling the no-clip cheat
+    private void UpdateNoClipKey() {
+        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
+            return;
+        }
+
+        if (!hackShortcuts.WasPressedThisFrame(HackAction.NoClip)) {
+            return;
+        }
+
+        CobraNoClip = !CobraNoClip;
+        if (Debug.isDebugBuild) {
+            Debug.Log("RunController:\tcobra no clip " + CobraNoClip, this);
+        }
+    }
+
+    private void WarnIfCobraNoClip() {
+        if (cobraNoClip) {
+            Debug.LogWarning(
+                "RunController:\tCobra No Clip is set, cobra collisions "
+                    + "cannot kill the monkey",
+                this
+            );
+        }
+    }
+
+    private void SetState(GameState next) {
+        State = next;
+        stateChangedFrame = Time.frameCount;
+        // a state change always ends a pause
+        if (IsPaused) {
+            IsPaused = false;
+            AudioListener.pause = false;
+            PauseChanged?.Invoke(false);
+        }
+        ApplyTimeScale();
+
+        if (next == GameState.Lost || next == GameState.Won) {
+            lostTime = Time.unscaledTime;
+        }
+
+        StateChanged?.Invoke(next);
+    }
+
+    // private members  ########################################################
+    private float lostTime;
+    private int stateChangedFrame = -1; // frame of the last SetState
+}
