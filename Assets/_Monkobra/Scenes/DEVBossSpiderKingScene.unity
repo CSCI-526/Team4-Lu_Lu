@@ -269,6 +269,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossDevStart
   boss: 1
   config: {fileID: 11400000, guid: ca3d10ec3d8e60746b3ce4def50d4a04, type: 2}
+  loopOverride: 1
 --- !u!4 &1167658346
 Transform:
   m_ObjectHideFlags: 0
@@ -1283,6 +1284,34 @@ PrefabInstance:
     - target: {fileID: 5912103275275959521, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0.1784248
+      objectReference: {fileID: 0}
+    - target: {fileID: 6666666666666666602, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.31045824
+      objectReference: {fileID: 0}
+    - target: {fileID: 6666666666666666602, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.6436564
+      objectReference: {fileID: 0}
+    - target: {fileID: 6666666666666666602, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6.870372
+      objectReference: {fileID: 0}
+    - target: {fileID: 6666666666666666602, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.022757418
+      objectReference: {fileID: 0}
+    - target: {fileID: 6666666666666666602, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.0054935655
+      objectReference: {fileID: 0}
+    - target: {fileID: 6666666666666666602, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.99286383
+      objectReference: {fileID: 0}
+    - target: {fileID: 6666666666666666602, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.11693348
       objectReference: {fileID: 0}
     - target: {fileID: 6789742072031988205, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3617,6 +3646,10 @@ PrefabInstance:
     - target: {fileID: 7245103388614930001, guid: 7b2f4d8e61a94c03b5d9e1a7c3f08d26, type: 3}
       propertyPath: m_Name
       value: GameController
+      objectReference: {fileID: 0}
+    - target: {fileID: 7245103388614930004, guid: 7b2f4d8e61a94c03b5d9e1a7c3f08d26, type: 3}
+      propertyPath: isSkippingTutorialsAndCutscenes
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
