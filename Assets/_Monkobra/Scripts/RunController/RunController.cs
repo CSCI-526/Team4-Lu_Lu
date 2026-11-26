@@ -4,9 +4,9 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
-public class GameController: MonoBehaviour {
+public class RunController: MonoBehaviour {
     // Public Members  #########################################################
-    public static GameController I {
+    public static RunController I {
         get; private set;
     }
 
@@ -106,7 +106,7 @@ public class GameController: MonoBehaviour {
         PauseChanged?.Invoke(isPaused);
 
         if (Debug.isDebugBuild) {
-            Debug.Log("GameController:\tpaused " + isPaused, this);
+            Debug.Log("RunController:\tpaused " + isPaused, this);
         }
     }
 
@@ -133,7 +133,7 @@ public class GameController: MonoBehaviour {
 
         SetState(GameState.Won);
         if (Debug.isDebugBuild) {
-            Debug.Log("GameController:\tgame won", this);
+            Debug.Log("RunController:\tgame won", this);
         }
     }
 
@@ -153,7 +153,7 @@ public class GameController: MonoBehaviour {
         LeapChanged?.Invoke(isLeaping);
 
         if (Debug.isDebugBuild) {
-            Debug.Log("GameController:\tleaping " + isLeaping, this);
+            Debug.Log("RunController:\tleaping " + isLeaping, this);
         }
     }
 
@@ -169,7 +169,7 @@ public class GameController: MonoBehaviour {
 
         SetState(GameState.Lost);
         if (Debug.isDebugBuild) {
-            Debug.Log("GameController:\tgame lost", this);
+            Debug.Log("RunController:\tgame lost", this);
         }
     }
 
@@ -214,7 +214,7 @@ public class GameController: MonoBehaviour {
         // Inspector Assignment Guard  -----------------------------------------
         if (startRunAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign Inspector Field: "
+                "RunController:\tmust assign Inspector Field: "
                     + "Start Run Action",
                 this
             );
@@ -222,14 +222,14 @@ public class GameController: MonoBehaviour {
 
         if (pauseAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign Inspector Field: Pause Action",
+                "RunController:\tmust assign Inspector Field: Pause Action",
                 this
             );
         }
 
         if (restartAfterLoseAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign Inspector Field: "
+                "RunController:\tmust assign Inspector Field: "
                     + "Restart After Lose Action",
                 this
             );
@@ -237,7 +237,7 @@ public class GameController: MonoBehaviour {
 
         if (restartDuringPauseAction == null) {
             Debug.LogError(
-                "GameController:\tmust assign Inspector Field: "
+                "RunController:\tmust assign Inspector Field: "
                     + "Restart During Pause Action",
                 this
             );
@@ -245,7 +245,7 @@ public class GameController: MonoBehaviour {
 
         if (I != null && I != this) {
             Debug.LogWarning(
-                "GameController:\tduplicate instance destroyed",
+                "RunController:\tduplicate instance destroyed",
                 this
             );
 
@@ -326,7 +326,7 @@ public class GameController: MonoBehaviour {
             && restartDuringPauseAction.action.WasPressedThisFrame()
         ) {
             if (Debug.isDebugBuild) {
-                Debug.Log("GameController:\trestart from pause", this);
+                Debug.Log("RunController:\trestart from pause", this);
             }
             ReloadScene();
             return;
@@ -365,14 +365,14 @@ public class GameController: MonoBehaviour {
 
         CobraNoClip = !CobraNoClip;
         if (Debug.isDebugBuild) {
-            Debug.Log("GameController:\tcobra no clip " + CobraNoClip, this);
+            Debug.Log("RunController:\tcobra no clip " + CobraNoClip, this);
         }
     }
 
     private void WarnIfCobraNoClip() {
         if (cobraNoClip) {
             Debug.LogWarning(
-                "GameController:\tCobra No Clip is set, cobra collisions "
+                "RunController:\tCobra No Clip is set, cobra collisions "
                     + "cannot kill the monkey",
                 this
             );

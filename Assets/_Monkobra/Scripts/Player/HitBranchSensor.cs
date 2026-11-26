@@ -83,7 +83,7 @@ public class HitBranchSensor: MonoBehaviour {
     // private methods  ########################################################
     private void ApplyHit(Collider source, HitKind kind) {
         // a leap passes through every hazard
-        if (GameController.I != null && GameController.I.IsLeaping) {
+        if (RunController.I != null && RunController.I.IsLeaping) {
             return;
         }
 

@@ -94,11 +94,11 @@ public sealed class CobraMotorChase {
 
     // the starting zone ending (to Playing) starts the one-off exit boost
     public void StartExitBoostOnZoneExit() {
-        if (GameController.I == null) {
+        if (RunController.I == null) {
             return;
         }
 
-        GameState state = GameController.I.State;
+        GameState state = RunController.I.State;
         bool didExitZone = rig.lastGameState == GameState.StartingZone
             && state == GameState.Playing;
         rig.lastGameState = state;

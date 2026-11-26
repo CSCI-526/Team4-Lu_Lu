@@ -14,7 +14,7 @@ using UnityEngine;
 /// <see cref="PineappleLeapController"/> & <see cref="SpiderWebStruggle"/>,
 /// <see cref="CoconutManager"/>, <see cref="HeightMarkerSystem"/>,
 /// <see cref="StaminaBarController"/>, <see cref="HitBranchSensor.Hit"/> and
-/// <see cref="GameController.StateChanged"/>; nothing calls it and it
+/// <see cref="RunController.StateChanged"/>; nothing calls it and it
 /// changes nothing. Plain 2D sound through a few sources taken in turn, so
 /// each play keeps its own pitch; they follow
 /// <see cref="AudioListener.pause"/>, so the pause screen silences them.
@@ -172,7 +172,7 @@ public class MonkeySfxListener: MonoBehaviour {
         if (sensor != null) {
             sensor.Hit += OnHit;
         }
-        game = GameController.I;
+        game = RunController.I;
         if (game != null) {
             game.StateChanged += OnStateChanged;
         }
@@ -239,7 +239,7 @@ public class MonkeySfxListener: MonoBehaviour {
     private PineappleLeapController leap;
     private SpiderWebStruggle web;
     private HitBranchSensor sensor;
-    private GameController game;
+    private RunController game;
     private CoconutManager coconuts;
     private HeightMarkerSystem markers;
     private StaminaBarController stamina;

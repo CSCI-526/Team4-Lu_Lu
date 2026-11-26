@@ -6,7 +6,7 @@ using UnityEngine;
 /// build (<see cref="Debug.isDebugBuild"/>) w/ its checkbox on; a release
 /// build never skips, whatever the checkbox says.
 /// <para>
-/// Sits on the root object of the <c>GameController</c> prefab, so a scene
+/// Sits on the root object of the <c>RunController</c> prefab, so a scene
 /// that holds that prefab holds the checkbox; tick it on the prefab asset.
 /// It lives and dies with that object. Scripts ask
 /// <see cref="IsSkipping"/>, nothing calls it.
@@ -33,7 +33,7 @@ public class TutorialSkipSwitch: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
-        // a duplicate GameController destroys itself, never the first switch
+        // a duplicate RunController destroys itself, never the first switch
         if (I != null && I != this) {
             return;
         }

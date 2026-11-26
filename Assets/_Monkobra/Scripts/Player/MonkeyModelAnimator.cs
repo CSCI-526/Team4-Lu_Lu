@@ -948,7 +948,7 @@ public class MonkeyModelAnimator: MonoBehaviour {
 
     // only while the run is live and the player needn't watch the hands
     private bool CanLookBack() {
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game == null || game.IsLeaping
             || (game.State != GameState.Playing
                 && game.State != GameState.StartingZone)) {

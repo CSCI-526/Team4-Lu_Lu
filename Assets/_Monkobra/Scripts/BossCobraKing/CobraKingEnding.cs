@@ -82,8 +82,8 @@ public sealed class CobraKingEnding {
     public void EndAsLoss() {
         rig.phase = CobraKingPhase.Over;
         CobraKingAttacks.SetUntouchable(false);
-        if (GameController.I != null) {
-            GameController.I.LoseGame();
+        if (RunController.I != null) {
+            RunController.I.LoseGame();
         }
     }
 
@@ -99,7 +99,7 @@ public sealed class CobraKingEnding {
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(rig.reviveLeftS));
     }
 
-    public void UpdateRevive(GameController game) {
+    public void UpdateRevive(RunController game) {
         // a pause & resume would run the game under the offer otherwise
         Time.timeScale = 0f;
         // the clock holds while paused; the step is capped so a long time
@@ -342,7 +342,7 @@ public sealed class CobraKingEnding {
 
     // once the swirl is done, time stops on the reward panel; the confirm
     // action or its button goes on
-    public void UpdateRewardPause(GameController game) {
+    public void UpdateRewardPause(RunController game) {
         if (!rig.isRewardPanelShown) {
             if (rig.armorRewardTimeS >= 0f) {
                 return;

@@ -16,8 +16,8 @@ GameObject:
   - component: {fileID: 5415272717504592885}
   - component: {fileID: 2269083903314885017}
   m_Layer: 0
-  m_Name: GameController
-  m_TagString: GameController
+  m_Name: RunController
+  m_TagString: RunController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

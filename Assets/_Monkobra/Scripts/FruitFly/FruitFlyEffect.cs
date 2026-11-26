@@ -156,16 +156,16 @@ public class FruitFlyEffect: MonoBehaviour {
     }
 
     private void OnEnable() {
-        if (GameController.I != null) {
-            GameController.I.StateChanged += OnStateChanged;
+        if (RunController.I != null) {
+            RunController.I.StateChanged += OnStateChanged;
         }
     }
 
-    // GameController wakes in its own Awake, which may run after OnEnable
+    // RunController wakes in its own Awake, which may run after OnEnable
     private void Start() {
-        if (GameController.I != null) {
-            GameController.I.StateChanged -= OnStateChanged;
-            GameController.I.StateChanged += OnStateChanged;
+        if (RunController.I != null) {
+            RunController.I.StateChanged -= OnStateChanged;
+            RunController.I.StateChanged += OnStateChanged;
         }
 
         // the monkey lives in another prefab, look it up over a scene link
@@ -184,8 +184,8 @@ public class FruitFlyEffect: MonoBehaviour {
     }
 
     private void OnDisable() {
-        if (GameController.I != null) {
-            GameController.I.StateChanged -= OnStateChanged;
+        if (RunController.I != null) {
+            RunController.I.StateChanged -= OnStateChanged;
         }
         ClearFlights();
     }

@@ -2,7 +2,7 @@
 /// a dev/hack action bound to a key by <see cref="HackShortcutConfig"/>
 /// </summary>
 public enum HackAction {
-    /// <summary>toggles <see cref="GameController.CobraNoClip"/></summary>
+    /// <summary>toggles <see cref="RunController.CobraNoClip"/></summary>
     NoClip,
 
     /// <summary>toggles <see cref="StaminaBarController.IsMaxStamina"/>: the

@@ -55,8 +55,8 @@ public sealed class CobraMotorHiss {
         }
         if (rig.chaseAlertHissSource != null
             && (rig.isFrozen || rig.isGuarding
-                || (GameController.I != null
-                    && !GameController.I.IsRunLive)))
+                || (RunController.I != null
+                    && !RunController.I.IsRunLive)))
             rig.chaseAlertHissSource.Stop();
         bool alertPlaying = rig.chaseAlertHissSource != null
             && rig.chaseAlertHissSource.isPlaying;
@@ -82,7 +82,7 @@ public sealed class CobraMotorHiss {
         rig.proximityHissSource.transform.position = nearest;
         bool near = rig.player != null && !rig.isFrozen && !rig.isGuarding
             && Time.timeScale>0f
-            && (GameController.I == null || GameController.I.IsRunLive)
+            && (RunController.I == null || RunController.I.IsRunLive)
             && distanceSquared <= Mathf.Pow(config.HissStartDistanceU
                 +(rig.wasInHissRange?config.HissExitPaddingU:0f), 2f);
         if (!near) {

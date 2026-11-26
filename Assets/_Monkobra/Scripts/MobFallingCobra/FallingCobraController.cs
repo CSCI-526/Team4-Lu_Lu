@@ -445,8 +445,8 @@ public class FallingCobraController: MonoBehaviour {
     public void TryHit(Collider other) {
         if (other == null || rig.state != FallingCobraState.Falling
             || !rig.hitCollider.enabled
-            || GameController.I == null || !GameController.I.IsRunLive
-            || GameController.I.IsLeaping || Time.timeScale <= 0f) {
+            || RunController.I == null || !RunController.I.IsRunLive
+            || RunController.I.IsLeaping || Time.timeScale <= 0f) {
             return;
         }
         HitBranchSensor sensor = other.GetComponent<HitBranchSensor>();
@@ -517,7 +517,7 @@ public class FallingCobraController: MonoBehaviour {
     private bool CanStartFall() {
         return rig.player != null && rig.monkeyInHeadRange
             && Time.time >= rig.fallStartTime
-            && (GameController.I == null || !GameController.I.IsLeaping);
+            && (RunController.I == null || !RunController.I.IsLeaping);
     }
 
     private void StartFalling() {

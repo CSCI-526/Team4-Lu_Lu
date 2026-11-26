@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// Fills the nested leaderboard whenever the lose screen opens, after
-/// GameController.LoseGame has settled ScoreManager's final score.
+/// RunController.LoseGame has settled ScoreManager's final score.
 /// </summary>
 public class LeaderboardWidget: MonoBehaviour {
     // Public Members  #########################################################
@@ -139,8 +139,8 @@ public class LeaderboardWidget: MonoBehaviour {
     private async void ShowOnline(long score, int version) {
         FirebaseLeaderboardClient client =
             new FirebaseLeaderboardClient(firebaseConfig);
-        string board = GameController.I != null
-            && GameController.I.Mode == RunMode.Endless ? "endless" : "normal";
+        string board = RunController.I != null
+            && RunController.I.Mode == RunMode.Endless ? "endless" : "normal";
         long best = client.RememberScore(board, score);
         ShowPersonalBest(best);
         playerRankLabel.text = "CONNECTING...";

@@ -88,21 +88,21 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     private void Start() {
         // a climb in the endless run has its own boss rush, no intro; the
         // dev switch skips the intro too
-        if (GameController.I != null
-            && GameController.I.Mode != RunMode.Full
+        if (RunController.I != null
+            && RunController.I.Mode != RunMode.Full
             || TutorialSkipSwitch.IsSkipping) {
             enabled = false;
             return;
         }
-        if (GameController.I == null) {
+        if (RunController.I == null) {
             Debug.LogWarning(
                 "SpiderWebIntroEvent:\tfail to get singleton: "
-                    + "GameController, no mode check or loss abort",
+                    + "RunController, no mode check or loss abort",
                 this
             );
             return;
         }
-        game = GameController.I;
+        game = RunController.I;
         game.StateChanged += OnStateChanged;
     }
 
@@ -190,7 +190,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     private CameraRigManager cameraRig;
     private CameraSpiderIntroFraming framing;
     private SpiderWebStruggle struggle;
-    private GameController game;
+    private RunController game;
 
     // constants  ##############################################################
     // how long the web may take to catch by itself before the trap is forced; s
@@ -204,7 +204,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         if (isDone || !ResolveReferences()) {
             return false;
         }
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game != null
             && (game.State != GameState.Playing || game.IsPaused
                 || game.IsLeaping)) {

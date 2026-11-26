@@ -30,7 +30,7 @@ using static CobraKingRig;
 /// then; a monkey below the arena hears "Nowhere to run!".
 /// The camera tilts up so the king stays in view. At zero health the king
 /// shatters into cubes, its crown flies onto the monkey's head and the run
-/// is won (<see cref="GameController.WinGame"/>).
+/// is won (<see cref="RunController.WinGame"/>).
 /// </para>
 /// </summary>
 [RequireComponent(typeof(CobraKingBody), typeof(BossFightHud))]
@@ -483,8 +483,8 @@ public class CobraKingFightController: MonoBehaviour {
     // the endless run starts in the armor, the boss rush's first fight, the
     // king's, waiting a boss interval up
     private void Start() {
-        if (I == this && GameController.I != null
-            && GameController.I.Mode == RunMode.Endless) {
+        if (I == this && RunController.I != null
+            && RunController.I.Mode == RunMode.Endless) {
             StartAsDone();
             rig.isEndlessStart = false;
             rig.rushEncounter = 0;
@@ -534,7 +534,7 @@ public class CobraKingFightController: MonoBehaviour {
     }
 
     private void Update() {
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game == null) {
             return;
         }

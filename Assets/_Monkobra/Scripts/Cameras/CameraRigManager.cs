@@ -208,10 +208,10 @@ public class CameraRigManager: MonoBehaviour {
 
     private void Start() {
         SubscribeCobra();
-        game = GameController.I;
+        game = RunController.I;
         if (game == null) {
             Debug.LogWarning(
-                "CameraRigManager:\tfail to get singleton: GameController, "
+                "CameraRigManager:\tfail to get singleton: RunController, "
                     + "no leap shot",
                 this
             );
@@ -351,7 +351,7 @@ public class CameraRigManager: MonoBehaviour {
         new ShotState[System.Enum.GetValues(typeof(ShotKind)).Length];
     private ShotKind? liveKind;
     private CoconutManager coconuts;
-    private GameController game;
+    private RunController game;
     private PineappleLeapController leapController;
     private CobraMotor cobra;
     private CameraCobraAlertFraming alertFraming;

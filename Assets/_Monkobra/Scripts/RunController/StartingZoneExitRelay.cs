@@ -23,9 +23,9 @@ public class StartingZoneExitRelay: MonoBehaviour {
         if (!other.CompareTag(PLAYER_TAG)) {
             return;
         }
-        if (GameController.I == null) {
+        if (RunController.I == null) {
             Debug.LogError(
-                "StartingZoneExitRelay:\tfail to get Singleton: GameController",
+                "StartingZoneExitRelay:\tfail to get Singleton: RunController",
                 this);
             return;
         }
@@ -33,7 +33,7 @@ public class StartingZoneExitRelay: MonoBehaviour {
         if (Debug.isDebugBuild) {
             Debug.Log("StartingZoneExitRelay:\tmonkey entered, end zone");
         }
-        GameController.I.EndStartingZone();
+        RunController.I.EndStartingZone();
     }
 
     // constants  ##############################################################

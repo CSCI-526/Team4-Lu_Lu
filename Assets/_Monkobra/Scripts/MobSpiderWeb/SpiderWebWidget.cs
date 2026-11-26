@@ -75,8 +75,8 @@ public class SpiderWebWidget: MonoBehaviour {
     private void Update() {
         if (
             isVisible
-            && GameController.I != null
-            && GameController.I.State != GameState.Playing
+            && RunController.I != null
+            && RunController.I.State != GameState.Playing
         ) {
             SetVisible(false);
         }

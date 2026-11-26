@@ -9,7 +9,7 @@ using UnityEngine;
 /// <para>
 /// Sits on an always-active root and switches its <see cref="content"/> child,
 /// so it never switches off the object whose events it listens to. Reads
-/// <see cref="GameController"/> in <c>Start</c>, so Awake order never matters.
+/// <see cref="RunController"/> in <c>Start</c>, so Awake order never matters.
 /// </para>
 /// </summary>
 public class TouchControlsPanel: MonoBehaviour {
@@ -32,10 +32,10 @@ public class TouchControlsPanel: MonoBehaviour {
     }
 
     private void Start() {
-        game = GameController.I;
+        game = RunController.I;
         if (game == null) {
             Debug.LogError(
-                "TouchControlsPanel:\tGameController instance not found",
+                "TouchControlsPanel:\tRunController instance not found",
                 this
             );
             enabled = false;
@@ -93,6 +93,6 @@ public class TouchControlsPanel: MonoBehaviour {
     }
 
     // private members  ########################################################
-    private GameController game;
+    private RunController game;
     private bool isStarted;
 }

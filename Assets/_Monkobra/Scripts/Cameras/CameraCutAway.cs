@@ -56,7 +56,7 @@ public class CameraCutAway: MonoBehaviour {
 
     // the game controller wakes in its own prefab, read after every Awake
     private void Start() {
-        game = GameController.I;
+        game = RunController.I;
         if (game != null) {
             game.PauseChanged += OnPauseChanged;
             game.StateChanged += OnStateChanged;
@@ -100,7 +100,7 @@ public class CameraCutAway: MonoBehaviour {
     private const float REFERENCE_HEIGHT = 720f;
 
     private CameraRigManager rig;
-    private GameController game;
+    private RunController game;
     private Canvas canvas;
     private RectTransform top;
     private RectTransform bottom;

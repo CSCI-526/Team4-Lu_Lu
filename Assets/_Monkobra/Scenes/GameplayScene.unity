@@ -2390,7 +2390,7 @@ PrefabInstance:
       objectReference: {fileID: 3635617223177171820}
     - target: {fileID: 4732386835657357497, guid: c31179dd7d7b4974f9f6cdf16893bf9d, type: 3}
       propertyPath: m_Name
-      value: GameController
+      value: RunController
       objectReference: {fileID: 0}
     - target: {fileID: 5415272717504592885, guid: c31179dd7d7b4974f9f6cdf16893bf9d, type: 3}
       propertyPath: inputActions

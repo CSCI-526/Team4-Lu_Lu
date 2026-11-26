@@ -352,7 +352,7 @@ public class SpiderKingFightController: MonoBehaviour {
     }
 
     private void Update() {
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game == null) {
             return;
         }
@@ -412,7 +412,7 @@ public class SpiderKingFightController: MonoBehaviour {
     // Setup  ------------------------------------------------------------------
     // after the Cobra King, never mid leap; in the endless run at its turn
     // of the boss rush
-    private bool CanBegin(GameController game) {
+    private bool CanBegin(RunController game) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (!game.IsRunLive || game.IsLeaping || ramp == null) {
             return false;
@@ -444,7 +444,7 @@ public class SpiderKingFightController: MonoBehaviour {
     // how fast the waiting spider crawls round after it; deg/s
     private const float PREVIEW_TURN_DEG_PER_S = 120f;
 
-    private void UpdatePreview(GameController game) {
+    private void UpdatePreview(RunController game) {
         if (config.IsTestAtStart) {
             return;
         }
@@ -499,7 +499,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.monkey = rig.monkeyController.transform;
         // a bit quicker in the arena, to dodge & reach the melons
         rig.monkeyController.ArenaSpeedScale = config.MonkeySpeedScale;
-        GameController.I.EndStartingZone();
+        RunController.I.EndStartingZone();
         rig.trunkCenter = rig.monkey.parent.position;
         rig.entryY = rig.monkey.position.y;
         rig.entryPosition = rig.monkey.position;

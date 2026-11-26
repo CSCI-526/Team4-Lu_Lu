@@ -30,11 +30,11 @@ public class FruitGrabPrompt: MonoBehaviour {
             enabled = false;
             return;
         }
-        game = GameController.I;
+        game = RunController.I;
         sensor = UpwardFruitSensor.I;
         if (game == null || sensor == null) {
             Debug.LogError(
-                "FruitGrabPrompt:\tno GameController or UpwardFruitSensor",
+                "FruitGrabPrompt:\tno RunController or UpwardFruitSensor",
                 this
             );
             enabled = false;
@@ -110,7 +110,7 @@ public class FruitGrabPrompt: MonoBehaviour {
     private bool hasGrabbedBanana;
     private bool hasGrabbedPineapple;
     private bool hasGrabbedCoconut;
-    private GameController game;
+    private RunController game;
     private UpwardFruitSensor sensor;
     private MonkeyController monkey;
     private FruitKind shownKind = FruitKind.None; // kind whose popup is held

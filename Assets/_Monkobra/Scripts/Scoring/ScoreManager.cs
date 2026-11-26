@@ -36,7 +36,7 @@ public class ScoreManager: MonoBehaviour {
         && hasStarted
         && !isRunEnded
         && Time.timeScale > 0f
-        && (GameController.I == null || GameController.I.IsRunLive);
+        && (RunController.I == null || RunController.I.IsRunLive);
 
     // Public Methods  #########################################################
     // adds the points of a fruit or other reward
@@ -165,8 +165,8 @@ public class ScoreManager: MonoBehaviour {
         if (spiderKing != null) {
             spiderKing.FightEnded += OnSpiderKingBeaten;
         }
-        isRunEnded = GameController.I != null
-            && GameController.I.State == GameState.Lost;
+        isRunEnded = RunController.I != null
+            && RunController.I.State == GameState.Lost;
         hasStarted = true;
         ScoreChanged?.Invoke(TotalScore);
     }

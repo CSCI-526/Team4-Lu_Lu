@@ -322,8 +322,8 @@ public class MonkeyController: MonoBehaviour {
         bool isStunned = IsStunned;
         roughContacts.RemoveWhere(
             zone => zone == null || !zone.isActiveAndEnabled);
-        bool roughContact = roughContacts.Count > 0 && GameController.I != null
-            && GameController.I.IsRunLive && !GameController.I.IsLeaping;
+        bool roughContact = roughContacts.Count > 0 && RunController.I != null
+            && RunController.I.IsRunLive && !RunController.I.IsLeaping;
         float targetScale = roughContact
             ? worldBalanceConfig.RoughBarkSpeedMultiplier
             : 1f;
@@ -347,8 +347,8 @@ public class MonkeyController: MonoBehaviour {
             staminaBar.NotifyMoveAttempt();
         }
         // the starting zone softens the exhaustion slow down
-        bool isInStartingZone = GameController.I != null
-            && GameController.I.IsInStartingZone;
+        bool isInStartingZone = RunController.I != null
+            && RunController.I.IsInStartingZone;
         float exhaustedScale = isInStartingZone
             ? playerBalanceConfig.StartingZoneExhaustedSpeedMultiplier
             : climbConfig.ExhaustedSpeedMultiplier;
@@ -544,7 +544,7 @@ public class MonkeyController: MonoBehaviour {
         }
 
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        bool isLive = GameController.I != null && GameController.I.IsRunLive;
+        bool isLive = RunController.I != null && RunController.I.IsRunLive;
         if (ramp == null || worldBalanceConfig == null || body == null
             || !isLive) {
             return;
@@ -552,7 +552,7 @@ public class MonkeyController: MonoBehaviour {
 
         // the jump from the starting zone ends it, so the run is normal
         // climbing & the boss trigger can fire (it needs Playing)
-        GameController.I.EndStartingZone();
+        RunController.I.EndStartingZone();
 
         // a hair over the zone start, so landing there surely counts as inside
         Vector3 target = transform.position;
@@ -585,7 +585,7 @@ public class MonkeyController: MonoBehaviour {
         }
 
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        bool isLive = GameController.I != null && GameController.I.IsRunLive;
+        bool isLive = RunController.I != null && RunController.I.IsRunLive;
         // the endless run's boss rush brings its own Spider King fights
         if (ramp == null || worldBalanceConfig == null || body == null
             || !isLive || IsHeld || EndlessBossRush.IsOn) {
@@ -601,7 +601,7 @@ public class MonkeyController: MonoBehaviour {
             return;
         }
 
-        GameController.I.EndStartingZone();
+        RunController.I.EndStartingZone();
         if (cobraKing != null) {
             cobraKing.SkipForTest();
         }
