@@ -6,11 +6,10 @@ using UnityEngine;
 /// build (<see cref="Debug.isDebugBuild"/>) w/ its checkbox on; a release
 /// build never skips, whatever the checkbox says.
 /// <para>
-/// Lives across scene loads, so the title, the intro comic and the gameplay
-/// scene all read the same checkbox. Created by
-/// <see cref="PersistentBootstrapLoader"/> from the
-/// <c>Resources/TutorialSkipSwitch</c> prefab; tick the checkbox on that
-/// prefab. Scripts ask <see cref="IsSkipping"/>, nothing calls it.
+/// Sits on the root object of the <c>GameController</c> prefab, so a scene
+/// that holds that prefab holds the checkbox; tick it on the prefab asset.
+/// It lives and dies with that object. Scripts ask
+/// <see cref="IsSkipping"/>, nothing calls it.
 /// </para>
 /// </summary>
 public class TutorialSkipSwitch: MonoBehaviour {
@@ -34,14 +33,12 @@ public class TutorialSkipSwitch: MonoBehaviour {
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
+        // a duplicate GameController destroys itself, never the first switch
         if (I != null && I != this) {
-            Destroy(gameObject);
             return;
         }
 
         I = this;
-        // one switch spans the whole launch, across every scene load
-        DontDestroyOnLoad(gameObject);
 
         if (IsSkipping) {
             Debug.Log(
