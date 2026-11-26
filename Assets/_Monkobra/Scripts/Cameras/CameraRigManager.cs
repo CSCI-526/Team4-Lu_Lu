@@ -385,8 +385,8 @@ public class CameraRigManager: MonoBehaviour {
         if (config == null || cobra == null || cobra.IsGuarding) {
             return;
         }
-        // the dev switch skips this cut scene; the cobra keeps its normal
-        // exit boost, as no start creep is banked
+        // a seen or dev-skipped cut scene is not played; the cobra keeps its
+        // normal exit boost, as no start creep is banked
         if (TutorialSkipManager.I != null
             && TutorialSkipManager.I.ShouldSkip(TutorialItem.CobraChaseStart)) {
             return;
@@ -395,6 +395,9 @@ public class CameraRigManager: MonoBehaviour {
         float travelS = config.CobraAlertTravelS;
         float totalS = 2f * travelS + config.CobraAlertSeeS;
         if (RequestShot(ShotKind.CobraAlert, totalS)) {
+            if (TutorialSkipManager.I != null) {
+                TutorialSkipManager.I.MarkSeen(TutorialItem.CobraChaseStart);
+            }
             if (alertFraming == null) {
                 alertFraming =
                     FindFirstObjectByType<CameraCobraAlertFraming>();

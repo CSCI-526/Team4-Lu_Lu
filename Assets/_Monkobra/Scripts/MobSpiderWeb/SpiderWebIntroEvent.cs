@@ -86,8 +86,8 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     }
 
     private void Start() {
-        // a climb in the endless run has its own boss rush, no intro; the
-        // dev switch skips the intro too
+        // a climb in the endless run has its own boss rush, no intro; a seen or
+        // dev-skipped intro is not played either
         if (GameController.I != null
             && GameController.I.Mode != RunMode.Full
             || (TutorialSkipManager.I != null
@@ -295,6 +295,9 @@ public class SpiderWebIntroEvent: MonoBehaviour {
             struggle.Escaped += OnEscaped;
         }
         isDone = true;
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.SpiderWebIntro);
+        }
         EnterPhase(Phase.Establish);
         if (Debug.isDebugBuild) {
             Debug.Log(
