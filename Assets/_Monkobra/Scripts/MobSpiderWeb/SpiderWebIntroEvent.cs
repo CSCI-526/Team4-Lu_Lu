@@ -316,16 +316,19 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         }
     }
 
-    // the king scuttles in round the trunk, its legs slowing as it settles
+    // the king scuttles in round the trunk, its legs following its speed:
+    // the smoothstep's slope, 4t(1-t) scaled to 0~1, so they keep walking
+    // wherever the body visibly moves & slow only as it settles
     private void UpdateEnter() {
         float t = Mathf.Clamp01(
             (Time.time - phaseStartTime) / Mathf.Max(0.01f, config.EnterTimeS)
         );
         float eased = Mathf.SmoothStep(0f, 1f, t);
+        float walk = config.EnterWalk * 4f * t * (1f - t);
         king.Place(
             kingAngleDeg + config.EnterAngleDeg * (1f - eased),
             kingY,
-            1f - eased
+            walk
         );
         if (t >= 1f) {
             king.Place(kingAngleDeg, kingY, 0f);

@@ -46,6 +46,12 @@ public class CameraRigManager: MonoBehaviour {
     /// </summary>
     public event System.Action<ShotKind, bool> ShotChanged;
 
+    /// <summary>
+    /// Raised once per cut away shot as its camera starts moving back to the
+    /// monkey, before the shot ends. Only the cobra alert has a return phase
+    /// </summary>
+    public event System.Action<ShotKind> CutAwayReturning;
+
     // Public Methods  #########################################################
     /// <summary>
     /// Asks for an event shot. Extends the shot if it is already live
@@ -83,6 +89,7 @@ public class CameraRigManager: MonoBehaviour {
         state.startTimeS = now;
         state.endTimeS = now + holdS;
         state.minHoldEndS = now + settings.MinHoldS;
+        state.isReturnRaised = false;
         liveKind = kind;
         ApplyPriorities();
         AnnounceShot(kind, true);
@@ -297,6 +304,19 @@ public class CameraRigManager: MonoBehaviour {
         float capS = state.startTimeS + GetSettings(kind).DurationS;
         if (now >= state.endTimeS || now >= capS) {
             EndShot(kind);
+            return;
+        }
+        // the cobra alert's camera starts back after the travel & the hold;
+        // polled with a per shot flag, so it fires once and only while live
+        if (kind == ShotKind.CobraAlert && !state.isReturnRaised
+            && now >= state.startTimeS + config.CobraAlertTravelS
+                + config.CobraAlertSeeS) {
+            state.isReturnRaised = true;
+            CutAwayReturning?.Invoke(kind);
+            if (Debug.isDebugBuild) {
+                Debug.Log(
+                    $"CameraRigManager:\tcut away returning: {kind}", this);
+            }
         }
     }
 
@@ -345,6 +365,7 @@ public class CameraRigManager: MonoBehaviour {
         public float endTimeS;
         public float minHoldEndS;
         public float cooldownEndS;
+        public bool isReturnRaised; // CutAwayReturning went out this shot
     }
 
     private readonly ShotState[] states =
@@ -470,6 +491,7 @@ public class CameraRigManager: MonoBehaviour {
     private void EndShot(ShotKind kind) {
         ShotState state = states[(int)kind];
         state.isLive = false;
+        state.isReturnRaised = false;
         state.cooldownEndS = Time.time + GetSettings(kind).CooldownS;
         liveKind = null;
         ApplyPriorities();

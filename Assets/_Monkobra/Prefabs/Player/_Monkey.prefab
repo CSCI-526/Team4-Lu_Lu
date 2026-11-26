@@ -391,7 +391,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonkeyOutline
   modelRoot: {fileID: 4718293056271423019}
-  outlineMat: {fileID: 2100000, guid: 8c3e5a17d2b94f60a1d7e94b2c06f358, type: 2}
+  outlineMat: {fileID: 2100000, guid: 33d1e865b1df0b34babed0067b9992ef, type: 2}
 --- !u!114 &5193847261048372699
 MonoBehaviour:
   m_ObjectHideFlags: 0

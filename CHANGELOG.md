@@ -4,8 +4,9 @@
 FIXME erik mpv tutorial for boss fight
 FIXME erik b/t boss fight, better randomization
 
-bug make leaderboard works
+Hack general gap review, optimize & clean up helper scripts
 
+bug make leaderboard works
 todo lighting improvement
 todo vertical version adaptation
 todo chinese version
@@ -44,6 +45,14 @@ todo add 3x fruit
 
 ##### Erik
 
+- uniform outline design: banana, coconut, pineapple, the Spider King arena
+  melons and the monkey share world-unit widths and are outlined once round
+  the whole shape, never per mesh part; a fruit wears 3 tiers in its own hue:
+  muted at rest, whitish and thicker when reachable, saturated and thickest
+  when grabbable (banana yellow, pineapple orange-gold, coconut brown, melon
+  reddish pink); a fruit hidden by the trunk, a branch or the monkey shows a
+  soft out-of-focus halo with its own shape cut out; all values in 1 asset,
+  `FruitOutlineStyle`
 - Spider King web intro: once per Normal Play run, at 250 u climbed, the
   camera eases to the bare trunk, the king scuttles in round it from the far
   side, glows, and spits a web that traps the monkey, so the first web is
@@ -74,6 +83,7 @@ todo add 3x fruit
 
 ##### Erik
 
+- branch bark outline thicker, 0.03 → 0.05 u
 - F3 dev speed buff 3x → 5x
 - `GameController` split: `RunController` (renamed, `GameplayScene` only) keeps
   the run state, a new across-scene `GameController` (`Resources/`) holds the
@@ -118,11 +128,21 @@ todo add 3x fruit
 
 ### Fixed
 
+##### Erik
+
+- Spider King intro: legs keep walking while the king scuttles round the trunk,
+  following its speed; new `EnterWalk` config sets the peak
+
 ##### Houdong Pan
 
 - knocked-down monkey no longer cycles limbs while sliding; all 4 limbs grip
   the bark until control returns
 - Spider King air wall no longer takes the web's glow, own see-through material
+
+##### Erik
+
+- cobra alert cinema bars now draw out as the camera starts back to the
+  monkey, not after it arrives; the UI still returns when the shot ends
 
 ### Security
 

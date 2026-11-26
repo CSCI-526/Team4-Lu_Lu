@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75c261179b442d246bc69f8423493b2e, type: 3}
+  m_Name: FruitOutlineStyle
+  m_EditorClassIdentifier: Assembly-CSharp::FruitOutlineStyle
+  hullShader: {fileID: 4800000, guid: 0495448d97bbd234daa0e057cdf86407, type: 3}
+  ghostShader: {fileID: 4800000, guid: 00d49148d6725614b9335931b6c9b31a, type: 3}
+  maskShader: {fileID: 4800000, guid: ded9c41f398248968f2e531d13e29aa6, type: 3}
+  widthU:
+  - 0.018
+  - 0.065
+  - 0.09
+  sat:
+  - 0.45
+  - 0.18
+  - 1
+  val:
+  - 0.8
+  - 1
+  - 1
+  hues:
+  - kind: 0
+    hueDeg: 48
+    valueScale: 1
+  - kind: 1
+    hueDeg: 22
+    valueScale: 0.65
+  - kind: 2
+    hueDeg: 35
+    valueScale: 1
+  - kind: 3
+    hueDeg: 345
+    valueScale: 1
+  monkeyColor: {r: 1, g: 0.949, b: 0.824, a: 1}
+  monkeyWidthU: 0.04
+  ghostHaloAlpha: 0.1
+  ghostHaloSigma: 0.9
+  ghostHaloReachU: 0.14

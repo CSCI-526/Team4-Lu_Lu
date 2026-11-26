@@ -16,7 +16,7 @@ How the monkey the player sees is drawn and animated: the skinned Mr. Mo model, 
 | `MonkeyModelAnimator` | first (execution order -10) | the climb cycle, legs, hips, spine, breathing, tail, the look back, the arm reskin |
 | `MonkeyModelArms` | after the animator (execution order 10) | the two arm IK chains, the blend onto the physics hands |
 | `ModelTwoBoneIK` | static helper | world space two bone IK and bone lookup by name |
-| `MonkeyOutline` | `Awake` | the white outline material slot |
+| `MonkeyOutline` | `Awake` | the cream outline material slot |
 
 Each script only reads the monkey's state and moves model bones. None touches a collider, body, joint, or gameplay value.
 
@@ -50,11 +50,11 @@ Every few seconds the monkey turns its head over a shoulder and looks down the t
 
 ## Outline
 
-`MonkeyOutline` appends the white `Monkey_Outline` material as an extra slot on every skinned or mesh renderer under the model root, the same inverted hull look a grabbable fruit wears, see [Grab System](grab-doc.md#feedback). Its width is in the model's own units, so tune it on the material.
+`MonkeyOutline` appends the cream `Outline_Monkey` material as an extra slot on every skinned or mesh renderer under the model root, the same world-unit inverted hull a fruit wears, see [Grab System](grab-doc.md#feedback). The width is 0.040 u, in world units, so the model scale never changes it; tune the color and width in `FruitOutlineStyle`, then run `Monkobra > Build Outline Materials`.
 
 ## Tuning
 
-Every value is a serialized field with a tooltip, never a hard-coded number, see [Technical Design Document](monkobra-tdd.md). The stride, the stance share, the leg, hip, breath, tail, and look back values are on `MonkeyModelAnimator` on the monkey prefab, the hand reach and elbow values on `MonkeyModelArms`, and the outline width on `Materials/Player/Monkey_Outline.mat`.
+Every value is a serialized field with a tooltip, never a hard-coded number, see [Technical Design Document](monkobra-tdd.md). The stride, the stance share, the leg, hip, breath, tail, and look back values are on `MonkeyModelAnimator` on the monkey prefab, the hand reach and elbow values on `MonkeyModelArms`, and the outline color and width in `Settings/FruitOutline/FruitOutlineStyle.asset`.
 
 ## Known Gaps
 
