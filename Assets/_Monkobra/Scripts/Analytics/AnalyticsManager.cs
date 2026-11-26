@@ -479,7 +479,8 @@ public class AnalyticsManager: MonoBehaviour {
             StartTime = Time.time,
             StartClock = DateTime.Now,
             StartedInZone = isInZone,
-            Mode = observedGame != null ? observedGame.Mode : RunMode.Full
+            Mode = GameController.I != null
+                ? GameController.I.Mode : RunMode.Full
         };
         AddSample();
         // the bar is gone from a menu scene, the chart then keeps its default

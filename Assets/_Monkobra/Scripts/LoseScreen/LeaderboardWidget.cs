@@ -139,8 +139,8 @@ public class LeaderboardWidget: MonoBehaviour {
     private async void ShowOnline(long score, int version) {
         FirebaseLeaderboardClient client =
             new FirebaseLeaderboardClient(firebaseConfig);
-        string board = RunController.I != null
-            && RunController.I.Mode == RunMode.Endless ? "endless" : "normal";
+        string board = GameController.I != null
+            && GameController.I.Mode == RunMode.Endless ? "endless" : "normal";
         long best = client.RememberScore(board, score);
         ShowPersonalBest(best);
         playerRankLabel.text = "CONNECTING...";

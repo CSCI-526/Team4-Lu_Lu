@@ -421,7 +421,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return game.State == GameState.Playing
                 && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
         }
-        if (game.Mode == RunMode.Endless) {
+        if (GameController.I.Mode == RunMode.Endless) {
             return false;
         }
         if (config.IsTestAtStart) {
@@ -460,7 +460,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (!game.IsRunLive
-            || (game.Mode == RunMode.Endless && !rig.IsRush)) {
+            || (GameController.I.Mode == RunMode.Endless && !rig.IsRush)) {
             return;
         }
         // seen waiting from a bit below: the jump height, or 50 u below the

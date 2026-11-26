@@ -14,8 +14,8 @@ public static class EndlessBossRush {
     // Public Members  #########################################################
     /// <returns>if this run is the endless run, so the boss rush is on
     /// </returns>
-    public static bool IsOn => RunController.I != null
-        && RunController.I.Mode == RunMode.Endless;
+    public static bool IsOn => GameController.I != null
+        && GameController.I.Mode == RunMode.Endless;
 
     /// <returns>scale on the monkey's & the great cobra's climb now: the
     /// endless speed, in & out of a fight, else 1</returns>

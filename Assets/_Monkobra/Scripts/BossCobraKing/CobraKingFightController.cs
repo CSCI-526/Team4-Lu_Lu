@@ -483,8 +483,8 @@ public class CobraKingFightController: MonoBehaviour {
     // the endless run starts in the armor, the boss rush's first fight, the
     // king's, waiting a boss interval up
     private void Start() {
-        if (I == this && RunController.I != null
-            && RunController.I.Mode == RunMode.Endless) {
+        if (I == this && GameController.I != null
+            && GameController.I.Mode == RunMode.Endless) {
             StartAsDone();
             rig.isEndlessStart = false;
             rig.rushEncounter = 0;

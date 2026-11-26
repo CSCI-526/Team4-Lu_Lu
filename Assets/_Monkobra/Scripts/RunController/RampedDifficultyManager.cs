@@ -225,7 +225,8 @@ public class RampedDifficultyManager: MonoBehaviour {
     // private methods  ########################################################
     // if this scene plays the endless run
     private bool IsEndless =>
-        RunController.I != null && RunController.I.Mode == RunMode.Endless;
+        GameController.I != null
+            && GameController.I.Mode == RunMode.Endless;
 
     // from the Cobra King zone start on: 1 through its zone, the mid boss
     // curve to the Spider King zone start, then the post Spider King value

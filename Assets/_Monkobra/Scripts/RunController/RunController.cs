@@ -69,9 +69,6 @@ public class RunController: MonoBehaviour {
         }
     }
 
-    /// <summary>which kind of run this scene plays, picked on load</summary>
-    public RunMode Mode => RunModeSelection.Selected;
-
     /// <summary>
     /// if the run is over and the restart input delay has passed, so a
     /// restart press counts
