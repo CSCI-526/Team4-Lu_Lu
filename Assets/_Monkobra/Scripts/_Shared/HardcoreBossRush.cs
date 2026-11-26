@@ -61,14 +61,12 @@ public static class HardcoreBossRush {
     }
 
     /// <param name="encounter">the boss's encounter</param>
-    /// <returns>that fight's arena: its trigger height & the arena height of
-    /// the king it is, so the shared builder derives the rest</returns>
+    /// <returns>that fight's arena: its trigger height, one boss interval
+    /// per encounter, & the hardcore arena height, so the shared builder
+    /// derives the rest</returns>
     public static BossArenaLayout Layout(int encounter) {
         WorldBalanceConfig config = Config;
-        bool isCobra = encounter % 2 == 0;
-        float heightU = config == null ? 50f
-            : isCobra ? config.CobraKingLayout.heightU
-                : config.SpiderKingLayout.heightU;
+        float heightU = config != null ? config.HardcoreArenaHeightU : 40f;
         return new BossArenaLayout(TriggerU(encounter), heightU);
     }
 

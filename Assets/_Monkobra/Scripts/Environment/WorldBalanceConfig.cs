@@ -139,6 +139,10 @@ public class WorldBalanceConfig: ScriptableObject {
     /// rush; u</returns>
     public float HardcoreBossIntervalU => hardcoreBossIntervalU;
 
+    /// <returns>height of every hardcore arena's bare zone, both kings, so
+    /// the climb between two fights is the interval less this; u</returns>
+    public float HardcoreArenaHeightU => hardcoreArenaHeightU;
+
     /// <returns>scale on the monkey's & the great cobra's climb in the
     /// hardcore run, outside a boss fight</returns>
     public float HardcoreSpeedScale => hardcoreSpeedScale;
@@ -375,6 +379,12 @@ public class WorldBalanceConfig: ScriptableObject {
     private float hardcoreBossIntervalU = 100f;
 
     [SerializeField]
+    [Min(1f)]
+    [Tooltip("height of every hardcore arena's bare zone, both kings: 100 u "
+        + "b/t two fights less this is real climbing; u")]
+    private float hardcoreArenaHeightU = 40f;
+
+    [SerializeField]
     [Tooltip("scale on the monkey's & the great cobra's climb in the hardcore "
         + "run, outside a boss fight")]
     [FormerlySerializedAs("endlessSpeedScale")]
@@ -416,6 +426,7 @@ public class WorldBalanceConfig: ScriptableObject {
             spiderKingArena.locationU);
         spiderMaxHealth = Mathf.Max(1, spiderMaxHealth);
         hardcoreBossIntervalU = Mathf.Max(50f, hardcoreBossIntervalU);
+        hardcoreArenaHeightU = Mathf.Max(1f, hardcoreArenaHeightU);
         hardcoreSpeedScale = Mathf.Max(0.1f, hardcoreSpeedScale);
     }
 }

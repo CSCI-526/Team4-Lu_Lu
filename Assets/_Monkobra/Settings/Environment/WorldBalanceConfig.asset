@@ -961,4 +961,5 @@ MonoBehaviour:
     heightU: 50
   spiderMaxHealth: 15
   hardcoreBossIntervalU: 100
+  hardcoreArenaHeightU: 40
   hardcoreSpeedScale: 1
