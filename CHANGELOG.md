@@ -57,6 +57,9 @@ todo add 3x fruit
 ##### Erik
 
 - F3 dev speed buff 3x → 5x
+- `GameController` split: `RunController` (renamed, `GameplayScene` only) keeps
+  the run state, a new across-scene `GameController` (`Resources/`) holds the
+  run mode
 - falling cobras lighter again: skinned body posed by bones, one shared culling
   group for sleepers, own physics layers, capped trail & smoothing work; frame
   8.4 → 4.2 ms with about 3 live cobras

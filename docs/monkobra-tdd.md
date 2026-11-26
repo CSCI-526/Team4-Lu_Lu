@@ -39,7 +39,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build Intro Comic` from `tools/comic/panels/` |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
-| `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `GameController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
 graph LR
@@ -76,7 +76,7 @@ graph LR
   Score -->|coconut| Coconut[CoconutManager]
   Coconut -->|freeze| Mobs
   Mobs[Mobs] -->|touch| Monkey
-  Mobs -->|cobra contact| Game[GameController]
+  Mobs -->|cobra contact| Game[RunController]
   Stamina -->|empty| Monkey
   Mobs -->|falling cobra, web| Monkey
   Game -->|state| Analytics[AnalyticsManager]
@@ -91,7 +91,7 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 
 ## Run Lifecycle
 
-`GameController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event. A run ends in a loss, or in a win by defeating the Cobra King.
+`RunController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event, and only `GameplayScene` has it. A run ends in a loss, or in a win by defeating the Cobra King. What any scene may need, so far the run `Mode`, sits on the across-scene `GameController` instead (prefab in `Resources/`, created by `PersistentBootstrapLoader`, kept across scene loads).
 
 ```mermaid
 stateDiagram-v2
@@ -116,15 +116,15 @@ stateDiagram-v2
 
 `WinGame()` currently has no caller: a Cobra King win now continues the run with an armor reward ([Mobs](mob-doc.md#win-reward)). When called it runs once, from StartingZone or Playing: like `LoseGame` it settles the score, then enters Won, which freezes time, and the lose screen's restart key reloads the scene. The boss fight's own win stops time on a reward panel instead, without entering Won. Analytics closes the run as `RunStatus.Won`, left out of the death summaries.
 
-Pause is a flag, not a state: `GameController.SetPaused` (Esc, P or the pause button) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit goes through `SceneNames.Load` to the level selection. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
+Pause is a flag, not a state: `RunController.SetPaused` (Esc, P or the pause button) works only while the run is live, sets `IsPaused`, freezes time and audio, and raises `PauseChanged`, while `State` keeps its value, so resuming is no state change and analytics never sees a new run. R on the pause screen (`RestartDuringPause`) reloads the scene for a fresh run, like the lose screen's restart (`RestartAfterLose`, R). The pause and lose screens are menus: W, S or the arrows and a mouse hover move the highlight (`MenuSelectionKeeper`, `MenuButtonHover`), Space, Enter or a click confirm, the gameplay `EventSystem` reads the same UI map of `InputSystem_Actions` as the menu scenes, and Exit goes through `SceneNames.Load` to the level selection. Any state change ends a pause; the key that starts the run from the tutorial is ignored for the pause that frame. Gameplay already stops on `Time.timeScale <= 0`, so nothing else checks the flag.
 
-A pineapple leap is a flag too: `GameController.SetLeaping` sets `IsLeaping` and raises `LeapChanged` while `State` keeps its value, for the same reason, and because the checks of `State == Playing` below must keep passing. It starts only in a live run and ends the starting zone. Hazards check the flag themselves ([Mobs](mob-doc.md#during-a-pineapple-leap)); the sequence is in the [Grab System](grab-doc.md#pineapple-leap).
+A pineapple leap is a flag too: `RunController.SetLeaping` sets `IsLeaping` and raises `LeapChanged` while `State` keeps its value, for the same reason, and because the checks of `State == Playing` below must keep passing. It starts only in a live run and ends the starting zone. Hazards check the flag themselves ([Mobs](mob-doc.md#during-a-pineapple-leap)); the sequence is in the [Grab System](grab-doc.md#pineapple-leap).
 
-Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and the state. Grab, pickup, and scoring (`ArmController.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`) check `GameController.IsRunLive` (StartingZone or Playing); `SpiderWebStruggle` and the other HUD checkers still require `Playing`, so webs do not catch in the starting zone.
+Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and the state. Grab, pickup, and scoring (`ArmController.TryGrabFruit`, `ScorePickup`, `ScoreManager.CanScore`) check `RunController.IsRunLive` (StartingZone or Playing); `SpiderWebStruggle` and the other HUD checkers still require `Playing`, so webs do not catch in the starting zone.
 
 ## Analytics
 
-`AnalyticsManager` is a singleton component on its own `Analytics` prefab, one per scene, and the first one is kept across every scene load: one session and file per launch, menus included. A scene load closes an open run as `Interrupted`, and each run is tagged with the scene's run mode. It observes the run (`GameController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
+`AnalyticsManager` is a singleton component on its own `Analytics` prefab, one per scene, and the first one is kept across every scene load: one session and file per launch, menus included. A scene load closes an open run as `Interrupted`, and each run is tagged with the scene's run mode. It observes the run (`RunController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
 
 A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB filesystem), so the download key renders the session in memory and `WebDownload` hands it to the browser through `Plugins/WebGL/Download.jslib`. A run still open is rendered as it stands and keeps recording. Elsewhere the same key saves the session file and logs its path.
 
@@ -134,7 +134,7 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 
 | Key | Action | Read by |
 | --- | --- | --- |
-| F1 | toggle `GameController.CobraNoClip`, the great cobra no longer kills | `GameController` |
+| F1 | toggle `RunController.CobraNoClip`, the great cobra no longer kills | `RunController` |
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 5 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
 | 1 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
@@ -160,7 +160,7 @@ The gate is `TutorialSkipSwitch.IsSkipping`: true only when `Debug.isDebugBuild`
 
 - the great cobra's chase-start cut scene (`CameraRigManager.RequestCobraAlert`); the cobra then runs its normal exit boost
 - the Spider King's first-encounter web intro (`SpiderWebIntroEvent`)
-- the run-start tutorial screen (`GameController.UpdateStartKey`), so a run opens straight in the starting zone
+- the run-start tutorial screen (`RunController.UpdateStartKey`), so a run opens straight in the starting zone
 - the pop ups that teach: each fruit's grab (`FruitGrabPrompt`), the coconut double-tap (`CoconutMessageWidget`), the web escape hint (`SpiderWebWidget`) and the low stamina hint (`LowStaminaWidget`)
 
 Not yet skipped: the intro comic after the title, which has no switch in its scene. Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene must check `IsSkipping` too. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
@@ -231,7 +231,7 @@ All values live in `Settings/Player/PlayerBalanceConfig.asset`.
 
 ## Score
 
-`ScoreManager` (singleton `I`, on the `GameController` object) keeps two scores and notifies the UI when the total changes.
+`ScoreManager` (singleton `I`, on the `RunController` object) keeps two scores and notifies the UI when the total changes.
 
 - Distance Score: whole meters of the highest point climbed, read from `RampedDifficultyManager.CurrentPlayerClimbedYDistance`, refreshed every frame (player y minus the y at game start), times points per meter. Only a new high counts, so falling and re-climbing earns nothing
 - Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups. A coconut's `ScorePickup` (kind `Coconut`) adds the config's coconut points instead, kept in `ScoreManager.RewardScoreOf(RewardKind.Coconut)`, counted in `CoconutCollectedCount`, and raises `CoconutCollected`
@@ -277,11 +277,11 @@ The grab shift is in the [Grab System](grab-doc.md#camera), the hit trigger in [
 
 ## Input
 
-One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. The left mouse button is bound only in the `UI` map, for uGUI buttons; the `Player` map binds none. Pause (Esc or P), `RestartAfterLose` (R), and `RestartDuringPause` (R) are `Player` actions assigned to `GameController`. The scheme, with each action's Preferred and Support keys, is in [Input](input-doc.md); the player key list is under Controls in the [README](../README.md#controls).
+One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through `InputActionReference` fields. The left mouse button is bound only in the `UI` map, for uGUI buttons; the `Player` map binds none. Pause (Esc or P), `RestartAfterLose` (R), and `RestartDuringPause` (R) are `Player` actions assigned to `RunController`. The scheme, with each action's Preferred and Support keys, is in [Input](input-doc.md); the player key list is under Controls in the [README](../README.md#controls).
 
 - Move: shared by the body and both arms through `MonkeyInputConfig`
 - Interact: the grab, read by both arms and polled by the climb camera framing; `UseCoconut` is a separate `Player` action on the same keys with a MultiTap interaction (a double-tap, timing set in the asset), enabled and listened to by `CoconutManager`, found by the `inputActions` asset and `useCoconutActionPath` fields
-- Jump: the web escape press, read by `SpiderWebStruggle`, the press that starts the run from the tutorial, read by `GameController`, and the boss panels' confirm press, read by `CobraKingFightController`
+- Jump: the web escape press, read by `SpiderWebStruggle`, the press that starts the run from the tutorial, read by `RunController`, and the boss panels' confirm press, read by `CobraKingFightController`
 - Confirm keys: Space, E and Enter are bound alike on Interact, UseCoconut and Jump, and on `UI/Submit` and `UI/StartPress`; they stay separate actions because the coconut double-tap is a MultiTap interaction that a merged action would also put on the grab
 - Collision: Space, E and Enter are bound to both Interact and Jump, so the struggle disables interact while the monkey is trapped, by design
 - Boss panels: `CobraKingFightController` polls `confirmAction` (`Player/Jump`) and `giveUpAction` (`Player/RestartAfterLose`), never a raw key; the course page is a button only. A shared action is enabled at the moment of use, since `SpiderWebStruggle` disables `Player/Jump` when it is disabled
@@ -314,7 +314,7 @@ behaviour, identity limits and emulator verification are in
 and requests a resubmission through `LeaderboardWidget`. Identity remains the
 anonymous UID, including across name changes. `UIStyleBuilder.LeaderboardNames`
 builds the field/button through Editor APIs. `TextInputFocus` guards
-`GameController`, `RunScreenMenu` and the centralized hack-key reader during text
+`RunController`, `RunScreenMenu` and the centralized hack-key reader during text
 entry so a typed shortcut cannot restart a run or trigger a hack.
 The nickname editor runs after TMP's LateUpdate to suspend IME composition for
 this Latin-only field, restoring the prior mode on deselection/disable;
@@ -333,9 +333,9 @@ this Latin-only field, restoring the prior mode on deselection/disable;
 | Web Prompt | `MobSpiderWeb/SpiderWebWidget` | the escape bar, and the first-trap hint through `PopUpManager` ([Mobs](mob-doc.md#trap-and-escape)) |
 | Low Stamina Prompt | `Stamina/LowStaminaWidget` | asks `PopUpManager` for the first-low-stamina hint |
 | PopUps | `PopUp/PopUpManager`, `PopUp/MessagePopUp` | every center message on one plate-and-text look, one at a time ([PopUps](pop-up-doc.md)) |
-| Pause Button | `PauseScreen/PauseButtonWidget` | square `IconButton` top right of `UI` inside the 24 safe margin (Sprite Swap, `IconButton_*`, the `Icon_Pause` glyph), with its Esc key hint and the coconut counter laid out leftward from it ([UI Style](ui-style-doc.md#hud)), calls `GameController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
+| Pause Button | `PauseScreen/PauseButtonWidget` | square `IconButton` top right of `UI` inside the 24 safe margin (Sprite Swap, `IconButton_*`, the `Icon_Pause` glyph), with its Esc key hint and the coconut counter laid out leftward from it ([UI Style](ui-style-doc.md#hud)), calls `RunController.SetPaused(true)` by click or tap, hidden unless the run is live and unpaused, deselects itself so the next Space is a grab; its children `PauseKeyIcon` (Esc) and `PauseKeyLabel` ("to Pause") show for Keyboard only through a `ControlStyleSwitch` and hide with the button |
 | Touch Controls | `UI/TouchControlsPanel` | the joystick and full-screen action zone of the `TouchControls` prefab, shown only in Touch mode ([Input](#input)) |
-| Pause Screen | `PauseScreen/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit `IconButton`s as 3-column rows (keycap, button, text label; the keycaps show in Keyboard style only, [UI Style](ui-style-doc.md#run-screens)) while `GameController.IsPaused`; on the always-active `PauseScreen` root under `UI`, it toggles its `Panel` child on `PauseChanged` |
+| Pause Screen | `PauseScreen/PauseScreenWidget` | dark panel with "Paused", the square Resume, Restart and Exit `IconButton`s as 3-column rows (keycap, button, text label; the keycaps show in Keyboard style only, [UI Style](ui-style-doc.md#run-screens)) while `RunController.IsPaused`; on the always-active `PauseScreen` root under `UI`, it toggles its `Panel` child on `PauseChanged` |
 
 The HUD canvas `UI` is a plain `Canvas` whose direct children are one prefab each: `ProgressBar`, `StaminaBar`, `ScoreHeight`, `PauseButton` (with its hint), `CoconutHUD`, `CoconutMessage` (the host of `CoconutMessageWidget`), `FruitFlyLayer` (drawn last of them, above the bars), `FreezeTimerHUD`, the prompts, then the `PopUpManager` root and the `PauseScreen`, `TutorialScreen`, `LoseScreen`, in that order, so screens draw over everything. `CoconutHUD` and `FreezeTimerHUD` start inactive and `CoconutManager` switches them on. `ScoreHeight` holds only the score label: the climbed height moved from the HUD to the trunk height markers.
 
@@ -370,7 +370,7 @@ How many live falling cobras stay cheap. What each part does is in [Mobs](mob-do
 
 ## Conventions
 
-- Singletons: scene-scoped and first-wins. `TreeManager`, `UpwardFruitSensor`, `StaminaBarController`, `FruitFlyEffect`, and `ScoreManager` destroy a duplicate component only. `GameController` and `ScreensManager` destroy the duplicate's whole GameObject
+- Singletons: scene-scoped and first-wins. `TreeManager`, `UpwardFruitSensor`, `StaminaBarController`, `FruitFlyEffect`, and `ScoreManager` destroy a duplicate component only. `RunController` and `ScreensManager` destroy the duplicate's whole GameObject
 - Start Over Awake: a consumer that may start before its singleton reads it in `Start`, so Awake order never matters
 - Events Over Calls: detection scripts forward trigger events (`Entered`, `Exited`, `BranchHit`) rather than calling their consumers, and a segment announces its branches with `BranchesGenerated` rather than calling its decorators
 - Tags: `Branch`, `FruitCollider`, and `Player` drive trigger matching. Webs match by a Rigidbody component instead
@@ -378,7 +378,7 @@ How many live falling cobras stay cheap. What each part does is in [Mobs](mob-do
 - Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig`, score values in `ScoreConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives
-- Style: `Player/`, `GameController/`, `Analytics/`, `MobGreatCobra/`, `MobFallingCobra/`, `Stamina/StaminaBarController`, `UI/ScreensManager`, and most of `Environment/` follow the house Unity style. `Scoring/`, `UI/ProgressBarWidget`, and `MobSpiderWeb/SpiderWebBuilder` are still in the template style, some with Chinese comments
+- Style: `Player/`, `RunController/`, `Analytics/`, `MobGreatCobra/`, `MobFallingCobra/`, `Stamina/StaminaBarController`, `UI/ScreensManager`, and most of `Environment/` follow the house Unity style. `Scoring/`, `UI/ProgressBarWidget`, and `MobSpiderWeb/SpiderWebBuilder` are still in the template style, some with Chinese comments
 
 ## Build and Deploy
 
