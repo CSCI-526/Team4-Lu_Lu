@@ -37,7 +37,7 @@ MonoBehaviour:
     hueDeg: 35
     valueScale: 1
   - kind: 3
-    hueDeg: 190
+    hueDeg: 345
     valueScale: 1
   monkeyColor: {r: 1, g: 0.949, b: 0.824, a: 1}
   monkeyWidthU: 0.04

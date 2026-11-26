@@ -154,7 +154,7 @@ public class FruitOutlineStyle: ScriptableObject {
         new FruitHue { kind = FruitKind.Banana, hueDeg = 48f, valueScale = 1f },
         new FruitHue { kind = FruitKind.Coconut, hueDeg = 22f, valueScale = 0.65f },
         new FruitHue { kind = FruitKind.Pineapple, hueDeg = 35f, valueScale = 1f },
-        new FruitHue { kind = FruitKind.Melon, hueDeg = 190f, valueScale = 1f },
+        new FruitHue { kind = FruitKind.Melon, hueDeg = 345f, valueScale = 1f },
     };
 
     [Header("Monkey")]
