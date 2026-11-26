@@ -10,15 +10,14 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Scriptable Objects/BossDevStartConfig")]
 public class BossDevStartConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>climbed height the Cobra King's zone starts at in the dev
-    /// scenes; its trigger and zone end keep their distance from it; u
-    /// </returns>
-    public float CobraZoneStartU => cobraZoneStartU;
+    /// <returns>climbed height the boss under test has its zone start at in
+    /// its dev scene, just above the player; its trigger, jump height and
+    /// zone end keep their distance from it; u</returns>
+    public float BossZoneStartU => bossZoneStartU;
 
-    /// <returns>climbed height the Spider King's zone starts at in the dev
-    /// scenes; its trigger, jump height and zone end keep their distance
-    /// from it; u</returns>
-    public float SpiderZoneStartU => spiderZoneStartU;
+    /// <returns>in the Cobra King scene, how far above the Cobra King zone
+    /// end the Spider King zone starts; u</returns>
+    public float OtherKingGapU => otherKingGapU;
 
     /// <returns>tutorials marked seen at the Cobra King scene start, ie
     /// what a player has met on the climb</returns>
@@ -34,15 +33,15 @@ public class BossDevStartConfig: ScriptableObject {
     [Header("Boss Heights")]
     [SerializeField]
     [Min(0f)]
-    [Tooltip("where the Cobra King zone starts, climbed height; keep it "
-        + "above the starting zone exit; u")]
-    private float cobraZoneStartU = 40f;
+    [Tooltip("where the boss under test has its zone start, above the "
+        + "player's start; its trigger sits 25 above this; u")]
+    private float bossZoneStartU = 5f;
 
     [SerializeField]
     [Min(0f)]
-    [Tooltip("where the Spider King zone starts, climbed height; keep its "
-        + "jump height (25 below) above the Cobra King zone end; u")]
-    private float spiderZoneStartU = 140f;
+    [Tooltip("Cobra King scene only: the Spider King zone starts this far "
+        + "above the Cobra King zone end, out of the way; u")]
+    private float otherKingGapU = 50f;
 
     [Header("Cobra King Scene")]
     [SerializeField]

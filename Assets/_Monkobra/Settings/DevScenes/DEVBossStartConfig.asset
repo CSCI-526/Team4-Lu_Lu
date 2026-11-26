@@ -12,7 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e4ff47c3bcb964cb7f754ac8e4c44b, type: 3}
   m_Name: BossDevStartConfig
   m_EditorClassIdentifier: Assembly-CSharp::BossDevStartConfig
-  cobraKingAboveZoneStartU: 0.05
   cobraKingSeenItems: 000000000100000002000000030000000400000005000000060000000700000008000000090000000b000000
-  spiderKingBelowTriggerU: 6
   spiderKingSeenItems: 000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000c000000
