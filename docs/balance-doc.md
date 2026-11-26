@@ -11,7 +11,7 @@ Why difficulty works the way it does: one height-driven ramp, a shared roll mode
 
 ## Difficulty Follows Height
 
-Difficulty is not a timer and not the score. It is a single value in 3 stages, 0~1 before the Cobra King, 1~2 between the 2 bosses, 2 and up after the Spider King, derived only from how far the monkey is above where it started.
+Difficulty is not a timer and not the score. It is a single value in 3 stages, 0~1 before the Cobra King, 1~2 between the 2 bosses, 2 up to a plateau after the Spider King, derived only from how far the monkey is above where it started.
 
 ```mermaid
 graph LR
@@ -26,7 +26,7 @@ graph LR
 ```
 
 - Why Height: height is what the player is trying to maximize, so tying difficulty to it makes the tension track progress; a timer would punish slow play instead of rewarding fast play
-- Why A Shared Scale: difficulty is 0 at the starting zone exit, 1 at the Cobra King zone start and 2 at the Spider King zone start, so every hazard curve shares one x axis and its first appearance is a point on that axis, found from its height; reshaping when difficulty arrives never touches the hazard curves. Inside the Cobra King zone difficulty holds at 1 and inside the Spider King zone at 2; a curve's 1~2 part shapes the stretch between the bosses, and its part past 2 the run after the Spider King
+- Why A Shared Scale: difficulty is 0 at the starting zone exit, 1 at the Cobra King zone bottom and 2 at the Spider King zone bottom, so every hazard curve shares one x axis and its first appearance is a point on that axis, found from its height; reshaping when difficulty arrives never touches the hazard curves. Inside the Cobra King zone difficulty holds at 1 and inside the Spider King zone at 2; a curve's 1~2 part shapes the stretch between the bosses, and its part from 2 to the plateau the run after the Spider King
 - Two Baselines: every climb height (score, trunk height markers, the boss zone) is measured above the monkey's start y (`GetClimbedYDistance`), while the ramp itself starts at 0 at the y of the starting zone exit trigger (`RampBaseYPosition`), so the protected start is not counted as climbing difficulty. Both are owned by `RampedDifficultyManager`, and nothing else reads raw world y for balance, so shifting the world only means moving those baselines
 - Floored: the service floors the ramp at 0 and leaves the top open, so past the curve's end difficulty stays at its last value; a hazard curve holds its last value past its own last key the same way
 - Highest Not Current: score and the lose panel read the highest height reached, so falling and re-climbing is neither rewarded nor double counted
@@ -35,7 +35,7 @@ graph LR
 
 Pace and density are separated on purpose:
 
-- The 3 ramp curves answer when: how much climbed height it takes to reach each level of difficulty, `preBossRampCurve` up to the Cobra King zone, `midBossRampCurve` between the 2 zones and `postBossRampCurve` after the Spider King zone
+- The 3 ramp curves answer when: how much climbed height it takes to reach each level of difficulty, `preBossRampCurve` up to the Cobra King zone, `midBossRampCurve` between the 2 zones and `postBossRampCurve` after the Spider King zone (a short ramp then flat)
 - A hazard's own curve answers how much: the chance of that hazard at each level of difficulty
 
 Changing the ramp slides every hazard earlier or later together. Changing a hazard's curve reshapes only that hazard. This is why a hazard curve is not allowed to know about heights.
@@ -58,13 +58,55 @@ The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md
 
 ## Boss Zone
 
-The boss fight owns a stretch of the trunk, set by 3 heights in `WorldBalanceConfig`: where the zone starts, where the fight triggers inside it, and where the zone ends.
+Every boss arena, both kings, both modes, is generated from 2 inputs: the **boss location** `t` (the climbed height the fight starts at, where its height marker stands) and the **arena height** `H`. One shared builder (`BossArenaLayout`) derives the rest, so no arena has its own hand-set heights.
 
-- Bare Trunk: nothing but the fight is generated inside the zone, branches of every kind, webs, falling cobras and rough bark each skipping any spot that falls in it, judged by the spot's own height so a segment straddling an edge still fills its outside part
-- Flat Difficulty: the ramp reaches 1 at the Cobra King zone start and holds it through the zone, climbs to 2 by the Spider King zone start, holds 2 through that zone, then climbs above 2 after its end on its own curve
+| Derived | Rule | Normal Cobra (525, 50) | Normal Spider (1025, 50) | Hardcore Loop 1 Cobra (100, 40) |
+| --- | --- | --- | --- | --- |
+| Bare zone | `t - H/2` ~ `t + H/2` | 500 ~ 550 | 1000 ~ 1050 | 80 ~ 120 |
+| Height marker | `t` | 525 m | 1025 m | 100 m |
+| Spider seen waiting | `t - H` | n/a | 975 | n/a (Cobra) |
+| Guard height | `t - min(guardDepthU, H/2)` | 513 (12) | 1005 (20) | 88 (12) |
+| Fight space above `t` | nest / Spider arena height, must fit `H/2` | 11 <= 25 | 18 <= 25 | 11 <= 20 |
+| Great cobra drop after win | `H` below the monkey | 50 (was 45) | 50 (was 45) | 40 |
+| Branches, fruit, webs, bark | grown & cleared only inside the bare zone | as today | as today | as today |
+
+- Normal: `cobraKingArena` {525, 50}, `spiderKingArena` {1025, 50}; the Spider King moves from 1000 u to 1025 u, the same 25 u into its zone the Cobra King stands in
+- Hardcore: {`100 x (encounter + 1)`, `hardcoreArenaHeightU`} with the height 40, so 60 u of real climbing lies between two fights
+- Fight geometry (guard depth, nest height, Spider arena height) stays in each king's config; the layout clamps the guard to `H/2`, and `OnValidate` warns when the fight space exceeds `H/2`
+- Bare Trunk: nothing but the fight is generated inside a live zone, branches of every kind, webs, falling cobras and rough bark each skipping any spot that falls in it, judged by the spot's own height so a segment straddling an edge still fills its outside part
+- Flat Difficulty (Normal): the ramp reaches 1 at the Cobra King zone bottom and holds it through the zone, climbs to 2 by the Spider King zone bottom, holds 2 through that zone, then takes the post boss curve
+- Post Boss Plateau (Normal): `postBossRampCurve` is a short ramp, 2 to 2.6 over 300 u above the Spider King zone top, clamped flat past it; its end is exposed as the plateau value, and one source feeds both modes
 - Why: the fight builds its arena at runtime and needs a clear, fair stage; keeping the stage clear by generation is simpler than sweeping hazards away when the fight begins
-- Marker Meters: the 3 heights are climbed heights, the same meters the trunk height markers show
-- Endless Mode: a boss rush every `endlessBossIntervalU` (300 u), each boss harder by encounter, the monkey & great cobra at normal speed (`endlessSpeedScale`, 1); no fixed boss zone and no flat stretch, only each coming arena kept bare; the ramp is 0 through the starting zone, then reads the post boss curve from the zone exit on, so difficulty opens at 2, the level after the Spider King, and keeps climbing; climbed heights, score and markers stay real
+- Marker Meters: the heights are climbed heights, the same meters the trunk height markers show
+
+## Hardcore Loops
+
+Hardcore Mode is the boss rush mode. Kings take turns every 100 u, and each repeat of a king is a **Loop**, counted per king.
+
+- Climb Between Kings: ramped difficulty is fixed at Normal Play's plateau value (2.6 proposed) from the starting zone exit on, every Loop alike, and 0 inside the starting zone; retuning Normal's plateau retunes Hardcore
+- Loop 0: today's EASY fight (revive card of Normal Play only); Loop 1: that king's Normal fight; both read existing config fields, so neither can drift
+- Loop 2+: one growth function per feature per king, anchored on that king's Loop 1 value `v1`, `n` the Loop number:
+
+`v(n) = clamp(round(v1 + step x (n - 1)), limit)`
+
+- `round` is `Floor`, `Ceil` or `None` (scales stay fractional); `limit` is a cap for rising values and a floor for falling ones; `step`, `round` and `limit` live per feature per king in `WorldBalanceConfig` (`LoopGrowth`); lessons play only in Loop 0 and 1
+
+| Feature | Loop 0 (EASY) | Loop 1 (Normal) | step / Loop | round | limit | Loop 2 | Loop 3 | Loop 4 | Loop 5 | Loop 6 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Cobra King health | 5 (x0.6) | 8 (was 12) | +2.5 | ceil | none | 11 | 13 | 16 | 18 | 21 |
+| Spider King health | 7 (x0.45) | 15 | +5 | ceil | none | 20 | 25 | 30 | 35 | 40 |
+| Wind ups, warnings, rests | Cobra warn x1.35, rest 3.25 s; Spider x1.7 | x1 | -0.12 | none | floor x0.5 | x0.88 | x0.76 | x0.64 | x0.52 | x0.5 |
+| Spider shot, slash, dash speed | x0.7, reach x1.3 | x1 | +0.1 | none | cap x1.5 | x1.1 | x1.2 | x1.3 | x1.4 | x1.5 |
+| Cobra King minion waves | 1 | 2 | +0.75 | ceil | cap 8 | 3 | 4 | 5 | 5 | 6 |
+| Spider slashes in a row, stage 2 | stage cap 1 | 1 | +0.5 | ceil | cap 5 | 2 | 2 | 3 | 3 | 4 |
+| Spider slashes in a row, stage 3 | stage cap 1 | 1 | +1 | floor | cap 5 | 2 | 3 | 4 | 5 | 5 |
+| Monkey hearts | 3 | 3 | -0.5 | ceil | floor 1 | 3 | 2 | 2 | 1 | 1 |
+| Defeat points scale | 1000 / 2000 | 1000 / 2000 | +0.5 | none (total floored) | none | x1.5 | x2 | x2.5 | x3 | x3.5 |
+
+- Stage 1 of the Spider King is always 1 slash; rounded features rise in steps, so 2 Loops can share one value (minion waves 5 at Loops 4 and 5) while health, time and points still climb every Loop
+- Cobra King health: Normal Play's Cobra King drops from 12 to 8 (`bossMaxHealth`); EASY keeps `easyHealthScale` 0.6, giving 5
+- Monkey Hearts: 3 per boss fight in Normal and Loop 1; a fatal fight hit costs gold armor first, else 1 heart; the stamina bar is hidden during a fight and a heart row plus armor badge takes its place
+- Revive: Normal Play offers it unlimited, as Loop 0 (EASY) or a retry of Loop 1, hearts refilled to 3; Hardcore Mode has none, so hearts at 0 end the run
 
 ## Balance Lives In Three Assets
 
