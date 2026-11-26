@@ -33,22 +33,25 @@ todo add 3x fruit
 
 ##### Erik
 
-- Spider King web intro: once per Normal Play run, at 250 u climbed, the king
-  appears above the monkey, the camera cuts to it, and it spits a web that
-  traps the monkey, so the first web is always met with its escape hint; the
-  great cobra holds still until the monkey breaks free; never in Endless mode
-- slower pacing for 2 story events: at the chase start the camera flies its
-  own smooth journey, a slow eased pull away down to the great cobra, a long
-  look and the same way back, while the cobra stays still, rearing and
-  hissing, then creeps in view and chases at full speed once control returns;
-  the web intro shows the bare trunk, the king scuttles in round it, then a
-  longer glow, web flight, linger and exit
+- Spider King web intro: once per Normal Play run, at 250 u climbed, the
+  camera eases to the bare trunk, the king scuttles in round it from the far
+  side, glows, and spits a web that traps the monkey, so the first web is
+  always met with its escape hint; the great cobra holds still until the
+  monkey breaks free; never in Endless mode
+- slower great cobra start: the camera flies its own smooth journey, an eased
+  pull away down the trunk round the tree to the cobra, a long look and the
+  same way back; the cobra climbs 7 u/s during the pull away, then chases at
+  normal speed; UI and "Run!" return the moment the shot ends
 
 ### Changed
 
 ##### Yuqing Lu
 
 - Cobra King and Spider King defeat popups tinted in each king's purple
+
+##### Erik
+
+- F3 dev speed buff 3x → 5x
 
 ##### Houdong Pan
 
