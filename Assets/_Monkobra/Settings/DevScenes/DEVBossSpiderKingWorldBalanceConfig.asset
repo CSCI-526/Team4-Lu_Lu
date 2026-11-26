@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c79055a3c768036428f6870144ab32a3, type: 3}
-  m_Name: DEVBossWorldBalanceConfig
+  m_Name: DEVBossSpiderKingWorldBalanceConfig
   m_EditorClassIdentifier: Assembly-CSharp::WorldBalanceConfig
   preBossRampCurve:
     serializedVersion: 2
@@ -952,15 +952,15 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  bossZoneStartU: 40
-  bossTriggerHeightU: 65
-  bossZoneEndU: 90
+  bossZoneStartU: 0
+  bossTriggerHeightU: 0
+  bossZoneEndU: 0
   bossMaxHealth: 12
   bossBananaDamage: 1
-  spiderZoneStartU: 140
-  spiderTriggerHeightU: 165
-  spiderZoneEndU: 215
-  spiderJumpHeightU: 115
+  spiderZoneStartU: 5
+  spiderTriggerHeightU: 30
+  spiderZoneEndU: 80
+  spiderJumpHeightU: 0
   spiderMaxHealth: 15
   endlessBossIntervalU: 300
   endlessSpeedScale: 1

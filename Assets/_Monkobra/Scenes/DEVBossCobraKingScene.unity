@@ -119,52 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &10091394
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 10091396}
-  - component: {fileID: 10091395}
-  m_Layer: 0
-  m_Name: BossDevStart
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &10091395
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 10091394}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 455c9081569d12d47988ecaee2ec003c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BossDevStart
-  boss: 0
-  config: {fileID: 11400000, guid: ca3d10ec3d8e60746b3ce4def50d4a04, type: 2}
---- !u!4 &10091396
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 10091394}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &98749332 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8931743552567533220, guid: b7ca3c7d607dd0f449b3ba8800a2887a, type: 3}
@@ -225,7 +179,7 @@ PrefabInstance:
     - target: {fileID: 7189782990006405062, guid: 6e0db3b547721d14e821efc0e24a7fcc, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -279,6 +233,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4110963030490547102, guid: 5f296068e6cd52647b02bc70181d0d70, type: 3}
   m_PrefabInstance: {fileID: 8600261378308930740}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &669828700
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 669828702}
+  - component: {fileID: 669828701}
+  m_Layer: 0
+  m_Name: BossDevStart
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &669828701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669828700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 455c9081569d12d47988ecaee2ec003c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossDevStart
+  boss: 0
+  config: {fileID: 11400000, guid: ca3d10ec3d8e60746b3ce4def50d4a04, type: 2}
+--- !u!4 &669828702
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669828700}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &909724680 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8329535252445769629, guid: 3064f0b0dec8be54fa1e17d93770bae7, type: 3}
@@ -289,6 +289,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5109030492090726729, guid: bba17adcb9d67fb40951f47d895580b9, type: 3}
   m_PrefabInstance: {fileID: 3125013536824632185}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1748336567
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1748336568}
+  m_Layer: 0
+  m_Name: DEVRampBase
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1748336568
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1748336567}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.0099983215, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1849302771
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -406,7 +437,7 @@ PrefabInstance:
     - target: {fileID: 6839907984743945785, guid: e29382ef13704a5aaadc84ebf4e171bb, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -423,7 +454,7 @@ PrefabInstance:
     - target: {fileID: 1546172834150697845, guid: 2d5aed9d3ca84b378f8afd2c696c0b5f, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 5182736450918273641, guid: 2d5aed9d3ca84b378f8afd2c696c0b5f, type: 3}
       propertyPath: m_Name
       value: SpiderKingFight
@@ -2507,11 +2538,11 @@ PrefabInstance:
     - target: {fileID: 1544209386470739513, guid: c31179dd7d7b4974f9f6cdf16893bf9d, type: 3}
       propertyPath: rampBase
       value: 
-      objectReference: {fileID: 3635617223177171820}
+      objectReference: {fileID: 1748336568}
     - target: {fileID: 1544209386470739513, guid: c31179dd7d7b4974f9f6cdf16893bf9d, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 4732386835657357497, guid: c31179dd7d7b4974f9f6cdf16893bf9d, type: 3}
       propertyPath: m_Name
       value: RunController
@@ -3100,27 +3131,27 @@ PrefabInstance:
     - target: {fileID: 2936013730235064160, guid: 4297f60698f83fe44976653afb60e57a, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 3199152095041971046, guid: 4297f60698f83fe44976653afb60e57a, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 3296139837156270320, guid: 4297f60698f83fe44976653afb60e57a, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 4100714044378726867, guid: 4297f60698f83fe44976653afb60e57a, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 5122007642221969812, guid: 4297f60698f83fe44976653afb60e57a, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 5256305648085131630, guid: 4297f60698f83fe44976653afb60e57a, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 8859741132210340144, guid: 4297f60698f83fe44976653afb60e57a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -3495,7 +3526,7 @@ PrefabInstance:
     - target: {fileID: 2576282149422506649, guid: af6cbd8cf4931ff43bbd8f62f7f05199, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     - target: {fileID: 3913711001880931279, guid: af6cbd8cf4931ff43bbd8f62f7f05199, type: 3}
       propertyPath: mockTree
       value: 
@@ -3573,7 +3604,7 @@ PrefabInstance:
     - target: {fileID: 8910251406619591012, guid: 5f296068e6cd52647b02bc70181d0d70, type: 3}
       propertyPath: worldBalanceConfig
       value: 
-      objectReference: {fileID: 11400000, guid: bd29728d62c86ca44a66217b1e50546d, type: 2}
+      objectReference: {fileID: 11400000, guid: cb24752c6f9a2b0478cdc76f2066aa8b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3626,4 +3657,5 @@ SceneRoots:
   - {fileID: 1867227395}
   - {fileID: 8977346991378675170}
   - {fileID: 6130482091273649003}
-  - {fileID: 10091396}
+  - {fileID: 669828702}
+  - {fileID: 1748336568}
