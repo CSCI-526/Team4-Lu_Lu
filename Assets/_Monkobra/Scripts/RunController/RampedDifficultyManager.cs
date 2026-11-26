@@ -245,7 +245,8 @@ public class RampedDifficultyManager: MonoBehaviour {
         return GetPostSpiderValue(climbedY);
     }
 
-    // 2 through the Spider King zone, the post boss curve past its end
+    // 2 through the Spider King zone, then the post boss curve past its end,
+    // a short ramp that clamps flat at the plateau
     private float GetPostSpiderValue(float climbedY) {
         float zoneEndU = worldBalanceConfig.SpiderKingLayout.BareTopU;
         if (climbedY <= zoneEndU) {

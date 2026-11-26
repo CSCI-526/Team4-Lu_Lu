@@ -73,16 +73,16 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 500
-      value: 3
+      time: 300
+      value: 2.6
       inSlope: 0.002
       outSlope: 0.002
       tangentMode: 69
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
+    m_PreInfinity: 16
+    m_PostInfinity: 16
     m_RotationOrder: 4
   startingZoneBranchClearRadiusU: 6
   startingZoneBananaBranchChance: 0.2

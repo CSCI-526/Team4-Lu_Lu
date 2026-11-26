@@ -26,6 +26,16 @@ public class WorldBalanceConfig: ScriptableObject {
     /// difficulty from 2 up</returns>
     public AnimationCurve PostBossRampCurve => postBossRampCurve;
 
+    /// <returns>the ramped difficulty the post boss curve ends on and holds
+    /// forever: Normal Play's value past the Spider King, & Hardcore Mode's
+    /// all climb long</returns>
+    public float PlateauValue {
+        get {
+            Keyframe[] keys = postBossRampCurve.keys;
+            return keys.Length == 0 ? 2f : keys[keys.Length - 1].value;
+        }
+    }
+
     /// <returns>no branch grows within this distance of the monkey while the
     /// starting zone lasts, so a restart never spawns the monkey into one;
     /// u</returns>
@@ -177,14 +187,15 @@ public class WorldBalanceConfig: ScriptableObject {
     [SerializeField]
     [Tooltip(
         "after the Spider King zone. x: height above the Spider King zone "
-            + "end; world u; y: ramped difficulty, 2 at the zone end and "
-            + "rising; the difficulty is a flat 2 inside the Spider zone"
+            + "end; world u; y: ramped difficulty, 2 at the zone end, a "
+            + "short ramp, then flat at its last key forever (the plateau); "
+            + "the difficulty is a flat 2 inside the Spider zone"
     )]
     private AnimationCurve postBossRampCurve = AnimationCurve.Linear(
         0f,
         2f,
-        500f,
-        3f
+        300f,
+        2.6f
     );
 
     [Header("Branch")]
@@ -436,6 +447,9 @@ public class WorldBalanceConfig: ScriptableObject {
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
         roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
         webAttemptCount = Mathf.Max(0, webAttemptCount);
+        // the post boss ramp never loops or runs on: it clamps flat at its end
+        postBossRampCurve.preWrapMode = WrapMode.ClampForever;
+        postBossRampCurve.postWrapMode = WrapMode.ClampForever;
         // a layout keeps its bare zone above the start of the climb
         cobraKingArena.heightU = Mathf.Max(1f, cobraKingArena.heightU);
         cobraKingArena.locationU = Mathf.Max(
