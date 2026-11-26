@@ -10,6 +10,13 @@ public sealed class FallingCobraHeadMesh {
     private readonly FallingCobraRig rig;
     private readonly FallingCobraConfig config;
 
+    // directions the head's extreme points are taken in
+    private const int SUPPORT_DIRECTIONS = 512;
+
+    // the random directions that check the support points, and their seed
+    private const int SUPPORT_CHECKS = 1000;
+    private const int SUPPORT_CHECK_SEED = 7;
+
     public FallingCobraHeadMesh(FallingCobraRig rig) {
         this.rig = rig;
         config = rig.config;
@@ -88,6 +95,9 @@ public sealed class FallingCobraHeadMesh {
     public sealed class HeadTemplate {
         public Mesh mesh;
         public Vector3[] vertices, rim, rimNormals;
+        // the extreme vertices of the head, in about SUPPORT_DIRECTIONS
+        // directions; FitHeadToBark scans these, not every vertex
+        public Vector3[] supportPoints;
         public Vector2[] rimUV;
         public Bounds bounds;
         public float front;
@@ -289,6 +299,7 @@ public sealed class FallingCobraHeadMesh {
             template.rimNormals[side] =
                 new Vector3(direction.x, 0f, direction.y);
         }
+        template.supportPoints = BuildSupportPoints(template.vertices);
         template.mesh = new Mesh {
             name = "Original rigid snake head", hideFlags = HideFlags.DontSave,
             indexFormat = UnityEngine.Rendering.IndexFormat.UInt32,
@@ -299,6 +310,65 @@ public sealed class FallingCobraHeadMesh {
         ;
         template.mesh.UploadMeshData(true);
         return template;
+    }
+
+    // for each of SUPPORT_DIRECTIONS evenly spread directions, the head vertex
+    // farthest against it; a vertex wanted by several directions counts once.
+    // The least dot product of these points with any direction is the head's
+    // support depth there, to within the spread of the directions
+    private static Vector3[] BuildSupportPoints(Vector3[] vertices) {
+        List<Vector3> points = new List<Vector3>();
+        HashSet<int> chosen = new HashSet<int>();
+        float goldenAngle = Mathf.PI * (3f - Mathf.Sqrt(5f));
+        for (int k = 0; k < SUPPORT_DIRECTIONS; k++) {
+            float y = 1f - 2f * (k + .5f) / SUPPORT_DIRECTIONS;
+            float ring = Mathf.Sqrt(1f - y * y);
+            Vector3 direction =
+                new Vector3(Mathf.Cos(goldenAngle * k) * ring, y,
+                    Mathf.Sin(goldenAngle * k) * ring);
+            int best = 0;
+            float bestDot = float.PositiveInfinity;
+            for (int i = 0; i < vertices.Length; i++) {
+                float dot = Vector3.Dot(vertices[i], direction);
+                if (dot < bestDot) {
+                    bestDot = dot;
+                    best = i;
+                }
+            }
+            if (chosen.Add(best)) {
+                points.Add(vertices[best]);
+            }
+        }
+        if (Debug.isDebugBuild) {
+            Debug.Log("FallingCobraHeadMesh:	head support "
+                + points.Count + " points of " + vertices.Length
+                + " vertices, worst depth error "
+                + WorstSupportError(vertices, points) + " u");
+        }
+        return points.ToArray();
+    }
+
+    // largest gap between the support depth of all vertices and of the
+    // support points, over fixed random directions; u
+    private static float WorstSupportError(Vector3[] vertices,
+        List<Vector3> points) {
+        System.Random random = new System.Random(SUPPORT_CHECK_SEED);
+        float worst = 0f;
+        for (int k = 0; k < SUPPORT_CHECKS; k++) {
+            Vector3 direction =
+                new Vector3((float)random.NextDouble() - .5f,
+                    (float)random.NextDouble() - .5f,
+                    (float)random.NextDouble() - .5f).normalized;
+            float all = float.PositiveInfinity, few = float.PositiveInfinity;
+            foreach (Vector3 vertex in vertices) {
+                all = Mathf.Min(all, Vector3.Dot(vertex, direction));
+            }
+            foreach (Vector3 point in points) {
+                few = Mathf.Min(few, Vector3.Dot(point, direction));
+            }
+            worst = Mathf.Max(worst, few - all);
+        }
+        return worst;
     }
 
     public void BuildFallingReference(MeshFilter filter) {
@@ -317,6 +387,7 @@ public sealed class FallingCobraHeadMesh {
             headTemplates.Add(key, template);
         }
         rig.originalHeadVertices = template.vertices;
+        rig.headSupportPoints = template.supportPoints;
         rig.headVertexCount = template.vertices.Length;
         rig.originalHeadFront = template.front;
         rig.originalHeadFaceBasis = template.faceBasis;

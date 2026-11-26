@@ -135,6 +135,7 @@ public sealed class FallingCobraRig {
     public Vector3[] neckSurfaceOriginal;
     public Vector3[] paintedBellyDirections;
     public Vector3[] originalHeadVertices;
+    public Vector3[] headSupportPoints;
     public Transform referenceHeadVisual;
     public Renderer referenceHeadRenderer;
     public int headVertexCount;
