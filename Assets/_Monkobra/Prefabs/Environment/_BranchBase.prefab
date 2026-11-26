@@ -198,8 +198,6 @@ MonoBehaviour:
   meshRoot: {fileID: 0}
   style: {fileID: 11400000, guid: 3abcf5659e73d554b891748f8df63288, type: 2}
   kind: 0
-  reachableOutlineMat: {fileID: 2100000, guid: 1e8d8a8ab1047f04b814065e9a51c55e, type: 2}
-  grabbableOutlineMat: {fileID: 2100000, guid: 479ffb9af65a079419b366a4f48fc413, type: 2}
 --- !u!1 &6536236179541086049
 GameObject:
   m_ObjectHideFlags: 0

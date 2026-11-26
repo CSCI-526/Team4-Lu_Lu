@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// Sits on the "FruitCollider" object of a banana. Listens to
@@ -12,8 +11,7 @@ using UnityEngine.Serialization;
 /// <item>grabbable: a hand overlaps the fruit, so a release grabs it</item>
 /// </list>
 /// The tier materials come from the shared <see cref="FruitOutlineStyle"/>
-/// by fruit kind. W/o a style it falls back to the 2 old materials, and
-/// the normal tier is then bare, with no ghost. The outline is an extra
+/// by fruit kind. W/o a style the fruit stays bare, with a warning. The outline is an extra
 /// material slot, and a see-through ghost is a third one: it shows only
 /// where the trunk, a branch or the monkey hides the fruit, in the
 /// Reachable color, or the Grabbable one while grabbable.
@@ -33,24 +31,14 @@ public class FruitOutlineListener: MonoBehaviour {
     [Tooltip("which fruit this is; picks the hue")]
     private FruitKind kind;
 
-    [Header("Old Outline Materials (fallback, retired later)")]
-    [SerializeField]
-    [Tooltip("outline while fruit sits in a detection zone")]
-    private Material reachableOutlineMat;
-
-    [FormerlySerializedAs("outlineMat")]
-    [SerializeField]
-    [Tooltip("outline while a hand overlaps fruit; release grabs it")]
-    private Material grabbableOutlineMat;
-
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
         Material normalMat = null;
         Material ghostMat = null;
         Material ghostGrabMat = null;
-        Material reachMat = reachableOutlineMat;
-        Material grabMat = grabbableOutlineMat;
+        Material reachMat = null;
+        Material grabMat = null;
         if (style != null) {
             normalMat = style.GetTierMaterial(kind, OutlineTier.Normal);
             reachMat = style.GetTierMaterial(kind, OutlineTier.Reachable);
@@ -61,7 +49,7 @@ public class FruitOutlineListener: MonoBehaviour {
             Debug.LogWarning(
                 "FruitOutlineListener:	"
                     + "must assign Inspector Field: style, "
-                    + "falling back to the old outline materials",
+                    + "fruit stays without an outline",
                 this
             );
         }

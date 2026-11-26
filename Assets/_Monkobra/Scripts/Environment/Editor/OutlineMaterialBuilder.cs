@@ -21,6 +21,9 @@ public static class OutlineMaterialBuilder {
         ROOT + "Settings/FruitOutline/FruitOutlineStyle.asset";
     private const string GHOST_SHADER_PATH =
         ROOT + "Shaders/Outline/OutlineSeeThrough.shader";
+    // base the boss golden fruit clones; its width is the Grabbable one
+    private const string GOLDEN_BASE_MAT_PATH =
+        ROOT + "Materials/Outline/Outline_Banana_Grabbable.mat";
     private const string MONKEY_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Monkey.mat";
 
@@ -42,6 +45,7 @@ public static class OutlineMaterialBuilder {
         FruitOutlineStyle style = LoadOrCreateStyle(shader);
         BuildMonkeyMaterial(shader, style);
         BuildGhostMaterials(style);
+        BuildGoldenBaseMaterial(shader, style);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("OutlineMaterialBuilder:\toutline materials built");
@@ -100,6 +104,23 @@ public static class OutlineMaterialBuilder {
         mat.shader = shader;
         mat.SetColor("_Outline_Color", style.MonkeyColor);
         mat.SetFloat("_Outline_Width", style.MonkeyWidthU);
+        EditorUtility.SetDirty(mat);
+    }
+
+    private static void BuildGoldenBaseMaterial(
+        Shader shader, FruitOutlineStyle style
+    ) {
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(GOLDEN_BASE_MAT_PATH);
+        if (mat == null) {
+            mat = new Material(shader);
+            AssetDatabase.CreateAsset(mat, GOLDEN_BASE_MAT_PATH);
+        }
+        mat.shader = shader;
+        mat.SetColor(
+            "_Outline_Color",
+            style.GetTierColor(FruitKind.Banana, OutlineTier.Grabbable)
+        );
+        mat.SetFloat("_Outline_Width", style.GetWidthU(OutlineTier.Grabbable));
         EditorUtility.SetDirty(mat);
     }
 

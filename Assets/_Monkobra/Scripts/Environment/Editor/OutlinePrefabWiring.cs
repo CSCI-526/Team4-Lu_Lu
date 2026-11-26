@@ -14,6 +14,12 @@ public static class OutlinePrefabWiring {
     private const string MONKEY_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Monkey.mat";
 
+    private const string GOLDEN_BASE_MAT_PATH =
+        ROOT + "Materials/Outline/Outline_Banana_Grabbable.mat";
+    private static readonly string[] GOLDEN_CONFIGS = {
+        ROOT + "Settings/BossCobraKing/CobraKingConfig.asset",
+        ROOT + "Settings/BossSpiderKing/SpiderKingConfig.asset",
+    };
     private const string STYLE_PATH =
         ROOT + "Settings/FruitOutline/FruitOutlineStyle.asset";
 
@@ -29,11 +35,36 @@ public static class OutlinePrefabWiring {
     public static void Run() {
         WireMonkey();
         WireFruits();
+        WireGoldenConfigs();
         AssetDatabase.SaveAssets();
         Debug.Log("OutlinePrefabWiring:\toutline prefabs wired");
     }
 
     // private methods  ########################################################
+    // golden banana & melon clone the shared hull and widen it as before
+    private static void WireGoldenConfigs() {
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(GOLDEN_BASE_MAT_PATH);
+        if (mat == null) {
+            Debug.LogError(
+                $"OutlinePrefabWiring:	fail to load Material: "
+                    + GOLDEN_BASE_MAT_PATH
+            );
+            return;
+        }
+        foreach (string path in GOLDEN_CONFIGS) {
+            var config = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+            if (config == null) {
+                Debug.LogError($"OutlinePrefabWiring:	fail to load {path}");
+                continue;
+            }
+            var serialized = new SerializedObject(config);
+            serialized.FindProperty("goldenOutlineMaterial")
+                .objectReferenceValue = mat;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(config);
+        }
+    }
+
     private static void WireFruits() {
         var style = AssetDatabase.LoadAssetAtPath<FruitOutlineStyle>(STYLE_PATH);
         if (style == null) {
