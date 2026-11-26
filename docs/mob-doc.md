@@ -122,7 +122,7 @@ Many live snakes stay cheap because each cost is handed to a Unity system or a c
 - Work Caps: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` (4; the trail took up to 64 a frame at a low frame rate), `trailClearancePasses` (2; was 4), `spineFairMaxPasses` (64) and `spineFairToleranceU` (0.002 u: the smoothing stops once no ring moves farther in a pass)
 - Head Fit: the head template keeps the extreme point of 512 directions (188 unique points of 41,046 vertices, worst depth error 0.004 u), and `FitHeadToBark` scans those
 - Layers: the monkey is on `Player`, the cobra on `FallingCobra`, and the collision matrix lets `FallingCobra` collide with `Player` only, so a cobra's trigger no longer tests the trunk, branches and fruit; `SweepVisibleHead` queries the layers the matrix allows. `Monkobra > Set Up Falling Cobra Layers` sets the layers, the matrix and both prefabs' layers, and lowers Maximum Allowed Timestep to 0.1 s so a slow frame runs fewer physics steps
-- Measuring: `Monkobra > Run Falling Cobra Benchmark` builds a Windows development player to `builds/Benchmark/`; launched with `-fallingCobraBenchmark <folder>` it loads `GameplayScene`, holds the monkey beside about 3 live cobras, records 12 s of `FallingCobra.*` profiler markers, writes `results.json` and shots of a perched, a warning and a falling snake with close-ups, and quits. Add `-force-device-index <n>` to pick the GPU. With about 3 live cobras the frame fell from 8.4 to 4.2 ms and the cobras' `LateUpdate` from 5.3 to 1.2 ms, see the DEVLOG
+- Result: with about 3 live cobras the frame fell from 8.4 to 4.2 ms and the cobras' `LateUpdate` from 5.3 to 1.2 ms, see the DEVLOG
 
 ### Spawning
 
@@ -338,5 +338,5 @@ The endless run is a boss rush (`EndlessBossRush`): every `endlessBossIntervalU`
 
 - Mob tuning for the web escape and web geometry lives on scene components, not in a shared ScriptableObject; only the web spawn rates and attempt counts are in `WorldBalanceConfig`, and the falling cobra and great cobra numbers in `CobraBalanceConfig`
 - Stamina is not linked to branch hits
-- Hack key 5 (`HackPineappleSpawner.SpawnFallingCobra`) never calls `AttachToBranch`, so by the code its cobra stays hidden and never wakes; the benchmark perches cobras through `FallingCobraSpawner.TrySpawnCobra` instead
+- Hack key 5 (`HackPineappleSpawner.SpawnFallingCobra`) never calls `AttachToBranch`, so by the code its cobra stays hidden and never wakes
 - `GameplayScene`'s Canvas holds 2 objects named `ProgressBar`, the climb progress and the web escape bar, so look them up by path
