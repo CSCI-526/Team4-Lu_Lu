@@ -109,6 +109,11 @@ todo add 3x fruit
   the bark until control returns
 - Spider King air wall no longer takes the web's glow, own see-through material
 
+##### Erik
+
+- cobra alert cinema bars now draw out as the camera starts back to the
+  monkey, not after it arrives; the UI still returns when the shot ends
+
 ### Security
 
 [unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.5...dev
