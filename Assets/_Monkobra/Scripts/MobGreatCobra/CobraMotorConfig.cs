@@ -250,7 +250,7 @@ public class CobraMotorConfig: ScriptableObject {
         "while the camera cuts to the cobra as the chase starts, the head "
             + "rears up, fully raised, over this time, & lowers over it at the end; s"
     )]
-    private float alertRearEaseS = .4f;
+    private float alertRearEaseS = .8f;
 
     [Header("Close Chase Hiss")]
     [SerializeField]

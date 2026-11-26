@@ -63,6 +63,18 @@ public sealed class CobraMotorRig {
     // length of the running or last freeze; s
     public float frozenTimeS;
     // total time spent frozen, kept off the wave; s
+    public bool isStoryHeld;
+    // climb stopped by a story event, orbit & slither go on
+    public bool isStartHold;
+    // the running story hold is the chase's start look
+    public bool isStartEasing;
+    // easing up slowly after the start hold, till the target speed
+    public float exitBoostBankedS;
+    // exit boost time kept through a start hold; s
+    public float startCreepSpeedU;
+    // climb speed set for the cut scene, 0 for none; u/s
+    public float startCreepMinGapU;
+    // the cut scene climb stops this near below the monkey; u
     public HitBranchSensor playerSensor;
     public SpiderWebStruggle playerStruggle;
     public Transform player;

@@ -285,3 +285,4 @@ MonoBehaviour:
   cobraSpeedChangeRateU: 6
   cobraExitBoostSpeedU: 3
   cobraExitBoostDurationS: 5
+  cobraStartEaseRateU: 2

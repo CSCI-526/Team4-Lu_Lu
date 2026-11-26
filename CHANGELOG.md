@@ -7,9 +7,6 @@ FIXME erik mpv tutorial for boss fight
 FIXME erik b/t boss fight, better randomization
 Bug make leaderboard works
 
-Fixme tutorial zone: manageable amount of banana
-Bug force encounter spider
-
 todo lighting improvement
 todo vertical version adaptation
 todo chinese version
@@ -34,11 +31,27 @@ todo add 3x fruit
 - cobra alert cut away: black cinema bars grow in top and bottom, the UI hides,
   the monkey's input locks; all return after the shot
 
+##### Erik
+
+- Spider King web intro: once per Normal Play run, at 250 u climbed, the
+  camera eases to the bare trunk, the king scuttles in round it from the far
+  side, glows, and spits a web that traps the monkey, so the first web is
+  always met with its escape hint; the great cobra holds still until the
+  monkey breaks free; never in Endless mode
+- slower great cobra start: the camera flies its own smooth journey, an eased
+  pull away down the trunk round the tree to the cobra, a long look and the
+  same way back; the cobra climbs 7 u/s during the pull away, then chases at
+  normal speed; UI and "Run!" return the moment the shot ends
+
 ### Changed
 
 ##### Yuqing Lu
 
 - Cobra King and Spider King defeat popups tinted in each king's purple
+
+##### Erik
+
+- F3 dev speed buff 3x → 5x
 
 ##### Houdong Pan
 
@@ -48,6 +61,15 @@ todo add 3x fruit
   the UI to return
 - spider web brighter with a soft glow; branch bark warmer, less moss, thicker
   outline
+
+##### Wenhai Dong
+
+- the starting zone grows a manageable amount of bananas: each banana branch
+  attempt at 0.2 instead of 0.4 (`startingZoneBananaBranchChance`), about 2
+  banana branches a segment instead of 4
+- no fruit hangs below the monkey's start any more, so none shows up under
+  the player at the start: its branch is lifted till the fruit is level w/
+  the start, or dropped if it can't be (`KeepFruitAboveStart`)
 
 ### Deprecated
 

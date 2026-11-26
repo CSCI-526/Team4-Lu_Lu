@@ -361,8 +361,43 @@ public class TreeSegmentController: MonoBehaviour {
             );
         } else {
             branchRoot.Setup();
+            KeepFruitAboveStart(branch, branchRoot, segmentHeight,
+                placedPositions);
         }
     }
+
+    // a fruit never hangs below the monkey's start, where it only confuses:
+    // its branch is lifted till the fruit's lowest point is level w/ the
+    // start, or dropped if that leaves the segment or crowds the monkey
+    private void KeepFruitAboveStart(GameObject branch,
+        BranchController branchRoot, float segmentHeight,
+        List<Vector3> placedPositions) {
+        float bottomY = branchRoot.FruitBottomY;
+        if (float.IsNaN(bottomY) || RampedDifficultyManager.I == null) {
+            return;
+        }
+        float startY = RampedDifficultyManager.I.PlayerGameStartYPosition
+            + FRUIT_ABOVE_START_U;
+        if (bottomY >= startY) {
+            return;
+        }
+        Vector3 lifted = branch.transform.localPosition
+            + transform.InverseTransformVector(Vector3.up * (startY - bottomY));
+        bool isKept = lifted.y <= segmentHeight && IsClearOfMonkey(lifted)
+            && !IsInBossZone(lifted);
+        placedPositions.RemoveAt(placedPositions.Count - 1);
+        if (!isKept) {
+            // off at once, so the decorators that run this frame never see it
+            branch.SetActive(false);
+            Destroy(branch);
+            return;
+        }
+        branch.transform.localPosition = lifted;
+        placedPositions.Add(lifted);
+    }
+
+    // how far above the monkey's start a fruit's lowest point must be; u
+    private const float FRUIT_ABOVE_START_U = 0f;
 
     // iff the y lies below the starting zone exit; false w/o a service
     private bool IsInStartingZone(float worldY) {

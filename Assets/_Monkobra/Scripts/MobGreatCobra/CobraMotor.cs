@@ -193,6 +193,95 @@ public class CobraMotor: MonoBehaviour {
         return true;
     }
 
+    /// <returns>if a story event holds the cobra's climb right now</returns>
+    public bool IsStoryHeld => rig != null && rig.isStoryHeld;
+
+    /// <summary>
+    /// Stops the climb for a story event, eg the spider king's intro: the
+    /// head keeps its height while the body still orbits & slithers. Unlike
+    /// <see cref="TryFreeze"/> it raises no <see cref="Frozen"/> or
+    /// <see cref="Thawed"/>, so no freeze HUD or popup shows. Clears the
+    /// running surge and the starting zone exit boost, and mistakes made
+    /// while held add no surge. Lifted, the climb eases back up from a
+    /// standstill. Contact still ends the run. A start hold (the chase's
+    /// first look) banks the exit boost's time left and gives it back at the
+    /// lift, which then eases up at the gentler
+    /// <see cref="CobraBalanceConfig.CobraStartEaseRateU"/>.
+    /// </summary>
+    /// <param name="isHeld">whether to hold the cobra's climb</param>
+    /// <param name="isStart">whether this is the chase's start hold</param>
+    public void SetStoryHold(bool isHeld, bool isStart = false) {
+        if (rig == null || rig.isStoryHeld == isHeld) {
+            return;
+        }
+        rig.isStoryHeld = isHeld;
+        if (isHeld) {
+            rig.surgeStacks = 0;
+            rig.isCatchingUp = false;
+            rig.isStartHold = isStart;
+            rig.isStartEasing = false;
+            rig.exitBoostBankedS = isStart
+                ? Mathf.Max(0f, rig.exitBoostEndTime - Time.time) : 0f;
+            rig.exitBoostEndTime = 0f;
+        } else if (rig.isStartHold) {
+            rig.isStartHold = false;
+            rig.isStartEasing = true;
+            // the boost starts now, after the look, unless a creep cap
+            // keeps it waiting
+            if (rig.startCreepSpeedU <= 0f) {
+                RestoreBankedBoost();
+            }
+        }
+        rig.currentClimbSpeed = 0f;
+    }
+
+    /// <summary>
+    /// Starts the cut scene climb at once: the cobra jumps to
+    /// <paramref name="speedU"/>, far faster than its chase speed, so its
+    /// climb is plain to see while the monkey is locked; the exit boost's
+    /// time left is banked & waits for <see cref="ReleaseStartBoost"/>. 0
+    /// ends it, back to the required chase speed.
+    /// </summary>
+    /// <param name="speedU">climb speed during the cut scene, 0 or less for
+    /// none; u/s</param>
+    /// <param name="minGapU">the climb stops this near below the monkey, so
+    /// the boost never reaches it; u</param>
+    public void SetStartCreep(float speedU, float minGapU = 0f) {
+        if (rig == null) {
+            return;
+        }
+        bool wasOn = rig.startCreepSpeedU > 0f;
+        rig.startCreepSpeedU = Mathf.Max(0f, speedU);
+        rig.startCreepMinGapU = Mathf.Max(0f, minGapU);
+        if (rig.startCreepSpeedU > 0f && !wasOn) {
+            rig.surgeStacks = 0;
+            rig.isCatchingUp = false;
+            rig.isStartEasing = false;
+            rig.exitBoostBankedS = Mathf.Max(rig.exitBoostBankedS,
+                rig.exitBoostEndTime - Time.time);
+            rig.exitBoostEndTime = 0f;
+            rig.currentClimbSpeed = rig.startCreepSpeedU;
+        }
+    }
+
+    /// <summary>
+    /// Gives back the exit boost the cut scene climb kept, to run now
+    /// </summary>
+    public void ReleaseStartBoost() {
+        if (rig != null && !rig.isStoryHeld) {
+            RestoreBankedBoost();
+        }
+    }
+
+    // gives back the exit boost time a start hold kept
+    private void RestoreBankedBoost() {
+        if (rig.exitBoostBankedS <= 0f) {
+            return;
+        }
+        rig.exitBoostEndTime = Time.time + rig.exitBoostBankedS;
+        rig.exitBoostBankedS = 0f;
+    }
+
     /// <summary>
     /// Rears the head up, as if the monkey were close, for
     /// <paramref name="durationS"/>, easing up & back down, eg while the
@@ -367,6 +456,15 @@ public class CobraMotor: MonoBehaviour {
             return;
         }
 
+        if (rig.isStoryHeld) {
+            // orbit & slither go on, the climb and every surge stay off
+            rig.surgeStacks = 0;
+            rig.isCatchingUp = false;
+            rig.currentClimbSpeed = 0f;
+            coil.UpdateBody();
+            return;
+        }
+
         chase.StartExitBoostOnZoneExit();
 
         float baseClimbSpeed = chase.BaseClimbSpeed();
@@ -396,10 +494,29 @@ public class CobraMotor: MonoBehaviour {
                 + cobraBalanceConfig.CobraExitBoostSpeedU;
         }
 
+        // while the camera shows it, the cobra climbs at the cut scene speed,
+        // set apart from the chase speed so the climb is plain to see
+        if (rig.startCreepSpeedU > 0f) {
+            // but never right up to the locked monkey
+            bool isTooClose = rig.player != null && rig.pathCenter != null
+                && chase.CalcDistanceBelowPlayer() <= rig.startCreepMinGapU;
+            targetClimbSpeed = isTooClose ? 0f : rig.startCreepSpeedU;
+            if (isTooClose) {
+                rig.currentClimbSpeed = 0f;
+            }
+        }
+
         // ease toward the target, so a speed-up or a slow-down never jumps
         float speedChangeRate = cobraBalanceConfig != null
             ? cobraBalanceConfig.CobraSpeedChangeRateU
             : float.PositiveInfinity;
+        // after the start hold the first pull away is slow, to be seen
+        if (rig.isStartEasing && cobraBalanceConfig != null) {
+            speedChangeRate = cobraBalanceConfig.CobraStartEaseRateU;
+            if (rig.currentClimbSpeed >= targetClimbSpeed) {
+                rig.isStartEasing = false;
+            }
+        }
         rig.currentClimbSpeed = Mathf.MoveTowards(
             rig.currentClimbSpeed,
             targetClimbSpeed,

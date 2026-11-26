@@ -22,6 +22,15 @@ public class SpiderWebTrap: MonoBehaviour {
     /// </summary>
     public static event Action<SpiderWebTrap> Encountered;
 
+    /// <summary>
+    /// Whether the web catches. An unarmed web never traps nor raises
+    /// <see cref="Encountered"/>, so one in flight, eg the spider king's
+    /// intro throw, passes harmlessly; arming it while the monkey is inside
+    /// its trigger catches at the next physics step.
+    /// </summary>
+    /// <returns>if the web catches the monkey it touches</returns>
+    public bool IsArmed { get; set; } = true;
+
     // Public Methods  #########################################################
     /// <summary>
     /// Plays a short squash and twist, visual feedback for 1 escape press.
@@ -138,7 +147,7 @@ public class SpiderWebTrap: MonoBehaviour {
     // out, and an arm has its own Rigidbody without a struggle, so a tail or
     // a hand brushing the web is ignored
     private void TryCatch(Collider other) {
-        if (other.isTrigger) {
+        if (!IsArmed || other.isTrigger) {
             return;
         }
 

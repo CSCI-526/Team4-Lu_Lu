@@ -481,7 +481,7 @@ public class MonkeyController: MonoBehaviour {
     // constants  ##############################################################
     private const float INPUT_DEADZONE = 0.1f;
     private const float INPUT_DEADZONE_SQR = INPUT_DEADZONE * INPUT_DEADZONE;
-    private const float SPEED_BUFF_SCALE = 3f; // dev buff on climb & orbit
+    private const float SPEED_BUFF_SCALE = 5f; // dev buff on climb & orbit
     // the spider jump lands this far below the Spider King's trigger; u
     private const float SPIDER_JUMP_BELOW_U = 6f;
 
