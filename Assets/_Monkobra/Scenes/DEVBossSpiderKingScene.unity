@@ -2773,23 +2773,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1459080992269447672, guid: b7ca3c7d607dd0f449b3ba8800a2887a, type: 3}
   m_PrefabInstance: {fileID: 5986654487876900577}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &6130482091273649003
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 6130482091273648001, guid: 08cdca47421f404f9589bdeefd420829, type: 3}
-      propertyPath: m_Name
-      value: ControlStyleManager
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 08cdca47421f404f9589bdeefd420829, type: 3}
 --- !u!1001 &6214981954017413425
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3631,15 +3614,15 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4803476491209500208, guid: 2b78c980563b4937ac9608e0a1a92780, type: 3}
+    - target: {fileID: 7245103388614930001, guid: 7b2f4d8e61a94c03b5d9e1a7c3f08d26, type: 3}
       propertyPath: m_Name
-      value: Analytics
+      value: GameController
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 2b78c980563b4937ac9608e0a1a92780, type: 3}
+  m_SourcePrefab: {fileID: 100100000, guid: 7b2f4d8e61a94c03b5d9e1a7c3f08d26, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3656,6 +3639,5 @@ SceneRoots:
   - {fileID: 1867227294}
   - {fileID: 1867227395}
   - {fileID: 8977346991378675170}
-  - {fileID: 6130482091273649003}
   - {fileID: 1167658346}
   - {fileID: 1937637745}
