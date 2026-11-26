@@ -2,17 +2,19 @@ using UnityEngine;
 
 /// <summary>
 /// Listener that asks for the low-stamina hint on the first low-stamina
-/// feedback since the scene loaded. It listens to the same
+/// feedback of each scene load until one was shown this session. It listens
+/// to the same
 /// <see cref="StaminaBarController.LowStaminaMoveAttempted"/> that drives the
 /// bar shake and the camera cool-down, so the hint opens with the first
 /// cool-down pulse and shares its threshold, never a second one. Text, time,
-/// and the once-per-scene rule live on the popup prefab; the
+/// and the once-per-scene rule live on the popup prefab, and the session
+/// skip on <see cref="TutorialSkipManager"/>; the
 /// <see cref="PopUpManager"/> yields it to the web hint and drops it on a
 /// loss.
 /// <para>
 /// Put it on an always-active object: it drops its stamina subscription after
-/// the first event; nothing is static, so the hint returns on every scene
-/// load.
+/// the first event; nothing is static, so the manager alone decides whether
+/// a later scene load shows the hint again.
 /// </para>
 /// </summary>
 public class LowStaminaWidget: MonoBehaviour {
@@ -55,6 +57,9 @@ public class LowStaminaWidget: MonoBehaviour {
             return;
         }
         PopUpManager.I.Show(PopUpId.LowStaminaHint);
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.LowStaminaHint);
+        }
     }
 
     // cached references  ------------------------------------------------------

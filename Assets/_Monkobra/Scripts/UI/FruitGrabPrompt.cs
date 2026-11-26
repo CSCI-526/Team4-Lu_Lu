@@ -2,7 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// Teaches the grab of each fruit kind with a popup, until the player has
-/// grabbed one of that kind in the run. While the monkey can reach an
+/// grabbed one of that kind this session
+/// (<see cref="TutorialSkipManager"/>). While the monkey can reach an
 /// unlearned fruit, its popup is held on screen
 /// (<see cref="PopUpId.BananaFirst"/>, <see cref="PopUpId.PineappleFirst"/>,
 /// <see cref="PopUpId.CoconutGrab"/>);
@@ -92,24 +93,14 @@ public class FruitGrabPrompt: MonoBehaviour {
         if (game == null || !game.IsRunLive || IsBossArena()) {
             return;
         }
-        switch (GetFruitKind(fruit)) {
-            case FruitKind.Banana:
-                hasGrabbedBanana = true;
-                break;
-            case FruitKind.Pineapple:
-                hasGrabbedPineapple = true;
-                break;
-            case FruitKind.Coconut:
-                hasGrabbedCoconut = true;
-                break;
+        FruitKind kind = GetFruitKind(fruit);
+        if (kind != FruitKind.None && TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(GetTutorialItem(kind));
         }
         HidePopUp();
     }
 
     // private members  ########################################################
-    private bool hasGrabbedBanana;
-    private bool hasGrabbedPineapple;
-    private bool hasGrabbedCoconut;
     private RunController game;
     private UpwardFruitSensor sensor;
     private MonkeyController monkey;
@@ -184,19 +175,12 @@ public class FruitGrabPrompt: MonoBehaviour {
         return boss != null && boss.isActiveAndEnabled && boss.IsInArena;
     }
 
-    // if the player grabbed this kind, or the manager skips its pop up
+    // if the manager skips this kind's pop up: grabbed once this session, or
+    // the dev switch is on
     private bool IsLearned(FruitKind kind) {
         TutorialSkipManager skip = TutorialSkipManager.I;
-        if (skip != null && kind != FruitKind.None
-            && skip.ShouldSkip(GetTutorialItem(kind))) {
-            return true;
-        }
-        return kind switch {
-            FruitKind.Banana => hasGrabbedBanana,
-            FruitKind.Pineapple => hasGrabbedPineapple,
-            FruitKind.Coconut => hasGrabbedCoconut,
-            _ => true
-        };
+        return kind == FruitKind.None
+            || (skip != null && skip.ShouldSkip(GetTutorialItem(kind)));
     }
 
     private static TutorialItem GetTutorialItem(FruitKind kind) {
