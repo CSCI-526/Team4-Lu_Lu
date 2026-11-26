@@ -8,10 +8,11 @@ public enum Boss {
 
 /// <summary>
 /// Makes a dev scene play like the player's first meeting with one boss:
-/// marks the tutorials a player would have met on the climb as seen, and for
-/// the Spider King counts the Cobra King as beaten, and ends the starting
-/// zone at once. The boss itself is moved down by the scene's own balance
-/// asset, so the monkey climbs from its normal start; nothing here moves it.
+/// marks the tutorials a player would have met on the climb as seen, sets the
+/// Loop the fight plays, and for the Spider King counts the Cobra King as
+/// beaten, and ends the starting zone at once. The scene's own balance asset
+/// puts the boss's location at the monkey's start, so its fight begins on the
+/// first live frame; nothing here moves the monkey.
 /// Sits only in the dev scenes built by
 /// <c>Monkobra > Build Boss Dev Scenes</c>, never in <c>GameplayScene</c>.
 /// <para>
@@ -54,6 +55,12 @@ public class BossDevStart: MonoBehaviour {
         MarkSeenItems();
     }
 
+    // the Loop is set before the first live frame: the fight begins on it,
+    // and a Loop set after its start would be reset by it
+    private void Start() {
+        ApplyLoopOverride();
+    }
+
     private void Update() {
         // wait for the run to go live, the fight controller has to exist
         if (RunController.I == null || !RunController.I.IsRunLive) {
@@ -64,7 +71,6 @@ public class BossDevStart: MonoBehaviour {
         if (boss == Boss.SpiderKing) {
             CountCobraKingBeaten();
         }
-        ApplyLoopOverride();
         EndStartingZone();
         enabled = false;
     }

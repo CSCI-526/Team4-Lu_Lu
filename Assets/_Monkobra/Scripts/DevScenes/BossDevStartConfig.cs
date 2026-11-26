@@ -1,21 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
-/// Numbers and first-time state for the boss dev scenes: how far down each
-/// king's section of the tree is moved, so the monkey meets the boss soon
-/// after its normal start, and which tutorials count as already seen, so a
-/// scene plays like the player's first meeting with that boss.
+/// Numbers and first-time state for the boss dev scenes: where the other king
+/// sits in the Cobra King scene, and which tutorials count as already seen,
+/// so a scene plays like the player's first meeting with that boss. The boss
+/// under test needs no height here: its location is the monkey's start, so
+/// its fight begins on the first live frame.
 /// </summary>
 [CreateAssetMenu(menuName = "Scriptable Objects/BossDevStartConfig")]
 public class BossDevStartConfig: ScriptableObject {
     // Public Members  #########################################################
-    /// <returns>climbed height the boss under test has its bare zone start
-    /// at in its dev scene, just above the player; its location is half an
-    /// arena height above it; u</returns>
-    public float BossZoneBottomU => bossZoneBottomU;
-
     /// <returns>in the Cobra King scene, how far above the Cobra King zone
     /// top the Spider King zone starts; u</returns>
     public float OtherKingGapU => otherKingGapU;
@@ -32,14 +27,6 @@ public class BossDevStartConfig: ScriptableObject {
 
     // Inspector Fields  #######################################################
     [Header("Boss Heights")]
-    [SerializeField]
-    [Min(0f)]
-    [Tooltip("where the boss under test has its bare zone start, above the "
-        + "player's start; its location sits half an arena height above "
-        + "this; u")]
-    [FormerlySerializedAs("bossZoneStartU")]
-    private float bossZoneBottomU = 5f;
-
     [SerializeField]
     [Min(0f)]
     [Tooltip("Cobra King scene only: the Spider King zone starts this far "
