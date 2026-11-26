@@ -450,8 +450,7 @@ public static class IntroComicBuilder {
     private static readonly string[] SHELL = {
         "Assets/_Monkobra/Prefabs/World/MenuCamera.prefab",
         "Assets/_Monkobra/Prefabs/World/EventSystem_Menu.prefab",
-        "Assets/_Monkobra/Resources/Analytics.prefab",
-        "Assets/_Monkobra/Resources/ControlStyleManager.prefab",
+        "Assets/_Monkobra/Prefabs/GameController/GameController.prefab",
     };
 
     // the 1280x720 page, and the art at 2x squeezed to fit 2048, crunched,
