@@ -108,6 +108,7 @@ MonoBehaviour:
     spots: {r: 0.52, g: 0.85, b: 0.16, a: 1}
     smoothness: 0.38
     headScale: 1
+  bodyPrefab: {fileID: 2689775342019903979, guid: 19a562d3b6ade374388ce510c35b380d, type: 3}
   referenceSizeMultiplier: 1.5
   referenceFaceDirection: {x: -0.435, y: -0.265, z: -0.861}
   bodyWaveSpeedHz: 1

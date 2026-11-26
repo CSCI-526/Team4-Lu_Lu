@@ -13,7 +13,8 @@ using static FallingCobraRig;
 /// Saves <c>Meshes/MobFallingCobra/FallingCobraBody.asset</c> and
 /// <c>Prefabs/MobFallingCobra/FallingCobraBody.prefab</c> (a
 /// <see cref="SkinnedMeshRenderer"/>, the bone children and the snake
-/// material). Run it again after changing a body or neck value of
+/// material) and assigns the prefab to <see cref="FallingCobraConfig"/>.
+/// Run it again after changing a body or neck value of
 /// <see cref="FallingCobraConfig"/>, never edit the two assets by hand.
 /// Batch mode: <c>-executeMethod FallingCobraBodyBuilder.Run</c>.
 /// </summary>
@@ -69,6 +70,12 @@ public static class FallingCobraBodyBuilder {
         body = SaveMesh(body);
         GameObject prefab = BuildPrefab(config, body,
             renderer.sharedMaterial);
+        if (prefab != null) {
+            SerializedObject asset = new SerializedObject(config);
+            asset.FindProperty("bodyPrefab").objectReferenceValue = prefab;
+            asset.ApplyModifiedProperties();
+            EditorUtility.SetDirty(config);
+        }
         AssetDatabase.SaveAssets();
         Debug.Log("FallingCobraBodyBuilder:\tbuilt " + body.vertexCount
             + " vertices on " + BodyRings + " bones: " + MESH_PATH + ", "

@@ -4,9 +4,9 @@ using UnityEngine;
 using static FallingCobraRig;
 using static FallingCobraMath;
 
-/// <summary>Builds the spine and the tube mesh of a falling cobra each frame,
-/// in named steps that hand their results forward through one reused frame
-/// state.</summary>
+/// <summary>Builds the spine of a falling cobra each frame and poses the
+/// bones of its skinned body on it, in named steps that hand their results
+/// forward through one reused frame state.</summary>
 public sealed class FallingCobraSpine {
     // private members  ########################################################
     private readonly FallingCobraRig rig;
@@ -16,7 +16,6 @@ public sealed class FallingCobraSpine {
         public float poseDelta;
         public float phase;
         public Matrix4x4 toWorld;
-        public Matrix4x4 toLocal;
         public Vector3 rootOut;
         public Vector3 rootSide;
         public Quaternion headRotation;
@@ -34,6 +33,8 @@ public sealed class FallingCobraSpine {
         public Vector3 curveEnd;
         public Vector3 curveEndDirection;
         public Vector3 headBelly;
+        public float paintFromU;
+        public float paintToU;
     }
     private readonly FrameState ctx = new();
 
@@ -53,14 +54,29 @@ public sealed class FallingCobraSpine {
         new("FallingCobra.FitNeckCurve");
     private static readonly ProfilerMarker NECK_SPINE_MARKER =
         new("FallingCobra.PlaceNeckSpine");
-    private static readonly ProfilerMarker TUBE_MESH_MARKER =
-        new("FallingCobra.BuildTubeMesh");
+    private static readonly ProfilerMarker POSE_BONES_MARKER =
+        new("FallingCobra.PoseBones");
     private static readonly ProfilerMarker PUBLISH_MARKER =
-        new("FallingCobra.PublishMesh");
+        new("FallingCobra.PublishLook");
     private static readonly ProfilerMarker FAIR_MARKER =
         new("FallingCobra.FairSpineCorners");
-    private static readonly ProfilerMarker ROUND_NECK_MARKER =
-        new("FallingCobra.RoundNeckSurface");
+
+    // shader properties of the snake surface, looked up once  ----------------
+    private static readonly int TREE_AXIS_ID = Shader.PropertyToID("_TreeAxis");
+    private static readonly int BRANCH_UP_ID =
+        Shader.PropertyToID("_BranchUp");
+    private static readonly int PAINT_RANGE_ID =
+        Shader.PropertyToID("_PaintBranchRange");
+    private static readonly int HEAD_BELLY_PHASE_ID =
+        Shader.PropertyToID("_HeadBellyPhase");
+    private static readonly int HEAD_BELLY_DIRECTION_ID =
+        Shader.PropertyToID("_HeadBellyDirection");
+    private static readonly int COLLAR_LENGTH_ID =
+        Shader.PropertyToID("_CollarLength");
+    private static readonly int HEAD_WATCH_ID =
+        Shader.PropertyToID("_HeadWatch");
+    private static readonly int BODY_LENGTH_ID =
+        Shader.PropertyToID("_BodyLength");
 
 
     public FallingCobraSpine(FallingCobraRig rig) {
@@ -77,8 +93,8 @@ public sealed class FallingCobraSpine {
         ChooseHeadPose();
         FitNeckCurve();
         PlaceNeckSpine();
-        BuildTubeMesh();
-        PublishMesh();
+        PoseBones();
+        PublishLook();
     }
 
     // Pipeline Steps  ########################################################
@@ -113,7 +129,6 @@ public sealed class FallingCobraSpine {
             Time.time * config.BodyWaveSpeedHz * .3f * Mathf.PI * 2f
                 + rig.swimPhaseOffset;
         ctx.toWorld = rig.referenceVisual.localToWorldMatrix;
-        ctx.toLocal = rig.referenceVisual.worldToLocalMatrix;
         ctx.rootOut =
             new Vector3(rig.body.position.x - rig.axisXZ.x, 0f,
                 rig.body.position.z - rig.axisXZ.y).normalized;
@@ -481,37 +496,54 @@ public sealed class FallingCobraSpine {
             ctx.headRotation);
 
     }
-    private void BuildTubeMesh() {
-        using var _ = TUBE_MESH_MARKER.Auto();
-        float collarLoftU = config.NeckCollarLengthU;
+    private void PoseBones() {
+        using var _ = POSE_BONES_MARKER.Auto();
         Vector3 headOutward =
             new Vector3(ctx.headCenter.x - rig.axisXZ.x, 0f,
                 ctx.headCenter.z - rig.axisXZ.y).normalized;
         ctx.headBelly = rig.BranchCoil.SupportedPaintBelly(headOutward, 0f);
+        float step = config.SmoothBodyLengthU / (BodyRings - 1);
+        // the span of body, in u behind the head, where the paint's belly
+        // turns from the trunk to the branch: the shader smooths across it
+        ctx.paintFromU = -1f;
+        ctx.paintToU = -1f;
+        if (ctx.following) {
+            for (int ring = 0; ring < BodyRings; ring++) {
+                float weight = rig.RemainingCoilWeight(ring);
+                if (ctx.paintFromU < 0f && weight > .001f) {
+                    ctx.paintFromU = Mathf.Max(0f, (ring - 1) * step);
+                }
+                if (ctx.paintToU < 0f && weight >= .999f) {
+                    ctx.paintToU = ring * step;
+                    break;
+                }
+            }
+            if (ctx.paintFromU < 0f) {
+                ctx.paintFromU = config.SmoothBodyLengthU + 1f;
+            }
+            if (ctx.paintToU < 0f) {
+                ctx.paintToU = Mathf.Max(config.SmoothBodyLengthU,
+                    ctx.paintFromU + .05f);
+            }
+        }
+        else {
+            ctx.paintFromU = ctx.raisedLength - .25f;
+            ctx.paintToU = ctx.raisedLength + .25f;
+        }
+        ctx.paintToU = Mathf.Max(ctx.paintToU, ctx.paintFromU + .05f);
+
         Quaternion frame = ctx.headRotation;
-        float surface =
-            config.TreeSurfaceRadiusU + config.TreeSurfaceClearanceU
-                - config.BellyPressDepthU;
         for (int ring = 0; ring < BodyRings; ring++) {
-            float behind = ring * config.SmoothBodyLengthU / (BodyRings - 1);
             Vector3 tangent = ring == 0 ? ctx.headRotation * Vector3.up
                 : (rig.spineCenters[Mathf.Min(BodyRings - 1, ring + 1)]
                     - rig.spineCenters[ring - 1]).normalized;
             if (tangent.sqrMagnitude < .00001f) {
                 tangent = frame * Vector3.up;
             }
-            rig.spineTangents[ring] = tangent;
-            Vector3 outward =
-                new Vector3(rig.spineCenters[ring].x - rig.axisXZ.x, 0f,
-                    rig.spineCenters[ring].z - rig.axisXZ.y).normalized;
-            float centreRadius =
-                new Vector2(rig.spineCenters[ring].x - rig.axisXZ.x,
-                    rig.spineCenters[ring].z - rig.axisXZ.y).magnitude;
-            float lift = centreRadius - (surface + rig.spineRadii[ring] * .9f);
-            rig.spineContact[ring] =
-                1f - Mathf.SmoothStep(0f, 1f,
-                    Mathf.InverseLerp(.02f, .15f, lift));
             if (ring > 0) {
+                Vector3 outward =
+                    new Vector3(rig.spineCenters[ring].x - rig.axisXZ.x, 0f,
+                        rig.spineCenters[ring].z - rig.axisXZ.y).normalized;
                 Vector3 transported =
                     Vector3.ProjectOnPlane(frame * Vector3.forward,
                         tangent).normalized;
@@ -520,260 +552,46 @@ public sealed class FallingCobraSpine {
                         Vector3.ProjectOnPlane(-outward, tangent).normalized;
                 }
                 frame = Quaternion.LookRotation(transported, tangent);
-
             }
-            float paintBranchWeight = ctx.following
-                ?rig.RemainingCoilWeight(ring)
-                :Mathf.SmoothStep(0f, 1f,
-                    Mathf.InverseLerp(ctx.raisedLength - .25f,
-                        ctx.raisedLength + .25f,
-                        behind));
-            Vector3 paintBelly = ring == 0?ctx.headBelly
-                :rig.BranchCoil.SupportedPaintBelly(outward, paintBranchWeight);
-            Vector3 right = frame * Vector3.right,
-                belly = frame * Vector3.forward;
-            float loft =
-                Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(behind / collarLoftU));
-            for (int side = 0; side <= BodySides; side++) {
-                float angle = (side % BodySides) * Mathf.PI * 2f / BodySides,
-                    cosine = Mathf.Cos(angle), sine = Mathf.Sin(angle);
-                Vector3 localCircle =
-                    new Vector3(cosine * rig.spineRadii[ring], 0f,
-                        sine * rig.spineRadii[ring]);
-                Vector3 section =
-                    Vector3.Lerp(rig.neckRim[side], localCircle, loft);
-                Vector3 point =
-                    rig.spineCenters[ring] + frame * section - tangent
-                        * (NeckOverlapU * (1f - loft));
-                Vector3 normal = right * cosine + belly * sine;
-                normal = Vector3.Slerp(frame * rig.neckSourceNormals[side],
-                    normal, loft).normalized;
-                Vector3 radial =
-                    new Vector3(point.x - rig.axisXZ.x, 0f,
-                        point.z - rig.axisXZ.y);
-                if (ring > 0 && radial.magnitude < surface) {
-                    radial.Normalize();
-                    point.x = rig.axisXZ.x + radial.x * surface;
-                    point.z = rig.axisXZ.y + radial.z * surface;
-                    normal = -radial;
-                }
-                int index = ring * BodyStride + side;
-                rig.referenceWaveVertices[index] =
-                    ctx.toLocal.MultiplyPoint3x4(point);
-                rig.referenceWaveNormals[index] =
-                    ctx.toLocal.MultiplyVector(normal).normalized;
-                rig.paintedBellyDirections[index] =
-                    ctx.toLocal.MultiplyVector(paintBelly).normalized;
-            }
+            rig.bodyBones[ring].SetPositionAndRotation(
+                rig.spineCenters[ring], frame);
         }
-        RoundNeckSurface(ctx.endRing);
     }
-    private void PublishMesh() {
+    private void PublishLook() {
         using var _ = PUBLISH_MARKER.Auto();
-        int tip = BodyRings * BodyStride, neckCap = tip + 1;
-        rig.referenceWaveVertices[tip] =
-            ctx.toLocal.MultiplyPoint3x4(rig.spineCenters[BodyRings - 1]
-                + rig.spineTangents[BodyRings - 1] * .005f);
-        rig.referenceWaveNormals[tip] =
-            ctx.toLocal.MultiplyVector(rig.spineTangents[BodyRings - 1]);
-        rig.referenceWaveVertices[neckCap] =
-            ctx.toLocal.MultiplyPoint3x4(ctx.headCenter - ctx.headRotation
-                * Vector3.up
-                * NeckOverlapU);
-        rig.referenceWaveNormals[neckCap] =
-            ctx.toLocal.MultiplyVector(-(ctx.headRotation * Vector3.up));
-        rig.paintedBellyDirections[neckCap] =
-            ctx.toLocal.MultiplyVector(ctx.headBelly).normalized;
-        rig.paintedBellyDirections[tip] =
-            rig.paintedBellyDirections[(BodyRings - 1) * BodyStride];
-        SmoothTubeNormals();
-        rig.animatedReferenceMesh.vertices = rig.referenceWaveVertices;
-        rig.animatedReferenceMesh.normals = rig.referenceWaveNormals;
-        rig.animatedReferenceMesh.SetUVs(2, rig.paintedBellyDirections);
-        rig.animatedReferenceMesh.RecalculateBounds();
         Vector3 sourceBelly =
             -Vector3.ProjectOnPlane(rig.SourceEyeForward(),
                 Vector3.up).normalized;
         float palettePhase =
             .25f - Mathf.Atan2(sourceBelly.z, sourceBelly.x) / (Mathf.PI * 2f);
+        Vector4 treeAxis = new Vector4(rig.axisXZ.x, 0f, rig.axisXZ.y, 0f);
         rig.referenceRenderer.GetPropertyBlock(rig.surfaceBlock);
-        rig.surfaceBlock.SetVector("_TreeAxis",
-            new Vector4(rig.axisXZ.x, 0f, rig.axisXZ.y, 0f));
-        rig.surfaceBlock.SetFloat("_HeadBellyPhase", palettePhase);
-        rig.surfaceBlock.SetVector("_HeadBellyDirection", ctx.headBelly);
-        rig.surfaceBlock.SetFloat("_CollarLength", config.NeckCollarLengthU);
-        rig.surfaceBlock.SetFloat("_HeadWatch", ctx.following
+        rig.surfaceBlock.SetVector(TREE_AXIS_ID, treeAxis);
+        rig.surfaceBlock.SetVector(BRANCH_UP_ID,
+            rig.supportBranch != null ? rig.branchUp : Vector3.up);
+        rig.surfaceBlock.SetVector(PAINT_RANGE_ID,
+            new Vector4(ctx.paintFromU, ctx.paintToU, 0f, 0f));
+        rig.surfaceBlock.SetFloat(HEAD_BELLY_PHASE_ID, palettePhase);
+        rig.surfaceBlock.SetVector(HEAD_BELLY_DIRECTION_ID, ctx.headBelly);
+        rig.surfaceBlock.SetFloat(COLLAR_LENGTH_ID, config.NeckCollarLengthU);
+        rig.surfaceBlock.SetFloat(HEAD_WATCH_ID, ctx.following
             ? 1f - ctx.departure
             : 1f);
-        rig.surfaceBlock.SetFloat("_BodyLength", config.SmoothBodyLengthU);
+        rig.surfaceBlock.SetFloat(BODY_LENGTH_ID, config.SmoothBodyLengthU);
         rig.referenceRenderer.SetPropertyBlock(rig.surfaceBlock);
         rig.referenceHeadRenderer.GetPropertyBlock(rig.surfaceBlock);
-        rig.surfaceBlock.SetVector("_TreeAxis",
-            new Vector4(rig.axisXZ.x, 0f, rig.axisXZ.y, 0f));
-        rig.surfaceBlock.SetFloat("_HeadBellyPhase", palettePhase);
-        rig.surfaceBlock.SetVector("_HeadBellyDirection", ctx.headBelly);
-        rig.surfaceBlock.SetFloat("_CollarLength", config.NeckCollarLengthU);
-        rig.surfaceBlock.SetFloat("_HeadWatch", ctx.following
-            ? rig.waitingHeadBlend : 1f);
-        rig.surfaceBlock.SetFloat("_HeadWatch", 1f);
+        rig.surfaceBlock.SetVector(TREE_AXIS_ID, treeAxis);
+        rig.surfaceBlock.SetFloat(HEAD_BELLY_PHASE_ID, palettePhase);
+        rig.surfaceBlock.SetVector(HEAD_BELLY_DIRECTION_ID, ctx.headBelly);
+        rig.surfaceBlock.SetFloat(COLLAR_LENGTH_ID, config.NeckCollarLengthU);
+        rig.surfaceBlock.SetFloat(HEAD_WATCH_ID, 1f);
         rig.referenceHeadRenderer.SetPropertyBlock(rig.surfaceBlock);
         rig.spinePoseReady = true;
         rig.Eyes.UpdateTrackingEyes();
         rig.Eyes.UpdateVisibleContacts();
     }
 
-    // Neck And Tube Helpers  ##################################################
-    private void RoundNeckSurface(int neckEnd) {
-        using var _ = ROUND_NECK_MARKER.Auto();
-        if (rig.neckSurfaceBuffer == null
-            || rig.neckSurfaceBuffer.Length
-                != rig.referenceWaveVertices.Length) {
-            rig.neckSurfaceBuffer =
-                new Vector3[rig.referenceWaveVertices.Length];
-            rig.neckSurfaceOriginal =
-                new Vector3[rig.referenceWaveVertices.Length];
-        }
-        System.Array.Copy(rig.referenceWaveVertices, rig.neckSurfaceOriginal,
-            rig.referenceWaveVertices.Length);
-        float step = config.SmoothBodyLengthU / (BodyRings - 1);
-        int end =
-            Mathf.Clamp(Mathf.CeilToInt(config.RoundedNeckLengthU / step), 3,
-                Mathf.Min(BodyRings - 2, neckEnd + 4));
-        float roundLength = end * step;
-        for (int pass = 0; pass<config.RoundedNeckPasses; pass++) {
-            System.Array.Copy(rig.referenceWaveVertices, rig.neckSurfaceBuffer,
-                rig.referenceWaveVertices.Length);
-            for (int ring = 1; ring<end; ring++) {
-                float behind = ring * step;
-                float weight =
-                    Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(behind / .16f))
-                    *(1f-Mathf.SmoothStep(0f,1f,
-                        Mathf.InverseLerp(roundLength*.65f,roundLength,
-                            behind)));
-                for (int side = 0; side <= BodySides; side++) {
-                    int i = ring * BodyStride + side;
-                    Vector3 average =
-                        (rig.referenceWaveVertices[i - BodyStride]
-                            + rig.referenceWaveVertices[i + BodyStride]) * .5f;
-                    Vector3 rounded =
-                        Vector3.Lerp(rig.referenceWaveVertices[i], average,
-                            .5f * weight);
-                    rig.neckSurfaceBuffer[i] =
-                        rig.neckSurfaceOriginal[i]
-                            + Vector3.ClampMagnitude(rounded
-                                - rig.neckSurfaceOriginal[i],
-                                    config.RoundedNeckMaxOffsetU);
-                }
-            }
-            Vector3[] swap = rig.referenceWaveVertices;
-            rig.referenceWaveVertices = rig.neckSurfaceBuffer;
-            rig.neckSurfaceBuffer = swap;
-        }
-        if (rig.roundedRingCenters == null) {
-            rig.roundedRingCenters = new Vector3[BodyRings];
-            rig.originalRingCenters = new Vector3[BodyRings];
-        }
-        for (int ring = 0; ring <= end; ring++) {
-            Vector3 center = Vector3.zero, original = Vector3.zero;
-            for (int side = 0; side<BodySides; side++) {
-                center += rig.referenceWaveVertices[ring * BodyStride + side];
-                original += rig.neckSurfaceOriginal[ring * BodyStride + side];
-            }
-            rig.roundedRingCenters[ring] = center / BodySides;
-            rig.originalRingCenters[ring] = original / BodySides;
-        }
-        Vector3 headAxis =
-            rig.referenceVisual.InverseTransformDirection(
-                rig.spineTangents[0]).normalized;
-        Vector3 previousRight =
-            rig.referenceVisual.InverseTransformDirection(
-                rig.referenceHeadVisual.right).normalized;
-        for (int ring = 1; ring<end; ring++) {
-            float behind = ring * step;
-            Vector3 axis =
-                (rig.roundedRingCenters[ring + 1]
-                    - rig.roundedRingCenters[ring - 1]).normalized;
-            axis = Vector3.Slerp(headAxis, axis,
-                Mathf.SmoothStep(0f, 1f,
-                    Mathf.Clamp01(behind
-                        / config.NeckCollarLengthU))).normalized;
-            float thicknessFloor =
-                config.SmoothBodyRadiusU * config.MinimumNeckThicknessShare
-                    * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(behind / .35f));
-            Vector3 transported =
-                Vector3.ProjectOnPlane(previousRight, axis).normalized;
-            if (transported.sqrMagnitude<.000001f) {
-                transported =
-                    Vector3.ProjectOnPlane(Vector3.right, axis).normalized;
-            }
-            Vector3 targetRight =
-                Vector3.ProjectOnPlane(rig.referenceWaveVertices[ring
-                    * BodyStride] - rig.roundedRingCenters[ring],
-                        axis).normalized;
-            if (targetRight.sqrMagnitude<.000001f) {
-                targetRight = transported;
-            }
-            float roll = Vector3.SignedAngle(transported, targetRight, axis);
-            Vector3 right =
-                Quaternion.AngleAxis(Mathf.Clamp(roll,
-                    -config.BodyTwistDegPerU * step,
-                        config.BodyTwistDegPerU * step), axis)
-                            * transported;
-            Vector3 forward = Vector3.Cross(right, axis).normalized;
-            previousRight = right;
-            for (int side = 0; side <= BodySides; side++) {
-                int i = ring * BodyStride + side;
-                float angle = (side%BodySides) * Mathf.PI * 2f / BodySides;
-                Vector3 radial =
-                    right * Mathf.Cos(angle) + forward * Mathf.Sin(angle);
-                float radius =
-                    Mathf.Max(thicknessFloor,
-                        Vector3.Distance(rig.neckSurfaceOriginal[i],
-                            rig.originalRingCenters[ring]));
-                rig.referenceWaveVertices[i] =
-                    rig.roundedRingCenters[ring] + radial.normalized * radius;
-            }
-        }
-
-    }
-    private void SmoothTubeNormals() {
-        if (rig.roundedRingCenters == null) {
-            rig.roundedRingCenters = new Vector3[BodyRings];
-        }
-        for (int ring = 0; ring<BodyRings; ring++) {
-            Vector3 center = Vector3.zero;
-            for (int side = 0; side<BodySides; side++) {
-                center += rig.referenceWaveVertices[ring * BodyStride + side];
-            }
-            rig.roundedRingCenters[ring] = center / BodySides;
-        }
-        float step = config.SmoothBodyLengthU / (BodyRings - 1);
-        for (int ring = 1; ring<BodyRings; ring++)for (int side =
-            0; side <= BodySides; side++) {
-            int i = ring * BodyStride + side, s = side%BodySides;
-            Vector3 along =
-                rig.referenceWaveVertices[Mathf.Min(BodyRings - 1, ring + 1)
-                    * BodyStride + side]
-                -rig.referenceWaveVertices[(ring - 1) * BodyStride + side];
-            Vector3 across =
-                rig.referenceWaveVertices[ring * BodyStride + (s + 1)%BodySides]
-                -rig.referenceWaveVertices[ring * BodyStride
-                    + (s + BodySides - 1)%BodySides];
-            Vector3 normal = Vector3.Cross(along, across);
-            if (normal.sqrMagnitude<.00000001f) {
-                continue;
-            }
-            normal.Normalize();
-            if (Vector3.Dot(normal,
-                rig.referenceWaveVertices[i]
-                    - rig.roundedRingCenters[ring])<0f) {
-                normal = -normal;
-            }
-            rig.referenceWaveNormals[i] =
-                Vector3.Slerp(rig.referenceWaveNormals[i], normal,
-                    SmoothVisual01(ring * step / .3f)).normalized;
-        }
-    }
+    // Neck Helpers  ###########################################################
     private void RelaxOriginalRaisedNeck() {
         if (rig.relaxedNeck == null || rig.relaxedNeck.Length != BodyRings) {
             rig.relaxedNeck = new Vector3[BodyRings];

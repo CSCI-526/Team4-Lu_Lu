@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 /// Editor starts with <c>-fallingCobraBenchmark &lt;outputFolder&gt;</c>.
 /// Loads <c>GameplayScene</c>, holds the monkey still beside the cobras, keeps
 /// <see cref="COBRA_TARGET"/> cobras live around it, times
-/// <see cref="RECORD_FRAMES"/> frames with <see cref="ProfilerRecorder"/>,
+/// <see cref="RECORD_S"/> seconds of frames with <see cref="ProfilerRecorder"/>,
 /// then writes <c>results.json</c> and a screenshot of a perched, a warning
 /// and a falling snake to the folder, and quits.
 /// <para>
@@ -148,16 +148,21 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
             case Phase.WarmUp:
                 TickScene();
                 phaseFrames++;
-                if (phaseFrames >= WARM_UP_FRAMES) {
+                if (phaseFrames >= WARM_UP_FRAMES
+                    && Time.time - phaseStartS >= WARM_UP_S) {
                     ResetSamples();
                     phase = Phase.Recording;
                     phaseFrames = 0;
+                    phaseStartS = Time.time;
                 }
                 break;
             case Phase.Recording:
                 TickScene();
                 SampleFrame();
-                if (sampleCount >= RECORD_FRAMES) {
+                // game time, not frames: a faster frame must not shorten the
+                // run, or the snakes would not reach the same states
+                if (Time.time - phaseStartS >= RECORD_S
+                    && sampleCount >= MIN_RECORD_FRAMES) {
                     phase = Phase.Shots;
                     StartCoroutine(ShotsRoutine());
                 }
@@ -168,7 +173,9 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
     // constants  ##############################################################
     private const int COBRA_TARGET = 12;
     private const int WARM_UP_FRAMES = 120;
-    private const int RECORD_FRAMES = 300;
+    private const int MIN_RECORD_FRAMES = 300;
+    private const float WARM_UP_S = 3f;
+    private const float RECORD_S = 12f;
     private const int SETTLE_FRAMES = 60;
     private const int TOP_UP_INTERVAL_FRAMES = 15;
     private const int SEED = 20260525;
@@ -176,12 +183,14 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
     private const int SHOT_TIMEOUT_FRAMES = 1200;
     private const int SHOT_WIDTH = 1280;
     private const int SHOT_HEIGHT = 720;
-    private const int RECORDER_CAPACITY = 60000;
+    private const int RECORDER_CAPACITY = 262144;
     private const float TIMEOUT_S = 240f;
     private const float NEAR_SEGMENT_GAP_U = 25f;
     private const float LIVE_RADIUS_U = 30f;
     private const float PULL_BELOW_U = 3f;
     private const float PULL_SPEED_U = 40f;
+    private const float WARNING_SHOT_DELAY_S = 1.2f;
+    private const float FALLING_SHOT_DELAY_S = .5f;
     private const float SHOT_DISTANCE_U = 10f;
     private const float SHOT_FOV_DEG = 40f;
     private const string HIT_LOG_PREFIX =
@@ -192,7 +201,8 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
         "FallingCobra.UpdateBlends", "FallingCobra.BuildBodyPath",
         "FallingCobra.ChooseHeadPose", "FallingCobra.FitNeckCurve",
         "FallingCobra.PlaceNeckSpine", "FallingCobra.BuildTubeMesh",
-        "FallingCobra.PublishMesh", "FallingCobra.AdvanceSwimTrail",
+        "FallingCobra.PublishMesh", "FallingCobra.PoseBones",
+        "FallingCobra.PublishLook", "FallingCobra.AdvanceSwimTrail",
         "FallingCobra.FairSpineCorners", "FallingCobra.RoundNeckSurface",
     };
     private static readonly string[] PHYSICS_MARKERS = {
@@ -230,6 +240,7 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
     private string outputDir;
     private Phase phase = Phase.Loading;
     private int phaseFrames;
+    private float phaseStartS;
     private bool isLoadRequested;
     private int loadFrame;
     private int sampleCount;
@@ -250,6 +261,8 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
     private readonly List<float> mainThreadMs = new();
     private readonly Report report = new();
     private readonly Dictionary<string, int> hitSources = new();
+    private readonly Dictionary<FallingCobraController,
+        (FallingCobraState, float)> stateSince = new();
     private readonly List<TreeSegmentController> segments = new();
     private FallingCobraSpawner spawner;
     private Transform monkey;
@@ -326,6 +339,7 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
         }
         phase = Phase.WarmUp;
         phaseFrames = 0;
+        phaseStartS = Time.time;
     }
 
     // vertical gap from the monkey to the segment's tallest collider; u
@@ -432,7 +446,8 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
                 if (shot.Contains(state)) {
                     continue;
                 }
-                FallingCobraController cobra = FindNearestInState(state);
+                FallingCobraController cobra =
+                    FindNearestInState(state, ShotDelayS(state));
                 if (cobra != null) {
                     CaptureShot(cobra, state);
                     shot.Add(state);
@@ -447,13 +462,29 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
         Finish(null);
     }
 
-    private FallingCobraController FindNearestInState(FallingCobraState state) {
+    // how long a snake stays in its state before its shot, so every run
+    // shoots it at the same stage of the pose; s
+    private static float ShotDelayS(FallingCobraState state) {
+        return state == FallingCobraState.Warning ? WARNING_SHOT_DELAY_S
+            : state == FallingCobraState.Falling ? FALLING_SHOT_DELAY_S : 0f;
+    }
+
+    // the cobra nearest the monkey that has stayed in the state for at least
+    // minAgeS, watched since the first time it was looked for
+    private FallingCobraController FindNearestInState(FallingCobraState state,
+        float minAgeS = 0f) {
         FallingCobraController best = null;
         float bestDistance = float.MaxValue;
         foreach (FallingCobraController cobra in
             FindObjectsByType<FallingCobraController>(
                 FindObjectsSortMode.None)) {
-            if (cobra.CurrentState != state) {
+            if (!stateSince.TryGetValue(cobra, out (FallingCobraState,
+                float) seen) || seen.Item1 != cobra.CurrentState) {
+                stateSince[cobra] = (cobra.CurrentState, Time.time);
+                seen = stateSince[cobra];
+            }
+            if (cobra.CurrentState != state
+                || Time.time - seen.Item2 < minAgeS) {
                 continue;
             }
             float distance =
@@ -575,10 +606,12 @@ public sealed class FallingCobraBenchmark: MonoBehaviour {
         report.metrics.Add(Summarize("MainThread", mainThread.Valid,
             mainThreadMs, 0f));
         foreach (Metric metric in recorders) {
+            // a full buffer has dropped calls: report -1, not a wrong count
             int calls = metric.callRecorder.Valid
                 ? metric.callRecorder.Count - metric.callsAtStart : 0;
-            float perFrame = recordedFrameTotal > 0
-                ? calls / (float)recordedFrameTotal : 0f;
+            float perFrame = recordedFrameTotal <= 0 ? 0f
+                : metric.callRecorder.Count >= RECORDER_CAPACITY ? -1f
+                : calls / (float)recordedFrameTotal;
             report.metrics.Add(Summarize(metric.name,
                 metric.frameRecorder.Valid, metric.perFrameMs, perFrame));
         }

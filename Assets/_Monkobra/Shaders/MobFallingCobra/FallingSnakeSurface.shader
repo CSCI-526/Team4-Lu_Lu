@@ -15,6 +15,8 @@ Shader "Monkobra/FallingSnakeSurface" {
         _NeckTextureBlendU("Original neck texture blend distance", Float) = .65
         _TreeAxis("Tree axis", Vector) = (0,0,0,0)
         _HeadBellyDirection("Head underside direction", Vector) = (0,-1,0,0)
+        _BranchUp("Branch up", Vector) = (0,1,0,0)
+        _PaintBranchRange("Body span where the belly turns to the branch", Vector) = (99,100,0,0)
     }
     SubShader {
         Tags {"RenderType"="Opaque" "RenderPipeline"="UniversalPipeline"}
@@ -32,9 +34,9 @@ Shader "Monkobra/FallingSnakeSurface" {
                 half4 _BaseColor, _SkinColor, _BellyColor, _SpotColor;
                 half _SmoothBody, _HeadWatch, _BellyThreshold, _YellowRetention;
                 float _BodyLength, _NeckTextureBlendU, _HeadBellyPhase, _CollarLength;
-                float4 _TreeAxis, _HeadBellyDirection;
+                float4 _TreeAxis, _HeadBellyDirection, _BranchUp, _PaintBranchRange;
             CBUFFER_END
-            struct Attributes {float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;float2 neckUV:TEXCOORD1;float3 bellyDirectionOS:TEXCOORD2;half4 color:COLOR;};
+            struct Attributes {float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;float2 neckUV:TEXCOORD1;half4 color:COLOR;};
             struct Varyings {float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;half3 normalWS:TEXCOORD1;float2 uv:TEXCOORD2;half body:TEXCOORD3;half fog:TEXCOORD4;half3 bellyDirectionWS:TEXCOORD5;half3 collar:TEXCOORD6;};
             Varyings Vert(Attributes input) {
                 Varyings output;
@@ -42,7 +44,11 @@ Shader "Monkobra/FallingSnakeSurface" {
                 output.positionCS=TransformWorldToHClip(output.positionWS);
                 output.normalWS=TransformObjectToWorldNormal(input.normalOS);
                 output.uv=TRANSFORM_TEX(input.uv,_BaseMap);
-                output.bellyDirectionWS=TransformObjectToWorldDir(input.bellyDirectionOS,false);
+                // the belly faces the trunk, turning to face down onto the branch along the coil span
+                float3 outward=float3(output.positionWS.x-_TreeAxis.x,0,output.positionWS.z-_TreeAxis.z);
+                outward=dot(outward,outward)>1e-6?normalize(outward):float3(0,0,1);
+                float paintWeight=smoothstep(_PaintBranchRange.x,_PaintBranchRange.y,input.uv.y*_BodyLength);
+                output.bellyDirectionWS=normalize(lerp(-outward,-normalize(_BranchUp.xyz),paintWeight));
                 output.body=input.color.r;
                 output.collar=half3(input.color.g,input.color.b*2-1,input.color.a*2-1);
                 output.fog=ComputeFogFactor(output.positionCS.z);

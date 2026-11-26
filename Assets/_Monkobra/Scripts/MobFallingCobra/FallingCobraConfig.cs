@@ -351,6 +351,10 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>largest offset the rounding may add; u</returns>
     public float RoundedNeckMaxOffsetU => roundedNeckMaxOffsetU;
 
+    /// <returns>the skinned body prefab baked by Monkobra > Build Falling
+    /// Cobra Body</returns>
+    public GameObject BodyPrefab => bodyPrefab;
+
     /// <returns>most head samples the swim trail takes in one frame, however
     /// slow the frame</returns>
     public int MaxTrailSamplesPerFrame => maxTrailSamplesPerFrame;
@@ -732,6 +736,11 @@ public class FallingCobraConfig: ScriptableObject {
     private CartoonCobraVisual.Settings cartoonAppearance = new();
 
     [Header("Falling Snake Visual")]
+    [SerializeField]
+    [Tooltip("skinned body of the snake; set only by Monkobra > Build "
+        + "Falling Cobra Body")]
+    private GameObject bodyPrefab;
+
     [SerializeField, Min(0.1f)]
     [Tooltip("scale of the snake against its reference size")]
     private float referenceSizeMultiplier = 1.5f;

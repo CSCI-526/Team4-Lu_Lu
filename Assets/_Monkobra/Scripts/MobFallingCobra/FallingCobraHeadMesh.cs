@@ -41,18 +41,22 @@ public sealed class FallingCobraHeadMesh {
             || !segments[0].TryGetComponent(out Renderer source)) {
             return;
         }
-        if (config.CartoonAppearance.referenceBody != null) {
+        GameObject reference = config.CartoonAppearance.referenceBody;
+        if (reference != null && config.BodyPrefab == null) {
+            Debug.LogWarning("FallingCobraHeadMesh:\tno skinned body, run "
+                + "Monkobra > Build Falling Cobra Body", rig.host);
+        }
+        if (reference != null && config.BodyPrefab != null
+            && reference.TryGetComponent(out MeshFilter headSource)) {
             foreach (Transform segment in segments) {
                 if (segment.TryGetComponent(out Renderer renderer)) {
                     renderer.enabled = false;
                 }
             }
-            GameObject visual =
-                Object.Instantiate(config.CartoonAppearance.referenceBody,
-                    rig.host);
+            GameObject visual = Object.Instantiate(config.BodyPrefab,
+                rig.host);
             visual.name = "CartoonSnakeBody";
-            MeshFilter meshFilter = visual.GetComponent<MeshFilter>();
-            BuildFallingReference(meshFilter);
+            BuildFallingReference(headSource.sharedMesh, visual);
             return;
         }
         rig.cartoonVisual =
@@ -371,11 +375,19 @@ public sealed class FallingCobraHeadMesh {
         return worst;
     }
 
-    public void BuildFallingReference(MeshFilter filter) {
+    // the rigid head from the source mesh, and the baked skinned body the
+    // spine poses each frame
+    public void BuildFallingReference(Mesh source, GameObject body) {
         rig.swimPhaseOffset =
             (float)new System.Random(rig.host.GetInstanceID()).NextDouble()
                 * Mathf.PI * 2f;
-        Mesh source = filter.sharedMesh;
+        if (!body.TryGetComponent(out SkinnedMeshRenderer skinned)
+            || skinned.bones.Length != BodyRings) {
+            Debug.LogError("FallingCobraHeadMesh:\tbody prefab needs a "
+                + "SkinnedMeshRenderer of " + BodyRings + " bones, run "
+                + "Monkobra > Build Falling Cobra Body", rig.host);
+            return;
+        }
         float size =
             config.HitRadiusU * 2f * config.ReferenceSizeMultiplier
                 / Mathf.Max(source.bounds.size.x, source.bounds.size.z);
@@ -400,63 +412,11 @@ public sealed class FallingCobraHeadMesh {
             rig.headNeckRadiusU = Mathf.Max(rig.headNeckRadiusU, p.magnitude);
         }
         Bounds headBounds = template.bounds;
-        int total = BodyRings * BodyStride + 2;
-        rig.referenceWaveVertices = new Vector3[total];
-        rig.referenceWaveNormals = new Vector3[total];
-        rig.paintedBellyDirections = new Vector3[total];
-        Vector2[] coordinates = new Vector2[total];
-        Vector2[] sourceUV = new Vector2[total];
-        Color[] colors = new Color[total];
-        List<int> indices = new List<int>(BodyRings * BodySides * 6);
-        for (int ring = 0; ring < BodyRings; ring++) {
-            float along = ring / (float)(BodyRings - 1);
-            for (int side = 0; side <= BodySides; side++) {
-                int vertex = ring * BodyStride + side;
-                coordinates[vertex] =
-                    new Vector2(side / (float)BodySides, along);
-                sourceUV[vertex] = rig.neckTextureUV[side];
-                colors[vertex] = new Color(1f, 0f, 0f, 1f);
-                if (ring + 1 < BodyRings && side < BodySides) {
-                    int next = vertex + BodyStride;
-                    indices.Add(vertex);
-                    indices.Add(next);
-                    indices.Add(vertex + 1);
-                    indices.Add(vertex + 1);
-                    indices.Add(next);
-                    indices.Add(next + 1);
-                }
-            }
-        }
-        int tip = total - 2;
-        int neckCap = total - 1;
-        colors[neckCap] = new Color(1f, 0f, 0f, 1f);
-        coordinates[neckCap] = new Vector2(.5f, 0f);
-        sourceUV[neckCap] = rig.neckTextureUV[0];
-        for (int side = 0; side < BodySides; side++) {
-            indices.Add(neckCap);
-            indices.Add(side);
-            indices.Add(side + 1);
-        }
-        colors[tip] = new Color(1f, 0f, 0f, 1f);
-        coordinates[tip] = new Vector2(.5f, 1f);
-        for (int side = 0; side < BodySides; side++) {
-            indices.Add((BodyRings - 1) * BodyStride + side);
-            indices.Add(tip);
-            indices.Add((BodyRings - 1) * BodyStride + side + 1);
-        }
-        rig.animatedReferenceMesh = new Mesh { name = "Smooth spine snake" };
-        rig.animatedReferenceMesh.MarkDynamic();
-        rig.animatedReferenceMesh.vertices = rig.referenceWaveVertices;
-        rig.animatedReferenceMesh.normals = rig.referenceWaveNormals;
-        rig.animatedReferenceMesh.uv = coordinates;
-        rig.animatedReferenceMesh.uv2 = sourceUV;
-        rig.animatedReferenceMesh.colors = colors;
-        rig.animatedReferenceMesh.triangles = indices.ToArray();
-        filter.sharedMesh = rig.animatedReferenceMesh;
-        rig.referenceVisual = filter.transform;
+        rig.bodyBones = skinned.bones;
+        rig.referenceVisual = body.transform;
         rig.referenceVisual.localScale = Vector3.one;
         rig.referenceVisual.localPosition = Vector3.zero;
-        rig.referenceRenderer = filter.GetComponent<Renderer>();
+        rig.referenceRenderer = skinned;
         rig.referenceHeadVisual =
             new GameObject("CartoonSnakeHead", typeof(MeshFilter),
                 typeof(MeshRenderer)).transform;
@@ -473,9 +433,7 @@ public sealed class FallingCobraHeadMesh {
             rig.referenceVisual.gameObject.layer;
         rig.surfaceBlock = new MaterialPropertyBlock();
         rig.spineCenters = new Vector3[BodyRings];
-        rig.spineTangents = new Vector3[BodyRings];
         rig.spineRadii = new float[BodyRings];
-        rig.spineContact = new float[BodyRings];
         rig.referenceHeadBelowPivotU =
             Mathf.Max(config.HitRadiusU, -headBounds.min.y + .05f);
         rig.hitCollider.radius =

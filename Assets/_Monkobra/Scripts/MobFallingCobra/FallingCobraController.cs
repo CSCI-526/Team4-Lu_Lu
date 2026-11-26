@@ -33,11 +33,11 @@ public class FallingCobraController: MonoBehaviour {
     // Public Members  #########################################################
     /// <returns>pivot to the far end of the snake, hit radius included; u
     /// </returns>
-    public float LengthU => rig.animatedReferenceMesh != null
+    public float LengthU => rig.HasBody
         ?config.SmoothBodyLengthU:rig.hitCollider.height;
 
     /// <returns>how far the snake's tail reaches below its pivot; u</returns>
-    public float TailBelowPivotU => rig.animatedReferenceMesh != null
+    public float TailBelowPivotU => rig.HasBody
         ? rig.referenceHeadBelowPivotU : config.HitRadiusU;
 
     /// <returns>the cobra's current state</returns>
@@ -214,9 +214,6 @@ public class FallingCobraController: MonoBehaviour {
         if (rig.eyePupilMesh != null) {
             Destroy(rig.eyePupilMesh);
         }
-        if (rig.animatedReferenceMesh != null) {
-            Destroy(rig.animatedReferenceMesh);
-        }
     }
 
     private void AlignReferenceToTree() {
@@ -322,8 +319,8 @@ public class FallingCobraController: MonoBehaviour {
 
     private void LateUpdate() {
         using var _ = LATE_UPDATE_MARKER.Auto();
-        if (rig.animatedReferenceMesh == null
-            || rig.state == FallingCobraState.Done || !rig.perchBound) {
+        if (!rig.HasBody || rig.state == FallingCobraState.Done
+            || !rig.perchBound) {
             return;
         }
         if (IsDormantAndIdle()) {
