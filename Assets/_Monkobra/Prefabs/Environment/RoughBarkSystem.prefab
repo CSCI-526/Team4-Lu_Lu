@@ -51,5 +51,4 @@ MonoBehaviour:
   patchArcRangeDeg: {x: 110, y: 170}
   patchSeparationU: 1
   spawnAheadU: 10
-  placementRetries: 12
   obstacleClearanceU: 0.7

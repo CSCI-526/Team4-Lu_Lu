@@ -60,6 +60,11 @@ public class DynamicTreeSegmentPool: MonoBehaviour {
     )]
     private float lookAheadU = 20f;
 
+    // Public Members  #########################################################
+    /// <returns>world y of the bottom of the first segment laid out, under
+    /// which the tree never grows; u</returns>
+    public float StackBottomY { get; private set; }
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // the mock tree is an editor-only stand-in, gone before play begins
@@ -188,6 +193,9 @@ public class DynamicTreeSegmentPool: MonoBehaviour {
             segments.Enqueue(segment);
             newestSegment = segment;
         }
+
+        StackBottomY = segments.Peek().transform.position.y
+            - segments.Peek().GetHeight() * 0.5f;
 
         // the segments' Start reads collider bounds, so push the poses
         Physics.SyncTransforms();

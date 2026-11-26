@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed96d3713e72aaf44bbc21173442a93a, type: 3}
   m_Name: CobraBalanceConfig
   m_EditorClassIdentifier: Assembly-CSharp::CobraBalanceConfig
-  fallingCobraAttemptCount: 3
-  fallingCobraSpawnProbabilityCurve:
+  fallingCobraDensityCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -36,7 +35,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.47
-      value: 0.14
+      value: 0.42
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -45,7 +44,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.65
-      value: 0.07
+      value: 0.21
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -54,16 +53,16 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 0.2
-      inSlope: 0.21
-      outSlope: -0.08
+      value: 0.6
+      inSlope: 0.63
+      outSlope: -0.24
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1.25
-      value: 0.18
+      value: 0.54
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -72,18 +71,18 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 2
-      value: 0.2
-      inSlope: 0.0266667
-      outSlope: 0.21
+      value: 0.6
+      inSlope: 0.0800001
+      outSlope: 0.63
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 3
-      value: 0.35
-      inSlope: 0.15
-      outSlope: 0.15
+      value: 1.05
+      inSlope: 0.45
+      outSlope: 0.45
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334

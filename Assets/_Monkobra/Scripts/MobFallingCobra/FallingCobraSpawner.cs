@@ -11,23 +11,23 @@ using UnityEngine.Serialization;
 /// any object active from scene load, never under the pool's mock tree,
 /// which is deactivated at runtime.
 /// <para>
-/// Rolled like branches: a fixed attempt count per segment, each attempt
-/// against the falling cobra probability curve of
-/// <see cref="CobraBalanceConfig"/> sampled at the segment's ramped
-/// difficulty. Each cobra is a child of its segment, so a restart's clear
-/// removes it.
+/// Spaced like branches by <see cref="TrunkScatter"/>, on its FallingCobra
+/// channel: the spots whose height falls in the segment, from the falling
+/// cobra density curve of <see cref="CobraBalanceConfig"/> read at each
+/// height's ramped difficulty. Each cobra is a child of the segment its
+/// branch grows on, so that segment's restart clear removes it.
 /// </para>
 /// <para>
-/// A cobra wraps its resting body around an existing branch of the segment.
-/// A segment without branches receives no cobra. Branches too close to
-/// another cobra are retried, then skipped.
+/// A cobra wraps its resting body around the live branch nearest its spot,
+/// within a vertical search window, on any segment. No branch near means
+/// no cobra. Branches too close to another cobra are retried, nearest
+/// first, then skipped.
 /// </para>
 /// <para>
 /// Ambush: with <see cref="CobraBalanceConfig.FallingCobraBananaAmbushChance"/>
-/// a cobra instead hangs at the angle of a banana on its segment, a little
-/// above it, so reaching for that banana is what wakes it. If the segment
-/// has no banana, or no ambush spot fits, the cobra falls back to a random
-/// spot.
+/// the cobra prefers a fruit branch, so reaching for that fruit is what
+/// wakes it. The choice is hashed from the spot, never rolled. If no fruit
+/// branch is near, or none fits, the cobra falls back to any branch.
 /// </para>
 /// </summary>
 public class FallingCobraSpawner: MonoBehaviour {
@@ -39,7 +39,7 @@ public class FallingCobraSpawner: MonoBehaviour {
     private FallingCobraController cobraPrefab;
 
     [SerializeField]
-    [Tooltip("cobra balance tuning; cobra attempts, chance & speeds")]
+    [Tooltip("cobra balance tuning; cobra density & speeds")]
     private CobraBalanceConfig cobraBalanceConfig;
 
     [Header("Cobra Position")]
@@ -55,8 +55,11 @@ public class FallingCobraSpawner: MonoBehaviour {
     private float minCobraSeparationU = 4f;
 
     [SerializeField]
-    [Tooltip("position retries per cobra b4 skipping it")]
-    private int maxPlacementAttempts = 20;
+    [Min(0f)]
+    [Tooltip(
+        "a spot looks for a branch this far above and below its height; u"
+    )]
+    private float searchWindowU = 6f;
 
     [Header("Banana Ambush")]
     [SerializeField]
@@ -116,7 +119,7 @@ public class FallingCobraSpawner: MonoBehaviour {
     private void OnValidate() {
         spawnRadiusU = Mathf.Max(0f, spawnRadiusU);
         minCobraSeparationU = Mathf.Max(0f, minCobraSeparationU);
-        maxPlacementAttempts = Mathf.Max(1, maxPlacementAttempts);
+        searchWindowU = Mathf.Max(0f, searchWindowU);
         ambushMinAboveBananaU = Mathf.Max(0f, ambushMinAboveBananaU);
         ambushMaxAboveBananaU = Mathf.Max(
             ambushMinAboveBananaU,
@@ -137,6 +140,10 @@ public class FallingCobraSpawner: MonoBehaviour {
 
     private bool hasWarnedNoDifficulty; // missing service logged once
     private readonly List<FallingCobraController> spawnedCobras = new();
+    private readonly List<ScatterItem> scatterItems = new();
+    private readonly List<BranchController> nearBranches = new();
+    private readonly List<(BoxCollider box, float distance)> candidates =
+        new();
 
     // private methods  ########################################################
     // rolls this spawner's cobra attempts for segment, which already holds its
@@ -160,21 +167,41 @@ public class FallingCobraSpawner: MonoBehaviour {
 
         ClearCobras(segment);
 
-        // pivots sit mid-segment, so this is the segment's middle difficulty
-        float spawnProbability = Mathf.Clamp01(
-            cobraBalanceConfig.FallingCobraSpawnProbabilityCurve.Evaluate(
-                difficulty.GetRampedValueFromYPosition(
-                    segment.transform.position.y
-                )
+        if (TrunkScatter.I == null) {
+            Debug.LogWarning(
+                "FallingCobraSpawner:\tno TrunkScatter in scene, skip "
+                    + "cobras",
+                this
+            );
+            return;
+        }
+
+        Bounds bounds = segment.GetBounds();
+        scatterItems.Clear();
+        TrunkScatter.I.GetItems(
+            ScatterChannel.FallingCobra,
+            bounds.min.y,
+            bounds.max.y,
+            GetDensity,
+            scatterItems
+        );
+        foreach (ScatterItem item in scatterItems) {
+            TrySpawnCobra(segment, item);
+        }
+    }
+
+    // expected falling cobras per 10 u of trunk at a world height
+    private float GetDensity(float worldY) {
+        RampedDifficultyManager difficulty = RampedDifficultyManager.I;
+        if (difficulty == null) {
+            return 0f;
+        }
+        return Mathf.Max(
+            0f,
+            cobraBalanceConfig.FallingCobraDensityCurve.Evaluate(
+                difficulty.GetRampedValueFromYPosition(worldY)
             )
         );
-
-        int attemptCount = cobraBalanceConfig.FallingCobraAttemptCount;
-        for (int i = 0; i < attemptCount; i++) {
-            if (Random.value < spawnProbability) {
-                TrySpawnCobra(segment);
-            }
-        }
     }
 
     // a segment's previous cobras go b4 it rolls again: its restart has
@@ -195,44 +222,79 @@ public class FallingCobraSpawner: MonoBehaviour {
         }
     }
 
-    private bool TrySpawnCobra(TreeSegmentController segment) {
-        List<BoxCollider> branches = new List<BoxCollider>();
-        List<BoxCollider> fruitBranches = new List<BoxCollider>();
-        foreach (
-            BranchController owner
-            in segment.GetComponentsInChildren<BranchController>()
-        ) {
+    // perches a cobra on the live branch nearest the scatter spot, nearest
+    // first, retrying farther ones when a spot is taken or in the boss zone
+    private bool TrySpawnCobra(
+        TreeSegmentController segment,
+        ScatterItem item
+    ) {
+        nearBranches.Clear();
+        TreeSegmentController.GetLiveBranches(
+            item.Y - searchWindowU,
+            item.Y + searchWindowU,
+            nearBranches
+        );
+
+        // the trunk axis is the same for every segment
+        Vector3 axis = segment.transform.position;
+        Vector3 wanted = new Vector3(axis.x, item.Y, axis.z)
+            + Quaternion.Euler(0f, item.YawDeg, 0f) * Vector3.forward
+                * spawnRadiusU;
+
+        // the ambush preference is hashed from the spot, so it never changes
+        // with segment order
+        bool isAmbush = ToUnit(item.RetrySeed)
+            < cobraBalanceConfig.FallingCobraBananaAmbushChance;
+        candidates.Clear();
+        bool hasFruitCandidate = false;
+        foreach (BranchController owner in nearBranches) {
             foreach (
                 BoxCollider box
                 in owner.GetComponentsInChildren<BoxCollider>()
             ) {
                 if (!box.enabled || box.isTrigger
                     || !box.CompareTag("Branch")) continue;
-                branches.Add(box);
-                if (owner.Kind != BranchKind.Empty) fruitBranches.Add(box);
+                Vector3 center = box.transform.TransformPoint(box.center);
+                candidates.Add((box, Vector3.Distance(center, wanted)));
+                if (owner.Kind != BranchKind.Empty) hasFruitCandidate = true;
             }
         }
-        // Every waiting snake needs real wood beneath its coil. No branch means
-        // no spawn.
-        if (branches.Count == 0) return false;
-        List<BoxCollider> candidates = fruitBranches.Count > 0
-            && Random.value < cobraBalanceConfig.FallingCobraBananaAmbushChance
-            ? fruitBranches : branches;
+        // Every waiting snake needs real wood beneath its coil. No branch
+        // means no spawn.
+        if (candidates.Count == 0) return false;
+        if (isAmbush && hasFruitCandidate) {
+            candidates.RemoveAll(
+                c => c.box.GetComponentInParent<BranchController>().Kind
+                    == BranchKind.Empty
+            );
+        }
+        candidates.Sort((x, y) => x.distance.CompareTo(y.distance));
+
         FallingCobraController cobra = Instantiate(cobraPrefab,
             segment.transform);
-        for (int attempt = 0; attempt < maxPlacementAttempts; attempt++) {
-            BoxCollider branch = candidates[Random.Range(0, candidates.Count)];
+        int maxAttempts = Mathf.Min(
+            candidates.Count,
+            TrunkScatter.I.MaxRetries + 1
+        );
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            BoxCollider branch = candidates[attempt].box;
+            // the cobra lives and dies with the segment its branch grows on
+            TreeSegmentController owner =
+                branch.GetComponentInParent<TreeSegmentController>();
+            Transform ownerXfm = owner != null
+                ? owner.transform : segment.transform;
+            cobra.transform.SetParent(ownerXfm, true);
             Vector3 branchCenter =
                 branch.transform.TransformPoint(branch.center);
-            Vector3 outward = branchCenter - segment.transform.position;
+            Vector3 outward = branchCenter - ownerXfm.position;
             outward.y = 0f; outward.Normalize();
-            Vector3 position = new Vector3(segment.transform.position.x,
+            Vector3 position = new Vector3(ownerXfm.position.x,
                 branchCenter.y,
-                    segment.transform.position.z) + outward * spawnRadiusU;
+                    ownerXfm.position.z) + outward * spawnRadiusU;
             cobra.transform.SetPositionAndRotation(position,
-                segment.transform.rotation);
+                ownerXfm.rotation);
             Physics.SyncTransforms();
-            cobra.Initialize(cobraBalanceConfig, segment.transform.position);
+            cobra.Initialize(cobraBalanceConfig, ownerXfm.position);
             if (!cobra.AttachToBranch(branch)
                 || !IsSpotFree(cobra.transform.position)) continue;
             RampedDifficultyManager difficulty = RampedDifficultyManager.I;
@@ -248,6 +310,11 @@ public class FallingCobraSpawner: MonoBehaviour {
         cobra.gameObject.SetActive(false);
         Destroy(cobra.gameObject);
         return false;
+    }
+
+    // 0~1 from the top 24 bits of a hash seed
+    private static float ToUnit(uint seed) {
+        return (seed >> 8) * (1f / 16777216f);
     }
 
     private bool IsSpotFree(Vector3 position) {

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Sticks <see cref="SpiderWebTrap"/> webs flat on the trunk of each
@@ -10,10 +11,11 @@ using UnityEngine;
 /// any object active from scene load, never under the pool's mock tree,
 /// which is deactivated at runtime.
 /// <para>
-/// Rolled like branches, from the Spider Web group of
-/// <see cref="WorldBalanceConfig"/>: a fixed attempt count per segment, each
-/// attempt against the web probability curve sampled at the segment's ramped
-/// difficulty, read at its middle from <see cref="RampedDifficultyManager"/>.
+/// Spaced like branches by <see cref="TrunkScatter"/>, on its Web channel:
+/// the spots whose height falls in the segment, from the web density curve
+/// of <see cref="WorldBalanceConfig"/> read at each height's ramped
+/// difficulty from <see cref="RampedDifficultyManager"/>. A spot keeps its
+/// height, a blocked one retries its yaw.
 /// </para>
 /// <para>
 /// A web lies on its segment's own stretch of bark facing outward: the
@@ -39,7 +41,7 @@ public class SpiderWebSpawner: MonoBehaviour {
     private SpiderWebTrap webPrefab;
 
     [SerializeField]
-    [Tooltip("world balance tuning; web attempts & chance curve")]
+    [Tooltip("world balance tuning; web density curve")]
     private WorldBalanceConfig worldBalanceConfig;
 
     [Header("Web Position")]
@@ -65,25 +67,22 @@ public class SpiderWebSpawner: MonoBehaviour {
     )]
     private float clearanceU = 0.3f;
 
-    [SerializeField]
-    [Tooltip("position retries per web b4 skipping it")]
-    private int maxPlacementAttempts = 30;
-
     [Header("Testing")]
     [SerializeField]
     [Tooltip(
-        "replace the balance chance curve w/ the test chance below. Tick it "
+        "replace the balance density curve w/ the test density below. Tick it "
             + "b4 Play to cover the first stack, and leave the scene unsaved"
     )]
     private bool useTestOverride = false;
 
     [SerializeField]
-    [Range(0f, 1f)]
+    [Min(0f)]
+    [FormerlySerializedAs("testSpawnChance")]
     [Tooltip(
-        "chance 0~1 that one attempt gets a web while testing, any "
-            + "difficulty. A web may land on the monkey's start spot"
+        "expected webs per 10 u of trunk while testing, any difficulty. A "
+            + "web may land on the monkey's start spot"
     )]
-    private float testSpawnChance = 1f;
+    private float testDensity = 3f;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -161,7 +160,6 @@ public class SpiderWebSpawner: MonoBehaviour {
         surfaceOffsetU = Mathf.Max(0f, surfaceOffsetU);
         minWebSeparationU = Mathf.Max(0f, minWebSeparationU);
         clearanceU = Mathf.Max(0f, clearanceU);
-        maxPlacementAttempts = Mathf.Max(1, maxPlacementAttempts);
     }
 
     // Event Handlers  #########################################################
@@ -181,6 +179,7 @@ public class SpiderWebSpawner: MonoBehaviour {
     private Vector3 webTriggerHalfSize; // web-local, prefab scale applied
     private bool hasWarnedNoDifficulty; // missing service logged once
     private readonly List<SpiderWebTrap> spawnedWebs = new();
+    private readonly List<ScatterItem> scatterItems = new();
 
     // cached references  ------------------------------------------------------
     private BoxCollider prefabTrigger;
@@ -207,11 +206,24 @@ public class SpiderWebSpawner: MonoBehaviour {
 
         ClearWebs(segment);
 
-        // pivots sit mid-segment, so this is the segment's middle difficulty
-        float chance = GetSpawnChance(
-            difficulty.GetRampedValueFromYPosition(segment.transform.position.y)
+        if (TrunkScatter.I == null) {
+            Debug.LogWarning(
+                "SpiderWebSpawner:\tno TrunkScatter in scene, skip webs",
+                this
+            );
+            return;
+        }
+
+        Bounds bounds = segment.GetBounds();
+        scatterItems.Clear();
+        TrunkScatter.I.GetItems(
+            ScatterChannel.Web,
+            bounds.min.y,
+            bounds.max.y,
+            GetDensity,
+            scatterItems
         );
-        if (chance <= 0f) {
+        if (scatterItems.Count == 0) {
             return;
         }
 
@@ -219,11 +231,8 @@ public class SpiderWebSpawner: MonoBehaviour {
         // poses into physics so the overlap test can see them
         Physics.SyncTransforms();
 
-        int attemptCount = worldBalanceConfig.WebAttemptCount;
-        for (int i = 0; i < attemptCount; i++) {
-            if (Random.value < chance) {
-                TrySpawnWeb(segment);
-            }
+        foreach (ScatterItem item in scatterItems) {
+            TrySpawnWeb(segment, item);
         }
     }
 
@@ -246,18 +255,24 @@ public class SpiderWebSpawner: MonoBehaviour {
         }
     }
 
-    // chance 0~1 that one attempt gets a web at rampedDifficulty
-    private float GetSpawnChance(float rampedDifficulty) {
+    // expected webs per 10 u of trunk at a world height
+    private float GetDensity(float worldY) {
         if (useTestOverride) {
-            return testSpawnChance;
+            return testDensity;
         }
-        return Mathf.Clamp01(
-            worldBalanceConfig.WebSpawnProbabilityCurve
-                .Evaluate(rampedDifficulty)
+        RampedDifficultyManager difficulty = RampedDifficultyManager.I;
+        if (difficulty == null) {
+            return 0f;
+        }
+        return Mathf.Max(
+            0f,
+            worldBalanceConfig.WebDensityCurve.Evaluate(
+                difficulty.GetRampedValueFromYPosition(worldY)
+            )
         );
     }
 
-    private bool TrySpawnWeb(TreeSegmentController segment) {
+    private bool TrySpawnWeb(TreeSegmentController segment, ScatterItem item) {
         Transform segmentXfm = segment.transform;
 
         // the trunk cylinder is centered on the segment pivot, so this keeps
@@ -268,12 +283,23 @@ public class SpiderWebSpawner: MonoBehaviour {
             0f,
             segment.GetHeight() * 0.5f - webHalfHeight
         );
+        // the spot keeps its height, only pulled in off the segment ends
+        float localY = Mathf.Clamp(
+            item.Y - segmentXfm.position.y,
+            -maxLocalY,
+            maxLocalY
+        );
 
-        for (int attempt = 0; attempt < maxPlacementAttempts; attempt++) {
-            Quaternion yaw = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+        int maxAttempts = TrunkScatter.I.MaxRetries + 1;
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            Quaternion yaw = Quaternion.Euler(
+                0f,
+                item.GetRetryYawDeg(attempt),
+                0f
+            );
             Vector3 localPosition =
                 yaw * Vector3.forward * (trunkRadiusU + surfaceOffsetU)
-                + Vector3.up * Random.Range(-maxLocalY, maxLocalY);
+                + Vector3.up * localY;
             // -90 yaw turns local +X onto forward, then yaw turns forward
             // onto the outward direction, so the face looks away from trunk
             Quaternion localRotation = yaw * Quaternion.Euler(0f, -90f, 0f);
