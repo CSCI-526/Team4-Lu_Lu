@@ -194,7 +194,9 @@ public sealed class CobraKingRig {
     public Quaternion entryRotation;
     public bool isChoosing;
     // waiting for the first throw to pick a mode
-    public bool isEasy;
+    public int bossLoop = 1;
+    // if this fight plays Loop 0, the EASY fight
+    public bool isEasy => bossLoop == 0;
     public int maxHealth;
     // the king's full health in the chosen mode
     public readonly List<CobraKingArenaFruit> choices =
@@ -276,21 +278,40 @@ public sealed class CobraKingRig {
     // later boss of the hardcore run's rush warns shorter
     public float WarnScale => (isEasy
         ? (Third >= 2 ? 1f : config.EasyWarnScale)
-        : (Third >= 2 ? config.FinalWarnScale : 1f)) * RushTimeScale;
+        : (Third >= 2 ? config.FinalWarnScale : 1f)) * LoopTimeScale;
 
     /// <returns>if this fight is a boss of the hardcore run's rush</returns>
     public bool IsRush => rushEncounter >= 0;
 
-    /// <returns>scale on the warnings & rests of a boss of the hardcore
-    /// run's rush, 1 outside it</returns>
-    public float RushTimeScale => IsRush
-        ? HardcoreBossRush.TimeScale(rushEncounter) : 1f;
+    /// <returns>the Loop a fight plays unless EASY is picked: 1 on Normal, its
+    /// own in the hardcore run's rush</returns>
+    public int NormalLoop => IsRush
+        ? HardcoreBossRush.LoopOf(rushEncounter) : 1;
 
-    /// <returns>the king's full health on normal: more for a later boss of
-    /// the hardcore run's rush</returns>
-    public int BaseMaxHealth => Mathf.Max(1, Mathf.RoundToInt(
-        worldBalanceConfig.BossMaxHealth
-            * (IsRush ? HardcoreBossRush.HealthScale(rushEncounter) : 1f)));
+    /// <summary>Plays the Normal Loop of this fight again.</summary>
+    public void ResetLoop() {
+        bossLoop = NormalLoop;
+    }
+
+    /// <returns>scale on the warnings & rests at Loop 2 and up, 1 before
+    /// </returns>
+    public float LoopTimeScale => bossLoop < 2 ? 1f
+        : worldBalanceConfig.CobraKingLoopGrowth.time.Evaluate(1f, bossLoop);
+
+    /// <returns>the king's full health at this Loop: EASY's share of Loop 1,
+    /// Loop 1's, or grown from Loop 2 on</returns>
+    public int BaseMaxHealth {
+        get {
+            int loopOne = worldBalanceConfig.BossMaxHealth;
+            if (bossLoop >= 2) {
+                return Mathf.Max(1, Mathf.RoundToInt(
+                    worldBalanceConfig.CobraKingLoopGrowth.health
+                        .Evaluate(loopOne, bossLoop)));
+            }
+            return bossLoop == 0 ? Mathf.Max(1, Mathf.RoundToInt(
+                loopOne * config.EasyHealthScale)) : loopOne;
+        }
+    }
 
     /// <returns>climbed height the fight begins at: the config's, or this
     /// boss's in the hardcore run's rush; u</returns>
@@ -317,7 +338,10 @@ public sealed class CobraKingRig {
         - Mathf.Min(config.GuardDepthU, Layout.heightU * 0.5f);
 
     public int MinionWaves => isEasy ? config.EasyMinionWaves
-        : config.MinionWaves;
+        : bossLoop >= 2 ? Mathf.RoundToInt(
+            worldBalanceConfig.CobraKingLoopGrowth.minionWaves
+                .Evaluate(config.MinionWaves, bossLoop))
+            : config.MinionWaves;
 
     // normal mode's last third: minion waves stream on & on, alongside the
     // usual rounds of bites & sweeps, until the king or the monkey falls;

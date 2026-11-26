@@ -259,7 +259,9 @@ public sealed class SpiderKingRig {
     // the second golden melon, shown w/ it
     public SpiderKingMelon choiceEasy;
     public SpiderKingMelon choiceNormal;
-    public bool isEasy;
+    public int bossLoop = 1;
+    // if this fight plays Loop 0, the EASY fight
+    public bool isEasy => bossLoop == 0;
     public bool hasTaughtWeb;
     // the first bullet has stopped time to teach
     public bool hasTaughtSlash;
@@ -427,13 +429,13 @@ public sealed class SpiderKingRig {
     // a hardcore boss keeps up w/ the faster monkey
     public float ChaseScale => teach == SpiderKingTeachStep.Done
         ? Mathf.Lerp(1f, config.LateChaseScale, Rage)
-            * (isEasy ? config.EasySpeedScale : 1f) * RushSpeedScale
-        : RushSpeedScale;
+            * (isEasy ? config.EasySpeedScale : 1f) * LoopSpeedScale
+        : LoopSpeedScale;
 
     // a hardcore boss's bullets & slashes come faster, so their gold & parry
     // reach grow w/ them: the time to bat one back stays the same
     public float ReachScale => teach == SpiderKingTeachStep.Done
-        ? RushSpeedScale * (isEasy ? config.EasyReachScale : 1f) : 1f;
+        ? LoopSpeedScale * (isEasy ? config.EasyReachScale : 1f) : 1f;
 
     public float WaveGoldNowU => config.WaveGoldU * ReachScale;
 
@@ -441,41 +443,59 @@ public sealed class SpiderKingRig {
 
     // a hardcore boss's blades are wider, as the monkey is quicker to step
     // out of their way
-    public float SlashWidthNowU => config.SlashWidthU
-        * (IsRush ? config.HardcoreSlashWidthScale : 1f);
+    public float SlashWidthNowU => config.SlashWidthU;
 
     // speed scale, 1 at full health up to lateSpeedScale at none; a later
     // boss of the hardcore run's rush faster still
     public float SpeedScale => teach == SpiderKingTeachStep.Done
         ? Mathf.Lerp(1f, config.LateSpeedScale, Rage)
-            * (isEasy ? config.EasySpeedScale : 1f) * RushSpeedScale
+            * (isEasy ? config.EasySpeedScale : 1f) * LoopSpeedScale
         : 1f;
 
     // wind up & gap scale, 1 at full health down to lateTimeScale at none; a
     // later boss of the hardcore run's rush shorter still
     public float TimeScaleNow => teach == SpiderKingTeachStep.Done
         ? Mathf.Lerp(1f, config.LateTimeScale, Rage)
-            * (isEasy ? config.EasyTimeScale : 1f) * RushTimeScale
+            * (isEasy ? config.EasyTimeScale : 1f) * LoopTimeScale
         : 1f;
 
     /// <returns>if this fight is a boss of the hardcore run's rush</returns>
     public bool IsRush => rushEncounter >= 0;
 
-    /// <returns>scale on shot, slash & dash speeds of a boss of the hardcore
-    /// run's rush, 1 outside it</returns>
-    public float RushSpeedScale => IsRush
-        ? HardcoreBossRush.SpeedScale(rushEncounter) : 1f;
+    /// <returns>the Loop a fight plays unless EASY is picked: 1 on Normal, its
+    /// own in the hardcore run's rush</returns>
+    public int NormalLoop => IsRush
+        ? HardcoreBossRush.LoopOf(rushEncounter) : 1;
 
-    /// <returns>scale on wind ups, gaps & rests of a boss of the hardcore
-    /// run's rush, 1 outside it</returns>
-    public float RushTimeScale => IsRush
-        ? HardcoreBossRush.TimeScale(rushEncounter) : 1f;
+    /// <summary>Plays the Normal Loop of this fight again.</summary>
+    public void ResetLoop() {
+        bossLoop = NormalLoop;
+    }
 
-    /// <returns>the spider's full health on normal: more for a later boss of
-    /// the hardcore run's rush</returns>
-    public int BaseMaxHealth => Mathf.Max(1, Mathf.RoundToInt(
-        worldBalanceConfig.SpiderMaxHealth
-            * (IsRush ? HardcoreBossRush.HealthScale(rushEncounter) : 1f)));
+    /// <returns>scale on shot, slash & dash speeds at Loop 2 and up, 1
+    /// before</returns>
+    public float LoopSpeedScale => bossLoop < 2 ? 1f
+        : worldBalanceConfig.SpiderKingLoopGrowth.speed.Evaluate(1f, bossLoop);
+
+    /// <returns>scale on wind ups, gaps & rests at Loop 2 and up, 1 before
+    /// </returns>
+    public float LoopTimeScale => bossLoop < 2 ? 1f
+        : worldBalanceConfig.SpiderKingLoopGrowth.time.Evaluate(1f, bossLoop);
+
+    /// <returns>the spider's full health at this Loop: EASY's share of Loop
+    /// 1, Loop 1's, or grown from Loop 2 on</returns>
+    public int BaseMaxHealth {
+        get {
+            int loopOne = worldBalanceConfig.SpiderMaxHealth;
+            if (bossLoop >= 2) {
+                return Mathf.Max(1, Mathf.RoundToInt(
+                    worldBalanceConfig.SpiderKingLoopGrowth.health
+                        .Evaluate(loopOne, bossLoop)));
+            }
+            return bossLoop == 0 ? Mathf.Max(1, Mathf.RoundToInt(
+                loopOne * config.EasyHealthScale)) : loopOne;
+        }
+    }
 
     /// <returns>climbed height the fight begins at: the config's, or this
     /// boss's in the hardcore run's rush; u</returns>
@@ -501,20 +521,20 @@ public sealed class SpiderKingRig {
     public float GuardBottomY => entryY
         - Mathf.Min(config.GuardDepthU, Layout.heightU * 0.5f);
 
-    /// <returns>slashes in a row now: one at a time, except in the hardcore
-    /// run's rush, where each later Spider King fight adds one per stage, up
-    /// to the hardcore most</returns>
+    /// <returns>slashes in a row now: its Normal count per stage, grown from
+    /// Loop 2 on in stages 2 & 3, stage 1 always one</returns>
     public int SlashesNow {
         get {
             int normal = SpiderKingMovement.PerStage(config.SlashesPerStage,
                 Stage);
-            if (!IsRush) {
+            if (bossLoop < 2 || Stage == 0) {
                 return normal;
             }
-            int most = SpiderKingMovement.PerStage(
-                config.HardcoreSlashesPerStage, Stage);
-            int later = Mathf.Max(0, (rushEncounter - 1) / 2);
-            return Mathf.Min(most, normal + later);
+            SpiderKingLoopGrowth growth = worldBalanceConfig.SpiderKingLoopGrowth;
+            LoopGrowth slashes = Stage == 1 ? growth.slashesStage2
+                : growth.slashesStage3;
+            return Mathf.Max(1, Mathf.RoundToInt(
+                slashes.Evaluate(normal, bossLoop)));
         }
     }
 

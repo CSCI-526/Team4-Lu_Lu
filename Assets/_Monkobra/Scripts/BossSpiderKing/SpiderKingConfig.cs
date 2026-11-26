@@ -201,15 +201,6 @@ public class SpiderKingConfig: ScriptableObject {
     /// row of them only in the hardcore run's later fights</returns>
     public Vector3Int SlashesPerStage => slashesPerStage;
 
-    /// <returns>the most slashes in a row in stages 1, 2 & 3 in the
-    /// hardcore run's boss rush: each later Spider King fight adds
-    /// one, up to these</returns>
-    public Vector3Int HardcoreSlashesPerStage => hardcoreSlashesPerStage;
-
-    /// <returns>scale on a slash's width in the hardcore run's boss
-    /// rush, where the monkey is quicker to step out of its way</returns>
-    public float HardcoreSlashWidthScale => hardcoreSlashWidthScale;
-
     /// <returns>the long gap b/t two bullets of a volley; s</returns>
     public float VolleySlowGapS => volleySlowGapS;
 
@@ -665,20 +656,6 @@ public class SpiderKingConfig: ScriptableObject {
     [Tooltip("slashes in a row in stages 1, 2 & 3; one at a time, a row of "
         + "them only in the hardcore run's later fights")]
     private Vector3Int slashesPerStage = new Vector3Int(1, 1, 1);
-
-    [SerializeField]
-    [Tooltip("the most slashes in a row in stages 1, 2 & 3 in the hardcore "
-        + "run's boss rush: each later Spider King fight adds one, up to "
-        + "these")]
-    [FormerlySerializedAs("endlessSlashesPerStage")]
-    private Vector3Int hardcoreSlashesPerStage = new Vector3Int(1, 2, 3);
-
-    [SerializeField]
-    [Tooltip("scale on a slash's width in the hardcore run's boss rush, where "
-        + "the monkey is quicker to step out of its way")]
-    [Min(1f)]
-    [FormerlySerializedAs("endlessSlashWidthScale")]
-    private float hardcoreSlashWidthScale = 1f;
 
     [SerializeField]
     [Tooltip("the long gap b/t two bullets of a volley; s")]

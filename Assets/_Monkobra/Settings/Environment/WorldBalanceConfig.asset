@@ -954,7 +954,7 @@ MonoBehaviour:
   cobraKingArena:
     locationU: 525
     heightU: 50
-  bossMaxHealth: 12
+  bossMaxHealth: 8
   bossBananaDamage: 1
   spiderKingArena:
     locationU: 1025
@@ -962,11 +962,3 @@ MonoBehaviour:
   spiderMaxHealth: 15
   hardcoreBossIntervalU: 300
   hardcoreSpeedScale: 1
-  hardcoreHealthStep: 0.4
-  hardcoreTimeStep: 0.12
-  hardcoreMinTimeScale: 0.6
-  hardcoreSpeedStep: 0.1
-  hardcoreMaxSpeedScale: 1.5
-  hardcoreFightHealthScale: 1
-  hardcoreFightTimeScale: 1
-  hardcoreFightSpeedScale: 1

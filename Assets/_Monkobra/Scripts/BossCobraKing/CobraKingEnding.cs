@@ -182,7 +182,7 @@ public sealed class CobraKingEnding {
         rig.hasThrown = false;
         // a new try, so the minion call is heard again
         rig.hasCalledMinions = false;
-        rig.isEasy = false;
+        rig.ResetLoop();
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(rig.health, rig.maxHealth);
@@ -446,7 +446,7 @@ public sealed class CobraKingEnding {
         rig.hasCalledMinions = false;
         rig.hasWon = false;
         rig.isFinisherWin = false;
-        rig.isEasy = false;
+        rig.ResetLoop();
         rig.isChoosing = false;
         rig.isArenaFruitGone = false;
         rig.arenaBranchSpots.Clear();

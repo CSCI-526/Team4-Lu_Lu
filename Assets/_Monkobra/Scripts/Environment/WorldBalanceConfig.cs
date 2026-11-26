@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -109,7 +110,7 @@ public class WorldBalanceConfig: ScriptableObject {
     /// arena is: its zone, marker & guard all derive from this</returns>
     public BossArenaLayout CobraKingLayout => cobraKingArena;
 
-    /// <returns>health of the Cobra King</returns>
+    /// <returns>health of the Cobra King on Normal & at Loop 1</returns>
     public int BossMaxHealth => bossMaxHealth;
 
     /// <returns>health a thrown banana takes off the Cobra King per hit
@@ -124,6 +125,12 @@ public class WorldBalanceConfig: ScriptableObject {
     /// <returns>health of the Spider King</returns>
     public int SpiderMaxHealth => spiderMaxHealth;
 
+    /// <returns>how the Cobra King's features grow from Loop 2 on</returns>
+    public CobraKingLoopGrowth CobraKingLoopGrowth => cobraKingLoopGrowth;
+
+    /// <returns>how the Spider King's features grow from Loop 2 on</returns>
+    public SpiderKingLoopGrowth SpiderKingLoopGrowth => spiderKingLoopGrowth;
+
     /// <returns>climbed height b/t two bosses in the hardcore run's boss
     /// rush; u</returns>
     public float HardcoreBossIntervalU => hardcoreBossIntervalU;
@@ -131,37 +138,6 @@ public class WorldBalanceConfig: ScriptableObject {
     /// <returns>scale on the monkey's & the great cobra's climb in the
     /// hardcore run, outside a boss fight</returns>
     public float HardcoreSpeedScale => hardcoreSpeedScale;
-
-    /// <returns>a boss's extra health per earlier fight of the same king in
-    /// the hardcore run, a share of its base health</returns>
-    public float HardcoreHealthStep => hardcoreHealthStep;
-
-    /// <returns>how much shorter a boss's wind ups, warnings & rests get per
-    /// earlier fight of the same king in the hardcore run, a share</returns>
-    public float HardcoreTimeStep => hardcoreTimeStep;
-
-    /// <returns>the shortest those times get in the hardcore run, a share
-    /// </returns>
-    public float HardcoreMinTimeScale => hardcoreMinTimeScale;
-
-    /// <returns>how much faster a boss's shots & dashes get per earlier
-    /// fight of the same king in the hardcore run, a share</returns>
-    public float HardcoreSpeedStep => hardcoreSpeedStep;
-
-    /// <returns>the fastest they get in the hardcore run, a scale</returns>
-    public float HardcoreMaxSpeedScale => hardcoreMaxSpeedScale;
-
-    /// <returns>every hardcore boss's health, a scale, before the per boss
-    /// step: the monkey is 3x as fast in its fights too</returns>
-    public float HardcoreFightHealthScale => hardcoreFightHealthScale;
-
-    /// <returns>every hardcore boss's wind ups, warnings & rests, a scale,
-    /// before the per boss step</returns>
-    public float HardcoreFightTimeScale => hardcoreFightTimeScale;
-
-    /// <returns>every hardcore boss's crawl, shot, slash & dash speeds, a
-    /// scale, before the per boss step</returns>
-    public float HardcoreFightSpeedScale => hardcoreFightSpeedScale;
 
     // Inspector Fields  #######################################################
     [Header("Ramped Difficulty")]
@@ -348,7 +324,7 @@ public class WorldBalanceConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("health of the Cobra King")]
-    private int bossMaxHealth = 12;
+    private int bossMaxHealth = 8;
 
     [SerializeField]
     [Tooltip("health a thrown banana takes off the Cobra King per hit")]
@@ -367,6 +343,19 @@ public class WorldBalanceConfig: ScriptableObject {
     [Tooltip("health of the Spider King, one ripped silk knot takes 1 or 2")]
     private int spiderMaxHealth = 15;
 
+    [Header("Loop Growth")]
+    [SerializeField]
+    [Tooltip("the Cobra King at Loop 2 and up: v(n) = clamp(round(v1 + step "
+        + "* (n - 1)), limit), v1 its Loop 1 value")]
+    private CobraKingLoopGrowth cobraKingLoopGrowth =
+        CobraKingLoopGrowth.Default;
+
+    [SerializeField]
+    [Tooltip("the Spider King at Loop 2 and up: v(n) = clamp(round(v1 + step "
+        + "* (n - 1)), limit), v1 its Loop 1 value")]
+    private SpiderKingLoopGrowth spiderKingLoopGrowth =
+        SpiderKingLoopGrowth.Default;
+
     [Header("Hardcore Boss Rush")]
     [SerializeField]
     [Tooltip("climbed height b/t two bosses in the hardcore run: the Cobra "
@@ -379,55 +368,6 @@ public class WorldBalanceConfig: ScriptableObject {
         + "run, outside a boss fight")]
     [FormerlySerializedAs("endlessSpeedScale")]
     private float hardcoreSpeedScale = 1f;
-
-    [SerializeField]
-    [Tooltip("a boss's extra health per earlier fight of the same king in "
-        + "the hardcore run, a share of its base health; each king's first "
-        + "fight is as its normal one")]
-    [FormerlySerializedAs("endlessHealthStep")]
-    private float hardcoreHealthStep = 0.4f;
-
-    [SerializeField]
-    [Tooltip("how much shorter a boss's wind ups, warnings & rests get per "
-        + "earlier fight of the same king in the hardcore run, a share")]
-    [FormerlySerializedAs("endlessTimeStep")]
-    private float hardcoreTimeStep = 0.12f;
-
-    [SerializeField]
-    [Tooltip("the shortest a boss's wind ups, warnings & rests get in the "
-        + "hardcore run, a share of normal")]
-    [FormerlySerializedAs("endlessMinTimeScale")]
-    private float hardcoreMinTimeScale = 0.6f;
-
-    [SerializeField]
-    [Tooltip("how much faster a boss's shots & dashes get per earlier fight "
-        + "of the same king in the hardcore run, a share")]
-    [FormerlySerializedAs("endlessSpeedStep")]
-    private float hardcoreSpeedStep = 0.1f;
-
-    [SerializeField]
-    [Tooltip("the fastest a boss's shots & dashes get in the hardcore run, a "
-        + "scale of normal")]
-    [FormerlySerializedAs("endlessMaxSpeedScale")]
-    private float hardcoreMaxSpeedScale = 1.5f;
-
-    [SerializeField]
-    [Tooltip("every hardcore boss's health, a scale, before the per boss "
-        + "step: the monkey is as fast in its fights as on the climb")]
-    [FormerlySerializedAs("endlessFightHealthScale")]
-    private float hardcoreFightHealthScale = 1f;
-
-    [SerializeField]
-    [Tooltip("every hardcore boss's wind ups, warnings & rests, a scale, "
-        + "before the per boss step")]
-    [FormerlySerializedAs("endlessFightTimeScale")]
-    private float hardcoreFightTimeScale = 1f;
-
-    [SerializeField]
-    [Tooltip("every hardcore boss's crawl, shot, slash & dash speeds, a scale, "
-        + "before the per boss step")]
-    [FormerlySerializedAs("endlessFightSpeedScale")]
-    private float hardcoreFightSpeedScale = 1f;
 
     // Editor Validation  ######################################################
     private void OnValidate() {
@@ -447,6 +387,8 @@ public class WorldBalanceConfig: ScriptableObject {
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
         roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
         webAttemptCount = Mathf.Max(0, webAttemptCount);
+        cobraKingLoopGrowth.Validate();
+        spiderKingLoopGrowth.Validate();
         // the post boss ramp never loops or runs on: it clamps flat at its end
         postBossRampCurve.preWrapMode = WrapMode.ClampForever;
         postBossRampCurve.postWrapMode = WrapMode.ClampForever;
@@ -464,13 +406,94 @@ public class WorldBalanceConfig: ScriptableObject {
         spiderMaxHealth = Mathf.Max(1, spiderMaxHealth);
         hardcoreBossIntervalU = Mathf.Max(50f, hardcoreBossIntervalU);
         hardcoreSpeedScale = Mathf.Max(0.1f, hardcoreSpeedScale);
-        hardcoreHealthStep = Mathf.Max(0f, hardcoreHealthStep);
-        hardcoreTimeStep = Mathf.Max(0f, hardcoreTimeStep);
-        hardcoreMinTimeScale = Mathf.Clamp(hardcoreMinTimeScale, 0.1f, 1f);
-        hardcoreSpeedStep = Mathf.Max(0f, hardcoreSpeedStep);
-        hardcoreMaxSpeedScale = Mathf.Max(1f, hardcoreMaxSpeedScale);
-        hardcoreFightHealthScale = Mathf.Max(0.1f, hardcoreFightHealthScale);
-        hardcoreFightTimeScale = Mathf.Clamp(hardcoreFightTimeScale, 0.1f, 2f);
-        hardcoreFightSpeedScale = Mathf.Max(0.1f, hardcoreFightSpeedScale);
     }
+}
+
+/// <summary>How a boss feature's generated value is rounded.</summary>
+public enum LoopRounding {
+    None,
+    Floor,
+    Ceil,
+}
+
+/// <summary>
+/// One feature's growth from Loop 2 on, anchored on its Loop 1 value v1:
+/// v(n) = clamp(round(v1 + step * (n - 1)), limit). A rising feature caps at
+/// its limit, a falling one floors at it.
+/// </summary>
+[Serializable]
+public struct LoopGrowth {
+    // Public Members  #########################################################
+    [Tooltip("added per Loop past Loop 1; negative to fall")]
+    public float step;
+
+    [Tooltip("how the generated value is rounded to whole numbers")]
+    public LoopRounding rounding;
+
+    [Tooltip("whether the value stops at the limit")]
+    public bool hasLimit;
+
+    [Tooltip("a cap for a rising value, a floor for a falling one")]
+    public float limit;
+
+    public LoopGrowth(float step, LoopRounding rounding, bool hasLimit,
+        float limit) {
+        this.step = step;
+        this.rounding = rounding;
+        this.hasLimit = hasLimit;
+        this.limit = limit;
+    }
+
+    /// <param name="v1">the feature's Loop 1 value</param>
+    /// <param name="loop">the Loop number, 2 and up</param>
+    /// <returns>the feature's value at that Loop</returns>
+    public readonly float Evaluate(float v1, int loop) {
+        float value = v1 + step * (Mathf.Max(loop, 1) - 1);
+        value = rounding == LoopRounding.Floor ? Mathf.Floor(value)
+            : rounding == LoopRounding.Ceil ? Mathf.Ceil(value) : value;
+        if (!hasLimit) {
+            return value;
+        }
+        return step >= 0f ? Mathf.Min(value, limit)
+            : Mathf.Max(value, limit);
+    }
+}
+
+/// <summary>The Cobra King's growth per feature past Loop 1.</summary>
+[Serializable]
+public struct CobraKingLoopGrowth {
+    public LoopGrowth health;
+    [Tooltip("scale on wind ups, warnings & rests, v1 = 1")]
+    public LoopGrowth time;
+    public LoopGrowth minionWaves;
+
+    public static CobraKingLoopGrowth Default => new CobraKingLoopGrowth {
+        health = new LoopGrowth(2.5f, LoopRounding.Ceil, false, 0f),
+        time = new LoopGrowth(-0.12f, LoopRounding.None, true, 0.5f),
+        minionWaves = new LoopGrowth(0.75f, LoopRounding.Ceil, true, 8f),
+    };
+
+    public void Validate() { }
+}
+
+/// <summary>The Spider King's growth per feature past Loop 1.</summary>
+[Serializable]
+public struct SpiderKingLoopGrowth {
+    public LoopGrowth health;
+    [Tooltip("scale on wind ups, gaps & rests, v1 = 1")]
+    public LoopGrowth time;
+    [Tooltip("scale on shot, slash & dash speeds, v1 = 1")]
+    public LoopGrowth speed;
+    public LoopGrowth slashesStage2;
+    public LoopGrowth slashesStage3;
+
+    public static SpiderKingLoopGrowth Default => new SpiderKingLoopGrowth {
+        health = new LoopGrowth(5f, LoopRounding.Ceil, false, 0f),
+        time = new LoopGrowth(-0.12f, LoopRounding.None, true, 0.5f),
+        speed = new LoopGrowth(0.1f, LoopRounding.None, true, 1.5f),
+        slashesStage2 = new LoopGrowth(0.5f, LoopRounding.Ceil, true, 5f),
+        slashesStage3 = new LoopGrowth(1f, LoopRounding.Floor, true, 5f),
+    };
+
+    public void Validate() { }
 }

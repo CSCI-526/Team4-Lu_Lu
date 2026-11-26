@@ -179,7 +179,7 @@ public sealed class SpiderKingEnding {
         rig.teachTimeS = 0f;
         // as in the Cobra King's arena: two melons, a plain EASY & a golden
         // NORMAL; the first grabbed picks, & the fight waits till then
-        rig.isEasy = false;
+        rig.ResetLoop();
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         // a plain difficulty card, time stopped till a pick; the spider
@@ -329,7 +329,7 @@ public sealed class SpiderKingEnding {
         rig.rushEncounter += 2;
         rig.phase = SpiderKingPhase.Waiting;
         rig.hud.ClearCallOut();
-        rig.isEasy = false;
+        rig.ResetLoop();
         rig.lastStage = 0;
         rig.Arena.ReserveRushArena();
         if (Debug.isDebugBuild) {

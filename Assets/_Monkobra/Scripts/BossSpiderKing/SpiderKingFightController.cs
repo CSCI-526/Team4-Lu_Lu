@@ -537,9 +537,9 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.startY = rig.entryY + START_ABOVE_U;
         rig.spiderAngle = rig.startAngle;
         rig.spiderY = rig.startY;
+        rig.ResetLoop();
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.isEasy = false;
         rig.lastStage = 0;
         rig.body.Build(rig.trunkCenter, rig.spiderAngle, rig.spiderY);
         // the whole arena is there from the start, melons too

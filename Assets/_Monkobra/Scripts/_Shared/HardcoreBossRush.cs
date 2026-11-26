@@ -53,40 +53,11 @@ public static class HardcoreBossRush {
     }
 
     /// <param name="encounter">the boss's encounter</param>
-    /// <returns>how many times that same king was met before in the run: 0
-    /// for each king's first fight, which is just as its normal mode's
-    /// fight, 1 for its second, ...</returns>
-    public static int Round(int encounter) {
-        return Mathf.Max(0, encounter) / 2;
-    }
-
-    /// <returns>scale on that boss's health: the fight scale, more for
-    /// each earlier fight of the same king</returns>
-    public static float HealthScale(int encounter) {
-        WorldBalanceConfig config = Config;
-        return config == null ? 1f
-            : config.HardcoreFightHealthScale
-                * (1f + config.HardcoreHealthStep * Round(encounter));
-    }
-
-    /// <returns>scale on that boss's wind ups, warnings & rests: the fight
-    /// scale, shorter for each earlier fight of the same king</returns>
-    public static float TimeScale(int encounter) {
-        WorldBalanceConfig config = Config;
-        return config == null ? 1f
-            : config.HardcoreFightTimeScale
-                * Mathf.Max(config.HardcoreMinTimeScale,
-                    1f - config.HardcoreTimeStep * Round(encounter));
-    }
-
-    /// <returns>scale on that boss's crawl, shot, slash & dash speeds: the
-    /// fight scale, faster for each earlier fight of the same king</returns>
-    public static float SpeedScale(int encounter) {
-        WorldBalanceConfig config = Config;
-        return config == null ? 1f
-            : config.HardcoreFightSpeedScale
-                * Mathf.Min(config.HardcoreMaxSpeedScale,
-                    1f + config.HardcoreSpeedStep * Round(encounter));
+    /// <returns>the Loop of that fight, counted per king: 1 for each king's
+    /// first fight, which plays just as its Normal Play fight, 2 for its
+    /// second, ...</returns>
+    public static int LoopOf(int encounter) {
+        return Mathf.Max(0, encounter) / 2 + 1;
     }
 
     /// <param name="encounter">the boss's encounter</param>

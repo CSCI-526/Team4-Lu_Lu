@@ -44,7 +44,7 @@ public sealed class CobraKingAttacks {
         rig.loopTimeS = (rig.isEasy
             ? (rig.Third >= 2 ? config.EasyRestFinalS : config.EasyRestS)
             : (rig.Third >= 2 ? config.RestFinalS : config.RestS))
-            * rig.RushTimeScale;
+            * rig.LoopTimeScale;
         rig.body.SetWeakSpotLit(true);
     }
 

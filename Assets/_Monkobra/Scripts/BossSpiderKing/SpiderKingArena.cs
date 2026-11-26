@@ -617,7 +617,7 @@ public sealed class SpiderKingArena {
 
     // easy: less health, slower & gentler, never past the 2nd stage
     public void ChooseMode(bool isEasyPick) {
-        rig.isEasy = isEasyPick;
+        rig.bossLoop = isEasyPick ? 0 : rig.NormalLoop;
         ClearChoices();
         foreach (SpiderKingMelon melon in rig.melons) {
             if (melon.branch != null) {
@@ -626,10 +626,7 @@ public sealed class SpiderKingArena {
                 melon.backTime = -1f;
             }
         }
-        rig.maxHealth = rig.isEasy
-            ? Mathf.Max(1,
-                Mathf.RoundToInt(rig.BaseMaxHealth * config.EasyHealthScale))
-            : rig.BaseMaxHealth;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(rig.health, rig.maxHealth);
         rig.lastStage = 0;

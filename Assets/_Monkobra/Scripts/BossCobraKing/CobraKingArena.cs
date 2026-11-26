@@ -234,13 +234,8 @@ public sealed class CobraKingArena {
 
     public void ChooseMode(bool isEasyPick) {
         rig.isChoosing = false;
-        rig.isEasy = isEasyPick;
-        rig.maxHealth = rig.isEasy
-            ? Mathf.Max(
-                1,
-                Mathf.RoundToInt(rig.BaseMaxHealth * config.EasyHealthScale)
-            )
-            : rig.BaseMaxHealth;
+        rig.bossLoop = isEasyPick ? 0 : rig.NormalLoop;
+        rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(rig.health, rig.maxHealth);
         foreach (CobraKingArenaFruit choice in rig.choices) {
