@@ -70,7 +70,7 @@ public sealed class FirebaseLeaderboardClient {
     public async Task<Result> SubmitAndLoad(
         string board, long score, int limit
     ) {
-        // HACK: "endless" is the Hardcore board's key, kept so the deployed
+        // Hack: "endless" is the Hardcore board's key, kept so the deployed
         // Firebase rules still accept it; rename together w/ the rules later
         if (board != "normal" && board != "endless") {
             throw new ArgumentException("Unknown leaderboard.", nameof(board));

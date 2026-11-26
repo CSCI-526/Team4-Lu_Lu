@@ -1,12 +1,10 @@
 # Monkobra CHANGELOG
 
 <!--
-BUG outline more uniformed: for both monkey and food
-BUG erik boss make energy bar gone, better ways to indicate 1 kill
 FIXME erik mpv tutorial for boss fight
 FIXME erik b/t boss fight, better randomization
-BUG better randomize logic for the tree branch
 
+Bug outline more uniformed: for both monkey and food
 Bug make leaderboard works
 
 todo lighting improvement

@@ -3,7 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /leaderboards/{board}/scores/{playerId} {
       function signedIn() {
-        // HACK: 'endless' is the Hardcore board's key, kept until the client,
+        // Hack: 'endless' is the Hardcore board's key, kept until the client,
         // rules & deploy are renamed together in a later change
         return request.auth != null && board in ['normal', 'endless'];
       }
