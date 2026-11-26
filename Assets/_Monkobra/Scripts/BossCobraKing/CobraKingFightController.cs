@@ -201,8 +201,9 @@ public class CobraKingFightController: MonoBehaviour {
     }
 
     /// <summary>
-    /// Test hook for the spider jump hack key: a fight not begun yet is
-    /// skipped as if beaten, in the armor, like the endless start.
+    /// Test hook for the Spider King dev scene (<see cref="BossDevStart"/>): a
+    /// fight not begun yet is skipped as if beaten, in the armor, like the
+    /// endless start.
     /// </summary>
     public void SkipForTest() {
         if (rig.phase == CobraKingPhase.Waiting) {

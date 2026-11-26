@@ -1,0 +1,106 @@
+using UnityEngine;
+
+/// <summary>which boss a dev scene is built around</summary>
+public enum Boss {
+    CobraKing,
+    SpiderKing
+}
+
+/// <summary>
+/// Makes a dev scene play like the player's first meeting with one boss:
+/// marks the tutorials a player would have met on the climb as seen, and for
+/// the Spider King counts the Cobra King as beaten. The boss itself is moved
+/// down by the scene's own balance asset, so the monkey climbs from its
+/// normal start; nothing here moves it. Sits only in the dev scenes built by
+/// <c>Monkobra > Build Boss Dev Scenes</c>, never in <c>GameplayScene</c>.
+/// <para>
+/// The seen set lives in <see cref="TutorialSkipManager"/> and is empty at
+/// every launch, so the boss's own items show each time Play starts, and
+/// no saved data is touched.
+/// </para>
+/// </summary>
+public class BossDevStart: MonoBehaviour {
+    // Inspector Fields  #######################################################
+    [SerializeField]
+    [Tooltip("boss this scene is built around")]
+    private Boss boss;
+
+    [SerializeField]
+    [Tooltip("the tutorials pre-seen per boss")]
+    private BossDevStartConfig config;
+
+    // MonoBehaviour Lifecycle  ################################################
+    private void Awake() {
+        // Inspector Assignment Guard  -----------------------------------------
+        if (config == null) {
+            Debug.LogError(
+                "BossDevStart:\tmust assign Inspector Field: config",
+                this
+            );
+            enabled = false;
+            return;
+        }
+
+        // a boss scene is always the full run, whatever the last load chose
+        RunModeSelection.Selected = RunMode.Full;
+        MarkSeenItems();
+    }
+
+    private void Update() {
+        // wait for the run to go live, the fight controller has to exist
+        if (RunController.I == null || !RunController.I.IsRunLive) {
+            return;
+        }
+
+        if (boss == Boss.SpiderKing) {
+            CountCobraKingBeaten();
+        }
+        enabled = false;
+    }
+
+    // private methods  ########################################################
+    // tells the skip manager the player already met these on the climb
+    private void MarkSeenItems() {
+        TutorialSkipManager skip = TutorialSkipManager.I;
+        if (skip == null) {
+            Debug.LogWarning(
+                "BossDevStart:\tno TutorialSkipManager, tutorials not "
+                    + "pre-seen",
+                this
+            );
+            return;
+        }
+
+        var items = boss == Boss.CobraKing
+            ? config.CobraKingSeenItems
+            : config.SpiderKingSeenItems;
+        foreach (TutorialItem item in items) {
+            skip.MarkSeen(item);
+        }
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                $"BossDevStart:\t{boss} scene, {items.Count} items pre-seen",
+                this
+            );
+        }
+    }
+
+    // a fight not begun yet is skipped as if beaten, the armor worn, so the
+    // climb ends at the Spider King
+    private void CountCobraKingBeaten() {
+        CobraKingFightController cobraKing = CobraKingFightController.I;
+        if (cobraKing == null) {
+            Debug.LogWarning(
+                "BossDevStart:\tno CobraKingFightController, Cobra King not "
+                    + "skipped",
+                this
+            );
+            return;
+        }
+
+        cobraKing.SkipForTest();
+        if (Debug.isDebugBuild) {
+            Debug.Log("BossDevStart:\tCobra King counted as beaten", this);
+        }
+    }
+}
