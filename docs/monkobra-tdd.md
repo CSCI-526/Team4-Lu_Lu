@@ -39,7 +39,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build > Intro Comic` from `tools/comic/panels/` |
 | `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
-| `GameplayScene` | both run modes (see Run mode below); its root is 9 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `Analytics`, `ControlStyleManager`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
+| `GameplayScene` | both run modes (see Run mode below); its root is 8 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `GameController`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
 graph LR
@@ -91,7 +91,7 @@ Subsystems talk through scene singletons, C# events, and trigger callbacks, not 
 
 ## Run Lifecycle
 
-`RunController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event, and only `GameplayScene` has it. A run ends in a loss, or in a win by defeating the Cobra King. What any scene may need, so far the run `Mode`, sits on the across-scene `GameController` instead (prefab in `Resources/`, created by `PersistentBootstrapLoader`, kept across scene loads).
+`RunController` is the scene singleton that owns the `GameState` machine, exposed as `State` with a `StateChanged` event, and only `GameplayScene` has it. A run ends in a loss, or in a win by defeating the Cobra King. What any scene may need, so far the run `Mode`, sits on the across-scene `GameController` instead (prefab `Prefabs/GameController/`, in every scene, kept across scene loads); it also carries the launch managers `AnalyticsManager`, `ControlStyleManager`, `MusicManager` and `TutorialSkipManager` as components, runs first (execution order -1000, the managers' -990), and is the one class that destroys a duplicate or calls `DontDestroyOnLoad`.
 
 ```mermaid
 stateDiagram-v2
@@ -124,7 +124,7 @@ Gameplay that must stop outside a run checks both `Time.timeScale <= 0` and the 
 
 ## Analytics
 
-`AnalyticsManager` is a singleton component on its own `Analytics` prefab, one per scene, and the first one is kept across every scene load: one session and file per launch, menus included. A scene load closes an open run as `Interrupted`, and each run is tagged with the scene's run mode. It observes the run (`RunController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
+`AnalyticsManager` is a singleton component of the `GameController` prefab, one per scene, and the first one is kept across every scene load: one session and file per launch, menus included. A scene load closes an open run as `Interrupted`, and each run is tagged with the scene's run mode. It observes the run (`RunController.StateChanged`, `ScoreManager.BananaCollected`, `HitBranchSensor.BranchHit`, `SpiderWebTrap.Encountered`, ~), opening a run when the starting zone begins so the zone's fruit, webs, and height count, and fills a `SessionData` of `RunData` entries. Every event is an `AnalyticsMetric` stamped through one `RecordEvent` path, so a new metric is an enum entry, a title row, and one subscription, see [Analytics](analytics-doc.md#adding-a-metric). `AnalyticsMarkdownWriter` renders every metric from one loop and `AnalyticsMarkdownWriter` renders it to one markdown file per scene load under `persistentDataPath/Analytics/`, rewritten on every save. Each run entry carries Mermaid graphs, and the file opens with a summary of lost runs. A run cut short by stopping Play mode, a scene reload, or the restart key is marked `Interrupted` and left out of the summary. Sample and autosave intervals and the death cause window are in `Settings/Analytics/AnalyticsConfig.asset`; the keys are in [Hack Shortcuts](#hack-shortcuts).
 
 A WebGL player cannot reach `persistentDataPath` (it is a virtual IndexedDB filesystem), so the download key renders the session in memory and `WebDownload` hands it to the browser through `Plugins/WebGL/Download.jslib`. A run still open is rendered as it stands and keeps recording. Elsewhere the same key saves the session file and logs its path.
 
@@ -154,14 +154,14 @@ The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 a
 
 ### Tutorial Skip Manager
 
-One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Resources/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
+One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Prefabs/GameController/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
 
 - `ShouldSkip(TutorialItem)`: true if the dev checkbox is on, or the item was already seen this session and its entry in `TutorialSkipConfig` (`Settings/TutorialSkip/TutorialSkipConfig.asset`) skips it once seen; a release build never honours the checkbox
 - `MarkSeen(TutorialItem)`: the item calls it once it has shown or been completed
 
 The scope is once per session, with nothing saved: an item shows on the first run of a launch and skips on every later run and scene load until the game is closed. The session set lives on the persistent `GameController`, so it survives a restart. To make one item show every run again, untick its entry in `TutorialSkipConfig`; no recompile.
 
-The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by default and honoured only when `Debug.isDebugBuild` (the Editor or a development build): open `Resources/GameController.prefab` and tick it to skip every item at once. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
+The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by default and honoured only when `Debug.isDebugBuild` (the Editor or a development build): open `Prefabs/GameController/GameController.prefab` and tick it to skip every item at once. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
 
 | `TutorialItem` | Item | Marked seen |
 | --- | --- | --- |
@@ -306,7 +306,7 @@ One asset, `Inputs/InputSystem_Actions`, holds all bindings, referenced through 
 
 ### Control Style
 
-`ControlStyleManager` (prefab `ControlStyleManager`, kept in every scene and also created by `PersistentBootstrapLoader` from `Resources/` before the first scene when none exists; the first instance is kept across loads, and a later copy destroys itself with a warning that is expected) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
+`ControlStyleManager` (a component of the `GameController` prefab, in every scene; the first instance is kept across loads, and a later copy is destroyed by its `GameController` before it wakes) holds the style, `Keyboard` or `Touch`: a touch press selects Touch, a real key press selects Keyboard, the mouse never switches, and a device with a touch screen and no keyboard starts as Touch. It raises the static `StyleChanged`, and `Current` and `IsTouch` work without an instance. Hints never poll it; they subscribe:
 
 - `ControlStyleLabel`: one text under a keyboard and a touch wording, blank hides it; `Configure` sets both from code
 - `ControlStyleSwitch`: shows a keyboard group or a touch group of objects, eg the tutorial's keyboard icons and its touch guide, or a key icon that only a keyboard needs
