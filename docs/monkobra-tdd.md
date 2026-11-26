@@ -347,12 +347,23 @@ Menu buttons swap sprites by state (Transition: Sprite Swap) over the [UI Style]
 The tutorial in `GameplayScene` holds one group per control style under `TutorialScreen`, switched by a `ControlStyleSwitch`: `KeyboardControls` shows the key icons and the animated Space press with their captions, and `TouchControls` shows the touch captions with the `BlueArea` (`TutorialTouchCutout`) over the action zone. The start prompt stays below. A dark Background wash dims the game behind the tutorial to show that the run has not started; its words are Baloo 2 and its keys keycaps, per the [UI Style](ui-style-doc.md#hud), and `ScreensManager` shows and hides the whole panel.
 
 
+## Falling Cobra Performance
+
+How many live falling cobras stay cheap, and how it is measured. What each part does is in [Mobs](mob-doc.md#performance).
+
+- Tuning: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` 4, `trailClearancePasses` 2, `spineFairMaxPasses` 64, `spineFairToleranceU` 0.002; `bodyPrefab` is set only by the body menu
+- Menus: `Monkobra > Set Up Falling Cobra Layers`, `Monkobra > Build Falling Cobra Body` and `Monkobra > Run Falling Cobra Benchmark`, each also callable in batch mode (`-executeMethod FallingCobraLayerSetup.Run`, `FallingCobraBodyBuilder.Run`, `FallingCobraBenchmarkRunner.Run`)
+- Layers: `Player` (6) and `FallingCobra` (7); in the collision matrix `FallingCobra` collides with `Player` only; Maximum Allowed Timestep is 0.1 s (was 0.333 s)
+- Benchmark: launch the development player with `-fallingCobraBenchmark <folder>` (plus `-force-device-index <n>` to pick the GPU, `-screen-width 1280 -screen-height 720 -screen-fullscreen 0`). It times itself with `ProfilerRecorder`, so no Profiler window is needed. The run: 3 s warm-up, 12 s recorded, seed 20260525; frames that spawned a cobra are left out
+- Compare like with like: same GPU, same protocol, and a baseline built from the old commit with the same harness, since a faster frame fits more game time into a fixed frame count
+
 ## Conventions
 
 - Singletons: scene-scoped and first-wins. `TreeManager`, `UpwardFruitSensor`, `StaminaBarController`, `FruitFlyEffect`, and `ScoreManager` destroy a duplicate component only. `GameController` and `ScreensManager` destroy the duplicate's whole GameObject
 - Start Over Awake: a consumer that may start before its singleton reads it in `Start`, so Awake order never matters
 - Events Over Calls: detection scripts forward trigger events (`Entered`, `Exited`, `BranchHit`) rather than calling their consumers, and a segment announces its branches with `BranchesGenerated` rather than calling its decorators
 - Tags: `Branch`, `FruitCollider`, and `Player` drive trigger matching. Webs match by a Rigidbody component instead
+- Layers: the monkey is on `Player` and the falling cobra on `FallingCobra`, the only pair that collides for the cobra; everything else stays on `Default`. Set by `Monkobra > Set Up Falling Cobra Layers`, see [Falling Cobra Performance](#falling-cobra-performance)
 - Tuning In Data: values stay in serialized fields, and shared tuning sits in a ScriptableObject: balance numbers in `PlayerBalanceConfig`, `WorldBalanceConfig`, and `CobraBalanceConfig`, score values in `ScoreConfig` ([Game Balance](#game-balance)), climb and orbit in `MonkeyClimbConfig`, the leap in `PineappleLeapConfig`, monkey arm in `MonkeyArmConfig` and input in `MonkeyInputConfig`, branch geometry in `BranchFruitPlacementConfig`, the fruit flight in `FruitFlyConfig`. Gameplay values are never hard-coded
 - Field Guards: required inspector fields are checked in `Awake` with a logged message naming the field
 - Kinematic Body: nothing about the monkey is mass or gravity driven. Each arm is posed purely by its joint drives

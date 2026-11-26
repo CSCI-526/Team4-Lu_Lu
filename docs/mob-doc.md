@@ -32,6 +32,7 @@ Mobs and the monkey find each other with triggers and tags, never with direct re
 - Cobra Contact: `CobraSensor` counts the monkey's body and tail (any non-trigger collider under the `Player`-tagged root) and its hands (anything under an `ArmController`), and ignores the monkey's trigger volumes, which reach far past the body
 - Web Contact: `SpiderWebTrap` counts only the non-trigger root capsule, the collider on the same object as `SpiderWebStruggle`, so the tail capsules and a hand (anything under an `ArmController`) brushing a web are ignored. The box trigger is only the broad phase: the body's nearest point must also lie within `catchRadiusU` (1.8 u, the drawn web) of the hub in the face plane, so the box corners past the strands never catch
 - Tags: `Branch` marks branches and the falling cobra's hit capsule, and `Player` marks the monkey root, see the [conventions](monkobra-tdd.md#conventions)
+- Layers: the monkey and the falling cobra have their own physics layers, see [Performance](#performance)
 
 ## Branch
 
@@ -109,7 +110,19 @@ A hazard from above, spawned in `GameplayScene` as the monkey climbs the endless
 
 Code: `FallingCobraController` is the Coordinator (state machine and lifecycle); the work is split by role into `FallingCobraHeadMesh`, `FallingCobraBranchCoil`, `FallingCobraTracking`, `FallingCobraSwimTrail`, `FallingCobraSpine`, and `FallingCobraEyes`, which share the state in `FallingCobraRig` and read every tuned value from `FallingCobraConfig`, the Config asset on the `FallingCobra` prefab.
 
-Cost: the body is one tube mesh (`BodyRings` 96 rings × `BodySides` 16 sides) made again on the CPU each frame the cobra moves; a dormant one holds its last pose & skips that rebuild while off screen (its renderer not visible) or beyond its wake & tracking range plus 4 u (`IsDormantAndIdle`); waking never waits on it.
+Cost: the body is a baked skinned mesh (`BodyRings` 96 rings × `BodySides` 16 sides, one bone per ring) that the engine skins from bone poses the spine sets each frame; a dormant cobra holds its last pose & skips that work while the shared culling group says it is out of the gameplay camera's view or beyond its wake & tracking range plus 4 u (`IsDormantAndIdle`); waking never waits on it. See [Performance](#performance).
+
+### Performance
+
+Many live snakes stay cheap because each cost is handed to a Unity system or a config value, set up through menus, never by hand:
+
+- Skinned Body: the body is `Prefabs/MobFallingCobra/FallingCobraBody` (a `SkinnedMeshRenderer` of 96 bone children, mesh `Meshes/MobFallingCobra/FallingCobraBody`, 1634 vertices), held in `FallingCobraConfig.bodyPrefab`; `FallingCobraSpine` computes the ring centers and the parallel-transport frames and only sets each bone's position and rotation, so no vertex is built on the CPU. Topology, UVs, colors, ring radii, the neck rim and the collar loft are baked, so a change to a body or neck value of the config needs `Monkobra > Build Falling Cobra Body` run again. Quality > Skin Weights must stay at 2 Bones or more
+- Belly Paint: with no per-vertex belly direction, `FallingSnakeSurface` takes the belly from the trunk (`_TreeAxis`) and turns it onto the branch along the span `_PaintBranchRange` (body distance behind the head, from `uv.y` × `_BodyLength`), with `_BranchUp`, all set per renderer by `PublishLook` through cached property ids
+- Culling: `FallingCobraCulling` keeps one `CullingGroup` for all cobras (created on the first, disposed with the last; target camera `Camera.main`; distance reference the monkey; one band at the wake and tracking gate). A cobra joins when it perches and leaves when it is switched off. Unlike `Renderer.isVisible` it ignores shadow maps and the Scene view
+- Work Caps: `FallingCobraConfig` Work Caps: `maxTrailSamplesPerFrame` (4; the trail took up to 64 a frame at a low frame rate), `trailClearancePasses` (2; was 4), `spineFairMaxPasses` (64) and `spineFairToleranceU` (0.002 u: the smoothing stops once no ring moves farther in a pass)
+- Head Fit: the head template keeps the extreme point of 512 directions (188 unique points of 41,046 vertices, worst depth error 0.004 u), and `FitHeadToBark` scans those
+- Layers: the monkey is on `Player`, the cobra on `FallingCobra`, and the collision matrix lets `FallingCobra` collide with `Player` only, so a cobra's trigger no longer tests the trunk, branches and fruit; `SweepVisibleHead` queries the layers the matrix allows. `Monkobra > Set Up Falling Cobra Layers` sets the layers, the matrix and both prefabs' layers, and lowers Maximum Allowed Timestep to 0.1 s so a slow frame runs fewer physics steps
+- Measuring: `Monkobra > Run Falling Cobra Benchmark` builds a Windows development player to `builds/Benchmark/`; launched with `-fallingCobraBenchmark <folder>` it loads `GameplayScene`, holds the monkey beside about 3 live cobras, records 12 s of `FallingCobra.*` profiler markers, writes `results.json` and shots of a perched, a warning and a falling snake with close-ups, and quits. Add `-force-device-index <n>` to pick the GPU. With about 3 live cobras the frame fell from 8.4 to 4.2 ms and the cobras' `LateUpdate` from 5.3 to 1.2 ms, see the DEVLOG
 
 ### Spawning
 
@@ -325,4 +338,5 @@ The endless run is a boss rush (`EndlessBossRush`): every `endlessBossIntervalU`
 
 - Mob tuning for the web escape and web geometry lives on scene components, not in a shared ScriptableObject; only the web spawn rates and attempt counts are in `WorldBalanceConfig`, and the falling cobra and great cobra numbers in `CobraBalanceConfig`
 - Stamina is not linked to branch hits
+- Hack key 5 (`HackPineappleSpawner.SpawnFallingCobra`) never calls `AttachToBranch`, so by the code its cobra stays hidden and never wakes; the benchmark perches cobras through `FallingCobraSpawner.TrySpawnCobra` instead
 - `GameplayScene`'s Canvas holds 2 objects named `ProgressBar`, the climb progress and the web escape bar, so look them up by path
