@@ -37,7 +37,6 @@ MonoBehaviour:
     hueDeg: 190
   monkeyColor: {r: 1, g: 0.949, b: 0.824, a: 1}
   monkeyWidthU: 0.04
-  ghostFillAlpha: 0.3
-  ghostRimAlpha: 0.9
-  ghostRimPower: 3
-  ghostPushU: 0.008
+  ghostHaloAlpha: 0.55
+  ghostHaloPower: 1.5
+  ghostHaloReachU: 0.12

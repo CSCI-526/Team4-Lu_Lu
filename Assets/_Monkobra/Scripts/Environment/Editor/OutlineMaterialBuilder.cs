@@ -148,10 +148,9 @@ public static class OutlineMaterialBuilder {
             mat.SetColor(
                 "_Ghost_Color", style.GetTierColor(kind, OutlineTier.Reachable)
             );
-            mat.SetFloat("_Ghost_FillAlpha", style.GhostFillAlpha);
-            mat.SetFloat("_Ghost_RimAlpha", style.GhostRimAlpha);
-            mat.SetFloat("_Ghost_RimPower", style.GhostRimPower);
-            mat.SetFloat("_Ghost_Push", style.GhostPushU);
+            mat.SetFloat("_Ghost_HaloAlpha", style.GhostHaloAlpha);
+            mat.SetFloat("_Ghost_HaloPower", style.GhostHaloPower);
+            mat.SetFloat("_Ghost_HaloReach", style.GhostHaloReachU);
             EditorUtility.SetDirty(mat);
         }
     }

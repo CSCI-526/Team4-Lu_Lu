@@ -37,13 +37,11 @@ public class FruitOutlineStyle: ScriptableObject {
 
     public float MonkeyWidthU => monkeyWidthU;
 
-    public float GhostFillAlpha => ghostFillAlpha;
+    public float GhostHaloAlpha => ghostHaloAlpha;
 
-    public float GhostRimAlpha => ghostRimAlpha;
+    public float GhostHaloPower => ghostHaloPower;
 
-    public float GhostRimPower => ghostRimPower;
-
-    public float GhostPushU => ghostPushU;
+    public float GhostHaloReachU => ghostHaloReachU;
 
     /// <summary>World-unit outline width of a tier; u.</summary>
     public float GetWidthU(OutlineTier tier) {
@@ -114,10 +112,9 @@ public class FruitOutlineStyle: ScriptableObject {
             hideFlags = HideFlags.HideAndDontSave,
         };
         mat.SetColor(GHOST_COLOR, GetTierColor(kind, tier));
-        mat.SetFloat(GHOST_FILL_ALPHA, ghostFillAlpha);
-        mat.SetFloat(GHOST_RIM_ALPHA, ghostRimAlpha);
-        mat.SetFloat(GHOST_RIM_POWER, ghostRimPower);
-        mat.SetFloat(GHOST_PUSH, ghostPushU);
+        mat.SetFloat(GHOST_HALO_ALPHA, ghostHaloAlpha);
+        mat.SetFloat(GHOST_HALO_POWER, ghostHaloPower);
+        mat.SetFloat(GHOST_HALO_REACH, ghostHaloReachU);
         ghostCache[key] = mat;
         return mat;
     }
@@ -164,24 +161,19 @@ public class FruitOutlineStyle: ScriptableObject {
     [Tooltip("monkey outline width; u")]
     private float monkeyWidthU = 0.040f;
 
-    [Header("See-Through Ghost")]
+    [Header("See-Through Ghost (misty halo, fruit shape cut out)")]
     [SerializeField]
     [Range(0f, 1f)]
-    [Tooltip("fill alpha where something nearer covers the fruit")]
-    private float ghostFillAlpha = 0.30f;
+    [Tooltip("halo alpha right next to the fruit")]
+    private float ghostHaloAlpha = 0.55f;
 
     [SerializeField]
-    [Range(0f, 1f)]
-    [Tooltip("alpha of the Fresnel rim")]
-    private float ghostRimAlpha = 0.90f;
+    [Tooltip("halo falloff power; higher = the mist fades sooner")]
+    private float ghostHaloPower = 1.5f;
 
     [SerializeField]
-    [Tooltip("Fresnel rim power; higher = thinner rim")]
-    private float ghostRimPower = 3f;
-
-    [SerializeField]
-    [Tooltip("shell pushed out so the rim hugs the silhouette; u")]
-    private float ghostPushU = 0.008f;
+    [Tooltip("how far the halo reaches beyond the fruit; u")]
+    private float ghostHaloReachU = 0.12f;
 
     // private members  ########################################################
     [Serializable]
@@ -198,14 +190,12 @@ public class FruitOutlineStyle: ScriptableObject {
 
     private static readonly int GHOST_COLOR =
         Shader.PropertyToID("_Ghost_Color");
-    private static readonly int GHOST_FILL_ALPHA =
-        Shader.PropertyToID("_Ghost_FillAlpha");
-    private static readonly int GHOST_RIM_ALPHA =
-        Shader.PropertyToID("_Ghost_RimAlpha");
-    private static readonly int GHOST_RIM_POWER =
-        Shader.PropertyToID("_Ghost_RimPower");
-    private static readonly int GHOST_PUSH =
-        Shader.PropertyToID("_Ghost_Push");
+    private static readonly int GHOST_HALO_ALPHA =
+        Shader.PropertyToID("_Ghost_HaloAlpha");
+    private static readonly int GHOST_HALO_POWER =
+        Shader.PropertyToID("_Ghost_HaloPower");
+    private static readonly int GHOST_HALO_REACH =
+        Shader.PropertyToID("_Ghost_HaloReach");
 
     [NonSerialized]
     private readonly Dictionary<(FruitKind, bool), Material> ghostCache =
