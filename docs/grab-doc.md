@@ -133,8 +133,8 @@ For a quick test use the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns 
 | Tier | When | Priority | Width | Concentration |
 | --- | --- | --- | --- | --- |
 | Normal | at rest, no hand near | lowest | 0.018 u | muted (S 0.45, V 0.80) |
-| Reachable | the fruit is `ReachTarget`, the one a reach would aim at | middle | 0.040 u | whitish (S 0.18, V 1.0) |
-| Grabbable | a hand overlaps the fruit, so a release would grab it | highest, wins | 0.065 u | saturated (S 1.0, V 1.0) |
+| Reachable | the fruit is `ReachTarget`, the one a reach would aim at | middle | 0.065 u | whitish (S 0.18, V 1.0) |
+| Grabbable | a hand overlaps the fruit, so a release would grab it | highest, wins | 0.090 u | saturated (S 1.0, V 1.0) |
 
 Hues: banana 48 deg, coconut 24 deg, pineapple 335 deg (magenta, so it never reads as the green cobra), melon 190 deg. Every number lives in one asset, `Settings/FruitOutline/FruitOutlineStyle.asset` (`FruitOutlineStyle`): retune the widths, the tier S and V, a hue, the monkey look or the ghost there, no code change. `FruitOutlineStyle.GetTierMaterial(kind, tier)` builds and caches 1 shared hull material per fruit kind and tier, so every banana shares one. The hull shader is `Shaders/Outline/OutlineHull`, hand written, which cancels the object's scale so the width stays in world units; it keeps the property names `_Outline_Color` and `_Outline_Width`, which the boss golden fruit sets.
 

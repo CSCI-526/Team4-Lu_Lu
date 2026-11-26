@@ -132,7 +132,7 @@ public class FruitOutlineStyle: ScriptableObject {
     [Header("Fruit Tiers (Normal, Reachable, Grabbable)")]
     [SerializeField]
     [Tooltip("outline width per tier, same for every fruit; u")]
-    private float[] widthU = { 0.018f, 0.040f, 0.065f };
+    private float[] widthU = { 0.018f, 0.065f, 0.090f };
 
     [SerializeField]
     [Tooltip("HSV saturation per tier; Reachable is whitish, Grabbable is full")]

@@ -171,7 +171,7 @@ public static class OutlineMaterialBuilder {
         string normalHex, string reachableHex, string grabbableHex
     ) {
         string[] hexes = { normalHex, reachableHex, grabbableHex };
-        float[] widths = { 0.018f, 0.040f, 0.065f };
+        float[] widths = { 0.018f, 0.065f, 0.090f };
         int failCount = 0;
         for (int i = 0; i < 3; i++) {
             var tier = (OutlineTier)i;
