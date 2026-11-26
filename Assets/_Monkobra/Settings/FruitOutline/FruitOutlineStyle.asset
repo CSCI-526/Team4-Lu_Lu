@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FruitOutlineStyle
   m_EditorClassIdentifier: Assembly-CSharp::FruitOutlineStyle
   hullShader: {fileID: 4800000, guid: 0495448d97bbd234daa0e057cdf86407, type: 3}
+  ghostShader: {fileID: 4800000, guid: 00d49148d6725614b9335931b6c9b31a, type: 3}
   widthU:
   - 0.015
   - 0.025

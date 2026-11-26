@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -12,7 +13,10 @@ using UnityEngine.Serialization;
 /// </list>
 /// The tier materials come from the shared <see cref="FruitOutlineStyle"/>
 /// by fruit kind. W/o a style it falls back to the 2 old materials, and
-/// the normal tier is then bare. The outline is an extra material slot.
+/// the normal tier is then bare, with no ghost. The outline is an extra
+/// material slot, and a see-through ghost is a third one: it shows only
+/// where the trunk, a branch or the monkey hides the fruit, in the
+/// Reachable color, or the Grabbable one while grabbable.
 /// </summary>
 public class FruitOutlineListener: MonoBehaviour {
     // Inspector Fields  #######################################################
@@ -43,12 +47,16 @@ public class FruitOutlineListener: MonoBehaviour {
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
         Material normalMat = null;
+        Material ghostMat = null;
+        Material ghostGrabMat = null;
         Material reachMat = reachableOutlineMat;
         Material grabMat = grabbableOutlineMat;
         if (style != null) {
             normalMat = style.GetTierMaterial(kind, OutlineTier.Normal);
             reachMat = style.GetTierMaterial(kind, OutlineTier.Reachable);
             grabMat = style.GetTierMaterial(kind, OutlineTier.Grabbable);
+            ghostMat = style.GetGhostMaterial(kind, false);
+            ghostGrabMat = style.GetGhostMaterial(kind, true);
         } else {
             Debug.LogWarning(
                 "FruitOutlineListener:	"
@@ -74,9 +82,9 @@ public class FruitOutlineListener: MonoBehaviour {
         for (int i = 0; i < meshes.Length; i++) {
             // keep slot 0 only, so a leftover outline slot never sticks
             Material baseMat = meshes[i].sharedMaterials[0];
-            normalMats[i] = BuildMats(baseMat, normalMat);
-            reachableMats[i] = BuildMats(baseMat, reachMat);
-            grabbableMats[i] = BuildMats(baseMat, grabMat);
+            normalMats[i] = BuildMats(baseMat, normalMat, ghostMat);
+            reachableMats[i] = BuildMats(baseMat, reachMat, ghostMat);
+            grabbableMats[i] = BuildMats(baseMat, grabMat, ghostGrabMat);
         }
         ApplyOutline();
     }
@@ -145,11 +153,18 @@ public class FruitOutlineListener: MonoBehaviour {
     private Material[][] grabbableMats;
 
     // private methods  ########################################################
-    // w/o an outline material the tier falls back to plain, never a null slot
-    private static Material[] BuildMats(Material baseMat, Material outlineMat) {
-        return outlineMat != null
-            ? new Material[] { baseMat, outlineMat }
-            : new Material[] { baseMat };
+    // w/o an outline or ghost material that slot drops, never a null slot
+    private static Material[] BuildMats(
+        Material baseMat, Material outlineMat, Material ghostMat
+    ) {
+        var mats = new List<Material> { baseMat };
+        if (outlineMat != null) {
+            mats.Add(outlineMat);
+        }
+        if (ghostMat != null) {
+            mats.Add(ghostMat);
+        }
+        return mats.ToArray();
     }
 
     // grabbable beats reachable beats normal

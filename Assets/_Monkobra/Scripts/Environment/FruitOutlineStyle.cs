@@ -31,6 +31,8 @@ public class FruitOutlineStyle: ScriptableObject {
     // Public API  #############################################################
     public Shader HullShader => hullShader;
 
+    public Shader GhostShader => ghostShader;
+
     public Color MonkeyColor => monkeyColor;
 
     public float MonkeyWidthU => monkeyWidthU;
@@ -84,11 +86,51 @@ public class FruitOutlineStyle: ScriptableObject {
         return mat;
     }
 
+    /// <summary>
+    /// Shared see-through ghost material of a kind; it wears the Reachable
+    /// color, or the Grabbable one while the fruit is grabbable.
+    /// </summary>
+    public Material GetGhostMaterial(FruitKind kind, bool isGrabbable) {
+        var key = (kind, isGrabbable);
+        if (
+            ghostCache.TryGetValue(key, out Material mat)
+            && mat != null
+        ) {
+            return mat;
+        }
+
+        if (ghostShader == null) {
+            Debug.LogError(
+                "FruitOutlineStyle:	must assign Inspector Field: ghostShader",
+                this
+            );
+            return null;
+        }
+
+        OutlineTier tier =
+            isGrabbable ? OutlineTier.Grabbable : OutlineTier.Reachable;
+        mat = new Material(ghostShader) {
+            name = $"Outline_Ghost_{kind}_{tier}",
+            hideFlags = HideFlags.HideAndDontSave,
+        };
+        mat.SetColor(GHOST_COLOR, GetTierColor(kind, tier));
+        mat.SetFloat(GHOST_FILL_ALPHA, ghostFillAlpha);
+        mat.SetFloat(GHOST_RIM_ALPHA, ghostRimAlpha);
+        mat.SetFloat(GHOST_RIM_POWER, ghostRimPower);
+        mat.SetFloat(GHOST_PUSH, ghostPushU);
+        ghostCache[key] = mat;
+        return mat;
+    }
+
     // Inspector Fields  #######################################################
     [Header("Shader")]
     [SerializeField]
     [Tooltip("world-unit inverted-hull outline shader")]
     private Shader hullShader;
+
+    [SerializeField]
+    [Tooltip("depth-Greater see-through ghost shader")]
+    private Shader ghostShader;
 
     [Header("Fruit Tiers (Normal, Reachable, Grabbable)")]
     [SerializeField]
@@ -153,6 +195,21 @@ public class FruitOutlineStyle: ScriptableObject {
         Shader.PropertyToID("_Outline_Color");
     private static readonly int OUTLINE_WIDTH =
         Shader.PropertyToID("_Outline_Width");
+
+    private static readonly int GHOST_COLOR =
+        Shader.PropertyToID("_Ghost_Color");
+    private static readonly int GHOST_FILL_ALPHA =
+        Shader.PropertyToID("_Ghost_FillAlpha");
+    private static readonly int GHOST_RIM_ALPHA =
+        Shader.PropertyToID("_Ghost_RimAlpha");
+    private static readonly int GHOST_RIM_POWER =
+        Shader.PropertyToID("_Ghost_RimPower");
+    private static readonly int GHOST_PUSH =
+        Shader.PropertyToID("_Ghost_Push");
+
+    [NonSerialized]
+    private readonly Dictionary<(FruitKind, bool), Material> ghostCache =
+        new Dictionary<(FruitKind, bool), Material>();
 
     [NonSerialized]
     private readonly Dictionary<(FruitKind, OutlineTier), Material> cache =

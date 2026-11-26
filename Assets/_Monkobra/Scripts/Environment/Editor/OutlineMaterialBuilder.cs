@@ -81,6 +81,8 @@ public static class OutlineMaterialBuilder {
 
         var serialized = new SerializedObject(style);
         serialized.FindProperty("hullShader").objectReferenceValue = shader;
+        serialized.FindProperty("ghostShader").objectReferenceValue =
+            AssetDatabase.LoadAssetAtPath<Shader>(GHOST_SHADER_PATH);
         serialized.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(style);
         return style;
