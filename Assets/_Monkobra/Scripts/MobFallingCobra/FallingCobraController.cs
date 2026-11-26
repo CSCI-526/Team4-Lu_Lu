@@ -1,4 +1,3 @@
-using Unity.Profiling;
 using UnityEngine;
 using static FallingCobraRig;
 using static FallingCobraMath;
@@ -39,14 +38,6 @@ public class FallingCobraController: MonoBehaviour {
     /// <returns>how far the snake's tail reaches below its pivot; u</returns>
     public float TailBelowPivotU => rig.HasBody
         ? rig.referenceHeadBelowPivotU : config.HitRadiusU;
-
-    /// <returns>the cobra's current state</returns>
-    public FallingCobraState CurrentState => rig.state;
-
-    /// <returns>where the snake's head is now, its pivot before it has one
-    /// </returns>
-    public Vector3 HeadPosition => rig.referenceHeadVisual != null
-        ? rig.referenceHeadVisual.position : transform.position;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -323,7 +314,6 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void LateUpdate() {
-        using var _ = LATE_UPDATE_MARKER.Auto();
         if (!rig.HasBody || rig.state == FallingCobraState.Done
             || !rig.perchBound) {
             return;
@@ -379,14 +369,6 @@ public class FallingCobraController: MonoBehaviour {
     // rebuilds its pose, so a head turn ends smoothly; u
     private const float IDLE_MARGIN_U = 4f;
 
-    // profiler markers  ------------------------------------------------------
-    private static readonly ProfilerMarker UPDATE_MARKER =
-        new("FallingCobra.Update");
-    private static readonly ProfilerMarker FIXED_UPDATE_MARKER =
-        new("FallingCobra.FixedUpdate");
-    private static readonly ProfilerMarker LATE_UPDATE_MARKER =
-        new("FallingCobra.LateUpdate");
-
     private void Start() {
         GameObject playerObject = MonkeyController.GetRootOrNull();
         if (playerObject != null) {
@@ -399,7 +381,6 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void Update() {
-        using var _ = UPDATE_MARKER.Auto();
         switch (rig.state) {
             case FallingCobraState.Dormant:
                 // a cobra never outlives its branch: one left in mid air by
@@ -418,7 +399,6 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        using var _ = FIXED_UPDATE_MARKER.Auto();
         tracking.UpdateTrackedMonkey();
         if (rig.state == FallingCobraState.Warning && CanStartFall()) {
             StartFalling();
@@ -473,10 +453,6 @@ public class FallingCobraController: MonoBehaviour {
         if (sensor != null || !IsMonkeyPart(other)) {
             return;
         }
-        if (Debug.isDebugBuild) {
-            Debug.Log("FallingCobraController:	hit from monkey collider "
-                + ColliderPath(other), this);
-        }
         rig.state = FallingCobraState.Done;
         rig.hitCollider.enabled = false;
         HitBranchSensor receiver = sensor != null ? sensor : rig.playerSensor;
@@ -510,20 +486,6 @@ public class FallingCobraController: MonoBehaviour {
             }
         }
         return false;
-    }
-
-    // the collider's name chain up to the monkey root, to tell which
-    // part of the monkey a hit came from
-    private static string ColliderPath(Collider other) {
-        string path = other.name;
-        for (Transform t = other.transform.parent; t != null;
-            t = t.parent) {
-            path = t.name + "/" + path;
-            if (t.CompareTag(PLAYER_TAG)) {
-                break;
-            }
-        }
-        return path;
     }
 
     private void WatchMonkey() {

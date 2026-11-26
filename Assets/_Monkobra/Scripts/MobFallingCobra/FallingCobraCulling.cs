@@ -109,24 +109,6 @@ public static class FallingCobraCulling {
             || group.GetDistance(handle.index) > 0;
     }
 
-    /// <summary>counts the cobras the group sees in view and within the gate,
-    /// for the benchmark</summary>
-    public static void Count(out int visible, out int near) {
-        visible = 0;
-        near = 0;
-        if (group == null) {
-            return;
-        }
-        for (int i = 0; i < handles.Count; i++) {
-            if (group.IsVisible(i)) {
-                visible++;
-                if (group.GetDistance(i) == 0) {
-                    near++;
-                }
-            }
-        }
-    }
-
     // Static Reset  ###########################################################
     // a play session that skips the domain reload keeps statics, so clear
     [RuntimeInitializeOnLoadMethod(

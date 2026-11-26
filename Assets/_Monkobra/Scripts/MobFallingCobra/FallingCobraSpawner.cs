@@ -195,10 +195,7 @@ public class FallingCobraSpawner: MonoBehaviour {
         }
     }
 
-    /// <summary>Tries to perch one dormant cobra on a branch of
-    /// <paramref name="segment"/>, skipping the probability roll.</summary>
-    /// <returns>if a cobra was perched</returns>
-    public bool TrySpawnCobra(TreeSegmentController segment) {
+    private bool TrySpawnCobra(TreeSegmentController segment) {
         List<BoxCollider> branches = new List<BoxCollider>();
         List<BoxCollider> fruitBranches = new List<BoxCollider>();
         foreach (
