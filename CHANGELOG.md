@@ -4,8 +4,7 @@
 FIXME erik mpv tutorial for boss fight
 FIXME erik b/t boss fight, better randomization
 
-Bug outline more uniformed: for both monkey and food
-Bug make leaderboard works
+bug make leaderboard works
 
 todo lighting improvement
 todo vertical version adaptation
