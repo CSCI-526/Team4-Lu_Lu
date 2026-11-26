@@ -14,15 +14,62 @@ public static class OutlinePrefabWiring {
     private const string MONKEY_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Monkey.mat";
 
+    private const string STYLE_PATH =
+        ROOT + "Settings/FruitOutline/FruitOutlineStyle.asset";
+
+    // prefab of each fruit, and the kind its listener is set to
+    private static readonly (string path, FruitKind kind)[] FRUITS = {
+        (ROOT + "Prefabs/Environment/_BranchBase.prefab", FruitKind.Banana),
+        (ROOT + "Prefabs/ItemCoconut/Coconut.prefab", FruitKind.Coconut),
+        (ROOT + "Prefabs/ItemPineapple/Pineapple.prefab", FruitKind.Pineapple),
+    };
+
     // Menu  ###################################################################
     [MenuItem(MENU_PATH)]
     public static void Run() {
         WireMonkey();
+        WireFruits();
         AssetDatabase.SaveAssets();
         Debug.Log("OutlinePrefabWiring:\toutline prefabs wired");
     }
 
     // private methods  ########################################################
+    private static void WireFruits() {
+        var style = AssetDatabase.LoadAssetAtPath<FruitOutlineStyle>(STYLE_PATH);
+        if (style == null) {
+            Debug.LogError(
+                $"OutlinePrefabWiring:	fail to load style: {STYLE_PATH}"
+            );
+            return;
+        }
+
+        foreach ((string path, FruitKind kind) in FRUITS) {
+            GameObject root = PrefabUtility.LoadPrefabContents(path);
+            try {
+                FruitOutlineListener[] listeners =
+                    root.GetComponentsInChildren<FruitOutlineListener>(true);
+                if (listeners.Length == 0) {
+                    Debug.LogError(
+                        "OutlinePrefabWiring:	no FruitOutlineListener in "
+                            + path
+                    );
+                    continue;
+                }
+                foreach (FruitOutlineListener listener in listeners) {
+                    var serialized = new SerializedObject(listener);
+                    serialized.FindProperty("style").objectReferenceValue =
+                        style;
+                    serialized.FindProperty("kind").enumValueIndex =
+                        (int)kind;
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                }
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            } finally {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+    }
+
     private static void WireMonkey() {
         var mat = AssetDatabase.LoadAssetAtPath<Material>(MONKEY_MAT_PATH);
         if (mat == null) {

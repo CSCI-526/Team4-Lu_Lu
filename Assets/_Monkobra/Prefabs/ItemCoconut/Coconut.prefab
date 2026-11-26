@@ -84,6 +84,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FruitOutlineListener
   meshRoot: {fileID: 0}
+  style: {fileID: 11400000, guid: 3abcf5659e73d554b891748f8df63288, type: 2}
+  kind: 1
   reachableOutlineMat: {fileID: 2100000, guid: 66f23b5bf95f44781b58dba549efd0af, type: 2}
   grabbableOutlineMat: {fileID: 2100000, guid: 9a6170d00c446477f82a41407a2e6f3a, type: 2}
 --- !u!114 &5604785938746913506
@@ -107,6 +109,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 73247760176330741}
     m_Modifications:
+    - target: {fileID: 1250527485522735117, guid: af6f984debd3d2e48864a58235e1cf95, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3c6f1b8e9a2d4e57b0a4d8c1f7e92b36, type: 2}
     - target: {fileID: 1915738036787327766, guid: af6f984debd3d2e48864a58235e1cf95, type: 3}
       propertyPath: m_LocalScale.x
       value: 2.5
@@ -163,10 +169,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: CoconutModel
       objectReference: {fileID: 0}
-    - target: {fileID: 1250527485522735117, guid: af6f984debd3d2e48864a58235e1cf95, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 3c6f1b8e9a2d4e57b0a4d8c1f7e92b36, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
