@@ -6,6 +6,10 @@ Shader "Monkobra/Outline/OutlineHull"
         // names kept for the boss golden fruit code
         _Outline_Color ("Outline Color", Color) = (1, 1, 1, 1)
         _Outline_Width ("Outline Width (world units)", Float) = 0.025
+        // stencil bit of its family (8 fruit, 16 monkey): the hull hides
+        // where OutlineMask marked that family's body, leaving only the
+        // whole silhouette
+        [HideInInspector] _Outline_StencilBit ("Stencil Bit", Float) = 8
     }
 
     SubShader
@@ -26,6 +30,15 @@ Shader "Monkobra/Outline/OutlineHull"
             ZWrite On
             ZTest LEqual
 
+            Stencil
+            {
+                Ref [_Outline_StencilBit]
+                ReadMask [_Outline_StencilBit]
+                WriteMask [_Outline_StencilBit]
+                Comp NotEqual
+                Pass Keep
+            }
+
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -36,6 +49,7 @@ Shader "Monkobra/Outline/OutlineHull"
             CBUFFER_START(UnityPerMaterial)
                 half4 _Outline_Color;
                 float _Outline_Width;
+                float _Outline_StencilBit;
             CBUFFER_END
 
             struct Attributes

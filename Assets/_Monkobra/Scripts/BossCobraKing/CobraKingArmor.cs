@@ -18,8 +18,12 @@ public sealed class CobraKingArmor {
     // Public Methods  #########################################################
     public void MakeGolden(GameObject banana) {
         // its own outline replaces the reach-target one
+        Material mask = null;
         foreach (FruitOutlineListener listener in
             banana.GetComponentsInChildren<FruitOutlineListener>(true)) {
+            if (mask == null && listener.Style != null) {
+                mask = listener.Style.GetMaskMaterial();
+            }
             UnityEngine.Object.Destroy(listener);
         }
         Material outline = null;
@@ -36,7 +40,9 @@ public sealed class CobraKingArmor {
             banana.GetComponentsInChildren<Renderer>(true)) {
             Material baseMaterial = part.sharedMaterial;
             if (outline != null) {
-                part.sharedMaterials = new[] { baseMaterial, outline };
+                part.sharedMaterials = mask != null
+                    ? new[] { baseMaterial, mask, outline }
+                    : new[] { baseMaterial, outline };
             }
             rig.Feedback.SetColor(part, config.GoldenColor);
         }

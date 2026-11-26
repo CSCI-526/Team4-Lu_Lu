@@ -58,6 +58,9 @@ public class FruitOutlineListener: MonoBehaviour {
     }
 
     // Public Methods  #########################################################
+    /// <summary>the shared style; boss golden fruit reuse its mask</summary>
+    public FruitOutlineStyle Style => style;
+
     /// <summary>
     /// Re-picks the fruit kind after Awake, eg a banana branch whose fruit is
     /// swapped for a melon; rebuilds the tier slots, keeps the current tier.
@@ -145,7 +148,9 @@ public class FruitOutlineListener: MonoBehaviour {
         Material ghostGrabMat = null;
         Material reachMat = null;
         Material grabMat = null;
+        Material maskMat = null;
         if (style != null) {
+            maskMat = style.GetMaskMaterial();
             normalMat = style.GetTierMaterial(kind, OutlineTier.Normal);
             reachMat = style.GetTierMaterial(kind, OutlineTier.Reachable);
             grabMat = style.GetTierMaterial(kind, OutlineTier.Grabbable);
@@ -159,17 +164,21 @@ public class FruitOutlineListener: MonoBehaviour {
         for (int i = 0; i < meshes.Length; i++) {
             // keep slot 0 only, so a leftover outline slot never sticks
             Material baseMat = meshes[i].sharedMaterials[0];
-            normalMats[i] = BuildMats(baseMat, normalMat, ghostMat);
-            reachableMats[i] = BuildMats(baseMat, reachMat, ghostMat);
-            grabbableMats[i] = BuildMats(baseMat, grabMat, ghostGrabMat);
+            normalMats[i] = BuildMats(baseMat, maskMat, normalMat, ghostMat);
+            reachableMats[i] = BuildMats(baseMat, maskMat, reachMat, ghostMat);
+            grabbableMats[i] = BuildMats(baseMat, maskMat, grabMat, ghostGrabMat);
         }
     }
 
     // w/o an outline or ghost material that slot drops, never a null slot
     private static Material[] BuildMats(
-        Material baseMat, Material outlineMat, Material ghostMat
+        Material baseMat, Material maskMat, Material outlineMat,
+        Material ghostMat
     ) {
         var mats = new List<Material> { baseMat };
+        if (maskMat != null && outlineMat != null) {
+            mats.Add(maskMat);
+        }
         if (outlineMat != null) {
             mats.Add(outlineMat);
         }

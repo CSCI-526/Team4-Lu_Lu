@@ -378,8 +378,12 @@ public sealed class SpiderKingArena {
     // as the Cobra King's golden watermelon: its reach outline swapped for a
     // thick gold one, the melon tinted gold
     public void MakeGolden(GameObject melon) {
+        Material mask = null;
         foreach (FruitOutlineListener listener in
             melon.GetComponentsInChildren<FruitOutlineListener>(true)) {
+            if (mask == null && listener.Style != null) {
+                mask = listener.Style.GetMaskMaterial();
+            }
             UnityEngine.Object.Destroy(listener);
         }
         Material outline = null;
@@ -394,7 +398,9 @@ public sealed class SpiderKingArena {
             melon.GetComponentsInChildren<Renderer>(true)) {
             Material baseMaterial = part.sharedMaterial;
             if (outline != null) {
-                part.sharedMaterials = new[] { baseMaterial, outline };
+                part.sharedMaterials = mask != null
+                    ? new[] { baseMaterial, mask, outline }
+                    : new[] { baseMaterial, outline };
             }
             rig.Feedback.SetColor(part, config.GoldenColor);
         }

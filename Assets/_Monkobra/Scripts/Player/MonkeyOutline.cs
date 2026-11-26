@@ -15,6 +15,10 @@ public class MonkeyOutline: MonoBehaviour {
     [Tooltip("always-on outline material, cream, world-unit width")]
     private Material outlineMat;
 
+    [SerializeField]
+    [Tooltip("stencil mask, outlines the whole monkey not each part")]
+    private Material maskMat;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -38,7 +42,9 @@ public class MonkeyOutline: MonoBehaviour {
 
             // keep slot 0 only, so a leftover outline slot never doubles
             Material baseMat = renderer.sharedMaterials[0];
-            renderer.sharedMaterials = new Material[] { baseMat, outlineMat };
+            renderer.sharedMaterials = maskMat != null
+                ? new Material[] { baseMat, maskMat, outlineMat }
+                : new Material[] { baseMat, outlineMat };
         }
     }
 }

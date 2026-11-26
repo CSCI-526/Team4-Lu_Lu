@@ -33,6 +33,8 @@ public class FruitOutlineStyle: ScriptableObject {
 
     public Shader GhostShader => ghostShader;
 
+    public Shader MaskShader => maskShader;
+
     public Color MonkeyColor => monkeyColor;
 
     public float MonkeyWidthU => monkeyWidthU;
@@ -90,6 +92,29 @@ public class FruitOutlineStyle: ScriptableObject {
     }
 
     /// <summary>
+    /// Shared mask material every fruit mesh wears: it marks the fruit's
+    /// body in the stencil so its hull shows only on the silhouette.
+    /// </summary>
+    public Material GetMaskMaterial() {
+        if (maskMaterial != null) {
+            return maskMaterial;
+        }
+        if (maskShader == null) {
+            Debug.LogError(
+                "FruitOutlineStyle: must assign Inspector Field: "
+                    + "maskShader",
+                this
+            );
+            return null;
+        }
+        maskMaterial = new Material(maskShader) {
+            name = "Outline_Mask",
+            hideFlags = HideFlags.HideAndDontSave,
+        };
+        return maskMaterial;
+    }
+
+    /// <summary>
     /// Shared see-through ghost material of a kind; it wears the Reachable
     /// color, or the Grabbable one while the fruit is grabbable.
     /// </summary>
@@ -133,6 +158,10 @@ public class FruitOutlineStyle: ScriptableObject {
     [SerializeField]
     [Tooltip("depth-Greater see-through ghost shader")]
     private Shader ghostShader;
+
+    [SerializeField]
+    [Tooltip("stencil mask: outlines the whole fruit, not each part")]
+    private Shader maskShader;
 
     [Header("Fruit Tiers (Normal, Reachable, Grabbable)")]
     [SerializeField]
@@ -203,6 +232,9 @@ public class FruitOutlineStyle: ScriptableObject {
         Shader.PropertyToID("_Ghost_HaloSigma");
     private static readonly int GHOST_HALO_REACH =
         Shader.PropertyToID("_Ghost_HaloReach");
+
+    [NonSerialized]
+    private Material maskMaterial;
 
     [NonSerialized]
     private readonly Dictionary<(FruitKind, bool), Material> ghostCache =

@@ -19,11 +19,17 @@ public static class OutlineMaterialBuilder {
     private const string SHADER_PATH = ROOT + "Shaders/Outline/OutlineHull.shader";
     private const string STYLE_PATH =
         ROOT + "Settings/FruitOutline/FruitOutlineStyle.asset";
+    private const string MASK_SHADER_PATH =
+        ROOT + "Shaders/Outline/OutlineMask.shader";
     private const string GHOST_SHADER_PATH =
         ROOT + "Shaders/Outline/OutlineSeeThrough.shader";
     // base the boss golden fruit clones; its width is the Grabbable one
     private const string GOLDEN_BASE_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Banana_Grabbable.mat";
+    private const string MONKEY_MASK_MAT_PATH =
+        ROOT + "Materials/Outline/Outline_MonkeyMask.mat";
+    // stencil bit of the monkey; the fruit use 8, the ghost halo 4
+    private const float MONKEY_STENCIL_BIT = 16f;
     private const string MONKEY_MAT_PATH =
         ROOT + "Materials/Outline/Outline_Monkey.mat";
 
@@ -44,6 +50,7 @@ public static class OutlineMaterialBuilder {
 
         FruitOutlineStyle style = LoadOrCreateStyle(shader);
         BuildMonkeyMaterial(shader, style);
+        BuildMonkeyMaskMaterial(style);
         BuildGhostMaterials(style);
         BuildGoldenBaseMaterial(shader, style);
         AssetDatabase.SaveAssets();
@@ -87,6 +94,8 @@ public static class OutlineMaterialBuilder {
 
         var serialized = new SerializedObject(style);
         serialized.FindProperty("hullShader").objectReferenceValue = shader;
+        serialized.FindProperty("maskShader").objectReferenceValue =
+            AssetDatabase.LoadAssetAtPath<Shader>(MASK_SHADER_PATH);
         serialized.FindProperty("ghostShader").objectReferenceValue =
             AssetDatabase.LoadAssetAtPath<Shader>(GHOST_SHADER_PATH);
         serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -106,6 +115,29 @@ public static class OutlineMaterialBuilder {
         mat.shader = shader;
         mat.SetColor("_Outline_Color", style.MonkeyColor);
         mat.SetFloat("_Outline_Width", style.MonkeyWidthU);
+        mat.SetFloat("_Outline_StencilBit", MONKEY_STENCIL_BIT);
+        EditorUtility.SetDirty(mat);
+    }
+
+    // the monkey's own mask, on its own stencil bit so a fruit and the
+    // monkey never hide each other's outline
+    private static void BuildMonkeyMaskMaterial(FruitOutlineStyle style) {
+        if (style.MaskShader == null) {
+            Debug.LogError(
+                "OutlineMaterialBuilder:\tfail to load Shader: "
+                    + MASK_SHADER_PATH
+            );
+            return;
+        }
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(
+            MONKEY_MASK_MAT_PATH
+        );
+        if (mat == null) {
+            mat = new Material(style.MaskShader);
+            AssetDatabase.CreateAsset(mat, MONKEY_MASK_MAT_PATH);
+        }
+        mat.shader = style.MaskShader;
+        mat.SetFloat("_Outline_StencilBit", MONKEY_STENCIL_BIT);
         EditorUtility.SetDirty(mat);
     }
 
