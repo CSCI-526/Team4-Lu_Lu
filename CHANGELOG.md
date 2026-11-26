@@ -69,9 +69,13 @@ todo add 3x fruit
   every item at once, the intro comic too; only in Editor/development build,
   never in a release build
 - 2 boss dev scenes, `DEVBossCobraKingScene` & `DEVBossSpiderKingScene`: each
-  plays the first meeting with one boss from the normal start, with no
-  starting zone, the boss moved down to 5 u above the start through its own
-  DEV copy of `WorldBalanceConfig`; built by `Monkobra > Build Boss Dev Scenes`
+  plays the first meeting with one boss, with no starting zone, the fight
+  beginning on the first live frame (the climb baseline moves down to the
+  boss location, test-only `startOffsetU`), through its own DEV copy of
+  `WorldBalanceConfig`; every tutorial off the boss fight is off, the boss
+  fight's own follow the `GameController` skip box; the Loop is the integer
+  `loopOverride` on the `BossDevStart` object; built by `Monkobra > Build
+  Boss Dev Scenes` or headless by `BossDevSceneBuilder.BuildInBatch`
 
 ### Changed
 

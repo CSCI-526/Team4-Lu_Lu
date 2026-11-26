@@ -9,15 +9,15 @@ using UnityEngine.SceneManagement;
 /// <c>Monkobra/Build Boss Dev Scenes</c> makes the 2 boss dev scenes, one
 /// per boss, as copies of <c>GameplayScene</c> with a
 /// <see cref="BossDevStart"/> object added, so each plays like the player's
-/// first meeting with that boss. The boss is moved down, never the monkey up:
-/// the menu copies the main <see cref="WorldBalanceConfig"/> into one DEV
-/// asset per scene whose boss heights put the boss under test's location at the
-/// monkey's start, so its fight begins on the first live frame, points every
-/// reference to the
-/// main one in the scene at its copy, and moves the ramp base to the
-/// monkey's start so the scene has no starting zone. Run it again after the
-/// main scene or the balance changes: each scene and copy are rebuilt from
-/// them, keeping their <c>.meta</c>. The main scene and the main balance
+/// first meeting with that boss. The monkey never moves: the menu copies
+/// the main <see cref="WorldBalanceConfig"/> into one DEV asset per scene
+/// whose boss under test sits at the lowest location the asset allows, sets
+/// <c>RampedDifficultyManager.startOffsetU</c> to it so the monkey starts on
+/// that location and the fight begins on the first live frame, points every
+/// reference to the main one in the scene at its copy, and moves the ramp
+/// base to the monkey's start so the scene has no starting zone. Run it again
+/// after the main scene or the balance changes: each scene and copy are
+/// rebuilt from them, keeping their <c>.meta</c>. The main scene and the main balance
 /// asset are never edited or saved. The dev scenes are listed, disabled, in
 /// the Editor Build Settings.
 /// </summary>
