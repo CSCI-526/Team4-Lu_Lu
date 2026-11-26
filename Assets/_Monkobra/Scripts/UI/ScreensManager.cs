@@ -53,18 +53,18 @@ public class ScreensManager: MonoBehaviour {
     }
 
     // panels start deactivated, this manager alone turns them on. Sync to the
-    // state GameController set in Awake, then follow its changes
+    // state RunController set in Awake, then follow its changes
     private void Start() {
-        if (GameController.I == null) {
+        if (RunController.I == null) {
             Debug.LogError(
-                "ScreensManager:\tGameController instance not found",
+                "ScreensManager:\tRunController instance not found",
                 this
             );
             return;
         }
 
-        ShowScreenFor(GameController.I.State);
-        GameController.I.StateChanged += ShowScreenFor;
+        ShowScreenFor(RunController.I.State);
+        RunController.I.StateChanged += ShowScreenFor;
     }
 
     private void OnDestroy() {
@@ -72,8 +72,8 @@ public class ScreensManager: MonoBehaviour {
             I = null;
         }
 
-        if (GameController.I != null) {
-            GameController.I.StateChanged -= ShowScreenFor;
+        if (RunController.I != null) {
+            RunController.I.StateChanged -= ShowScreenFor;
         }
     }
 

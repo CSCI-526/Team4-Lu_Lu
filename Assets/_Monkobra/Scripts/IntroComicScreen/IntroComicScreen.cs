@@ -11,14 +11,11 @@ using UnityEngine.UI;
 /// own. Space, E, Enter, a click or a tap (UI/StartPress) first lets a panel
 /// catch up to its end, so no pop or reveal is missed, then turns the page;
 /// after the last page, and on Esc or the Skip button, the level selection
-/// opens. It plays once a launch: <see cref="HasPlayed"/> sends later title
-/// presses straight to the menu. Runs on unscaled time.
+/// opens. It plays once a launch: it marks <see cref="TutorialItem.IntroComic"/>
+/// seen, so later title presses go straight to the menu. Runs on unscaled time.
 /// </summary>
 public class IntroComicScreen: MonoBehaviour {
     // Public Members  #########################################################
-    /// <summary>true once the comic has opened this launch</summary>
-    public static bool HasPlayed { get; private set; }
-
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("the panels, written by Monkobra/Build Intro Comic")]
@@ -104,7 +101,9 @@ public class IntroComicScreen: MonoBehaviour {
             );
         }
 
-        HasPlayed = true;
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.IntroComic);
+        }
         BuildPanels();
     }
 
@@ -509,13 +508,5 @@ public class IntroComicScreen: MonoBehaviour {
         const float c3 = c1 + 1f;
         float v = u - 1f;
         return 1f + c3 * v * v * v + c1 * v * v;
-    }
-
-    // the flag outlives a play session when domain reload is off in the Editor
-    [RuntimeInitializeOnLoadMethod(
-        RuntimeInitializeLoadType.SubsystemRegistration
-    )]
-    private static void ResetLaunch() {
-        HasPlayed = false;
     }
 }

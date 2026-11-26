@@ -36,7 +36,7 @@ Each popup is one entry of `Settings/PopUp/PopUpCatalog`; open the asset and edi
 - One at a Time: a higher priority interrupts the showing popup, an equal or lower one queues, in priority order and first come first served within one priority
 - Resume: an interrupted popup returns to the queue front with its show time left and plays the rest once the higher one is gone
 - Same Popup Again: asking for the showing popup refreshes it in place, asking for a queued one replaces its entry
-- Run Gating: a run-only popup shows only while `GameController.IsRunLive`, and is dropped from the queue if the run is not live when its turn comes
+- Run Gating: a run-only popup shows only while `RunController.IsRunLive`, and is dropped from the queue if the run is not live when its turn comes
 - Once Per Scene: a flagged popup is remembered for the scene load; the manager is rebuilt with the scene, so the next load shows it again
 - Loss: on `GameState.Lost` the showing popup stops at once and the queue is cleared
 - Pause: timing follows `Time.deltaTime`, so a pause freezes a popup and a resume continues it
@@ -52,4 +52,4 @@ An id with no definition logs a warning and shows nothing.
 
 ## Dev Skip
 
-The tutorial skip switch (`TutorialSkipSwitch.IsSkipping`, a dev checkbox, never in a release build) keeps 6 teaching pop ups from showing: the fruit grabs (`BananaFirst`, `PineappleFirst`, `CoconutGrab`), `CoconutFirst`, `SpiderWebHint` and `LowStaminaHint`. The feedback pop ups still show. A new teaching pop up must check the switch, see [Tutorial Skip Switch](monkobra-tdd.md#tutorial-skip-switch).
+`TutorialSkipManager` keeps 6 teaching pop ups from showing once seen in a session, or always while its dev checkbox is on (never in a release build): the fruit grabs (`BananaFirst`, `PineappleFirst`, `CoconutGrab`), `CoconutFirst`, `SpiderWebHint` and `LowStaminaHint`. The feedback pop ups still show. A new teaching pop up adds a `TutorialItem` and asks the manager, see [Tutorial Skip Manager](monkobra-tdd.md#tutorial-skip-manager).

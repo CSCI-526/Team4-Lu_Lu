@@ -286,8 +286,8 @@ public sealed class CobraKingAttacks {
     }
 
     public static void SetUntouchable(bool isUntouchable) {
-        if (GameController.I != null) {
-            GameController.I.SetLeaping(isUntouchable);
+        if (RunController.I != null) {
+            RunController.I.SetLeaping(isUntouchable);
         }
     }
 

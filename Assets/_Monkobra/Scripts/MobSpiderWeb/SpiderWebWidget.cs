@@ -3,11 +3,11 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Screen-space UI for the spider web trap, driven by the monkey's
-/// <see cref="SpiderWebStruggle"/> events. The first trap since the scene
-/// loaded asks for the web hint popup and shows the progress bar, later traps
-/// show the bar only, and breaking free hides both. The hint ranks above the
-/// low-stamina hint, which the <see cref="PopUpManager"/> resumes afterward;
-/// a loss drops it there too.
+/// <see cref="SpiderWebStruggle"/> events. A trap asks for the web hint
+/// popup until the first escape of the session, and always shows the progress
+/// bar; breaking free hides both and marks the hint seen. The hint ranks
+/// above the low-stamina hint, which the <see cref="PopUpManager"/> resumes
+/// afterward; a loss drops it there too.
 /// <para>
 /// Put it on an always-active Canvas child: it only toggles the bar object,
 /// so its event subscriptions live on while that is hidden.
@@ -75,20 +75,19 @@ public class SpiderWebWidget: MonoBehaviour {
     private void Update() {
         if (
             isVisible
-            && GameController.I != null
-            && GameController.I.State != GameState.Playing
+            && RunController.I != null
+            && RunController.I.State != GameState.Playing
         ) {
             SetVisible(false);
         }
     }
 
     // Event Handlers  #########################################################
-    private void OnTrapped(bool isFirstTrap) {
+    // the hint returns on each trap until one escape marks it seen
+    private void OnTrapped(bool _) {
         SetFill(0f);
         SetVisible(true);
-        if (isFirstTrap) {
-            ShowHint();
-        }
+        ShowHint();
     }
 
     private void OnProgressChanged(float progress) {
@@ -97,6 +96,9 @@ public class SpiderWebWidget: MonoBehaviour {
 
     private void OnEscaped() {
         SetVisible(false);
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.WebEscapeHint);
+        }
         if (PopUpManager.I != null) {
             PopUpManager.I.Hide(PopUpId.SpiderWebHint);
         }
@@ -134,7 +136,8 @@ public class SpiderWebWidget: MonoBehaviour {
     }
 
     private void ShowHint() {
-        if (TutorialSkipSwitch.IsSkipping) {
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(TutorialItem.WebEscapeHint)) {
             return;
         }
         if (PopUpManager.I == null) {

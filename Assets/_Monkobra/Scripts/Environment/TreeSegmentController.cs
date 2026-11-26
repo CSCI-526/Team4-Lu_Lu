@@ -426,8 +426,8 @@ public class TreeSegmentController: MonoBehaviour {
         float clearRadius = worldBalanceConfig.StartingZoneBranchClearRadiusU;
         if (
             clearRadius <= 0f
-            || GameController.I == null
-            || !GameController.I.IsBeforePlaying
+            || RunController.I == null
+            || !RunController.I.IsBeforePlaying
             || RampedDifficultyManager.I == null
             || RampedDifficultyManager.I.PlayerTransform == null
         ) {

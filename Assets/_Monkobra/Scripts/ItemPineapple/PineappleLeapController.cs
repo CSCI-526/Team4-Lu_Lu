@@ -5,7 +5,7 @@ using UnityEngine;
 /// to a high point, the body is pulled up to it, then control returns and a
 /// short landing grace runs out.
 /// <para>
-/// <see cref="GameController.IsLeaping"/> stays set from the grab to the end
+/// <see cref="RunController.IsLeaping"/> stays set from the grab to the end
 /// of the grace. Runs in physics steps, so a pause freezes it.
 /// </para>
 /// </summary>
@@ -22,13 +22,13 @@ public class PineappleLeapController: MonoBehaviour {
 
     /// <summary>
     /// Raised once when the body reaches the leap's end and the landing
-    /// grace begins, b4 <see cref="GameController.IsLeaping"/> ends.
+    /// grace begins, b4 <see cref="RunController.IsLeaping"/> ends.
     /// </summary>
     public event System.Action Landed;
 
     /// <summary>
     /// Raised once each time a pineapple grab starts a leap, unlike
-    /// <see cref="GameController.LeapChanged"/>, which the boss fight also
+    /// <see cref="RunController.LeapChanged"/>, which the boss fight also
     /// raises.
     /// </summary>
     public event System.Action Begun;
@@ -43,8 +43,8 @@ public class PineappleLeapController: MonoBehaviour {
 
         phase = Phase.Extend;
         phaseEndTime = Time.time + leapConfig.ArmExtendS;
-        if (GameController.I != null) {
-            GameController.I.SetLeaping(true);
+        if (RunController.I != null) {
+            RunController.I.SetLeaping(true);
         }
         monkey.ClearStun();
         monkey.IsHeld = true;
@@ -176,8 +176,8 @@ public class PineappleLeapController: MonoBehaviour {
 
     private void Finish() {
         phase = Phase.Idle;
-        if (GameController.I != null) {
-            GameController.I.SetLeaping(false);
+        if (RunController.I != null) {
+            RunController.I.SetLeaping(false);
         }
     }
 }

@@ -248,7 +248,10 @@ public class CoconutWidget: MonoBehaviour {
         }
 
         bool show = isRunLive
-            && !CoconutManager.HasUsedThisSession
+            && !(TutorialSkipManager.I != null
+                && TutorialSkipManager.I.ShouldSkip(
+                    TutorialItem.CoconutDoubleTap
+                ))
             && manager != null
             && manager.Count > 0
             && (manager.Cobra == null || !manager.Cobra.IsFrozen);

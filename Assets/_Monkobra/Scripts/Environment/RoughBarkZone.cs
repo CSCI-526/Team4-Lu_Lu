@@ -78,9 +78,9 @@ public class RoughBarkZone: MonoBehaviour {
         }
 
         bool isTouching = isActiveAndEnabled
-            && GameController.I != null
-            && GameController.I.IsRunLive
-            && !GameController.I.IsLeaping
+            && RunController.I != null
+            && RunController.I.IsRunLive
+            && !RunController.I.IsLeaping
             && Contains(monkey.transform.position);
         monkey.SetRoughBarkContact(this, isTouching);
     }

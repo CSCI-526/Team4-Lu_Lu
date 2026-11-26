@@ -208,10 +208,10 @@ public class CameraRigManager: MonoBehaviour {
 
     private void Start() {
         SubscribeCobra();
-        game = GameController.I;
+        game = RunController.I;
         if (game == null) {
             Debug.LogWarning(
-                "CameraRigManager:\tfail to get singleton: GameController, "
+                "CameraRigManager:\tfail to get singleton: RunController, "
                     + "no leap shot",
                 this
             );
@@ -351,7 +351,7 @@ public class CameraRigManager: MonoBehaviour {
         new ShotState[System.Enum.GetValues(typeof(ShotKind)).Length];
     private ShotKind? liveKind;
     private CoconutManager coconuts;
-    private GameController game;
+    private RunController game;
     private PineappleLeapController leapController;
     private CobraMotor cobra;
     private CameraCobraAlertFraming alertFraming;
@@ -385,15 +385,19 @@ public class CameraRigManager: MonoBehaviour {
         if (config == null || cobra == null || cobra.IsGuarding) {
             return;
         }
-        // the dev switch skips this cut scene; the cobra keeps its normal
-        // exit boost, as no start creep is banked
-        if (TutorialSkipSwitch.IsSkipping) {
+        // a seen or dev-skipped cut scene is not played; the cobra keeps its
+        // normal exit boost, as no start creep is banked
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(TutorialItem.CobraChaseStart)) {
             return;
         }
         // the shot is a journey: pull away, look, pull back the same way
         float travelS = config.CobraAlertTravelS;
         float totalS = 2f * travelS + config.CobraAlertSeeS;
         if (RequestShot(ShotKind.CobraAlert, totalS)) {
+            if (TutorialSkipManager.I != null) {
+                TutorialSkipManager.I.MarkSeen(TutorialItem.CobraChaseStart);
+            }
             if (alertFraming == null) {
                 alertFraming =
                     FindFirstObjectByType<CameraCobraAlertFraming>();

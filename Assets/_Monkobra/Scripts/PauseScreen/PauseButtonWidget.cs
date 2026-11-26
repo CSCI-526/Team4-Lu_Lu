@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// is the pause screen's own button.
 /// <para>
 /// Hides by <see cref="CanvasGroup"/> instead of deactivating its object, so
-/// it keeps listening to <see cref="GameController"/>, read in <c>Start</c>
+/// it keeps listening to <see cref="RunController"/>, read in <c>Start</c>
 /// so Awake order never matters.
 /// </para>
 /// </summary>
@@ -22,10 +22,10 @@ public class PauseButtonWidget: MonoBehaviour {
     }
 
     private void Start() {
-        game = GameController.I;
+        game = RunController.I;
         if (game == null) {
             Debug.LogError(
-                "PauseButtonWidget:\tGameController instance not found",
+                "PauseButtonWidget:\tRunController instance not found",
                 this
             );
             enabled = false;
@@ -76,5 +76,5 @@ public class PauseButtonWidget: MonoBehaviour {
     // private members  ########################################################
     private Button button;
     private CanvasGroup group;
-    private GameController game;
+    private RunController game;
 }

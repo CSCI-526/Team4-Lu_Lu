@@ -8,8 +8,8 @@ public class ScorePickup: MonoBehaviour {
 
     public bool TryCollect() {
         if (!isActiveAndEnabled || isCollected || Time.timeScale <= 0f
-            || (GameController.I != null
-                && !GameController.I.IsRunLive)) {
+            || (RunController.I != null
+                && !RunController.I.IsRunLive)) {
             return false;
         }
 

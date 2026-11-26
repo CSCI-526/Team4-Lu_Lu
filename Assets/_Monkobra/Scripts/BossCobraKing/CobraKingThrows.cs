@@ -153,6 +153,11 @@ public sealed class CobraKingThrows {
                 ? first.root.transform.position
                 : Vector3.zero;
         }
+        // a seen or dev-skipped lesson shows no prompt and no dotted line
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(TutorialItem.CobraKingLesson)) {
+            isShown = false;
+        }
         rig.hud.SetPrompt(isShown, from);
         if (rig.dots == null) {
             return;

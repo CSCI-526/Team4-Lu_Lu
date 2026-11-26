@@ -352,7 +352,7 @@ public class SpiderKingFightController: MonoBehaviour {
     }
 
     private void Update() {
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game == null) {
             return;
         }
@@ -412,7 +412,7 @@ public class SpiderKingFightController: MonoBehaviour {
     // Setup  ------------------------------------------------------------------
     // after the Cobra King, never mid leap; in the endless run at its turn
     // of the boss rush
-    private bool CanBegin(GameController game) {
+    private bool CanBegin(RunController game) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (!game.IsRunLive || game.IsLeaping || ramp == null) {
             return false;
@@ -421,7 +421,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return game.State == GameState.Playing
                 && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
         }
-        if (game.Mode == RunMode.Endless) {
+        if (GameController.I.Mode == RunMode.Endless) {
             return false;
         }
         if (config.IsTestAtStart) {
@@ -444,7 +444,7 @@ public class SpiderKingFightController: MonoBehaviour {
     // how fast the waiting spider crawls round after it; deg/s
     private const float PREVIEW_TURN_DEG_PER_S = 120f;
 
-    private void UpdatePreview(GameController game) {
+    private void UpdatePreview(RunController game) {
         if (config.IsTestAtStart) {
             return;
         }
@@ -460,7 +460,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (!game.IsRunLive
-            || (game.Mode == RunMode.Endless && !rig.IsRush)) {
+            || (GameController.I.Mode == RunMode.Endless && !rig.IsRush)) {
             return;
         }
         // seen waiting from a bit below: the jump height, or 50 u below the
@@ -499,7 +499,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.monkey = rig.monkeyController.transform;
         // a bit quicker in the arena, to dodge & reach the melons
         rig.monkeyController.ArenaSpeedScale = config.MonkeySpeedScale;
-        GameController.I.EndStartingZone();
+        RunController.I.EndStartingZone();
         rig.trunkCenter = rig.monkey.parent.position;
         rig.entryY = rig.monkey.position.y;
         rig.entryPosition = rig.monkey.position;
@@ -554,6 +554,14 @@ public class SpiderKingFightController: MonoBehaviour {
         // flashes as the Cobra King's: at the start, the last blow & a
         // spent armor; never on a revive or a reward
         rig.hud.Flash();
+        // a seen or dev-skipped lesson counts both lessons as taught
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(
+                TutorialItem.SpiderKingLesson
+            )) {
+            rig.hasTaughtWeb = true;
+            rig.hasTaughtSlash = true;
+        }
         // only web bullets till the first parry is done, then the fight; the
         // first slash later teaches its own parry
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done

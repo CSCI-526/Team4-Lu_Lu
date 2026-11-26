@@ -141,7 +141,7 @@ public class MusicManager: MonoBehaviour {
     // a fight is on from its start till its reward is taken, the Cobra King's
     // or the Spider King's; a finished run plays the climb loop again
     private static bool IsBossFightOn() {
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game != null
             && (game.State == GameState.Lost || game.State == GameState.Won)) {
             return false;

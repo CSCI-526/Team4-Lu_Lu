@@ -24,20 +24,20 @@ public class CobraSensor: MonoBehaviour {
             return;
         }
 
-        if (GameController.I == null) {
+        if (RunController.I == null) {
             Debug.LogWarning(
-                "CobraSensor:\tGameController instance not found"
+                "CobraSensor:\tRunController instance not found"
             );
             return;
         }
 
         // cheat flag: cobra contact is harmless
-        if (GameController.I.CobraNoClip) {
+        if (RunController.I.CobraNoClip) {
             return;
         }
 
         // a leap passes through every hazard
-        if (GameController.I.IsLeaping) {
+        if (RunController.I.IsLeaping) {
             return;
         }
 
@@ -60,7 +60,7 @@ public class CobraSensor: MonoBehaviour {
             );
         }
 
-        GameController.I.LoseGame();
+        RunController.I.LoseGame();
     }
 
     /// <returns>true for the monkey's physical parts: body, tail and hands;

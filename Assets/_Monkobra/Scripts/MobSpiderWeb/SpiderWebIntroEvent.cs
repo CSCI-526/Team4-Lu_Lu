@@ -86,23 +86,26 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     }
 
     private void Start() {
-        // a climb in the endless run has its own boss rush, no intro; the
-        // dev switch skips the intro too
+        // a climb in the endless run has its own boss rush, no intro; a seen or
+        // dev-skipped intro is not played either
         if (GameController.I != null
             && GameController.I.Mode != RunMode.Full
-            || TutorialSkipSwitch.IsSkipping) {
+            || (TutorialSkipManager.I != null
+                && TutorialSkipManager.I.ShouldSkip(
+                    TutorialItem.SpiderWebIntro
+                ))) {
             enabled = false;
             return;
         }
-        if (GameController.I == null) {
+        if (RunController.I == null) {
             Debug.LogWarning(
                 "SpiderWebIntroEvent:\tfail to get singleton: "
-                    + "GameController, no mode check or loss abort",
+                    + "RunController, no mode check or loss abort",
                 this
             );
             return;
         }
-        game = GameController.I;
+        game = RunController.I;
         game.StateChanged += OnStateChanged;
     }
 
@@ -190,7 +193,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     private CameraRigManager cameraRig;
     private CameraSpiderIntroFraming framing;
     private SpiderWebStruggle struggle;
-    private GameController game;
+    private RunController game;
 
     // constants  ##############################################################
     // how long the web may take to catch by itself before the trap is forced; s
@@ -204,7 +207,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
         if (isDone || !ResolveReferences()) {
             return false;
         }
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game != null
             && (game.State != GameState.Playing || game.IsPaused
                 || game.IsLeaping)) {
@@ -292,6 +295,9 @@ public class SpiderWebIntroEvent: MonoBehaviour {
             struggle.Escaped += OnEscaped;
         }
         isDone = true;
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.SpiderWebIntro);
+        }
         EnterPhase(Phase.Establish);
         if (Debug.isDebugBuild) {
             Debug.Log(

@@ -149,10 +149,10 @@ public class PopUpManager: MonoBehaviour {
             return;
         }
 
-        gameController = GameController.I;
+        gameController = RunController.I;
         if (gameController == null) {
             Debug.LogWarning(
-                "PopUp:\tfail to get singleton: GameController, no loss gate",
+                "PopUp:\tfail to get singleton: RunController, no loss gate",
                 this);
             return;
         }
@@ -210,10 +210,10 @@ public class PopUpManager: MonoBehaviour {
     private object[] currentArgs;
 
     // cached references  ------------------------------------------------------
-    private GameController gameController;
+    private RunController gameController;
 
     // private properties  #####################################################
-    // true w/o a GameController, so the scene works standalone
+    // true w/o a RunController, so the scene works standalone
     private bool IsRunLive =>
         gameController == null || gameController.IsRunLive;
 

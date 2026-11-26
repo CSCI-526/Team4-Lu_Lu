@@ -30,7 +30,7 @@ using static CobraKingRig;
 /// then; a monkey below the arena hears "Nowhere to run!".
 /// The camera tilts up so the king stays in view. At zero health the king
 /// shatters into cubes, its crown flies onto the monkey's head and the run
-/// is won (<see cref="GameController.WinGame"/>).
+/// is won (<see cref="RunController.WinGame"/>).
 /// </para>
 /// </summary>
 [RequireComponent(typeof(CobraKingBody), typeof(BossFightHud))]
@@ -534,7 +534,7 @@ public class CobraKingFightController: MonoBehaviour {
     }
 
     private void Update() {
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game == null) {
             return;
         }
@@ -720,12 +720,15 @@ public class CobraKingFightController: MonoBehaviour {
         // the monkey starts in the gold armor, a spare life against the
         // king; the golden banana brings it back once lost
         rig.hasShield = true;
-        // the armor's words only the first time the player ever gets it, in
-        // any run of either mode; after that, or at a later boss of the
+        // the armor's words only the first time the player gets it in a
+        // session, in either mode; after that, or at a later boss of the
         // endless run's rush, the king only names itself
+        TutorialSkipManager skip = TutorialSkipManager.I;
         if (rig.rushEncounter <= 0
-            && !ProgressStore.HasSeen(ProgressStore.ARMOR_INTRO)) {
-            ProgressStore.MarkSeen(ProgressStore.ARMOR_INTRO);
+            && !(skip != null && skip.ShouldSkip(TutorialItem.ArmorWords))) {
+            if (skip != null) {
+                skip.MarkSeen(TutorialItem.ArmorWords);
+            }
             rig.hud.ShowBannerFor(config.ArmorIntroTitle,
                 config.ArmorIntroLine, config.GoldenColor, 0f);
         } else {

@@ -161,7 +161,7 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     // the first scene is observed once every Awake ran, as this object is no
-    // longer on the GameController, so the singletons are not set in Awake
+    // longer on the RunController, so the singletons are not set in Awake
     private void Start() {
         if (I != this) {
             return;
@@ -353,7 +353,7 @@ public class AnalyticsManager: MonoBehaviour {
     private float nextAutosaveTime;
 
     // cached references  ------------------------------------------------------
-    private GameController observedGame;
+    private RunController observedGame;
     private ScoreManager observedScore;
     private HitBranchSensor observedBranch;
     private CoconutManager observedCoconuts;
@@ -366,7 +366,7 @@ public class AnalyticsManager: MonoBehaviour {
     // scene's objects still exist
     private void ObserveScene(Scene scene) {
         Observe(
-            InScene(GameController.I, scene),
+            InScene(RunController.I, scene),
             InScene(ScoreManager.I, scene),
             InScene(HitBranchSensor.I, scene),
             InScene(CoconutManager.I, scene),
@@ -383,7 +383,7 @@ public class AnalyticsManager: MonoBehaviour {
     }
 
     private void Observe(
-        GameController game,
+        RunController game,
         ScoreManager score,
         HitBranchSensor branch,
         CoconutManager coconuts,
@@ -479,7 +479,8 @@ public class AnalyticsManager: MonoBehaviour {
             StartTime = Time.time,
             StartClock = DateTime.Now,
             StartedInZone = isInZone,
-            Mode = observedGame != null ? observedGame.Mode : RunMode.Full
+            Mode = GameController.I != null
+                ? GameController.I.Mode : RunMode.Full
         };
         AddSample();
         // the bar is gone from a menu scene, the chart then keeps its default

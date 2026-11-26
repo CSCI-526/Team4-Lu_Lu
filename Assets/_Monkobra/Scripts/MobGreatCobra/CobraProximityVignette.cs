@@ -156,7 +156,7 @@ public class CobraProximityVignette: MonoBehaviour {
     private bool TryReadGap(out float gapU) {
         gapU = 0f;
 
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (
             game == null
             || game.State != GameState.Playing

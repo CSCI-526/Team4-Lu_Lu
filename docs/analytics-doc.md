@@ -12,7 +12,7 @@ How the game records playtests: one markdown report per game launch, with a reco
 
 ```mermaid
 graph LR
-  Game[GameController] -->|StateChanged| AM[AnalyticsManager]
+  Game[RunController] -->|StateChanged| AM[AnalyticsManager]
   Score[ScoreManager] -->|BananaCollected| AM
   Coconut[CoconutManager] -->|Collected, Used| AM
   Hit[HitBranchDetection] -->|BranchHit| AM

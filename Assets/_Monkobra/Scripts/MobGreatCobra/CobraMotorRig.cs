@@ -88,8 +88,8 @@ public sealed class CobraMotorRig {
 
     // Public Methods  #########################################################
     public static bool IsInStartingZone =>
-        GameController.I != null
-        && GameController.I.State == GameState.StartingZone;
+        RunController.I != null
+        && RunController.I.State == GameState.StartingZone;
 
     public float Direction => config.Clockwise ? -1f : 1f;
 

@@ -91,7 +91,7 @@ public class RunScreenMenu: MonoBehaviour {
             return;
         }
 
-        GameController game = GameController.I;
+        RunController game = RunController.I;
         if (game != null && game.CanRestartNow) {
             game.RestartRun();
         }
@@ -99,14 +99,14 @@ public class RunScreenMenu: MonoBehaviour {
 
     // Event Handlers  #########################################################
     private void OnResumeClicked() {
-        if (GameController.I != null) {
-            GameController.I.SetPaused(false);
+        if (RunController.I != null) {
+            RunController.I.SetPaused(false);
         }
     }
 
     private void OnRestartClicked() {
-        if (GameController.I != null) {
-            GameController.I.RestartRun();
+        if (RunController.I != null) {
+            RunController.I.RestartRun();
         }
     }
 

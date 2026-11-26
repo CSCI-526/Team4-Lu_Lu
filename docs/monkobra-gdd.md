@@ -116,7 +116,7 @@ graph LR
 ##### Data Collection
 
 Script: [AnalyticsManager.cs](https://github.com/kami-lel/monkobra/blob/dev/Assets/_Monkobra/Scripts/Analytics/AnalyticsManager.cs), the one file that shows the whole collection process. It only gathers data: it never draws a chart and never builds a file path
-Input: the game's own events (GameController.StateChanged, ScoreManager.BananaCollected, HitBranchSensor.BranchHit, SpiderWebTrap.Encountered, and others), so no third-party service is needed
+Input: the game's own events (RunController.StateChanged, ScoreManager.BananaCollected, HitBranchSensor.BranchHit, SpiderWebTrap.Encountered, and others), so no third-party service is needed
 Lifetime: a scene singleton kept across scene reloads, so one launch is one session and every attempt in it is one run
 What It Records Per Run: start and end stamps, the final score split into height score and the score of each reward kind, banana pickups, new height markers reached, web escapes, branch hits, and web encounters (each with time, and height where it matters), and the run status (Lost or Interrupted)
 Timed Samples: height and stamina are sampled together on a fixed interval, plus once at run start and once at run end, so both curves share one time axis

@@ -20,7 +20,7 @@ public sealed class SpiderKingParry {
     // Parry  ------------------------------------------------------------------
     // a double tap of Space swings the monkey's own tail: for a moment a gold
     // web wave close by is batted back, & the spider is stuck in it
-    public void UpdateParryInput(GameController game) {
+    public void UpdateParryInput(RunController game) {
         rig.Movement.UpdateTail();
         bool isCaught = rig.struggle != null && rig.struggle.IsTrapped;
         // in a lesson's stop the double tap is always the parry
@@ -560,7 +560,7 @@ public sealed class SpiderKingParry {
     }
 
     // the slow motion of a parry, & the stops of the lessons
-    public void UpdateTimeScale(GameController game) {
+    public void UpdateTimeScale(RunController game) {
         if (game.IsPaused || rig.phase != SpiderKingPhase.Fighting) {
             return;
         }

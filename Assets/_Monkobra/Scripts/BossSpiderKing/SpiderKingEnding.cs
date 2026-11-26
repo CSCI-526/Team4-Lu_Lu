@@ -87,7 +87,7 @@ public sealed class SpiderKingEnding {
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(rig.reviveLeftS));
     }
 
-    public void UpdateRevive(GameController game) {
+    public void UpdateRevive(RunController game) {
         Time.timeScale = 0f;
         if (game.IsPaused) {
             return;
@@ -132,8 +132,8 @@ public sealed class SpiderKingEnding {
         Time.timeScale = 1f;
         rig.phase = SpiderKingPhase.Over;
         SpiderKingFeedback.SetUntouchable(false);
-        if (GameController.I != null) {
-            GameController.I.LoseGame();
+        if (RunController.I != null) {
+            RunController.I.LoseGame();
         }
     }
 
@@ -234,6 +234,10 @@ public sealed class SpiderKingEnding {
 
     // Win  --------------------------------------------------------------------
     public void Defeat() {
+        // only a win ends the lessons, so a lost fight teaches again
+        if (TutorialSkipManager.I != null) {
+            TutorialSkipManager.I.MarkSeen(TutorialItem.SpiderKingLesson);
+        }
         rig.phase = SpiderKingPhase.Defeated;
         rig.onDefeated?.Invoke();
         rig.defeatTimeS = 0f;
@@ -270,7 +274,7 @@ public sealed class SpiderKingEnding {
     }
 
     // time stops on the reward panel till the player goes on
-    public void UpdateRewardPause(GameController game) {
+    public void UpdateRewardPause(RunController game) {
         Time.timeScale = 0f;
         if (game.IsPaused) {
             return;
