@@ -73,8 +73,8 @@ public class ScoreManager: MonoBehaviour {
     }
 
     // awards the config's points for a good deed that is not a fruit pickup
-    public bool AddReward(RewardKind kind) {
-        int points = scoreConfig.PointsFor(kind);
+    public bool AddReward(RewardKind kind, float scale = 1f) {
+        int points = Mathf.FloorToInt(scoreConfig.PointsFor(kind) * scale);
         if (!CanScore || points <= 0) {
             return false;
         }
@@ -223,6 +223,7 @@ public class ScoreManager: MonoBehaviour {
     private CobraKingFightController cobraKing;
     private SpiderKingFightController spiderKing;
     // beaten kings whose points wait for LateUpdate
+    private readonly List<float> pendingBossScales = new List<float>();
     private readonly List<RewardKind> pendingBossRewards =
         new List<RewardKind>();
 
@@ -254,19 +255,24 @@ public class ScoreManager: MonoBehaviour {
     // for LateUpdate, since ScoreHeightBossHider brings the score HUD the
     // Cobra King's fight hid back in a later listener of the same event, and
     // the "+N" popup under it only hears a reward while shown
+    // the points scale w/ the Loop just beaten, read now, b4 a hardcore rush
+    // arms the next one
     private void OnCobraKingBeaten() {
         pendingBossRewards.Add(RewardKind.CobraKingDefeat);
+        pendingBossScales.Add(cobraKing != null ? cobraKing.PointsScale : 1f);
     }
 
     private void OnSpiderKingBeaten() {
         pendingBossRewards.Add(RewardKind.SpiderKingDefeat);
+        pendingBossScales.Add(spiderKing != null ? spiderKing.PointsScale : 1f);
     }
 
     private void GrantBossRewards() {
-        foreach (RewardKind kind in pendingBossRewards) {
-            AddReward(kind);
+        for (int i = 0; i < pendingBossRewards.Count; i++) {
+            AddReward(pendingBossRewards[i], pendingBossScales[i]);
         }
         pendingBossRewards.Clear();
+        pendingBossScales.Clear();
     }
 
     private void SampleHeight() {

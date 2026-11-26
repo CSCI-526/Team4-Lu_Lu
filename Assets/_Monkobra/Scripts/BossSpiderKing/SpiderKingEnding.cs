@@ -75,7 +75,20 @@ public sealed class SpiderKingEnding {
             Defeat();
             return;
         }
+        // Hardcore Mode has no revive: the lost fight ends the run
+        if (HardcoreBossRush.IsOn) {
+            EndAsLoss();
+            return;
+        }
         OfferRevive();
+    }
+
+    public void EndAsLoss() {
+        rig.phase = SpiderKingPhase.Over;
+        SpiderKingFeedback.SetUntouchable(false);
+        if (RunController.I != null) {
+            RunController.I.LoseGame();
+        }
     }
 
     public void OfferRevive() {
@@ -130,11 +143,7 @@ public sealed class SpiderKingEnding {
         }
         rig.hud.HideRevive();
         Time.timeScale = 1f;
-        rig.phase = SpiderKingPhase.Over;
-        SpiderKingFeedback.SetUntouchable(false);
-        if (RunController.I != null) {
-            RunController.I.LoseGame();
-        }
+        EndAsLoss();
     }
 
     public void SkipAd() {

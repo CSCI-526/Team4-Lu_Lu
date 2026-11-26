@@ -344,6 +344,11 @@ In a boss fight the monkey has hearts (`MonkeyHearts`, shared by both kings), `m
 - 0 hearts lose the fight, by the finisher & the revive offer as before; at Loop 1 the monkey survives 2 hits & the 3rd ends the fight, the armor adding one more save
 - The climb is unchanged: a great cobra catch ends the run, the armor saves once
 
+## Revive and Points by Mode
+
+- Revive: Normal Play offers it on every lost fight, unlimited, & the revive card has 2 choices, Loop 0 (EASY) or a retry of Loop 1, the hearts refilled; Hardcore Mode has none, so a lost fight (hearts at 0) ends the run at once, w/o the offer
+- Defeat points: `ScoreConfig`'s 1000 (Cobra King) & 2000 (Spider King) at Loop 0 & 1, scaled from Loop 2 on by the `points` Loop Growth (+0.5 per Loop: x1.5, x2, x2.5, ~), the total floored; `ScoreManager` reads the scale of the Loop just beaten (`PointsScale` of each fight controller)
+
 ## Hardcore Loops
 
 Each repeat of a king in the hardcore run is a Loop, counted per king (`HardcoreBossRush.LoopOf`, encounter / 2 + 1): Cobra King Loop 1 at 100 u, Spider King Loop 1 at 200 u, Cobra King Loop 2 at 300 u, ~. A fight reads its Loop from `bossLoop` on its rig, 1 int that replaces the old EASY flag:

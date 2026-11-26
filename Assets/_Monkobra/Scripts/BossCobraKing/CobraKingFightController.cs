@@ -59,6 +59,9 @@ public class CobraKingFightController: MonoBehaviour {
             ? rig.body.BuildFigure(config.MarkerFigureScale) : null;
     }
 
+    /// <returns>scale on this fight's defeat points, by its Loop</returns>
+    public float PointsScale => rig.PointsScale;
+
     /// <returns>climbed height the fight starts at, eg for its trunk height
     /// marker; u, -1 when unknown</returns>
     public float TriggerHeightU => worldBalanceConfig != null

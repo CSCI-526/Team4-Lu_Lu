@@ -72,7 +72,8 @@ public sealed class CobraKingEnding {
             Defeat();
             return;
         }
-        if (config.CanRevive) {
+        // Hardcore Mode has no revive: the lost fight ends the run
+        if (config.CanRevive && !HardcoreBossRush.IsOn) {
             OfferRevive();
             return;
         }

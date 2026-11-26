@@ -474,6 +474,11 @@ public sealed class SpiderKingRig {
             worldBalanceConfig.SpiderKingLoopGrowth.hearts
                 .Evaluate(worldBalanceConfig.MonkeyHeartCount, bossLoop)));
 
+    /// <returns>scale on this fight's defeat points: 1 at Loop 0 & 1, more
+    /// from Loop 2 on</returns>
+    public float PointsScale => bossLoop < 2 ? 1f
+        : Mathf.Max(1f, worldBalanceConfig.SpiderKingLoopGrowth.points.Evaluate(1f, bossLoop));
+
     /// <summary>Plays the Normal Loop of this fight again.</summary>
     public void ResetLoop() {
         bossLoop = NormalLoop;

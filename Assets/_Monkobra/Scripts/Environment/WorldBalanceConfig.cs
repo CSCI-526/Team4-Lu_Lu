@@ -490,12 +490,15 @@ public struct CobraKingLoopGrowth {
     public LoopGrowth minionWaves;
     [Tooltip("monkey hearts per fight, v1 = monkeyHearts")]
     public LoopGrowth hearts;
+    [Tooltip("scale on the defeat points, v1 = 1; the total is floored")]
+    public LoopGrowth points;
 
     public static CobraKingLoopGrowth Default => new CobraKingLoopGrowth {
         health = new LoopGrowth(2.5f, LoopRounding.Ceil, false, 0f),
         time = new LoopGrowth(-0.12f, LoopRounding.None, true, 0.5f),
         minionWaves = new LoopGrowth(0.75f, LoopRounding.Ceil, true, 8f),
         hearts = new LoopGrowth(-0.5f, LoopRounding.Ceil, true, 1f),
+        points = new LoopGrowth(0.5f, LoopRounding.None, false, 0f),
     };
 
     public void Validate() { }
@@ -513,6 +516,8 @@ public struct SpiderKingLoopGrowth {
     public LoopGrowth slashesStage3;
     [Tooltip("monkey hearts per fight, v1 = monkeyHearts")]
     public LoopGrowth hearts;
+    [Tooltip("scale on the defeat points, v1 = 1; the total is floored")]
+    public LoopGrowth points;
 
     public static SpiderKingLoopGrowth Default => new SpiderKingLoopGrowth {
         health = new LoopGrowth(5f, LoopRounding.Ceil, false, 0f),
@@ -521,6 +526,7 @@ public struct SpiderKingLoopGrowth {
         slashesStage2 = new LoopGrowth(0.5f, LoopRounding.Ceil, true, 5f),
         slashesStage3 = new LoopGrowth(1f, LoopRounding.Floor, true, 5f),
         hearts = new LoopGrowth(-0.5f, LoopRounding.Ceil, true, 1f),
+        points = new LoopGrowth(0.5f, LoopRounding.None, false, 0f),
     };
 
     public void Validate() { }
