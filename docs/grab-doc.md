@@ -36,7 +36,7 @@ graph TD
 | `Player/MonkeyArmConfig` | reach speed and stroke tuning both arms read |
 | `Player/MonkeyInputConfig` | the interact action both arms read and the camera polls |
 | `Cameras/CameraClimbFraming` | shifts the climb camera's aim toward the fruit side while interact is held |
-| `Environment/FruitOutlineListener` | two-tier outline on a banana |
+| `Environment/FruitOutlineListener` | three-tier outline and see-through ghost on a fruit |
 | `Environment/BranchController` | shows the fruit its `BranchKind` names: a pineapple, a coconut, a banana, or none |
 | `Scoring/ScorePickup` | on a fruit, hands its points to `ScoreManager` once and switches the fruit off |
 | `Stamina/StaminaBarController` | `AddStaminaByFruit` restores stamina when a grab's flight lands |
@@ -98,7 +98,7 @@ For a quick test press the [hack key](monkobra-tdd.md#hack-shortcuts) that spawn
 A rare fruit from higher up, kept instead of eaten: it scores more than a banana, restores no stamina, and is thrown to freeze the great cobra.
 
 - Supply: a coconut hangs on a branch of the coconut kind (`Branch_Coconut`, a variant of the branch prefab), rolled by `TreeSegmentController` like the other 3 kinds from `coconutBranchProbabilityCurve` and `coconutBranchAttemptCount` (`WorldBalanceConfig`) at the segment's ramped difficulty, its zero stretch setting where coconuts begin. `BranchController.Setup` hangs the `Coconut` prefab (`fruitPrefab`) with its top pivot on the stem's lower tip; webs rolled later keep clear of it by its `FruitCollider` tag
-- Grab: the same reach and release as a banana, with its own outline materials; its `ScorePickup` is of kind `Coconut`, so `ScoreManager` adds the coconut points of `ScoreConfig` and raises `CoconutCollected` instead of counting a banana
+- Grab: the same reach and release as a banana, with the same outline style, in its own hue; its `ScorePickup` is of kind `Coconut`, so `ScoreManager` adds the coconut points of `ScoreConfig` and raises `CoconutCollected` instead of counting a banana
 - No Stamina: `ArmController` gives a coconut's flight no restore, so its sprite flies to the counter and only pops the icon
 - Count: `CoconutManager` (on the `RunController` prefab) adds one per `CoconutCollected`; the count lives in the scene, so a restart's reload empties it
 - Use: the `UseCoconut` input action, a double-tap of Space, E, or the gamepad north button, spends one and throws it: a `CoconutProjectile` falls straight down from just below the monkey at `coconutThrowSpeedU`, and when it touches the cobra or has fallen `coconutThrowDistanceU` the manager calls `CobraMotor.TryFreeze` for `cobraFreezeDurationS`, so the freeze starts at the landing, not at the tap, see [Mobs](mob-doc.md#coconut-freeze). One coconut flies at a time, and a pause holds it in the air. `UseCoconut` is an action of the Input Actions asset with a MultiTap interaction (2 taps, each press short, the gap between them short), so its timing and keys are edited in the asset, and a held reach never completes it. `CoconutManager` enables the action and listens to its `performed` event; the grab (`Interact`) is a separate action on the same keys, so a tap near fruit reaches like any short press and grabs only fruit already under the hand
@@ -128,16 +128,25 @@ For a quick test use the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns 
 
 ## Feedback
 
-`FruitOutlineListener` adds an extra material slot, using the `FruitOutline` inverted-hull Shader Graph, in two tiers:
+`FruitOutlineListener` adds extra material slots in three tiers. Each tier is a hue per fruit kind at a concentration: the lower the tier, the paler and thinner the outline. Widths are in world units, the same for every fruit and the monkey, so a scaled model never thickens it.
 
-| Tier | When | Priority |
-| --- | --- | --- |
-| Reachable | the fruit is `ReachTarget`, the one a reach would aim at | lower |
-| Grabbable | a hand overlaps the fruit, so a release would grab it | higher, wins |
+| Tier | When | Priority | Width | Concentration |
+| --- | --- | --- | --- | --- |
+| Normal | at rest, no hand near | lowest | 0.015 u | pale (S 0.35, V 0.85) |
+| Reachable | the fruit is `ReachTarget`, the one a reach would aim at | middle | 0.025 u | medium (S 0.70, V 1.0) |
+| Grabbable | a hand overlaps the fruit, so a release would grab it | highest, wins | 0.040 u | full (S 1.0, V 1.0) |
 
-The listener sits on the object holding the fruit's collider and outlines the meshes under it, or under its `meshRoot` when set, as on the `Pineapple` prefab, whose `PineappleCollider` and `PineappleModel` are siblings. `FruitOutline` measures its width in the mesh's own units, so a scaled model thickens it: the pineapple has its own `PineappleReachable` and `PineappleGrabbable` materials for that reason.
+Hues: banana 48 deg, coconut 24 deg, pineapple 335 deg (magenta, so it never reads as the green cobra), melon 190 deg. Every number lives in one asset, `Settings/FruitOutline/FruitOutlineStyle.asset` (`FruitOutlineStyle`): retune the widths, the tier S and V, a hue, the monkey look or the ghost there, no code change. `FruitOutlineStyle.GetTierMaterial(kind, tier)` builds and caches 1 shared hull material per fruit kind and tier, so every banana shares one. The hull shader is `Shaders/Outline/OutlineHull`, hand written, which cancels the object's scale so the width stays in world units; it keeps the property names `_Outline_Color` and `_Outline_Width`, which the boss golden fruit sets.
 
-The monkey wears the same outline always on, in white: `MonkeyOutline` adds the `Monkey_Outline` material to the skinned model's renderers at start. Its width is in the model's own units, so tune it on the material.
+The listener sits on the object holding the fruit's collider and outlines the meshes under it, or under its `meshRoot` when set, as on the `Pineapple` prefab, whose `PineappleCollider` and `PineappleModel` are siblings. Each prefab's listener holds the style asset and its fruit kind, set by `Monkobra > Wire Outline Prefabs`, never by hand in prefab YAML.
+
+**See-through ghost**: a third slot on every fruit mesh, in every tier, drawn by `Shaders/Outline/OutlineSeeThrough` only where something nearer covers the fruit (depth test Greater, no depth write). The player sees a hidden fruit through the trunk, a branch or the monkey: a 0.30 alpha fill and a 0.90 alpha Fresnel rim (power 3), the shell pushed out 0.008 u so the rim hugs the silhouette, steady with no pulse. Its color is the Reachable one of the fruit, or the Grabbable one while grabbable. It relies on the occluder writing depth, so a transparent occluder would not hide a fruit.
+
+**Golden fruit**: the boss golden banana and melon clone `Materials/Outline/Outline_Banana_Grabbable.mat` (the Grabbable width), set the gold color and scale the width by `goldenOutlineWidthScale`, as before.
+
+The monkey wears the same outline always on, in cream: `MonkeyOutline` adds `Materials/Outline/Outline_Monkey.mat` to the skinned model's renderers at start, 0.025 u. Tune it in `FruitOutlineStyle`, then run `Monkobra > Build Outline Materials`.
+
+Menus: `Monkobra > Build Outline Materials` writes the style asset, the monkey, ghost and golden base materials; `Monkobra > Check Outline Style` logs PASS or FAIL for the tier colors and widths of banana, coconut and pineapple.
 
 ## Fruit Supply
 
