@@ -39,7 +39,7 @@ public class FruitOutlineStyle: ScriptableObject {
 
     public float GhostHaloAlpha => ghostHaloAlpha;
 
-    public float GhostHaloPower => ghostHaloPower;
+    public float GhostHaloSigma => ghostHaloSigma;
 
     public float GhostHaloReachU => ghostHaloReachU;
 
@@ -118,7 +118,7 @@ public class FruitOutlineStyle: ScriptableObject {
         };
         mat.SetColor(GHOST_COLOR, GetTierColor(kind, tier));
         mat.SetFloat(GHOST_HALO_ALPHA, ghostHaloAlpha);
-        mat.SetFloat(GHOST_HALO_POWER, ghostHaloPower);
+        mat.SetFloat(GHOST_HALO_SIGMA, ghostHaloSigma);
         mat.SetFloat(GHOST_HALO_REACH, ghostHaloReachU);
         ghostCache[key] = mat;
         return mat;
@@ -173,12 +173,13 @@ public class FruitOutlineStyle: ScriptableObject {
     private float ghostHaloAlpha = 0.55f;
 
     [SerializeField]
-    [Tooltip("halo falloff power; higher = the mist fades sooner")]
-    private float ghostHaloPower = 1.5f;
+    [Range(0.1f, 1f)]
+    [Tooltip("Gaussian blur width of the halo; higher = softer, wider mist")]
+    private float ghostHaloSigma = 0.9f;
 
     [SerializeField]
     [Tooltip("how far the halo reaches beyond the fruit; u")]
-    private float ghostHaloReachU = 0.12f;
+    private float ghostHaloReachU = 0.14f;
 
     // private members  ########################################################
     [Serializable]
@@ -198,8 +199,8 @@ public class FruitOutlineStyle: ScriptableObject {
         Shader.PropertyToID("_Ghost_Color");
     private static readonly int GHOST_HALO_ALPHA =
         Shader.PropertyToID("_Ghost_HaloAlpha");
-    private static readonly int GHOST_HALO_POWER =
-        Shader.PropertyToID("_Ghost_HaloPower");
+    private static readonly int GHOST_HALO_SIGMA =
+        Shader.PropertyToID("_Ghost_HaloSigma");
     private static readonly int GHOST_HALO_REACH =
         Shader.PropertyToID("_Ghost_HaloReach");
 

@@ -6,8 +6,8 @@ Shader "Monkobra/Outline/OutlineSeeThrough"
     {
         _Ghost_Color ("Halo Color", Color) = (1, 0.86, 0.3, 1)
         _Ghost_HaloAlpha ("Halo Peak Alpha", Range(0, 1)) = 0.55
-        _Ghost_HaloPower ("Halo Falloff Power", Float) = 1.5
-        _Ghost_HaloReach ("Halo Reach (world units)", Float) = 0.12
+        _Ghost_HaloSigma ("Halo Blur Sigma", Range(0.1, 1)) = 0.9
+        _Ghost_HaloReach ("Halo Reach (world units)", Float) = 0.14
     }
 
     SubShader
@@ -105,7 +105,7 @@ Shader "Monkobra/Outline/OutlineSeeThrough"
             CBUFFER_START(UnityPerMaterial)
                 half4 _Ghost_Color;
                 half _Ghost_HaloAlpha;
-                float _Ghost_HaloPower;
+                float _Ghost_HaloSigma;
                 float _Ghost_HaloReach;
             CBUFFER_END
 
@@ -144,9 +144,12 @@ Shader "Monkobra/Outline/OutlineSeeThrough"
             {
                 float3 normalWS = normalize(input.normalWS);
                 float3 viewDirWS = normalize(input.viewDirWS);
-                // strongest next to the fruit, fading to 0 at the shell's edge
-                half facing = saturate(dot(normalWS, viewDirWS));
-                half alpha = _Ghost_HaloAlpha * pow(facing, _Ghost_HaloPower);
+                // t: 0 next to the fruit, 1 at the shell's outer edge
+                half t = 1.0 - saturate(dot(normalWS, viewDirWS));
+                // Gaussian falloff reads as an out-of-focus glow; the smooth
+                // fade ends it at 0 so the shell edge never shows
+                half gauss = exp(-t * t / (2.0 * _Ghost_HaloSigma * _Ghost_HaloSigma));
+                half alpha = _Ghost_HaloAlpha * gauss * smoothstep(1.0, 0.6, t);
                 return half4(_Ghost_Color.rgb, alpha);
             }
             ENDHLSL

@@ -42,5 +42,5 @@ MonoBehaviour:
   monkeyColor: {r: 1, g: 0.949, b: 0.824, a: 1}
   monkeyWidthU: 0.04
   ghostHaloAlpha: 0.55
-  ghostHaloPower: 1.5
-  ghostHaloReachU: 0.12
+  ghostHaloSigma: 0.9
+  ghostHaloReachU: 0.14

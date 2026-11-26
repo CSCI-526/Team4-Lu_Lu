@@ -151,7 +151,7 @@ public static class OutlineMaterialBuilder {
                 "_Ghost_Color", style.GetTierColor(kind, OutlineTier.Reachable)
             );
             mat.SetFloat("_Ghost_HaloAlpha", style.GhostHaloAlpha);
-            mat.SetFloat("_Ghost_HaloPower", style.GhostHaloPower);
+            mat.SetFloat("_Ghost_HaloSigma", style.GhostHaloSigma);
             mat.SetFloat("_Ghost_HaloReach", style.GhostHaloReachU);
             EditorUtility.SetDirty(mat);
         }
