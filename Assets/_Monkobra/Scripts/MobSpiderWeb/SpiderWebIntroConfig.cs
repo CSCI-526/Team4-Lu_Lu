@@ -23,6 +23,10 @@ public class SpiderWebIntroConfig: ScriptableObject {
     /// </returns>
     public float EnterTimeS => enterTimeS;
 
+    /// <returns>peak leg walk intensity of the king's scuttle, reached
+    /// mid scuttle; 0 stills the legs, 1 is a full stride</returns>
+    public float EnterWalk => enterWalk;
+
     /// <returns>how far round the trunk, from where it ends up, the king
     /// starts its scuttle in, out of the camera's sight; deg</returns>
     public float EnterAngleDeg => enterAngleDeg;
@@ -80,6 +84,13 @@ public class SpiderWebIntroConfig: ScriptableObject {
     [Min(0.1f)]
     [Tooltip("time the king takes to scuttle in round the trunk; s")]
     private float enterTimeS = 2.4f;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip("peak leg walk intensity of the scuttle, reached mid scuttle "
+        + "when the king moves fastest, easing to 0 as it settles; 0 stills "
+        + "the legs, 1 is a full stride")]
+    private float enterWalk = 1f;
 
     [SerializeField]
     [Range(0f, 180f)]
