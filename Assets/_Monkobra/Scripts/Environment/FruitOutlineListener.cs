@@ -4,13 +4,15 @@ using UnityEngine.Serialization;
 /// <summary>
 /// Sits on the "FruitCollider" object of a banana. Listens to
 /// <see cref="UpwardFruitSensor"/> and outlines every child mesh renderer
-/// in 1 of 2 tiers, grabbable winning over reachable. Only the single
-/// targeted fruit is ever outlined:
+/// in 1 of 3 tiers, grabbable winning over reachable winning over normal:
 /// <list type="bullet">
+/// <item>normal: worn at rest</item>
 /// <item>reachable: the fruit is the one a reach would aim at</item>
 /// <item>grabbable: a hand overlaps the fruit, so a release grabs it</item>
 /// </list>
-/// The outline is an extra material slot, added only while a tier applies.
+/// The tier materials come from the shared <see cref="FruitOutlineStyle"/>
+/// by fruit kind. W/o a style it falls back to the 2 old materials, and
+/// the normal tier is then bare. The outline is an extra material slot.
 /// </summary>
 public class FruitOutlineListener: MonoBehaviour {
     // Inspector Fields  #######################################################
@@ -18,7 +20,16 @@ public class FruitOutlineListener: MonoBehaviour {
     [Tooltip("object whose child meshes get outlined; empty = this object")]
     private Transform meshRoot;
 
-    [Header("Outline Materials")]
+    [Header("Outline Style")]
+    [SerializeField]
+    [Tooltip("shared widths and colors of every outline tier")]
+    private FruitOutlineStyle style;
+
+    [SerializeField]
+    [Tooltip("which fruit this is; picks the hue")]
+    private FruitKind kind;
+
+    [Header("Old Outline Materials (fallback, retired later)")]
     [SerializeField]
     [Tooltip("outline while fruit sits in a detection zone")]
     private Material reachableOutlineMat;
@@ -31,17 +42,18 @@ public class FruitOutlineListener: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (reachableOutlineMat == null) {
+        Material normalMat = null;
+        Material reachMat = reachableOutlineMat;
+        Material grabMat = grabbableOutlineMat;
+        if (style != null) {
+            normalMat = style.GetTierMaterial(kind, OutlineTier.Normal);
+            reachMat = style.GetTierMaterial(kind, OutlineTier.Reachable);
+            grabMat = style.GetTierMaterial(kind, OutlineTier.Grabbable);
+        } else {
             Debug.LogWarning(
-                "FruitOutlineListener:\t"
-                    + "must assign Inspector Field: reachableOutlineMat",
-                this
-            );
-        }
-        if (grabbableOutlineMat == null) {
-            Debug.LogWarning(
-                "FruitOutlineListener:\t"
-                    + "must assign Inspector Field: grabbableOutlineMat",
+                "FruitOutlineListener:	"
+                    + "must assign Inspector Field: style, "
+                    + "falling back to the old outline materials",
                 this
             );
         }
@@ -56,15 +68,15 @@ public class FruitOutlineListener: MonoBehaviour {
 
         Transform meshSearchRoot = meshRoot != null ? meshRoot : transform;
         meshes = meshSearchRoot.GetComponentsInChildren<MeshRenderer>(true);
-        plainMats = new Material[meshes.Length][];
+        normalMats = new Material[meshes.Length][];
         reachableMats = new Material[meshes.Length][];
         grabbableMats = new Material[meshes.Length][];
         for (int i = 0; i < meshes.Length; i++) {
             // keep slot 0 only, so a leftover outline slot never sticks
             Material baseMat = meshes[i].sharedMaterials[0];
-            plainMats[i] = new Material[] { baseMat };
-            reachableMats[i] = BuildMats(baseMat, reachableOutlineMat);
-            grabbableMats[i] = BuildMats(baseMat, grabbableOutlineMat);
+            normalMats[i] = BuildMats(baseMat, normalMat);
+            reachableMats[i] = BuildMats(baseMat, reachMat);
+            grabbableMats[i] = BuildMats(baseMat, grabMat);
         }
         ApplyOutline();
     }
@@ -128,7 +140,7 @@ public class FruitOutlineListener: MonoBehaviour {
     private MeshRenderer[] meshes;
 
     // per mesh: slot 0 alone, or slot 0 plus a tier's outline
-    private Material[][] plainMats;
+    private Material[][] normalMats;
     private Material[][] reachableMats;
     private Material[][] grabbableMats;
 
@@ -140,15 +152,14 @@ public class FruitOutlineListener: MonoBehaviour {
             : new Material[] { baseMat };
     }
 
-    // grabbable beats reachable beats none
+    // grabbable beats reachable beats normal
     private void ApplyOutline() {
         Material[][] tierMats =
             isGrabbable ? grabbableMats
             : isReachable ? reachableMats
-            : plainMats;
+            : normalMats;
         for (int i = 0; i < meshes.Length; i++) {
             meshes[i].sharedMaterials = tierMats[i];
         }
-
     }
 }
