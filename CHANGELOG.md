@@ -103,6 +103,11 @@ todo add 3x fruit
 
 ### Fixed
 
+##### Erik
+
+- Spider King intro: legs keep walking while the king scuttles round the trunk,
+  following its speed; new `EnterWalk` config sets the peak
+
 ##### Houdong Pan
 
 - knocked-down monkey no longer cycles limbs while sliding; all 4 limbs grip
