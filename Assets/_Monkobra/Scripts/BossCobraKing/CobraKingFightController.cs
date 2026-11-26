@@ -490,15 +490,12 @@ public class CobraKingFightController: MonoBehaviour {
         arena.ChooseMode(isEasy);
     }
 
-    // the hardcore run starts in the armor, the boss rush's first fight, the
-    // king's, waiting a boss interval up
+    // the hardcore run starts as Normal Play does, w/o armor: the boss rush's
+    // first fight, the king's, waits a boss interval up & plays as Loop 1
     private void Start() {
         if (I == this && GameController.I != null
             && GameController.I.Mode == RunMode.Hardcore) {
-            StartAsDone();
-            rig.isHardcoreStart = false;
             rig.rushEncounter = 0;
-            rig.phase = CobraKingPhase.Waiting;
         }
     }
 
@@ -624,8 +621,8 @@ public class CobraKingFightController: MonoBehaviour {
             && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
     }
 
-    // the hardcore start: the armor worn, hazards on, the fight already over;
-    // no arena, no FightStarted, and never marks the king beaten
+    // skipping the fight for a test: the armor worn, hazards on, the fight
+    // already over; no arena, no FightStarted, and never marks the king beaten
     private void StartAsDone() {
         MonkeyController monkeyController = MonkeyController.I;
         if (monkeyController == null
@@ -655,7 +652,7 @@ public class CobraKingFightController: MonoBehaviour {
         // no chase call: the cobra is already after the monkey
         rig.hasWarnedChase = true;
         if (Debug.isDebugBuild) {
-            Debug.Log("CobraKingFightController:\thardcore start in armor",
+            Debug.Log("CobraKingFightController:\tskipped, in armor",
                 this);
         }
     }

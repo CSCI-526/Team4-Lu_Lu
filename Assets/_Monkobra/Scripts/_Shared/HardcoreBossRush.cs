@@ -48,7 +48,7 @@ public static class HardcoreBossRush {
     /// <returns>climbed height that boss's fight begins at; u</returns>
     public static float TriggerU(int encounter) {
         WorldBalanceConfig config = Config;
-        float intervalU = config != null ? config.HardcoreBossIntervalU : 300f;
+        float intervalU = config != null ? config.HardcoreBossIntervalU : 100f;
         return intervalU * (encounter + 1);
     }
 

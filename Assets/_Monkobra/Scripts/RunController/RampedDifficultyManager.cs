@@ -96,8 +96,9 @@ public class RampedDifficultyManager: MonoBehaviour {
     /// the pre boss curve from there to the Cobra King zone start (0~1), a
     /// flat 1 inside that zone, the mid boss curve from its end to the Spider
     /// King zone start (1~2), a flat 2 inside that zone, the post boss curve
-    /// from its end (2 up). Zone heights are climbed heights, measured from
-    /// the player's start y.
+    /// from its end (2 up to the plateau). Hardcore Mode is 0 in the starting
+    /// zone, then the flat plateau. Zone heights are climbed heights,
+    /// measured from the player's start y.
     /// </summary>
     /// <param name="y">any y position; world u</param>
     /// <returns>ramped difficulty, never below 0; 1~2 between the 2 boss
@@ -109,12 +110,10 @@ public class RampedDifficultyManager: MonoBehaviour {
         float climbedY = GetClimbedYDistance(y);
         float exitClimbedY = GetClimbedYDistance(RampBaseYPosition);
         if (IsHardcore) {
-            // hardcore opens at the post Spider King level at the exit and
-            // keeps ramping from there
-            return climbedY < exitClimbedY ? 0f : GetPostSpiderValue(
-                climbedY - exitClimbedY
-                    + worldBalanceConfig.SpiderKingLayout.BareTopU
-            );
+            // hardcore holds Normal Play's plateau from the exit on, every Loop
+            // alike
+            return climbedY < exitClimbedY ? 0f
+                : worldBalanceConfig.PlateauValue;
         }
         float zoneStartU = worldBalanceConfig.CobraKingLayout.BareBottomU;
         if (climbedY < exitClimbedY || zoneStartU <= exitClimbedY) {

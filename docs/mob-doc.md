@@ -334,7 +334,7 @@ After a revive, as in the Cobra King's arena: time stops on the plain difficulty
 
 ## Hardcore Boss Rush
 
-The hardcore run is a boss rush (`HardcoreBossRush`): every `hardcoreBossIntervalU` (300 u) of climbed height a boss waits, the Cobra King first (300, 900, 1500, ...), then the Spider King (600, 1200, ...), taking turns, each with its height marker. The monkey and the great cobra climb at their normal speed (`hardcoreSpeedScale`, 1; `HardcoreBossRush.ClimbSpeedScale`, read by `MonkeyController` & `CobraMotor`, fights included). Every hardcore boss has the same moves as in Normal Play; only its Loop changes how hard it is, see Hardcore Loops below. The run starts in the gold armor; a won armor saves on the climb b/t bosses as after a win. After a win the king waits again two bosses on (`ArmNextRush`): the Cobra King is cleared & rebuilt, its last crown making way for the new one; the Spider King's gloves' effect stays. Each coming arena is kept bare as the tree grows toward it (`RampedDifficultyManager.SetExtraBossZone`, one range per boss), and what grew there b4 is cleared at its start.
+The hardcore run is a boss rush (`HardcoreBossRush`): every `hardcoreBossIntervalU` (100 u) of climbed height a boss waits, the Cobra King first (100, 300, 500, ...), then the Spider King (200, 400, ...), taking turns, each with its height marker. The monkey and the great cobra climb at their normal speed (`hardcoreSpeedScale`, 1; `HardcoreBossRush.ClimbSpeedScale`, read by `MonkeyController` & `CobraMotor`, fights included). Every hardcore boss has the same moves as in Normal Play; only its Loop changes how hard it is, see Hardcore Loops below. The run starts without armor, as Normal Play does, and each king's Loop 1 plays exactly as its Normal Play fight; a won armor saves on the climb b/t bosses as after a win. After a win the king waits again two bosses on (`ArmNextRush`): the Cobra King is cleared & rebuilt, its last crown making way for the new one; the Spider King's gloves' effect stays. Each coming arena is kept bare as the tree grows toward it (`RampedDifficultyManager.SetExtraBossZone`, one range per boss), and what grew there b4 is cleared at its start.
 
 ## Monkey Hearts
 
@@ -346,7 +346,7 @@ In a boss fight the monkey has hearts (`MonkeyHearts`, shared by both kings), `m
 
 ## Hardcore Loops
 
-Each repeat of a king in the hardcore run is a Loop, counted per king (`HardcoreBossRush.LoopOf`, encounter / 2 + 1): Cobra King Loop 1 at 300 u, Spider King Loop 1 at 600 u, Cobra King Loop 2 at 900 u, ~. A fight reads its Loop from `bossLoop` on its rig, 1 int that replaces the old EASY flag:
+Each repeat of a king in the hardcore run is a Loop, counted per king (`HardcoreBossRush.LoopOf`, encounter / 2 + 1): Cobra King Loop 1 at 100 u, Spider King Loop 1 at 200 u, Cobra King Loop 2 at 300 u, ~. A fight reads its Loop from `bossLoop` on its rig, 1 int that replaces the old EASY flag:
 
 - Loop 0: the EASY fight, reached only through Normal Play's revive card; reads the EASY fields of the king's config, as before
 - Loop 1: that king's fight exactly as in Normal Play; reads the Normal fields (`bossMaxHealth` 8, `spiderMaxHealth` 15)

@@ -960,5 +960,5 @@ MonoBehaviour:
     locationU: 1025
     heightU: 50
   spiderMaxHealth: 15
-  hardcoreBossIntervalU: 300
+  hardcoreBossIntervalU: 100
   hardcoreSpeedScale: 1

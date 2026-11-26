@@ -372,7 +372,7 @@ public class WorldBalanceConfig: ScriptableObject {
     [Tooltip("climbed height b/t two bosses in the hardcore run: the Cobra "
         + "King first, then the Spider King, taking turns; u")]
     [FormerlySerializedAs("endlessBossIntervalU")]
-    private float hardcoreBossIntervalU = 300f;
+    private float hardcoreBossIntervalU = 100f;
 
     [SerializeField]
     [Tooltip("scale on the monkey's & the great cobra's climb in the hardcore "
