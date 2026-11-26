@@ -107,6 +107,12 @@ public class CobraBalanceConfig: ScriptableObject {
     /// s</returns>
     public float CobraExitBoostDurationS => cobraExitBoostDurationS;
 
+    /// <returns>how fast the great cobra's climb speed eases up after the
+    /// camera has shown it still at the chase start, slower than
+    /// <see cref="CobraSpeedChangeRateU"/> so the pull away reads; u/s²
+    /// </returns>
+    public float CobraStartEaseRateU => cobraStartEaseRateU;
+
     // Inspector Fields  #######################################################
     [Header("Falling Cobra")]
     [SerializeField]
@@ -238,6 +244,11 @@ public class CobraBalanceConfig: ScriptableObject {
     [Tooltip("how long the starting zone exit boost lasts; s")]
     private float cobraExitBoostDurationS = 5f;
 
+    [SerializeField]
+    [Tooltip("how fast the climb speed eases up after the chase start look, "
+        + "while the camera still shows the cobra; u/s²")]
+    private float cobraStartEaseRateU = 2f;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         fallingCobraAttackDistanceU = Mathf.Max(.1f,
@@ -264,5 +275,6 @@ public class CobraBalanceConfig: ScriptableObject {
         cobraSpeedChangeRateU = Mathf.Max(0.01f, cobraSpeedChangeRateU);
         cobraExitBoostSpeedU = Mathf.Max(0f, cobraExitBoostSpeedU);
         cobraExitBoostDurationS = Mathf.Max(0f, cobraExitBoostDurationS);
+        cobraStartEaseRateU = Mathf.Max(0.01f, cobraStartEaseRateU);
     }
 }

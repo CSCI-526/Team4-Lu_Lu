@@ -141,6 +141,30 @@ public class CameraConfig: ScriptableObject {
     /// out of the starting zone</returns>
     public ShotSettings CobraAlertShot => cobraAlertShot;
 
+    /// <returns>time the camera takes to pull away from the monkey view to
+    /// the cobra view, and the same again to come back; s</returns>
+    public float CobraAlertTravelS => cobraAlertTravelS;
+
+    /// <returns>time the camera stays on the cobra view, between the pull
+    /// away and the pull back; s</returns>
+    public float CobraAlertSeeS => cobraAlertSeeS;
+
+    /// <returns>climb speed of the great cobra from the first moment the
+    /// camera pulls away until it arrives at the cobra, the monkey still
+    /// locked, far above the chase speed so the climb is plain to see; it
+    /// returns to the required chase speed on the camera's arrival; u/s
+    /// </returns>
+    public float CobraAlertCreepSpeedU => cobraAlertCreepSpeedU;
+
+    /// <returns>how near below the monkey the boosted climb stops, so the
+    /// boost never reaches the locked monkey; u</returns>
+    public float CobraAlertMinGapU => cobraAlertMinGapU;
+
+    /// <returns>how far the camera bulges away from the trunk half way
+    /// through the pull away & the pull back, so it never nears the bark;
+    /// u</returns>
+    public float CobraAlertPullOutU => cobraAlertPullOutU;
+
     /// <returns>how far out from the monkey the cobra alert camera stands,
     /// horizontally, so it is close; u</returns>
     public float CobraAlertDistanceU => cobraAlertDistanceU;
@@ -168,6 +192,30 @@ public class CameraConfig: ScriptableObject {
 
     /// <returns>looks up and pulls back while a pineapple leap runs</returns>
     public ShotSettings LeapShot => leapShot;
+
+    /// <returns>the cut to the spider king's intro, held by the event till
+    /// it releases it, capped by its duration</returns>
+    public ShotSettings SpiderIntroShot => spiderIntroShot;
+
+    /// <returns>how far out from the monkey the spider intro camera stands,
+    /// horizontally; u</returns>
+    public float SpiderIntroDistanceU => spiderIntroDistanceU;
+
+    /// <returns>how far below the monkey the spider intro camera stands, so
+    /// it looks up at the king; u</returns>
+    public float SpiderIntroBelowU => spiderIntroBelowU;
+
+    /// <returns>room kept round the monkey and the king when the view is
+    /// fitted to them; above 1 is looser</returns>
+    public float SpiderIntroFitMargin => spiderIntroFitMargin;
+
+    /// <returns>widest field of view the spider intro may use to fit the
+    /// monkey and the king; deg</returns>
+    public float SpiderIntroMaxFovDeg => spiderIntroMaxFovDeg;
+
+    /// <returns>time the spider intro's aim and field of view take to follow
+    /// the king; s</returns>
+    public float SpiderIntroSmoothTimeS => spiderIntroSmoothTimeS;
 
     /// <returns>extra aim height during a leap; u</returns>
     public float LeapAimOffsetU => leapAimOffsetU;
@@ -352,8 +400,43 @@ public class CameraConfig: ScriptableObject {
 
     [Header("Shot: Cobra Alert")]
     [SerializeField]
-    [Tooltip("cobra alert shot timing & priority; s")]
-    private ShotSettings cobraAlertShot = new ShotSettings(1.5f, 0.8f, 4f, 20);
+    [Tooltip("cobra alert shot timing & priority; its duration is only the "
+        + "safety cap, the shot lasts travel + see + travel; s")]
+    private ShotSettings cobraAlertShot = new ShotSettings(14f, 0.8f, 4f, 20);
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("time the camera takes to pull away from the monkey view to the "
+        + "cobra view, and the same again to come back; s")]
+    private float cobraAlertTravelS = 3f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time the camera stays on the cobra view, between the pull away "
+        + "and the pull back; s")]
+    private float cobraAlertSeeS = 3.5f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("climb speed of the great cobra from the first moment the camera "
+        + "pulls away until it arrives, the monkey still locked: far above "
+        + "the chase speed so the climb is plain to see, back to the required "
+        + "chase speed on arrival; the faster, the more lead the monkey loses "
+        + "meanwhile; u/s")]
+    private float cobraAlertCreepSpeedU = 7f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("how near below the monkey the boosted climb stops, so the boost "
+        + "never reaches the locked monkey; u")]
+    private float cobraAlertMinGapU = 6f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("how far the camera bulges away from the trunk half way through "
+        + "the pull away & the pull back, so it swings round the tree and "
+        + "never nears the bark; u")]
+    private float cobraAlertPullOutU = 6f;
 
     [SerializeField]
     [Tooltip("how far out from the monkey the alert camera stands, "
@@ -383,6 +466,37 @@ public class CameraConfig: ScriptableObject {
     [Tooltip("time the alert's height and field of view take to follow the "
         + "cobra; s")]
     private float cobraAlertSmoothTimeS = 0.3f;
+
+    [Header("Shot: Spider Intro")]
+    [SerializeField]
+    [Tooltip("spider king intro shot timing & priority; its duration is only "
+        + "the safety cap, the event releases it; s")]
+    private ShotSettings spiderIntroShot =
+        new ShotSettings(20f, 0.5f, 0f, 50);
+
+    [SerializeField]
+    [Tooltip("how far out from the monkey the intro camera stands, "
+        + "horizontally; u")]
+    private float spiderIntroDistanceU = 7f;
+
+    [SerializeField]
+    [Tooltip("how far below the monkey the intro camera stands, so it looks "
+        + "up at the king; u")]
+    private float spiderIntroBelowU = 1.5f;
+
+    [SerializeField]
+    [Tooltip("room kept round the monkey and the king when fitted; above 1 "
+        + "is looser")]
+    private float spiderIntroFitMargin = 1.3f;
+
+    [SerializeField]
+    [Tooltip("widest field of view the intro may use to fit both; deg")]
+    private float spiderIntroMaxFovDeg = 95f;
+
+    [SerializeField]
+    [Tooltip("time the intro's aim and field of view take to follow the "
+        + "king; s")]
+    private float spiderIntroSmoothTimeS = 0.3f;
 
     [Header("Shot: Pineapple Leap")]
     [SerializeField]
@@ -524,7 +638,7 @@ public class CameraConfig: ScriptableObject {
     [SerializeField]
     [Min(0.01f)]
     [Tooltip("time the cut away bars take to grow in, & to draw back out; s")]
-    private float cutAwayBarSlideS = 2f;
+    private float cutAwayBarSlideS = 3f;
 
     [Header("Comfort")]
     [SerializeField]
@@ -553,6 +667,11 @@ public class CameraConfig: ScriptableObject {
         cobraAlertFitMargin = Mathf.Max(1f, cobraAlertFitMargin);
         cobraAlertMaxFovDeg = Mathf.Clamp(cobraAlertMaxFovDeg, 30f, 150f);
         cobraAlertSmoothTimeS = Mathf.Max(0f, cobraAlertSmoothTimeS);
+        spiderIntroDistanceU = Mathf.Max(0.5f, spiderIntroDistanceU);
+        spiderIntroBelowU = Mathf.Max(0f, spiderIntroBelowU);
+        spiderIntroFitMargin = Mathf.Max(1f, spiderIntroFitMargin);
+        spiderIntroMaxFovDeg = Mathf.Clamp(spiderIntroMaxFovDeg, 30f, 150f);
+        spiderIntroSmoothTimeS = Mathf.Max(0f, spiderIntroSmoothTimeS);
         leapDistanceScale = Mathf.Max(1f, leapDistanceScale);
         leapFollowLagS = Mathf.Max(0f, leapFollowLagS);
         leapAimLagS = Mathf.Max(0f, leapAimLagS);

@@ -2,26 +2,63 @@ using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
-/// Frames the cobra alert shot so the whole cobra is in view, its head
-/// first. The camera stands on the head's own side of the trunk, a set
-/// horizontal distance out along the head's angle at the monkey's ring, so
-/// the trunk never hides the head (the shot is cut to, so the turn from the
-/// climb view never shows); w/o a head it keeps the monkey's side & the
-/// anchor's yaw. It aims at the middle of the cobra's
-/// own coil, wherever that is below or above the monkey, from a height that
-/// makes the view look down by a set angle, and widens the field of view just
-/// enough to fit the coil, up to a limit.
+/// Flies the cobra alert shot: a slow, smooth pull away from the monkey view
+/// down to a view of the whole cobra, a long look, and the same path back. It
+/// never relies on a Cinemachine blend: the shot is a hard cut to this camera,
+/// which starts exactly on the live view and then moves itself.
 /// <para>
-/// Sits on the cobra alert camera, which tracks <c>focus</c>, an empty
-/// transform this script moves. Runs every frame, also while the shot is on
-/// standby, so a cut finds the camera already framed. Runs after the anchor
-/// (order -50) and before the <c>CinemachineBrain</c> (order 100).
+/// The framed cobra view is the end of the move. The camera stands on the
+/// head's own side of the trunk, a set horizontal distance out along the
+/// head's angle at the monkey's ring, so the trunk never hides the head; w/o a
+/// head it keeps the monkey's side & the anchor's yaw. It aims at the middle
+/// of the cobra's own coil, wherever that is below or above the monkey, from a
+/// height that makes the view look down by a set angle, and widens the field of
+/// view just enough to fit the coil, up to a limit.
 /// </para>
+/// <para>
+/// <see cref="BeginJourney"/> saves the live view (position, rotation, field
+/// of view) as the start, then each frame the camera is that view blended
+/// into the framed one by an eased progress: it speeds up, then slows to a
+/// stop on arrival, holds, and leaves the same way in reverse, ending on the
+/// saved view so the cut back finds the same picture. The camera's own
+/// <c>CinemachineFollow</c> & composer are switched off, so this script owns
+/// its pose; it sits idle outside a journey.
+/// </para>
+/// Sits on the cobra alert camera. Runs after the anchor (order -50) and
+/// before the <c>CinemachineBrain</c> (order 100). The times are in
+/// <see cref="CameraConfig"/>.
 /// </summary>
 [DefaultExecutionOrder(-30)]
 [RequireComponent(typeof(CinemachineFollow))]
 [RequireComponent(typeof(CinemachineCamera))]
 public class CameraCobraAlertFraming: MonoBehaviour {
+    // Public Methods  #########################################################
+    /// <summary>
+    /// Starts a journey from the live view, call as the shot goes live
+    /// </summary>
+    /// <param name="inS">time to pull away to the cobra view; s</param>
+    /// <param name="seeS">time to stay on the cobra view; s</param>
+    /// <param name="outS">time to pull back to the start view; s</param>
+    public void BeginJourney(float inS, float seeS, float outS) {
+        Camera view = Camera.main;
+        if (view == null) {
+            Debug.LogWarning(
+                "CameraCobraAlertFraming:\tno main camera, no journey", this);
+            return;
+        }
+        startPosition = view.transform.position;
+        startRotation = view.transform.rotation;
+        startFovDeg = view.fieldOfView;
+        travelInS = Mathf.Max(0.01f, inS);
+        seeHoldS = Mathf.Max(0f, seeS);
+        travelOutS = Mathf.Max(0.01f, outS);
+        journeyStartTime = Time.time;
+        hasOrbitDelta = false;
+        hasYawDelta = false;
+        isPrimed = false;
+        isJourneyOn = true;
+    }
+
     // Inspector Fields  #######################################################
     [Tooltip("distance, pitch, fit margin, field of view limit, smoothing")]
     [SerializeField]
@@ -31,7 +68,7 @@ public class CameraCobraAlertFraming: MonoBehaviour {
     [SerializeField]
     private Transform anchor;
 
-    [Tooltip("empty transform this camera tracks, moved only in height")]
+    [Tooltip("empty transform marking the aim point, moved by this script")]
     [SerializeField]
     private Transform focus;
 
@@ -61,10 +98,17 @@ public class CameraCobraAlertFraming: MonoBehaviour {
             return;
         }
 
-        follow = GetComponent<CinemachineFollow>();
         vcam = GetComponent<CinemachineCamera>();
         baseFovDeg = vcam.Lens.FieldOfView;
         fovDeg = baseFovDeg;
+
+        // this script owns the pose, so the camera's own tracking steps aside
+        GetComponent<CinemachineFollow>().enabled = false;
+        CinemachineRotationComposer composer =
+            GetComponent<CinemachineRotationComposer>();
+        if (composer != null) {
+            composer.enabled = false;
+        }
     }
 
     // the cobra lives in another prefab, so it is read after every Awake ran
@@ -74,6 +118,138 @@ public class CameraCobraAlertFraming: MonoBehaviour {
     }
 
     private void LateUpdate() {
+        if (!isJourneyOn) {
+            return;
+        }
+
+        float elapsedS = Time.time - journeyStartTime;
+        float progress = GetProgress(elapsedS);
+        if (elapsedS >= travelInS + seeHoldS + travelOutS) {
+            // back on the start view: hold it till the shot is let go
+            isJourneyOn = false;
+        }
+
+        GetFramedPose(
+            out Vector3 endPosition,
+            out Quaternion endRotation,
+            out float endFovDeg
+        );
+        transform.SetPositionAndRotation(
+            GetJourneyPosition(endPosition, progress),
+            GetJourneyRotation(endRotation, progress)
+        );
+        vcam.Lens.FieldOfView = Mathf.Lerp(startFovDeg, endFovDeg, progress);
+    }
+
+    // private members  ########################################################
+    private float baseFovDeg; // field of view as authored, the lower bound
+    private float fovDeg; // eased field of view of the framed view
+    private float fovVelocityDeg; // SmoothDamp state
+    private float focusY; // eased height of the focus
+    private float focusVelocityY; // SmoothDamp state
+    private bool isPrimed; // eased values start from the first frame's target
+    private bool isJourneyOn;
+    private float journeyStartTime; // Time.time the journey began
+    private float travelInS;
+    private float seeHoldS;
+    private float travelOutS;
+    private Vector3 startPosition; // the live view the journey began on
+    private Quaternion startRotation;
+    private float startFovDeg;
+    private Vector3 trunkAxis; // a point on the trunk axis, the orbit center
+    private bool hasTrunkAxis; // whether the trunk axis is known
+    // the turns the journey makes, kept continuous frame to frame; deg
+    private float orbitDeltaDeg; // round the trunk
+    private float yawDeltaDeg; // of the view
+    private bool hasOrbitDelta;
+    private bool hasYawDelta;
+
+    // cached references  ------------------------------------------------------
+    private CinemachineCamera vcam;
+    private CobraMotor cobra;
+
+    // private methods  ########################################################
+    // 0 on the start view, 1 on the cobra view: eased up, held, eased back
+    private float GetProgress(float elapsedS) {
+        float raw;
+        if (elapsedS < travelInS) {
+            raw = elapsedS / travelInS;
+        } else if (elapsedS < travelInS + seeHoldS) {
+            raw = 1f;
+        } else {
+            raw = 1f - (elapsedS - travelInS - seeHoldS) / travelOutS;
+        }
+        raw = Mathf.Clamp01(raw);
+        // smootherstep: speeds up, then slows to a stop, both ends gentle
+        return raw * raw * raw * (raw * (raw * 6f - 15f) + 10f);
+    }
+
+    // where the camera is on its way from the start view to the cobra view:
+    // it swings round the trunk, never across it, bulging outward half way so
+    // it moves away from the tree; w/o a known trunk, a straight line
+    private Vector3 GetJourneyPosition(Vector3 endPosition, float progress) {
+        if (!hasTrunkAxis) {
+            return Vector3.Lerp(startPosition, endPosition, progress);
+        }
+        Vector2 from = new Vector2(
+            startPosition.x - trunkAxis.x, startPosition.z - trunkAxis.z);
+        Vector2 to = new Vector2(
+            endPosition.x - trunkAxis.x, endPosition.z - trunkAxis.z);
+        if (from.sqrMagnitude < 0.0001f || to.sqrMagnitude < 0.0001f) {
+            return Vector3.Lerp(startPosition, endPosition, progress);
+        }
+        float fromDeg = Mathf.Atan2(from.y, from.x) * Mathf.Rad2Deg;
+        float toDeg = Mathf.Atan2(to.y, to.x) * Mathf.Rad2Deg;
+        float deltaDeg = Mathf.DeltaAngle(fromDeg, toDeg);
+        if (hasOrbitDelta) {
+            deltaDeg = KeepContinuous(deltaDeg, orbitDeltaDeg);
+        }
+        orbitDeltaDeg = deltaDeg;
+        hasOrbitDelta = true;
+        float angleRad = (fromDeg + deltaDeg * progress) * Mathf.Deg2Rad;
+        float distanceU = Mathf.Lerp(from.magnitude, to.magnitude, progress)
+            + config.CobraAlertPullOutU * Mathf.Sin(Mathf.PI * progress);
+        return new Vector3(
+            trunkAxis.x + Mathf.Cos(angleRad) * distanceU,
+            Mathf.Lerp(startPosition.y, endPosition.y, progress),
+            trunkAxis.z + Mathf.Sin(angleRad) * distanceU
+        );
+    }
+
+    // the turn picked each frame is the shortest way round, which flips to the
+    // other way when the moving end passes the far side; this keeps the turn
+    // on the same side as last frame, so the camera never jumps across
+    private static float KeepContinuous(float deltaDeg, float previousDeg) {
+        while (deltaDeg - previousDeg > 180f) {
+            deltaDeg -= 360f;
+        }
+        while (previousDeg - deltaDeg > 180f) {
+            deltaDeg += 360f;
+        }
+        return deltaDeg;
+    }
+
+    // how the camera looks on its way: yaw turned the continuous way, pitch &
+    // roll eased; at 0 it is exactly the start view
+    private Quaternion GetJourneyRotation(Quaternion endRotation, float progress) {
+        Vector3 from = startRotation.eulerAngles;
+        Vector3 to = endRotation.eulerAngles;
+        float deltaDeg = Mathf.DeltaAngle(from.y, to.y);
+        if (hasYawDelta) {
+            deltaDeg = KeepContinuous(deltaDeg, yawDeltaDeg);
+        }
+        yawDeltaDeg = deltaDeg;
+        hasYawDelta = true;
+        float pitchDeg = Mathf.LerpAngle(from.x, to.x, progress);
+        float rollDeg = Mathf.LerpAngle(from.z, to.z, progress);
+        return Quaternion.Euler(
+            pitchDeg, from.y + deltaDeg * progress, rollDeg);
+    }
+
+    // the view that shows the whole cobra, tracking it as it moves
+    private void GetFramedPose(
+        out Vector3 position, out Quaternion rotation, out float fov
+    ) {
         float smoothS = config.CobraAlertSmoothTimeS;
 
         // the span to show: the whole cobra, the monkey is not part of it,
@@ -85,9 +261,14 @@ public class CameraCobraAlertFraming: MonoBehaviour {
 
         // the height eased; the config's y offset lifts the whole shot above
         // the coil's middle
+        float targetFocusY = span.center.y + config.CobraAlertYOffsetU;
+        if (!isPrimed) {
+            focusY = targetFocusY;
+            focusVelocityY = 0f;
+        }
         focusY = Mathf.SmoothDamp(
             focusY,
-            span.center.y + config.CobraAlertYOffsetU,
+            targetFocusY,
             ref focusVelocityY,
             smoothS
         );
@@ -96,27 +277,30 @@ public class CameraCobraAlertFraming: MonoBehaviour {
         Vector3 anchorPos = anchor.position;
         Vector3 place = anchorPos;
         Quaternion yaw = anchor.rotation;
-        if (cobra != null && cobra.TryGetHead(out Vector3 head, out Vector3 axis)) {
+        if (cobra != null
+            && cobra.TryGetHead(out Vector3 head, out Vector3 axis)) {
+            trunkAxis = axis;
+            hasTrunkAxis = true;
             Vector3 headOut = head - axis;
             headOut.y = 0f;
             if (headOut.sqrMagnitude > 0.0001f) {
                 headOut.Normalize();
-                float ringU = new Vector2(anchorPos.x - axis.x, anchorPos.z - axis.z).magnitude;
+                float ringU = new Vector2(
+                    anchorPos.x - axis.x, anchorPos.z - axis.z).magnitude;
                 place = axis + headOut * ringU;
                 yaw = Quaternion.LookRotation(headOut, Vector3.up);
             }
         }
-        focus.SetPositionAndRotation(
-            new Vector3(place.x, focusY, place.z),
-            yaw
-        );
+        Vector3 focusPos = new Vector3(place.x, focusY, place.z);
+        focus.SetPositionAndRotation(focusPos, yaw);
 
         // close, out from the monkey along the anchor's yaw, and above the
         // focus by the height that makes the line of sight dip by the angle
         float distanceU = config.CobraAlertDistanceU;
         float heightU = distanceU
             * Mathf.Tan(config.CobraAlertPitchDeg * Mathf.Deg2Rad);
-        follow.FollowOffset = new Vector3(0f, heightU, distanceU);
+        position = focusPos + yaw * new Vector3(0f, heightU, distanceU);
+        rotation = Quaternion.LookRotation(focusPos - position, Vector3.up);
 
         // horizontal distance from the camera to the middle of the coil,
         // and the coil's radius: the near side is closer than the middle by
@@ -143,28 +327,20 @@ public class CameraCobraAlertFraming: MonoBehaviour {
             baseFovDeg,
             Mathf.Max(baseFovDeg, config.CobraAlertMaxFovDeg)
         );
+        if (!isPrimed) {
+            fovDeg = targetFovDeg;
+            fovVelocityDeg = 0f;
+            isPrimed = true;
+        }
         fovDeg = Mathf.SmoothDamp(
             fovDeg,
             targetFovDeg,
             ref fovVelocityDeg,
             smoothS
         );
-        vcam.Lens.FieldOfView = fovDeg;
+        fov = fovDeg;
     }
 
-    // private members  ########################################################
-    private float baseFovDeg; // field of view as authored, the lower bound
-    private float fovDeg; // eased field of view
-    private float fovVelocityDeg; // SmoothDamp state
-    private float focusY; // eased height of the focus
-    private float focusVelocityY; // SmoothDamp state
-
-    // cached references  ------------------------------------------------------
-    private CinemachineFollow follow;
-    private CinemachineCamera vcam;
-    private CobraMotor cobra;
-
-    // private methods  ########################################################
     private static float GetAspect() {
         Camera view = Camera.main;
         if (view != null) {

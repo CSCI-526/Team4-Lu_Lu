@@ -58,12 +58,13 @@ public sealed class CobraMotorSurge {
     }
 
     // each mistake adds a stack and surge time, both capped by the config;
-    // a frozen cobra ignores mistakes
+    // a frozen or story held cobra ignores mistakes
     public void StartSurge() {
         if (
             rig.cobraBalanceConfig == null
             || rig.cobraBalanceConfig.CobraSurgePerMistakeS <= 0f
             || rig.isFrozen
+            || rig.isStoryHeld
             // it holds still in the starting zone, so no surge & no cue
             || IsInStartingZone
         ) {
