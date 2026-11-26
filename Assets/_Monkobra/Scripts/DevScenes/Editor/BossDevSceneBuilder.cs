@@ -22,6 +22,15 @@ using UnityEngine.SceneManagement;
 /// the Editor Build Settings.
 /// </summary>
 public static class BossDevSceneBuilder {
+    // Public Members  #########################################################
+    /// <summary>
+    /// The menu's build for a headless run: <c>Unity.exe -batchmode
+    /// -executeMethod BossDevSceneBuilder.BuildInBatch</c>.
+    /// </summary>
+    public static void BuildInBatch() {
+        Build();
+    }
+
     // private methods  ########################################################
     [MenuItem("Monkobra/Build Boss Dev Scenes")]
     private static void Build() {
@@ -82,12 +91,13 @@ public static class BossDevSceneBuilder {
     }
 
     // makes the scene's DEV balance asset a fresh copy of the main one, then
-    // places the kings' groups of heights: the boss under test has its
-    // location at the player's start, so its fight begins at once; the other
-    // king stays out of the way, the Spider King's above the Cobra King's,
-    // the Cobra King's, if skipped, collapsed to 0; each group keeps its
-    // spacing
-    private static void RefreshWorldCopy(string copyPath, Boss boss) {
+    // places the kings' groups of heights: the boss under test at the lowest
+    // location the asset allows, where the monkey is made to start (see
+    // MoveRampBaseToStart), so its fight begins at once; the other king
+    // stays out of the way, the Spider King's above the Cobra King's, the
+    // Cobra King's, if skipped, collapsed to a thin zone at the start; each
+    // group keeps its spacing; returns the location of the boss under test, u
+    private static float RefreshWorldCopy(string copyPath, Boss boss) {
         var main =
             AssetDatabase.LoadAssetAtPath<WorldBalanceConfig>(WORLD_PATH);
         var config =
@@ -104,16 +114,24 @@ public static class BossDevSceneBuilder {
         copy.name = Path.GetFileNameWithoutExtension(copyPath);
 
         var serialized = new SerializedObject(copy);
+        float cobraLocationU = main.CobraKingLayout.heightU * 0.5f;
         float spiderLocationU;
+        float testedLocationU;
         if (boss == Boss.CobraKing) {
             PlaceLayout(serialized, "cobraKingArena",
-                main.CobraKingLayout, 0f);
+                main.CobraKingLayout, cobraLocationU);
             // the Spider King zone starts a gap above the Cobra King's top
-            spiderLocationU = main.CobraKingLayout.heightU * 0.5f
-                + config.OtherKingGapU + main.SpiderKingLayout.heightU * 0.5f;
+            spiderLocationU = cobraLocationU
+                + main.CobraKingLayout.heightU * 0.5f + config.OtherKingGapU
+                + main.SpiderKingLayout.heightU * 0.5f;
+            testedLocationU = cobraLocationU;
         } else {
-            spiderLocationU = 0f;
             CollapseCobraLayout(serialized);
+            // the lowest place the Spider King zone may start: on the
+            // collapsed Cobra King zone's top
+            spiderLocationU = COLLAPSED_COBRA_TOP_U
+                + main.SpiderKingLayout.heightU * 0.5f;
+            testedLocationU = spiderLocationU;
         }
         PlaceLayout(serialized, "spiderKingArena",
             main.SpiderKingLayout, spiderLocationU);
@@ -123,13 +141,15 @@ public static class BossDevSceneBuilder {
         Debug.Log(
             $"BossDevSceneBuilder:\t{boss} balance, zone bottoms: Cobra King "
                 + $"{copy.CobraKingLayout.BareBottomU} u, Spider King "
-                + $"{copy.SpiderKingLayout.BareBottomU} u"
+                + $"{copy.SpiderKingLayout.BareBottomU} u, tested boss "
+                + $"location {testedLocationU} u"
         );
+        return testedLocationU;
     }
 
-    // a boss placed by location, its height as in the main asset; a location
-    // of 0 puts the bare zone half a height below the start, so the fight
-    // trigger is met at once
+    // a boss placed by location, its height as in the main asset; the
+    // balance asset keeps a bare zone above the start of the climb, so a
+    // location is never below half a height
     private static void PlaceLayout(
         SerializedObject serialized, string field, BossArenaLayout main,
         float locationU
@@ -141,13 +161,15 @@ public static class BossDevSceneBuilder {
     // a skipped Cobra King leaves a zone of 1 u at the start, so the Spider
     // King can sit low
     private static void CollapseCobraLayout(SerializedObject serialized) {
-        serialized.FindProperty("cobraKingArena.heightU").floatValue = 1f;
-        serialized.FindProperty("cobraKingArena.locationU").floatValue = 0.5f;
+        serialized.FindProperty("cobraKingArena.heightU").floatValue =
+            COLLAPSED_COBRA_TOP_U;
+        serialized.FindProperty("cobraKingArena.locationU").floatValue =
+            COLLAPSED_COBRA_TOP_U * 0.5f;
     }
 
     // there is no starting zone in a dev scene: the ramp base, where the
     // starting zone ends, sits at the monkey's start, so nothing is below it
-    private static void MoveRampBaseToStart() {
+    private static void MoveRampBaseToStart(float startOffsetU) {
         var ramp = Object.FindFirstObjectByType<RampedDifficultyManager>();
         var monkey = Object.FindFirstObjectByType<MonkeyController>();
         if (ramp == null || monkey == null) {
@@ -165,6 +187,10 @@ public static class BossDevSceneBuilder {
         var serialized = new SerializedObject(ramp);
         serialized.FindProperty("rampBase").objectReferenceValue =
             go.transform;
+        // the climb baseline moves down by the boss's location, so the
+        // monkey starts on it & the fight trigger is met on the first live
+        // frame; the monkey itself never moves
+        serialized.FindProperty("startOffsetU").floatValue = startOffsetU;
         serialized.ApplyModifiedPropertiesWithoutUndo();
     }
 
@@ -291,8 +317,8 @@ public static class BossDevSceneBuilder {
         serialized.ApplyModifiedPropertiesWithoutUndo();
         WriteSkipBox(scene, isSkippingTutorials);
 
-        RefreshWorldCopy(worldCopyPath, boss);
-        MoveRampBaseToStart();
+        float testedLocationU = RefreshWorldCopy(worldCopyPath, boss);
+        MoveRampBaseToStart(testedLocationU);
         // the scene must have been opened before the copy is loaded for it
         int count = RepointWorldConfig(scene, worldCopyPath);
         if (count == 0) {
@@ -341,6 +367,9 @@ public static class BossDevSceneBuilder {
     private const string OLD_WORLD_COPY_PATH =
         "Assets/_Monkobra/Settings/DevScenes/DEVBossWorldBalanceConfig.asset";
     private const string RAMP_BASE_NAME = "DEVRampBase";
+
+    // height of the Cobra King zone a skipped Cobra King leaves; u
+    private const float COLLAPSED_COBRA_TOP_U = 1f;
     private const string COBRA_KING_SCENE_PATH =
         "Assets/_Monkobra/Scenes/DEVBossCobraKingScene.unity";
     private const string SPIDER_KING_SCENE_PATH =

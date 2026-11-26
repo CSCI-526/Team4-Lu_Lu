@@ -140,6 +140,13 @@ public class RampedDifficultyManager: MonoBehaviour {
     [Tooltip("starting zone exit trigger; its y is where the ramp starts at 0")]
     private Transform rampBase;
 
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("test only, the boss dev scenes: the climb baseline sits this "
+        + "far below the player's start, so the monkey starts already "
+        + "climbed this high; 0 for the real run; u")]
+    private float startOffsetU;
+
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -180,9 +187,11 @@ public class RampedDifficultyManager: MonoBehaviour {
         if (player == null) {
             return;
         }
-        PlayerGameStartYPosition = player.position.y;
+        PlayerGameStartYPosition = player.position.y - startOffsetU;
+        // a dev scene w/ an offset has no starting zone, so none to warn of
         if (
-            worldBalanceConfig != null
+            startOffsetU <= 0f
+            && worldBalanceConfig != null
             && worldBalanceConfig.CobraKingLayout.BareBottomU
                 <= GetClimbedYDistance(RampBaseYPosition)
         ) {
