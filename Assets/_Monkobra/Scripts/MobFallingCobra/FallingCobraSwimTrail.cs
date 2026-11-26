@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Profiling;
 using UnityEngine;
 using static FallingCobraRig;
 using static FallingCobraMath;
@@ -10,9 +9,6 @@ public sealed class FallingCobraSwimTrail {
     // private members  ########################################################
     private readonly FallingCobraRig rig;
     private readonly FallingCobraConfig config;
-    private static readonly ProfilerMarker ADVANCE_MARKER =
-        new("FallingCobra.AdvanceSwimTrail");
-
 
     public FallingCobraSwimTrail(FallingCobraRig rig) {
         this.rig = rig;
@@ -99,7 +95,6 @@ public sealed class FallingCobraSwimTrail {
     }
 
     public void AdvanceSwimTrail() {
-        using var _ = ADVANCE_MARKER.Auto();
         if (!rig.swimTrailReady) {
             BeginSwimTrail();
         }

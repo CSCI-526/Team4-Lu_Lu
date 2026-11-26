@@ -1,4 +1,3 @@
-using Unity.Profiling;
 using UnityEngine;
 using static FallingCobraRig;
 using static FallingCobraMath;
@@ -315,7 +314,6 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void LateUpdate() {
-        using var _ = LATE_UPDATE_MARKER.Auto();
         if (!rig.HasBody || rig.state == FallingCobraState.Done
             || !rig.perchBound) {
             return;
@@ -371,14 +369,6 @@ public class FallingCobraController: MonoBehaviour {
     // rebuilds its pose, so a head turn ends smoothly; u
     private const float IDLE_MARGIN_U = 4f;
 
-    // profiler markers  ------------------------------------------------------
-    private static readonly ProfilerMarker UPDATE_MARKER =
-        new("FallingCobra.Update");
-    private static readonly ProfilerMarker FIXED_UPDATE_MARKER =
-        new("FallingCobra.FixedUpdate");
-    private static readonly ProfilerMarker LATE_UPDATE_MARKER =
-        new("FallingCobra.LateUpdate");
-
     private void Start() {
         GameObject playerObject = MonkeyController.GetRootOrNull();
         if (playerObject != null) {
@@ -391,7 +381,6 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void Update() {
-        using var _ = UPDATE_MARKER.Auto();
         switch (rig.state) {
             case FallingCobraState.Dormant:
                 // a cobra never outlives its branch: one left in mid air by
@@ -410,7 +399,6 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        using var _ = FIXED_UPDATE_MARKER.Auto();
         tracking.UpdateTrackedMonkey();
         if (rig.state == FallingCobraState.Warning && CanStartFall()) {
             StartFalling();
