@@ -84,6 +84,11 @@ todo add 3x fruit
 - falling cobras lighter again: skinned body posed by bones, one shared culling
   group for sleepers, own physics layers, capped trail & smoothing work; frame
   8.4 → 4.2 ms with about 3 live cobras
+- branches, spider webs, falling cobras and rough bark now spread by world
+  height from a run seed, not rolled per tree segment: even spacing with no
+  bare stretches or segment seams, density curves per 10 u of trunk, a
+  random tree each run (fixed seed on `TrunkScatter` replays one), new
+  `Monkobra > Report Trunk Scatter` evenness check
 
 ##### Houdong Pan
 

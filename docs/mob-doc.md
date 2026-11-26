@@ -51,14 +51,14 @@ The stun duration and drop distance and speed are in `Settings/Player/PlayerBala
 
 `TreeSegmentController` decorates each dynamic trunk segment with branches in its `Start`, after `TreeManager` exists. Placement tuning sits in `BranchFruitPlacementConfig`.
 
-- Count: each of the 4 kinds has its own fixed attempt count per segment (`<kind>BranchAttemptCount`, `WorldBalanceConfig`); each attempt samples that kind's own `<kind>BranchProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`) and grows a branch of that kind if a random roll falls below that chance; kinds roll rarest first (pineapple, coconut, banana, empty) into one shared set of placed spots, so a common kind never crowds a rare one out; why the curves are shaped by difficulty is in [Balance Design](balance-doc.md#one-roll-model)
-- Position: a random angle round the trunk and a random height in the segment, at a fixed radius, retried until a spot keeps the minimum separation from branches already placed on that segment, else the last try is accepted
-- Starting Zone Chance: a segment whose middle lies below the exit trigger grows only banana branches, each attempt at the single `startingZoneBananaBranchChance` (`WorldBalanceConfig`, 0.2: about 2 banana branches a segment over its 10 attempts, a little more than the 0.06 the curve gives just past the zone), instead of the curves; the empty, coconut and pineapple kinds do not grow there
+- Count: each of the 4 kinds is its own `TrunkScatter` stream, spaced by that kind's `<kind>BranchDensityCurve` (`WorldBalanceConfig`, expected branches per 10 u of trunk) read at each height's ramped difficulty (`RampedDifficultyManager`); a segment grows the items whose height falls in it, so counts follow the curve evenly with no seam at a segment joint; kinds are placed rarest first (pineapple, coconut, banana, empty), so where two conflict the later yields; why the curves are shaped by difficulty is in [Balance Design](balance-doc.md#location-scatter)
+- Position: the item's own height in the world and an angle that spirals round the trunk by the golden angle, at a fixed radius; a spot keeps the minimum separation from every live branch, those of the segments above and below too, else its yaw is retried in golden angle steps up to `maxRetries` (`TrunkScatterConfig`) and then the branch is skipped
+- Starting Zone Density: below the exit trigger only banana branches grow, at the single `startingZoneBananaBranchDensity` (`WorldBalanceConfig`, 2 per 10 u, a little more than the 0.6 the curve gives just past the zone), instead of the curves; the empty, coconut and pineapple kinds do not grow there
 - Fruit Above The Start: no fruit hangs below the monkey's start y (`RampedDifficultyManager.PlayerGameStartYPosition`), so none is seen below the player at the start; after `Setup` a branch whose fruit's lowest point (`BranchController.FruitBottomY`) is lower is lifted till it is level, or dropped if that leaves its segment, enters the boss zone or crowds the monkey (`TreeSegmentController.KeepFruitAboveStart`); empty branches may still grow below
 - Monkey Clearance: before the run is playing (tutorial screen and starting zone) a branch spot within `startingZoneBranchClearRadiusU` (`WorldBalanceConfig`, 0 turns it off) of the monkey is rejected and retried; if no clear spot is found the branch is skipped, so a restart never spawns the monkey into a branch. The monkey is read from `RampedDifficultyManager.PlayerTransform`
 - Fruit: the fruit is decided by the prefab, not by a roll on the branch: `BranchController.Setup` shows the fruit its `BranchKind` names (the banana child, or a coconut or pineapple spawned from its `fruitPrefab` on the stem, the banana child then off) or none for an empty branch, and randomizes the stem length and fruit rotation
 
-Attempt counts and the branch and banana chance curves are in `Settings/Environment/WorldBalanceConfig.asset`; branch radius, separation, and placement retries are in `Settings/Environment/BranchFruitPlacementConfig.asset`.
+The branch density curves and the starting zone banana density are in `Settings/Environment/WorldBalanceConfig.asset`; branch radius and separation are in `Settings/Environment/BranchFruitPlacementConfig.asset`, and the spacing jitter, yaw jitter and retries in `Settings/Environment/TrunkScatterConfig.asset`.
 
 ## Cobra
 
@@ -126,15 +126,15 @@ Many live snakes stay cheap because each cost is handed to a Unity system or a c
 
 ### Spawning
 
-`FallingCobraSpawner` sits on the active `DynamicTreeSegmentPool` object in `GameplayScene`, never under the pool's mock tree, which the pool deactivates at runtime (it logs a warning if one is left there). Like the web spawner it listens to `TreeSegmentController.BranchesGenerated`, so each roll of a segment's branches gets exactly one roll of falling cobras. Only the first enabled spawner listens.
+`FallingCobraSpawner` sits on the active `DynamicTreeSegmentPool` object in `GameplayScene`, never under the pool's mock tree, which the pool deactivates at runtime (it logs a warning if one is left there). Like the web spawner it listens to `TreeSegmentController.BranchesGenerated`, so each placement of a segment's branches gets exactly one placement of falling cobras. Only the first enabled spawner listens.
 
-- Count: a fixed `fallingCobraAttemptCount` per segment (`CobraBalanceConfig`); each attempt samples `fallingCobraSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
-- Spot: a cobra hangs on a ring of `spawnRadiusU` about the segment's pivot, on the trunk axis, at a random angle and a random height that keeps the whole snake inside its segment. A spot too close to another cobra of the segment is retried, then skipped
-- Banana Ambush: with `fallingCobraBananaAmbushChance` (`CobraBalanceConfig`) a cobra instead hangs at the angle of one banana of its segment, `ambushMinAboveBananaU` to `ambushMaxAboveBananaU` above it (on the spawner); with no banana, or no room above it inside the segment, it falls back to a random spot. The pick goes by the `FruitCollider` tag, so a pineapple or a coconut can be ambushed too
-- Cleanup: cobras are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous cobras too
-- Concurrency: several can be live at once, one roll per segment; frequency follows climb height and the curve, not a clock
+- Count: the `FallingCobra` stream of `TrunkScatter`, spaced by `fallingCobraDensityCurve` (`CobraBalanceConfig`, expected cobras per 10 u of trunk) read at each height's ramped difficulty (`RampedDifficultyManager`), the same model as branches
+- Spot: a spot's height and yaw pick the live branch nearest to it within `searchWindowU` above and below (on the spawner), on any segment; the cobra hangs on a ring of `spawnRadiusU` about the trunk axis at that branch's height. A branch too close to another cobra, or whose snake would reach the boss zone, is retried with the next nearest, up to `maxRetries`, then the cobra is skipped; with no branch near there is no cobra
+- Banana Ambush: with `fallingCobraBananaAmbushChance` (`CobraBalanceConfig`), hashed from the spot so it never changes with segment order, a cobra prefers a fruit branch among those near; with none, it takes any branch. A pineapple or a coconut branch can be ambushed too
+- Cleanup: a cobra is a child of the segment its branch grows on, so that segment's `Restart` clears it with the branch. Before placing a segment again the spawner drops that segment's previous cobras too
+- Concurrency: several can be live at once; frequency follows climb height and the curve, not a clock
 
-Fall and chase speeds, the wake distance, and the ambush chance are in `Settings/MobGreatCobra/CobraBalanceConfig.asset`; spawn radius, separation, and ambush height are on `FallingCobraSpawner` on `DynamicTreeSegmentPool`; trigger and fall distances are on the falling cobra prefab.
+Fall and chase speeds, the wake distance, and the ambush chance are in `Settings/MobGreatCobra/CobraBalanceConfig.asset`; spawn radius, separation, search window, and ambush height are on `FallingCobraSpawner` on `DynamicTreeSegmentPool`; trigger and fall distances are on the falling cobra prefab.
 
 ### Behavior
 
@@ -152,13 +152,13 @@ A static trap on the trunk that holds the monkey in place while the cobra keeps 
 
 ### Placement
 
-`SpiderWebSpawner` sits on `Envs/DynamicTreeSegmentPool` in `GameplayScene`, and on any object that stays active from scene load, never under the pool's mock tree, which `DynamicTreeSegmentPool` deactivates at runtime (it logs a warning if one is left there). It listens to `TreeSegmentController.BranchesGenerated`, raised each time a segment has rolled its branches, on its first `Start` and after every `DynamicTreeSegmentPool` restart, so each roll of branches gets exactly one roll of webs. Only the first enabled spawner listens.
+`SpiderWebSpawner` sits on `Envs/DynamicTreeSegmentPool` in `GameplayScene`, and on any object that stays active from scene load, never under the pool's mock tree, which `DynamicTreeSegmentPool` deactivates at runtime (it logs a warning if one is left there). It listens to `TreeSegmentController.BranchesGenerated`, raised each time a segment has placed its branches, on its first `Start` and after every `DynamicTreeSegmentPool` restart, so each placement of branches gets exactly one placement of webs. Only the first enabled spawner listens.
 
-- Count: a fixed `webAttemptCount` per segment (`WorldBalanceConfig`); each attempt samples `webSpawnProbabilityCurve` at the segment's ramped difficulty (`RampedDifficultyManager`, read at the segment's middle), the same model as branches
-- Spot: a web lies flat on its segment's bark facing outward. A spot is dropped if it is too close to another live web, or its trigger volume (plus clearance) overlaps a branch or fruit. After the retry cap the web is skipped rather than placed overlapping
-- Cleanup: webs are children of their segment, so `Restart` clears them with the branches. Before rolling a segment again the spawner drops that segment's previous webs too, destroying any still active, so none linger and none double up. A web removed under a held monkey frees it
+- Count: the `Web` stream of `TrunkScatter`, spaced by `webDensityCurve` (`WorldBalanceConfig`, expected webs per 10 u of trunk) read at each height's ramped difficulty (`RampedDifficultyManager`), the same model as branches
+- Spot: a web lies flat on its segment's bark facing outward, at its item's height (pulled in only off the segment ends). A yaw is dropped if it is too close to another live web, or its trigger volume (plus clearance) overlaps a branch or fruit, any segment's; the yaw is then retried in golden angle steps, and after `maxRetries` (`TrunkScatterConfig`) the web is skipped rather than placed overlapping
+- Cleanup: webs are children of their segment, so `Restart` clears them with the branches. Before placing a segment again the spawner drops that segment's previous webs too, destroying any still active, so none linger and none double up. A web removed under a held monkey frees it
 
-The attempt count and spawn probability curve are in `Settings/Environment/WorldBalanceConfig.asset`; the minimum separation is on `SpiderWebSpawner` on `Envs/DynamicTreeSegmentPool`.
+The web density curve is in `Settings/Environment/WorldBalanceConfig.asset`; the minimum separation is on `SpiderWebSpawner` on `Envs/DynamicTreeSegmentPool`.
 
 The curve is the only gate: webs appear wherever it is above 0, and the curve sits at 0 until the difficulty of the web's first appearance height.
 
@@ -189,7 +189,7 @@ To test without the climb, press Play and run the event's `Play Now` context men
 
 ### Testing
 
-Webs are in `GameplayScene` and follow the web probability curve. For a quick test select `Envs/DynamicTreeSegmentPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Spawn Chance per attempt at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments rolled after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/Environment/WorldBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
+Webs are in `GameplayScene` and follow the web density curve. For a quick test select `Envs/DynamicTreeSegmentPool`, tick `SpiderWebSpawner` > Use Test Override before pressing Play, and leave the scene unsaved. Webs then spawn at the Test Density (expected webs per 10 u of trunk) at any height, ignoring the curve, and may land on the monkey's start spot. Ticked during Play, it only reaches segments placed after that, the ones the pool restarts above the first stack. To tune the real spawn rate, edit the Spider Web group of `Settings/Environment/WorldBalanceConfig.asset` instead. Gizmos show each web's trigger as a yellow box.
 
 ## Cobra King (Boss)
 
@@ -361,7 +361,7 @@ Each repeat of a king in the hardcore run is a Loop, counted per king (`Hardcore
 
 ## Known Gaps
 
-- Mob tuning for the web escape and web geometry lives on scene components, not in a shared ScriptableObject; only the web spawn rates and attempt counts are in `WorldBalanceConfig`, and the falling cobra and great cobra numbers in `CobraBalanceConfig`
+- Mob tuning for the web escape and web geometry lives on scene components, not in a shared ScriptableObject; only the web density curve is in `WorldBalanceConfig`, and the falling cobra and great cobra numbers in `CobraBalanceConfig`
 - Stamina is not linked to branch hits
 - Hack key 5 (`HackPineappleSpawner.SpawnFallingCobra`) never calls `AttachToBranch`, so by the code its cobra stays hidden and never wakes
 - `GameplayScene`'s Canvas holds 2 objects named `ProgressBar`, the climb progress and the web escape bar, so look them up by path

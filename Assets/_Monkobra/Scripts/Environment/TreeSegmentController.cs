@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Prefab root for one dynamic tree segment. Procedurally decorates itself
 /// with branch prefabs, one per <see cref="BranchKind"/> (empty, banana,
-/// coconut, pineapple), each rolled from its own chance curve, on creation,
+/// coconut, pineapple), each spread by its own density curve, on creation,
 /// and again each time
 /// <see cref="Restart"/> moves it to a new place, raising
 /// <see cref="BranchesGenerated"/> after each roll.
@@ -22,6 +22,12 @@ public class TreeSegmentController: MonoBehaviour {
         BranchesGenerated;
 
     // Public Methods  #########################################################
+    /// <returns>the segment's world-space bounds, read from its Collider
+    /// </returns>
+    public Bounds GetBounds() {
+        return segmentCollider.bounds;
+    }
+
     /// <returns>the segment's world-space height, read from its Collider
     /// bounds</returns>
     public float GetHeight() {
@@ -31,7 +37,7 @@ public class TreeSegmentController: MonoBehaviour {
     /// <summary>
     /// Moves the segment to <paramref name="worldPosition"/> and starts it
     /// over: everything spawned onto it (branches, webs) is removed and the
-    /// branches are rolled again for the new height. Decorators listening to
+    /// branches are scattered again for the new height. Decorators listening to
     /// <see cref="BranchesGenerated"/>, e.g. <see cref="SpiderWebSpawner"/>,
     /// redo theirs then.
     /// </summary>
@@ -55,6 +61,37 @@ public class TreeSegmentController: MonoBehaviour {
             GenerateBranches();
         }
         hasGenerated = true;
+    }
+
+    /// <summary>
+    /// Appends every live branch, on any segment, whose segment overlaps
+    /// the world height range to <paramref name="results"/>.
+    /// </summary>
+    public static void GetLiveBranches(
+        float bottomY,
+        float topY,
+        List<BranchController> results
+    ) {
+        foreach (TreeSegmentController segment in liveSegments) {
+            if (!segment.isReady) {
+                continue;
+            }
+            Bounds bounds = segment.segmentCollider.bounds;
+            if (bounds.min.y > topY || bounds.max.y < bottomY) {
+                continue;
+            }
+            for (int i = 0; i < segment.transform.childCount; i++) {
+                Transform child = segment.transform.GetChild(i);
+                if (!child.gameObject.activeSelf) {
+                    continue;
+                }
+                BranchController branch =
+                    child.GetComponent<BranchController>();
+                if (branch != null) {
+                    results.Add(branch);
+                }
+            }
+        }
     }
 
     // Inspector Fields  #######################################################
@@ -83,7 +120,7 @@ public class TreeSegmentController: MonoBehaviour {
     private BranchFruitPlacementConfig placementConfig;
 
     [SerializeField]
-    [Tooltip("world balance tuning; branch attempts & chance")]
+    [Tooltip("world balance tuning; branch density")]
     private WorldBalanceConfig worldBalanceConfig;
 
     // MonoBehaviour Lifecycle  ################################################
@@ -141,6 +178,14 @@ public class TreeSegmentController: MonoBehaviour {
         isReady = true;
     }
 
+    private void OnEnable() {
+        liveSegments.Add(this);
+    }
+
+    private void OnDisable() {
+        liveSegments.Remove(this);
+    }
+
     // wait for Start, so TreeManager.I is set whatever the Awake order
     private void Start() {
         if (!enabled || hasGenerated) {
@@ -173,6 +218,11 @@ public class TreeSegmentController: MonoBehaviour {
     private readonly HashSet<Transform> prefabChildren = new();
     private bool isReady; // if Awake passed the Inspector guard
     private bool hasGenerated; // if branches were rolled once already
+    private readonly List<ScatterItem> scatterItems = new();
+
+    // every enabled segment, so branches keep clear across joints
+    private static readonly List<TreeSegmentController> liveSegments =
+        new();
 
     // private methods  ########################################################
     // inactive first, Destroy only lands at the end of the frame and the
@@ -190,24 +240,22 @@ public class TreeSegmentController: MonoBehaviour {
 
     private void GenerateBranches() {
         float segmentHeight = GetHeight();
-        List<Vector3> placedPositions = new();
+        float bottomY = segmentCollider.bounds.min.y;
+        float topY = segmentCollider.bounds.max.y;
 
-        // each kind rolls a fixed attempt count, each attempt succeeding by
-        // the chance its own curve gives at this segment's ramped difficulty;
-        // in the starting zone only the banana kind grows, at a flat chance
-        float centerY = segmentCollider.bounds.center.y;
-        bool isInStartingZone = IsInStartingZone(centerY);
-        float rampedDifficulty = GetRampedDifficulty(centerY);
+        // live branches of the other segments count for separation too, so
+        // a joint between segments is no seam
+        List<Vector3> placedPositions = GetNeighbourBranchPositions();
 
         // the fixed-height branches go first, so nothing crowds them out
         foreach (BranchKind kind in ROLL_ORDER) {
             float guaranteedY = GetGuaranteedWorldY(kind);
             if (
                 !float.IsNaN(guaranteedY)
-                && guaranteedY >= segmentCollider.bounds.min.y
-                && guaranteedY < segmentCollider.bounds.max.y
+                && guaranteedY >= bottomY
+                && guaranteedY < topY
             ) {
-                SpawnBranch(
+                SpawnGuaranteedBranch(
                     kind,
                     segmentHeight,
                     placedPositions,
@@ -219,19 +267,32 @@ public class TreeSegmentController: MonoBehaviour {
             }
         }
 
-        foreach (BranchKind kind in ROLL_ORDER) {
-            float spawnProbability = GetSpawnProbability(
-                kind,
-                isInStartingZone,
-                rampedDifficulty
+        // each kind is its own scatter stream: the spots whose world height
+        // falls in this segment, from the density curve read at that height
+        if (TrunkScatter.I == null) {
+            Debug.LogWarning(
+                "TreeSegmentController:\tno TrunkScatter in scene, "
+                    + "skip scattered branches",
+                this
             );
-            if (spawnProbability <= 0f) {
-                continue;
-            }
-            int attemptCount = worldBalanceConfig.GetBranchAttemptCount(kind);
-            for (int i = 0; i < attemptCount; i++) {
-                if (Random.value < spawnProbability) {
-                    SpawnBranch(kind, segmentHeight, placedPositions);
+        } else {
+            foreach (BranchKind kind in ROLL_ORDER) {
+                BranchKind streamKind = kind;
+                scatterItems.Clear();
+                TrunkScatter.I.GetItems(
+                    GetScatterChannel(streamKind),
+                    bottomY,
+                    topY,
+                    y => GetBranchDensity(streamKind, y),
+                    scatterItems
+                );
+                foreach (ScatterItem item in scatterItems) {
+                    SpawnScatteredBranch(
+                        streamKind,
+                        item,
+                        segmentHeight,
+                        placedPositions
+                    );
                 }
             }
         }
@@ -240,22 +301,59 @@ public class TreeSegmentController: MonoBehaviour {
         BranchesGenerated?.Invoke(this);
     }
 
-    // chance 0~1 that one attempt of the kind grows a branch
-    private float GetSpawnProbability(
-        BranchKind kind,
-        bool isInStartingZone,
-        float rampedDifficulty
-    ) {
-        if (isInStartingZone) {
+    // expected branches of the kind per 10 u of trunk at a world height; in
+    // the starting zone only the banana kind grows, at a flat density
+    private float GetBranchDensity(BranchKind kind, float worldY) {
+        if (IsInStartingZone(worldY)) {
             return kind == BranchKind.Banana
-                ? worldBalanceConfig.StartingZoneBananaBranchChance
+                ? worldBalanceConfig.StartingZoneBananaBranchDensity
                 : 0f;
         }
-        AnimationCurve curve =
-            worldBalanceConfig.GetBranchProbabilityCurve(kind);
+        AnimationCurve curve = worldBalanceConfig.GetBranchDensityCurve(kind);
         return curve != null
-            ? Mathf.Clamp01(curve.Evaluate(rampedDifficulty))
+            ? Mathf.Max(0f, curve.Evaluate(GetRampedDifficulty(worldY)))
             : 0f;
+    }
+
+    private static ScatterChannel GetScatterChannel(BranchKind kind) {
+        return kind switch {
+            BranchKind.Banana => ScatterChannel.BananaBranch,
+            BranchKind.Coconut => ScatterChannel.CoconutBranch,
+            BranchKind.Pineapple => ScatterChannel.PineappleBranch,
+            _ => ScatterChannel.EmptyBranch
+        };
+    }
+
+    // segment-local spots of the live branches on the other segments near
+    // enough to crowd this one
+    private List<Vector3> GetNeighbourBranchPositions() {
+        List<Vector3> positions = new();
+        float reachY = placementConfig.MinBranchSeparation;
+        Bounds own = segmentCollider.bounds;
+        foreach (TreeSegmentController other in liveSegments) {
+            if (other == this || !other.isReady) {
+                continue;
+            }
+            Bounds bounds = other.segmentCollider.bounds;
+            if (
+                bounds.min.y > own.max.y + reachY
+                || bounds.max.y < own.min.y - reachY
+            ) {
+                continue;
+            }
+            for (int i = 0; i < other.transform.childCount; i++) {
+                Transform child = other.transform.GetChild(i);
+                if (
+                    child.gameObject.activeSelf
+                    && child.GetComponent<BranchController>() != null
+                ) {
+                    positions.Add(
+                        transform.InverseTransformPoint(child.position)
+                    );
+                }
+            }
+        }
+        return positions;
     }
 
     private GameObject GetBranchPrefab(BranchKind kind) {
@@ -297,33 +395,69 @@ public class TreeSegmentController: MonoBehaviour {
         return RampedDifficultyManager.I.PlayerGameStartYPosition + climbedY;
     }
 
-    // fixedLocalHeight: segment-local y to grow at, NaN for a random one;
-    // centerYaw: angle in deg around the trunk to grow near, within the
-    // guaranteed branch spread either way, NaN for a random one
-    private void SpawnBranch(
+    // a branch at a fixed segment-local height, yawed near centerYaw within
+    // the guaranteed branch spread either way, NaN for any yaw
+    private void SpawnGuaranteedBranch(
         BranchKind kind,
         float segmentHeight,
         List<Vector3> placedPositions,
-        float fixedLocalHeight = float.NaN,
-        float centerYaw = float.NaN
+        float localHeight,
+        float centerYaw
+    ) {
+        float spreadDeg = worldBalanceConfig.GuaranteedBranchYawSpreadDeg;
+        TryPlaceBranch(
+            kind,
+            segmentHeight,
+            placedPositions,
+            localHeight,
+            _ => float.IsNaN(centerYaw)
+                ? Random.Range(0f, 360f)
+                : centerYaw + Random.Range(-spreadDeg, spreadDeg),
+            placementConfig.MaxPlacementAttempts,
+            true
+        );
+    }
+
+    // a scatter spot keeps its height; a blocked one retries yaw in golden
+    // steps, then is skipped
+    private void SpawnScatteredBranch(
+        BranchKind kind,
+        ScatterItem item,
+        float segmentHeight,
+        List<Vector3> placedPositions
+    ) {
+        TryPlaceBranch(
+            kind,
+            segmentHeight,
+            placedPositions,
+            transform.InverseTransformPoint(new Vector3(0f, item.Y, 0f)).y,
+            item.GetRetryYawDeg,
+            TrunkScatter.I.MaxRetries + 1,
+            false
+        );
+    }
+
+    // yawAtAttempt: angle in deg around the trunk to try on each attempt;
+    // isCloseAccepted: whether a spot too near another is taken once the
+    // attempts run out, else the branch is skipped
+    private void TryPlaceBranch(
+        BranchKind kind,
+        float segmentHeight,
+        List<Vector3> placedPositions,
+        float localHeight,
+        System.Func<int, float> yawAtAttempt,
+        int maxAttempts,
+        bool isCloseAccepted
     ) {
         Quaternion branchRotation = Quaternion.identity;
         Vector3 branchPosition = Vector3.zero;
 
-        int maxAttempts = placementConfig.MaxPlacementAttempts;
         bool isClear = false;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
-            float spreadDeg = worldBalanceConfig.GuaranteedBranchYawSpreadDeg;
-            float branchYaw = float.IsNaN(centerYaw)
-                ? Random.Range(0f, 360f)
-                : centerYaw + Random.Range(-spreadDeg, spreadDeg);
-            branchRotation = Quaternion.Euler(0f, branchYaw, 0f);
-            float branchHeight = float.IsNaN(fixedLocalHeight)
-                ? Random.Range(0f, segmentHeight)
-                : fixedLocalHeight;
+            branchRotation = Quaternion.Euler(0f, yawAtAttempt(attempt), 0f);
             branchPosition =
                 branchRotation * Vector3.forward * placementConfig.BranchRadiusU
-                + Vector3.up * branchHeight;
+                + Vector3.up * localHeight;
 
             // a spot in the boss zone is never clear: only the fight grows
             // anything there
@@ -336,9 +470,10 @@ public class TreeSegmentController: MonoBehaviour {
             ) {
                 break;
             }
+            isClear = isClear && isCloseAccepted;
         }
 
-        // no spot clear of the monkey: skip, a branch there is a bad spawn
+        // no spot clear of the monkey and the others: skip
         if (!isClear) {
             return;
         }
@@ -383,8 +518,9 @@ public class TreeSegmentController: MonoBehaviour {
         }
         Vector3 lifted = branch.transform.localPosition
             + transform.InverseTransformVector(Vector3.up * (startY - bottomY));
-        bool isKept = lifted.y <= segmentHeight && IsClearOfMonkey(lifted)
-            && !IsInBossZone(lifted);
+        bool isKept = transform.TransformPoint(lifted).y
+                < segmentCollider.bounds.max.y
+            && IsClearOfMonkey(lifted) && !IsInBossZone(lifted);
         placedPositions.RemoveAt(placedPositions.Count - 1);
         if (!isKept) {
             // off at once, so the decorators that run this frame never see it

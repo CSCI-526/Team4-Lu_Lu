@@ -102,7 +102,7 @@ The intended arc is steady tension broken by short bursts of risk. The player cl
 
 ## Difficulty
 
-- Ramp: branches, spider webs, and falling cobras are rolled per tree segment against a probability curve of the ramped difficulty, so each grows denser the higher the monkey climbs, at rates tuned in the balance config. Numbers are in [Mobs](mob-doc.md#placement-1)
+- Ramp: branches, spider webs, and falling cobras are spread along the trunk by height against a density curve of the ramped difficulty, so each grows denser the higher the monkey climbs, at rates tuned in the balance config. Numbers are in [Mobs](mob-doc.md#placement-1)
 - Falling Cobra Ramp: hangs dormant on the trunk, wakes when the monkey comes near, and falls while sliding toward the monkey's side. Numbers are in [Mobs](mob-doc.md#falling-cobra)
 - Post Boss Plateau: after the Spider King the ramped difficulty climbs briefly then holds flat, so the run never keeps getting harder by height alone; Hardcore Mode holds that same value for its whole climb
 - Boss Loops: Hardcore Mode's difficulty comes from Loops, not height; every Loop 2 and up grows each king's health, speed, minion waves or slash chains, and shortens its wind ups, while the monkey's hearts shrink toward 1; numbers are in [Balance](balance-doc.md#hardcore-loops)

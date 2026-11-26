@@ -1,6 +1,6 @@
 # Monkobra Balance Design
 
-Why difficulty works the way it does: one height-driven ramp, a shared roll model for every hazard, and one home per number. The numbers are deliberately not here, they live in `Settings/Player/PlayerBalanceConfig.asset`, `Settings/Environment/WorldBalanceConfig.asset`, `Settings/MobGreatCobra/CobraBalanceConfig.asset`, and `Settings/Scoring/ScoreConfig.asset` (every score value), and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
+Why difficulty works the way it does: one height-driven ramp, a shared location scatter for every hazard, and one home per number. The numbers are deliberately not here, they live in `Settings/Player/PlayerBalanceConfig.asset`, `Settings/Environment/WorldBalanceConfig.asset`, `Settings/MobGreatCobra/CobraBalanceConfig.asset`, and `Settings/Scoring/ScoreConfig.asset` (every score value), and change often. The field list and wiring are in the [Technical Design Document](monkobra-tdd.md#game-balance), what each hazard does on touch in [Mobs](mob-doc.md), and the intent behind the difficulty in the [Game Design Document](monkobra-gdd.md#difficulty).
 
 ## Design Goals
 
@@ -40,21 +40,23 @@ Pace and density are separated on purpose:
 
 Changing the ramp slides every hazard earlier or later together. Changing a hazard's curve reshapes only that hazard. This is why a hazard curve is not allowed to know about heights.
 
-## One Roll Model
+## Location Scatter
 
-The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md#tree)), and every hazard is rolled per segment, when it is placed or restarted:
+The tree is an endless stack of segments recycled upward ([Tree](monkobra-tdd.md#tree)), but a hazard's spot belongs to the world height, not to the segment it lands on. Each kind of thing is its own channel (`ScatterChannel`: empty, banana, coconut and pineapple branch, web, falling cobra, rough bark), an evenly spaced stream along the trunk from `TrunkScatter`:
 
-1. read the segment's ramped difficulty at its middle height
-2. sample the hazard's probability curve there, clamped to 0~1
-3. make a fixed number of attempts, each succeeding if a uniform roll falls below that chance
+1. the channel's density curve gives the expected count per 10 u of trunk (`TrunkScatter.DENSITY_SPAN_U`) at each height's ramped difficulty, read at that height, never at a segment middle
+2. the density is integrated upward from the stack bottom into a running expected count, and item `i` sits where that count reaches `i` plus a per-run offset plus a small hashed jitter
+3. when a segment is placed or restarted, each channel hands over the items whose height falls in that segment, and the placer grows them
 
-- Attempts Are A Ceiling: the attempt count is the most a segment can hold, and the chance says how often it gets there; the expected count is attempts times chance
-- Why Attempts: a fixed count of small independent rolls gives natural variety segment to segment without any hazard clumping to a quota
-- Why The Middle: a segment is one difficulty step, not a gradient, so every hazard in it shares the same value and a segment reads as one coherent chunk of the climb
-- Four Branch Kinds: a branch is not one roll that then picks a fruit; empty, banana, coconut and pineapple branches are 4 separate things, each its own prefab, attempt count and chance curve, rolled per segment like any hazard, rarest first so a common kind never crowds a rare one out of its spot. Only the banana kind grows in the starting zone, at a flat chance
-- Guaranteed Fruit: the coconut and the pineapple each also have a fixed climbed height in `WorldBalanceConfig`; the segment covering it always grows one branch of that kind at exactly that height, placed before every roll, so the first of each is never left to luck; it also grows on the monkey's side of the trunk, within `guaranteedBranchYawSpreadDeg` either way of the monkey's angle when the segment rolls, never on the far side, while every rolled branch keeps a random angle
+- Count Tracks The Curve: any stretch holds within 1 of the curve's expected count, and a gap never falls below `1 - jitterFraction` of the even spacing, so there are no bare stretches next to clumps; a zero stretch of the curve, such as a fruit's start, grows nothing
+- Smooth, Not Stepped: the density is sampled per height, so it follows the ramp smoothly and shows no seam at a segment joint
+- Pure And Order Free: an item's height and yaw depend only on the run seed, its channel, its index and the curves, so segment order, boundaries and recycling never change them. Yaw spirals by the golden angle with a small jitter, so neighbours never stack on one side
+- Seed: a random seed each run; `useFixedSeed` and `fixedSeed` on `TrunkScatter` replay one tree, and a development build logs the seed
+- Four Branch Kinds: a branch is not one roll that then picks a fruit; empty, banana, coconut and pineapple branches are 4 separate things, each its own prefab and density curve, its own stream. Only the banana kind grows in the starting zone, at a flat density
+- Guaranteed Fruit: the coconut and the pineapple each also have a fixed climbed height in `WorldBalanceConfig`; the segment covering it always grows one branch of that kind at exactly that height, placed before the scatter, so the first of each is never left to luck; it also grows on the monkey's side of the trunk, within `guaranteedBranchYawSpreadDeg` either way of the monkey's angle when the segment is placed, never on the far side, while every scattered branch takes its item's yaw
+- Conflicts: height is fixed and the later placer yields. A blocked item retries its yaw in golden angle steps, up to `maxRetries`, then is skipped. Branches keep their separation from every live branch, across segment joints too; webs, falling cobras and rough bark keep clear of branches
 - Order Matters: branches are placed first, then webs, falling cobras, and rough bark answer `BranchesGenerated`, so late hazards can keep clear of what already stands
-- A Roll Can Place Nothing: webs and falling cobras are skipped when no clear spot is found, so the curve gives the chance of trying, not a guarantee
+- A Spot Can Place Nothing: an item is skipped when no clear yaw is found, so the density curve gives the expected count of spots, not a guarantee
 
 ## Boss Zone
 
@@ -130,13 +132,13 @@ Because bananas also cost focus to grab ([Grab System](grab-doc.md)), raising ba
 ## Tuning Guide
 
 - Pace: reshape the ramp curves, the only place height maps to difficulty; move the boss zone heights to shift where each stage begins
-- Density Ceiling: change a hazard's attempt count
-- Density Shape: change a hazard's probability curve
-- Kind Mix: change a branch kind's attempt count for its ceiling or its curve for its shape; the 4 curves are independent, so raising one never lowers another
+- Density: change a hazard's density curve, expected count per 10 u of trunk at each ramped difficulty; the height of the curve is the count, its shape is where it grows
+- Kind Mix: change a branch kind's density curve; the 4 curves are independent, so raising one never lowers another
+- Spacing: `TrunkScatterConfig` sets how loose it is: `jitterFraction` near 0 is a rigid grid, near 1 lets neighbours almost touch; `yawJitterDeg` sets the wobble around the spiral
 - Fairness Of Refill: change banana supply and the restore amount together, never one alone
-- Reading A Change: only segments rolled after an edit reflect it, so play far enough for the pool to recycle, or restart the scene
-- Webs Early: the `SpiderWebSpawner` test override skips the curve entirely ([Testing](mob-doc.md#testing))
-- Coconut: `coconutBranchProbabilityCurve` (`WorldBalanceConfig`) rolls a coconut branch like every other kind, its zero stretch setting where coconuts begin; `cobraFreezeDurationS` sets how much a coconut is worth
+- Reading A Change: only segments placed after an edit reflect it, so play far enough for the pool to recycle, or restart the scene; `Monkobra > Report Trunk Scatter` prints each channel's count per 10 u, largest gap and first height from the live configs, no scene needed
+- Webs Early: the `SpiderWebSpawner` test override swaps the curve for a flat test density ([Testing](mob-doc.md#testing))
+- Coconut: `coconutBranchDensityCurve` (`WorldBalanceConfig`) spaces coconut branches like every other kind, its zero stretch setting where coconuts begin; `cobraFreezeDurationS` sets how much a coconut is worth
 
 ## Known Gaps
 

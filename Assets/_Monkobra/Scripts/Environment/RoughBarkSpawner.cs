@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>Creates broad, avoidable rough-bark patches, rolled per segment
-/// from the ramped difficulty. Segment ownership handles recycling and
-/// cleanup.</summary>
+/// <summary>Creates broad, avoidable rough-bark patches, spaced along the
+/// trunk by <see cref="TrunkScatter"/> on its RoughBark channel, from the
+/// density curve at each height. Each patch's height and arc come from its
+/// spot's hash. Segment ownership handles recycling and cleanup.</summary>
 public class RoughBarkSpawner: MonoBehaviour {
     // Inspector Fields  #######################################################
     [Header("Wiring")]
     [SerializeField]
-    [Tooltip("source of the spawn curve and the attempt count")]
+    [Tooltip("source of the density curve")]
     private WorldBalanceConfig worldBalanceConfig;
 
     [SerializeField]
@@ -39,11 +40,6 @@ public class RoughBarkSpawner: MonoBehaviour {
     [Min(0f)]
     [Tooltip("no patch below this much ahead of the player; u")]
     private float spawnAheadU = 10f;
-
-    [SerializeField]
-    [Min(1)]
-    [Tooltip("tries to place 1 patch before the roll is dropped")]
-    private int placementRetries = 16;
 
     [SerializeField]
     [Min(0.1f)]
@@ -113,6 +109,7 @@ public class RoughBarkSpawner: MonoBehaviour {
     // private members  ########################################################
     private readonly HashSet<TreeSegmentController> segments = new();
     private readonly List<RoughBarkZone> patches = new();
+    private readonly List<ScatterItem> scatterItems = new();
 
     // cached references  ------------------------------------------------------
     private Transform player;
@@ -133,51 +130,104 @@ public class RoughBarkSpawner: MonoBehaviour {
             return;
         }
 
-        float chance = Mathf.Clamp01(
-            worldBalanceConfig.RoughBarkSpawnProbabilityCurve.Evaluate(
-                difficulty.GetRampedValueFromYPosition(
-                    segment.transform.position.y)));
+        if (TrunkScatter.I == null) {
+            Debug.LogWarning(
+                "RoughBarkSpawner:\tno TrunkScatter in scene, skip patches",
+                this
+            );
+            return;
+        }
+
+        Bounds bounds = segment.GetBounds();
+        scatterItems.Clear();
+        TrunkScatter.I.GetItems(
+            ScatterChannel.RoughBark,
+            bounds.min.y,
+            bounds.max.y,
+            GetDensity,
+            scatterItems
+        );
+        if (scatterItems.Count == 0) {
+            return;
+        }
+
         Physics.SyncTransforms();
-        for (int i = 0; i < worldBalanceConfig.RoughBarkAttemptCount; i++) {
-            if (Random.value >= chance) {
-                continue;
-            }
-            float height = Random.Range(
-                patchHeightRangeU.x, patchHeightRangeU.y);
-            float arc = Random.Range(patchArcRangeDeg.x, patchArcRangeDeg.y);
+        foreach (ScatterItem item in scatterItems) {
+            // the patch's height and arc come from the spot, never a roll
+            float height = Mathf.Lerp(
+                patchHeightRangeU.x,
+                patchHeightRangeU.y,
+                ToUnit(item.RetrySeed, 1u)
+            );
+            float arc = Mathf.Lerp(
+                patchArcRangeDeg.x,
+                patchArcRangeDeg.y,
+                ToUnit(item.RetrySeed, 2u)
+            );
             float extent = RoughBarkZone.GetVerticalExtent(height);
-            float half = segment.GetHeight() * 0.5f;
-            // The upper end belongs to this segment. A tall patch can
-            // extend down across neighboring segments, while its owner
-            // stays in the pool until the player has passed the whole area.
+            // The upper end belongs to this segment: pull the center down so
+            // the patch never stands above it, where its owner would vanish
+            // under the player's eyes.
+            float centerY = Mathf.Min(item.Y, bounds.max.y - extent);
             float minY = Mathf.Max(
-                segment.transform.position.y - half - extent,
-                Mathf.Max(
-                    difficulty.RampBaseYPosition,
-                    player.position.y + spawnAheadU)
-                    + extent);
-            float maxY = segment.transform.position.y + half - extent;
-            if (maxY <= minY) {
+                difficulty.RampBaseYPosition,
+                player.position.y + spawnAheadU
+            ) + extent;
+            if (centerY < minY) {
                 continue;
             }
-            TryPlacePatch(segment, difficulty, minY, maxY, height, arc, extent);
+            TryPlacePatch(
+                segment,
+                difficulty,
+                item,
+                centerY,
+                height,
+                arc,
+                extent
+            );
         }
     }
 
-    // tries a few spots on the segment, keeps the first clear one
+    // expected patches per 10 u of trunk at a world height
+    private float GetDensity(float worldY) {
+        RampedDifficultyManager difficulty = RampedDifficultyManager.I;
+        if (difficulty == null) {
+            return 0f;
+        }
+        return Mathf.Max(
+            0f,
+            worldBalanceConfig.RoughBarkDensityCurve.Evaluate(
+                difficulty.GetRampedValueFromYPosition(worldY)
+            )
+        );
+    }
+
+    // 0~1 from a hash seed and a salt, one value per use
+    private static float ToUnit(uint seed, uint salt) {
+        unchecked {
+            uint x = seed * 747796405u + salt * 2891336453u;
+            x ^= x >> 16;
+            x *= 2246822519u;
+            x ^= x >> 13;
+            return (x >> 8) * (1f / 16777216f);
+        }
+    }
+
+    // keeps the spot's height, retries its yaw, keeps the first clear one
     private void TryPlacePatch(
         TreeSegmentController segment,
         RampedDifficultyManager difficulty,
-        float minY,
-        float maxY,
+        ScatterItem item,
+        float centerY,
         float height,
         float arc,
         float extent
     ) {
-        for (int retry = 0; retry < placementRetries; retry++) {
+        int maxAttempts = TrunkScatter.I.MaxRetries + 1;
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
             Vector3 center = segment.transform.position;
-            center.y = Random.Range(minY, maxY);
-            float angle = Random.Range(0f, 360f);
+            center.y = centerY;
+            float angle = item.GetRetryYawDeg(attempt);
             if (IsPatchInBossZone(difficulty, center.y, extent)) {
                 continue;
             }
@@ -191,7 +241,7 @@ public class RoughBarkSpawner: MonoBehaviour {
             RoughBarkZone zone = patch.AddComponent<RoughBarkZone>();
             zone.Initialize(
                 radiusU, height, angle, arc, barkMaterial, true,
-                Random.Range(0, 100000));
+                (int)(ToUnit(item.RetrySeed, 3u) * 100000f));
             patches.Add(zone);
             return;
         }
