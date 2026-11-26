@@ -25,6 +25,9 @@ public sealed class FallingCobraHeadMesh {
     private static readonly Dictionary<(Mesh, float, Vector3, float),
         HeadTemplate> headTemplates = new();
 
+    // time of the last support point scan, for the build timing log; ms
+    private static double supportMs;
+
     // Public Methods  #########################################################
     public void BuildCartoonVisual() {
         if (!config.CartoonAppearance.enabled) {
@@ -321,6 +324,8 @@ public sealed class FallingCobraHeadMesh {
     // The least dot product of these points with any direction is the head's
     // support depth there, to within the spread of the directions
     private static Vector3[] BuildSupportPoints(Vector3[] vertices) {
+        System.Diagnostics.Stopwatch timer =
+            System.Diagnostics.Stopwatch.StartNew();
         List<Vector3> points = new List<Vector3>();
         HashSet<int> chosen = new HashSet<int>();
         float goldenAngle = Mathf.PI * (3f - Mathf.Sqrt(5f));
@@ -343,6 +348,7 @@ public sealed class FallingCobraHeadMesh {
                 points.Add(vertices[best]);
             }
         }
+        supportMs = timer.Elapsed.TotalMilliseconds;
         if (Debug.isDebugBuild) {
             Debug.Log("FallingCobraHeadMesh:	head support "
                 + points.Count + " points of " + vertices.Length
@@ -395,8 +401,16 @@ public sealed class FallingCobraHeadMesh {
             (source, size, config.ReferenceFaceDirection,
                 config.NeckWaistScale);
         if (!headTemplates.TryGetValue(key, out HeadTemplate template)) {
+            System.Diagnostics.Stopwatch timer =
+                System.Diagnostics.Stopwatch.StartNew();
             template = CreateHeadTemplate(source, size);
             headTemplates.Add(key, template);
+            if (Debug.isDebugBuild) {
+                Debug.Log("FallingCobraHeadMesh:\thead template built in "
+                    + timer.Elapsed.TotalMilliseconds.ToString("F1")
+                    + " ms, support points " + supportMs.ToString("F1")
+                    + " ms");
+            }
         }
         rig.headSupportPoints = template.supportPoints;
         rig.originalHeadFront = template.front;
