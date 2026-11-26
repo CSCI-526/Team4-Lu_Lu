@@ -27,6 +27,14 @@ public class BossFightHud: MonoBehaviour {
     private BossFightHudMotion motion;
 
     // MonoBehaviour Lifecycle  ################################################
+    private void OnEnable() {
+        MonkeyHearts.Changed += OnMonkeyHeartsChanged;
+    }
+
+    private void OnDisable() {
+        MonkeyHearts.Changed -= OnMonkeyHeartsChanged;
+    }
+
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
         if (config == null) {
@@ -388,9 +396,63 @@ public class BossFightHud: MonoBehaviour {
         if (rig.armorBadge == null) {
             rig.armorBadge = builder.CreateArmorBadge();
         }
-        rig.armorBadge.gameObject.SetActive(isShown);
+        rig.isArmorShown = isShown;
+        // in a fight the armor shows beside the hearts instead
+        rig.armorBadge.gameObject.SetActive(isShown && !MonkeyHearts.IsActive);
         rig.armorBadgePopS = isShown ? ARMOR_BADGE_POP_S : 0f;
         rig.armorBadge.localScale = Vector3.one;
+        if (rig.armorMark != null) {
+            rig.armorMark.gameObject.SetActive(isShown);
+        }
+    }
+
+    // the heart row follows the fight's hearts: up while they count, a lost
+    // one dimmed w/ a pop, the armor mark beside them while it is worn
+    private void OnMonkeyHeartsChanged() {
+        if (rig == null || rig.rootRect == null) {
+            return;
+        }
+        bool isActive = MonkeyHearts.IsActive;
+        if (rig.monkeyHeartRow == null) {
+            if (!isActive) {
+                return;
+            }
+            rig.monkeyHeartRow = builder.CreateMonkeyHeartRow();
+        }
+        rig.monkeyHeartRow.gameObject.SetActive(isActive);
+        if (rig.armorBadge != null) {
+            rig.armorBadge.gameObject.SetActive(
+                rig.isArmorShown && !isActive);
+        }
+        if (!isActive) {
+            rig.monkeyHeartsShown = -1;
+            return;
+        }
+        builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts, MonkeyHearts.Hearts);
+        rig.armorMark.gameObject.SetActive(rig.isArmorShown);
+        if (rig.monkeyHeartsShown > MonkeyHearts.Hearts) {
+            rig.monkeyHeartLostIndex = MonkeyHearts.Hearts;
+            rig.monkeyHeartPopLeftS = MONKEY_HEART_POP_S;
+        }
+        rig.monkeyHeartsShown = MonkeyHearts.Hearts;
+    }
+
+    // a lost heart pops big & settles dim: real s
+    private const float MONKEY_HEART_POP_S = 0.4f;
+
+    private void UpdateMonkeyHearts() {
+        if (rig.monkeyHeartPopLeftS <= 0f) {
+            return;
+        }
+        rig.monkeyHeartPopLeftS = Mathf.Max(0f,
+            rig.monkeyHeartPopLeftS - Time.unscaledDeltaTime);
+        int i = rig.monkeyHeartLostIndex;
+        if (i < 0 || i >= rig.monkeyHeartImages.Count) {
+            return;
+        }
+        float left = rig.monkeyHeartPopLeftS / MONKEY_HEART_POP_S;
+        rig.monkeyHeartImages[i].rectTransform.localScale =
+            Vector3.one * (1f + 0.7f * left * left);
     }
 
     /// <summary>Hides the king's name & health bar, eg once it is beaten.
@@ -609,6 +671,7 @@ public class BossFightHud: MonoBehaviour {
         motion.UpdateWarnings();
         motion.UpdateCallOut();
         UpdateHeart();
+        UpdateMonkeyHearts();
         UpdateModeChoice();
     }
 

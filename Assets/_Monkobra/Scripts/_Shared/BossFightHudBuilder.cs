@@ -436,6 +436,85 @@ public sealed class BossFightHudBuilder {
         return badge;
     }
 
+    // the monkey's hearts in the top left, where the stamina bar is hidden
+    // for the fight, w/ the armor mark at its end
+    public RectTransform CreateMonkeyHeartRow() {
+        RectTransform row = CreateRect("MonkeyHearts", rig.rootRect);
+        row.anchorMin = row.anchorMax = row.pivot = new Vector2(0f, 1f);
+        row.anchoredPosition = new Vector2(40f, -40f);
+        row.sizeDelta = new Vector2(300f, MONKEY_HEART_SIZE);
+        RectTransform mark = CreateRect("ArmorMark", row);
+        mark.anchorMin = mark.anchorMax = mark.pivot = new Vector2(0f, 0.5f);
+        mark.sizeDelta = new Vector2(MONKEY_HEART_SIZE * 0.8f, MONKEY_HEART_SIZE * 0.8f);
+        Image markImage = AddImage(mark, UIStyle.Gold);
+        if (rig.config.ArmorSprite != null) {
+            markImage.sprite = rig.config.ArmorSprite;
+        } else {
+            mark.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            mark.sizeDelta = new Vector2(MONKEY_HEART_SIZE * 0.55f, MONKEY_HEART_SIZE * 0.55f);
+        }
+        rig.armorMark = mark;
+        row.gameObject.SetActive(false);
+        return row;
+    }
+
+    // as many hearts as the fight gave, the lost ones dimmed
+    public void SyncMonkeyHearts(int max, int left) {
+        RectTransform row = rig.monkeyHeartRow;
+        while (rig.monkeyHeartImages.Count < max) {
+            int i = rig.monkeyHeartImages.Count;
+            RectTransform heart = CreateRect("Heart" + i, row);
+            heart.anchorMin = heart.anchorMax = heart.pivot =
+                new Vector2(0f, 0.5f);
+            heart.sizeDelta = new Vector2(MONKEY_HEART_SIZE, MONKEY_HEART_SIZE);
+            Image image = AddImage(heart, Color.white);
+            image.sprite = rig.config.HeartSprite != null
+                ? rig.config.HeartSprite : DrawnHeart();
+            image.preserveAspect = true;
+            rig.monkeyHeartImages.Add(image);
+        }
+        for (int i = 0; i < rig.monkeyHeartImages.Count; i++) {
+            Image image = rig.monkeyHeartImages[i];
+            image.gameObject.SetActive(i < max);
+            image.rectTransform.anchoredPosition =
+                new Vector2(i * (MONKEY_HEART_SIZE + MONKEY_HEART_GAP), 0f);
+            image.color = i < left ? MONKEY_HEART_FULL : MONKEY_HEART_LOST;
+        }
+        rig.armorMark.anchoredPosition = new Vector2(
+            max * (MONKEY_HEART_SIZE + MONKEY_HEART_GAP) + MONKEY_HEART_SIZE * 0.2f, 0f);
+    }
+
+    private const float MONKEY_HEART_SIZE = 44f;
+    private const float MONKEY_HEART_GAP = 6f;
+    private static readonly Color MONKEY_HEART_FULL = new Color(0.92f, 0.2f, 0.27f);
+    private static readonly Color MONKEY_HEART_LOST = new Color(0.25f, 0.25f, 0.3f, 0.55f);
+    private static Sprite drawnHeart;
+
+    // a plain heart drawn from its curve, until a sprite is assigned
+    private static Sprite DrawnHeart() {
+        if (drawnHeart != null) {
+            return drawnHeart;
+        }
+        const int SIZE = 64;
+        Texture2D texture = new Texture2D(SIZE, SIZE, TextureFormat.RGBA32,
+            false);
+        texture.wrapMode = TextureWrapMode.Clamp;
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                float u = (x + 0.5f) / SIZE * 3f - 1.5f;
+                float v = (y + 0.5f) / SIZE * 3f - 1.3f;
+                float a = u * u + v * v - 1f;
+                float inside = a * a * a - u * u * v * v * v;
+                float alpha = Mathf.Clamp01(0.5f - inside * 6f);
+                texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        texture.Apply();
+        drawnHeart = Sprite.Create(texture, new Rect(0f, 0f, SIZE, SIZE),
+            new Vector2(0.5f, 0.5f), SIZE);
+        return drawnHeart;
+    }
+
     // a dark plate w/ a colored word, placed over a world point
     public RectTransform CreateTag(string tagName, string text, Color color) {
         RectTransform tag = CreateRect(tagName, rig.rootRect);

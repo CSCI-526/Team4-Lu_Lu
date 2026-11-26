@@ -76,6 +76,14 @@ public sealed class BossFightHudRig {
     public readonly List<RectTransform> adShapes = new List<RectTransform>();
     public GameObject adSkipButton;
     public RectTransform armorBadge;
+    // the monkey's heart row in the stamina bar's place, & its armor mark
+    public RectTransform monkeyHeartRow;
+    public readonly List<Image> monkeyHeartImages = new List<Image>();
+    public RectTransform armorMark;
+    public bool isArmorShown;
+    public int monkeyHeartsShown = -1;
+    public int monkeyHeartLostIndex = -1;
+    public float monkeyHeartPopLeftS;
     public GameObject rewardPanel;
     public float rewardAgeS;
     public TextMeshProUGUI rewardTitle;

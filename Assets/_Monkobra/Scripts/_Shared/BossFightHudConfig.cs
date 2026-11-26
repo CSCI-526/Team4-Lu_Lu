@@ -45,6 +45,14 @@ public class BossFightHudConfig: ScriptableObject {
     public RuntimeAnimatorController DoubleTouchController =>
         doubleTouchController;
 
+    /// <returns>the monkey's heart image in the heart row; null draws a
+    /// plain heart</returns>
+    public Sprite HeartSprite => heartSprite;
+
+    /// <returns>the gold armor image beside the heart row; null draws a
+    /// plain gold diamond</returns>
+    public Sprite ArmorSprite => armorSprite;
+
     /// <returns>tint of the health bar</returns>
     public Color HealthColor => healthColor;
 
@@ -96,6 +104,14 @@ public class BossFightHudConfig: ScriptableObject {
     [Tooltip("animates the banner's finger while touch is in use (double "
         + "tap); blank shows none")]
     private RuntimeAnimatorController doubleTouchController;
+
+    [SerializeField]
+    [Tooltip("the monkey's heart in the heart row; blank draws a plain heart")]
+    private Sprite heartSprite;
+
+    [SerializeField]
+    [Tooltip("the gold armor beside the heart row; blank draws a diamond")]
+    private Sprite armorSprite;
 
     [SerializeField]
     [Tooltip("tint of the health bar")]
