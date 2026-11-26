@@ -47,9 +47,6 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>how far the chest lifts while standing; u</returns>
     public float StandingChestLiftU => standingChestLiftU;
 
-    /// <returns>body twist along its length while standing; deg/u</returns>
-    public float BodyTwistDegPerU => bodyTwistDegPerU;
-
     /// <returns>steepest belly angle the supporting coil may take;
     /// deg</returns>
     public float MaximumSupportBellyAngleDeg => maximumSupportBellyAngleDeg;
@@ -106,10 +103,6 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>how fast the perched head turns to aim; higher is
     /// quicker</returns>
     public float PerchedAimSharpness => perchedAimSharpness;
-
-    /// <returns>thinnest the neck may get, as a share of body
-    /// thickness; 0.6~1</returns>
-    public float MinimumNeckThicknessShare => minimumNeckThicknessShare;
 
     /// <returns>sway of the free neck; u</returns>
     public float FreeNeckSwayU => freeNeckSwayU;
@@ -342,15 +335,6 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>length over which head contact blends; u</returns>
     public float HeadContactBlendLengthU => headContactBlendLengthU;
 
-    /// <returns>neck length that is rounded; u</returns>
-    public float RoundedNeckLengthU => roundedNeckLengthU;
-
-    /// <returns>smoothing passes over the rounded neck</returns>
-    public int RoundedNeckPasses => roundedNeckPasses;
-
-    /// <returns>largest offset the rounding may add; u</returns>
-    public float RoundedNeckMaxOffsetU => roundedNeckMaxOffsetU;
-
     /// <returns>the skinned body prefab baked by Monkobra > Build Falling
     /// Cobra Body</returns>
     public GameObject BodyPrefab => bodyPrefab;
@@ -425,10 +409,6 @@ public class FallingCobraConfig: ScriptableObject {
     [Tooltip("how far the chest lifts while standing; u")]
     private float standingChestLiftU = .4f;
 
-    [SerializeField, Min(1f)]
-    [Tooltip("body twist along its length while standing; deg/u")]
-    private float bodyTwistDegPerU = 480f;
-
     [SerializeField, Range(0f, 89f)]
     [Tooltip("steepest belly angle the supporting coil may take; deg")]
     private float maximumSupportBellyAngleDeg = 75f;
@@ -501,10 +481,6 @@ public class FallingCobraConfig: ScriptableObject {
     [SerializeField, Min(.1f)]
     [Tooltip("how fast the perched head turns to aim; higher is quicker")]
     private float perchedAimSharpness = 7f;
-
-    [SerializeField, Range(.6f, 1f)]
-    [Tooltip("thinnest the neck may get, as a share of body thickness; 0.6~1")]
-    private float minimumNeckThicknessShare = .85f;
 
     [SerializeField, Min(0f)]
     [Tooltip("sway of the free neck; u")]
@@ -814,18 +790,6 @@ public class FallingCobraConfig: ScriptableObject {
     [SerializeField, Min(.1f)]
     [Tooltip("length over which head contact blends; u")]
     private float headContactBlendLengthU = .45f;
-
-    [SerializeField, Min(.2f)]
-    [Tooltip("neck length that is rounded; u")]
-    private float roundedNeckLengthU = 1.8f;
-
-    [SerializeField, Range(1, 32)]
-    [Tooltip("smoothing passes over the rounded neck")]
-    private int roundedNeckPasses = 20;
-
-    [SerializeField, Min(.01f)]
-    [Tooltip("largest offset the rounding may add; u")]
-    private float roundedNeckMaxOffsetU = .12f;
 
     [Header("Work Caps")]
     [SerializeField, Range(1, 64)]

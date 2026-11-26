@@ -24,7 +24,6 @@ MonoBehaviour:
   standingFaceHeightU: 2.2
   standingNeckLengthU: 1.8
   standingChestLiftU: 0.4
-  bodyTwistDegPerU: 480
   maximumSupportBellyAngleDeg: 75
   standingBaseHeightU: 1
   standingCoilOuterRadiusU: 0.8
@@ -43,7 +42,6 @@ MonoBehaviour:
   branchEscapeClearanceU: 0.12
   branchHeadSideU: 1.1
   perchedAimSharpness: 7
-  minimumNeckThicknessShare: 0.85
   freeNeckSwayU: 0.12
   bodyBarkSettleDropU: 1.2
   bodyBarkContactFeatherU: 0.05
@@ -127,9 +125,6 @@ MonoBehaviour:
   neckWaistScale: 0.74
   releaseCurveDurationS: 1.15
   headContactBlendLengthU: 0.45
-  roundedNeckLengthU: 1.8
-  roundedNeckPasses: 20
-  roundedNeckMaxOffsetU: 0.12
   maxTrailSamplesPerFrame: 4
   trailClearancePasses: 2
   spineFairMaxPasses: 64
