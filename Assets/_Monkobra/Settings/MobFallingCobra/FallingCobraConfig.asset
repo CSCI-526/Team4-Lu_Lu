@@ -129,3 +129,7 @@ MonoBehaviour:
   roundedNeckLengthU: 1.8
   roundedNeckPasses: 20
   roundedNeckMaxOffsetU: 0.12
+  maxTrailSamplesPerFrame: 4
+  trailClearancePasses: 2
+  spineFairMaxPasses: 64
+  spineFairToleranceU: 0.002

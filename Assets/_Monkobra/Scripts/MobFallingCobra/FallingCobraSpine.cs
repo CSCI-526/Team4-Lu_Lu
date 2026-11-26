@@ -37,6 +37,9 @@ public sealed class FallingCobraSpine {
     }
     private readonly FrameState ctx = new();
 
+    // cosine of the 2 degree bend below which a ring is left straight
+    private const float BEND_FLOOR_COS = .99939083f;
+
     // profiler markers, one per pipeline step  --------------------------------
     private static readonly ProfilerMarker SPINE_MARKER =
         new("FallingCobra.Spine");
@@ -817,8 +820,11 @@ public sealed class FallingCobraSpine {
             rig.fairSpine = new Vector3[BodyRings];
         }
         int end = following?BodyRings - 2:Mathf.Min(BodyRings - 2, neckEnd + 2);
-        for (int pass = 0; pass<64; pass++) {
+        float toleranceSqr =
+            config.SpineFairToleranceU * config.SpineFairToleranceU;
+        for (int pass = 0; pass < config.SpineFairMaxPasses; pass++) {
             System.Array.Copy(rig.spineCenters, rig.fairSpine, BodyRings);
+            float movedSqr = 0f;
             for (int ring = 3; ring<end; ring++) {
                 float freeWeight = following?1f - rig.RemainingCoilWeight(ring)
                     :1f;
@@ -829,6 +835,14 @@ public sealed class FallingCobraSpine {
                     rig.spineCenters[ring] - rig.spineCenters[ring - 1],
                         after = rig.spineCenters[ring + 1]
                             - rig.spineCenters[ring];
+                // a bend under the floor angle adds no strength, so the dot
+                // product spares the angle call on every straight ring
+                float lengthsSqr = before.sqrMagnitude * after.sqrMagnitude;
+                if (lengthsSqr < .000000000001f
+                    || Vector3.Dot(before, after) / Mathf.Sqrt(lengthsSqr)
+                        >= BEND_FLOOR_COS) {
+                    continue;
+                }
                 float bend = Vector3.Angle(before, after);
                 float strength =
                     SmoothVisual01(Mathf.InverseLerp(2f, 8f, bend))
@@ -843,10 +857,17 @@ public sealed class FallingCobraSpine {
                     rig.BranchCoil.KeepClearOfBranch(
                         Vector3.Lerp(rig.spineCenters[ring], point, strength),
                         rig.spineRadii[ring] + .012f);
+                movedSqr =
+                    Mathf.Max(movedSqr,
+                        (rig.fairSpine[ring] - rig.spineCenters[ring])
+                            .sqrMagnitude);
             }
             Vector3[] swap = rig.spineCenters;
             rig.spineCenters = rig.fairSpine;
             rig.fairSpine = swap;
+            if (movedSqr <= toleranceSqr) {
+                break;
+            }
         }
     }
 }

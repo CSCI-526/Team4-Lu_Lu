@@ -114,7 +114,9 @@ public sealed class FallingCobraSwimTrail {
         }
         Vector3 currentRoot = GetAttackTrailRoot(),
             lastRoot = rig.previousTrailRoot;
-        int samples = Mathf.Clamp(Mathf.CeilToInt(elapsed * 120f), 1, 64);
+        int samples =
+            Mathf.Clamp(Mathf.CeilToInt(elapsed * 120f), 1,
+                config.MaxTrailSamplesPerFrame);
         float sampleTime = elapsed / samples;
         for (int sample = 1; sample <= samples; sample++) {
             float fraction = sample / (float)samples;
@@ -165,7 +167,9 @@ public sealed class FallingCobraSwimTrail {
                                                 Mathf.Infinity, sampleTime);
             // Store the head's branch-clearing route so the entire body follows
             // that route.
-            for (int clearancePass = 0; clearancePass<4; clearancePass++) {
+            for (int clearancePass = 0;
+                clearancePass < config.TrailClearancePasses;
+                clearancePass++) {
                 Vector3 headOutward =
                     new Vector3(head.x - rig.axisXZ.x, 0f,
                         head.z - rig.axisXZ.y).normalized;
