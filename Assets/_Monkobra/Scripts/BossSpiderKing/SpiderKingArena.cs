@@ -256,6 +256,11 @@ public sealed class SpiderKingArena {
                 filter.transform.localPosition = config.WatermelonOffset;
             }
         }
+        // the branch's banana outline becomes the melon's own hue
+        foreach (FruitOutlineListener listener in
+            branch.GetComponentsInChildren<FruitOutlineListener>(true)) {
+            listener.SetKind(FruitKind.Melon);
+        }
         Collider trigger = fruit.GetComponent<Collider>();
         if (trigger == null) {
             trigger = fruit.GetComponentInChildren<Collider>(true);
