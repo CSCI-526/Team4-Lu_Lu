@@ -351,6 +351,26 @@ public class FallingCobraConfig: ScriptableObject {
     /// <returns>largest offset the rounding may add; u</returns>
     public float RoundedNeckMaxOffsetU => roundedNeckMaxOffsetU;
 
+    /// <returns>the skinned body prefab baked by Monkobra > Build Falling
+    /// Cobra Body</returns>
+    public GameObject BodyPrefab => bodyPrefab;
+
+    /// <returns>most head samples the swim trail takes in one frame, however
+    /// slow the frame</returns>
+    public int MaxTrailSamplesPerFrame => maxTrailSamplesPerFrame;
+
+    /// <returns>times the swim trail re-clears each head sample of the
+    /// branches</returns>
+    public int TrailClearancePasses => trailClearancePasses;
+
+    /// <returns>most smoothing passes over the spine corners in one frame
+    /// </returns>
+    public int SpineFairMaxPasses => spineFairMaxPasses;
+
+    /// <returns>the smoothing stops once no ring moves farther than this in
+    /// a pass; u</returns>
+    public float SpineFairToleranceU => spineFairToleranceU;
+
     // Inspector Fields  #######################################################
     [Header("Trigger")]
     [SerializeField]
@@ -716,6 +736,11 @@ public class FallingCobraConfig: ScriptableObject {
     private CartoonCobraVisual.Settings cartoonAppearance = new();
 
     [Header("Falling Snake Visual")]
+    [SerializeField]
+    [Tooltip("skinned body of the snake; set only by Monkobra > Build "
+        + "Falling Cobra Body")]
+    private GameObject bodyPrefab;
+
     [SerializeField, Min(0.1f)]
     [Tooltip("scale of the snake against its reference size")]
     private float referenceSizeMultiplier = 1.5f;
@@ -801,6 +826,25 @@ public class FallingCobraConfig: ScriptableObject {
     [SerializeField, Min(.01f)]
     [Tooltip("largest offset the rounding may add; u")]
     private float roundedNeckMaxOffsetU = .12f;
+
+    [Header("Work Caps")]
+    [SerializeField, Range(1, 64)]
+    [Tooltip("most head samples the swim trail takes in one frame; "
+        + "a lower cap keeps a slow frame from taking longer still")]
+    private int maxTrailSamplesPerFrame = 4;
+
+    [SerializeField, Range(1, 4)]
+    [Tooltip("times each trail sample is re-cleared of the branches")]
+    private int trailClearancePasses = 2;
+
+    [SerializeField, Range(1, 128)]
+    [Tooltip("most smoothing passes over the spine corners per frame")]
+    private int spineFairMaxPasses = 64;
+
+    [SerializeField, Min(0f)]
+    [Tooltip("spine smoothing stops once no ring moves farther than this "
+        + "in a pass; u")]
+    private float spineFairToleranceU = .002f;
 
     // Editor Validation  ######################################################
     private void OnValidate() {

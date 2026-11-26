@@ -10,6 +10,8 @@ public sealed class FallingCobraEyes {
     private readonly FallingCobraRig rig;
     private readonly FallingCobraConfig config;
     private readonly System.Action<Collider> onHeadHit;
+    private int sweepMask;
+    private bool hasSweepMask;
 
     public FallingCobraEyes(FallingCobraRig rig,
         System.Action<Collider> onHeadHit) {
@@ -198,9 +200,11 @@ public sealed class FallingCobraEyes {
             rig.previousHeadContact = point;
             rig.headContactReady = true;
         }
+        // only the layers the collision matrix lets the cobra touch
+        int mask = GetSweepMask();
         int count =
             Physics.OverlapCapsuleNonAlloc(rig.previousHeadContact, point,
-                config.HeadContactRadiusU, rig.sweptHeadHits, ~0,
+                config.HeadContactRadiusU, rig.sweptHeadHits, mask,
                     QueryTriggerInteraction.Collide);
         rig.previousHeadContact = point;
         for (int i = 0; i<count
@@ -209,4 +213,21 @@ public sealed class FallingCobraEyes {
         }
     }
 
+    // the layers the collision matrix lets this cobra's layer touch, read
+    // once: Unity has no 3D call for the mask itself
+    private int GetSweepMask() {
+        if (!hasSweepMask) {
+            int own = rig.host.gameObject.layer;
+            sweepMask = 0;
+            for (int layer = 0; layer < LAYER_COUNT; layer++) {
+                if (!Physics.GetIgnoreLayerCollision(own, layer)) {
+                    sweepMask |= 1 << layer;
+                }
+            }
+            hasSweepMask = true;
+        }
+        return sweepMask;
+    }
+
+    private const int LAYER_COUNT = 32;
 }

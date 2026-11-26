@@ -1,3 +1,4 @@
+using Unity.Profiling;
 using UnityEngine;
 using static FallingCobraRig;
 using static FallingCobraMath;
@@ -32,12 +33,20 @@ public class FallingCobraController: MonoBehaviour {
     // Public Members  #########################################################
     /// <returns>pivot to the far end of the snake, hit radius included; u
     /// </returns>
-    public float LengthU => rig.animatedReferenceMesh != null
+    public float LengthU => rig.HasBody
         ?config.SmoothBodyLengthU:rig.hitCollider.height;
 
     /// <returns>how far the snake's tail reaches below its pivot; u</returns>
-    public float TailBelowPivotU => rig.animatedReferenceMesh != null
+    public float TailBelowPivotU => rig.HasBody
         ? rig.referenceHeadBelowPivotU : config.HitRadiusU;
+
+    /// <returns>the cobra's current state</returns>
+    public FallingCobraState CurrentState => rig.state;
+
+    /// <returns>where the snake's head is now, its pivot before it has one
+    /// </returns>
+    public Vector3 HeadPosition => rig.referenceHeadVisual != null
+        ? rig.referenceHeadVisual.position : transform.position;
 
     // Public Methods  #########################################################
     /// <summary>
@@ -89,6 +98,7 @@ public class FallingCobraController: MonoBehaviour {
     private FallingCobraEyes eyes;
     private FallingCobraSwimTrail trail;
     private FallingCobraSpine spine;
+    private FallingCobraCulling.Handle cullingHandle;
 
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
@@ -183,7 +193,16 @@ public class FallingCobraController: MonoBehaviour {
         rig.lastHeadPoseTime = Time.time;
     }
 
+    private void OnEnable() {
+        // a cobra switched back on re-joins; a new one joins when perched
+        if (rig != null && rig.perchBound) {
+            JoinCullingGroup();
+        }
+    }
+
     private void OnDisable() {
+        FallingCobraCulling.Unregister(cullingHandle);
+        cullingHandle = null;
         if (rig.hissSource != null) {
             rig.hissSource.Stop();
         }
@@ -199,9 +218,6 @@ public class FallingCobraController: MonoBehaviour {
         }
         if (rig.eyePupilMesh != null) {
             Destroy(rig.eyePupilMesh);
-        }
-        if (rig.animatedReferenceMesh != null) {
-            Destroy(rig.animatedReferenceMesh);
         }
     }
 
@@ -294,6 +310,7 @@ public class FallingCobraController: MonoBehaviour {
             && Vector3.Dot(rig.player.position - root, rig.branchSide) < -.01f
                 ? -1f : 1f;
         rig.perchBound = true;
+        JoinCullingGroup();
         if (rig.referenceRenderer != null) {
             rig.referenceRenderer.enabled = true;
         }
@@ -306,8 +323,9 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void LateUpdate() {
-        if (rig.animatedReferenceMesh == null
-            || rig.state == FallingCobraState.Done || !rig.perchBound) {
+        using var _ = LATE_UPDATE_MARKER.Auto();
+        if (!rig.HasBody || rig.state == FallingCobraState.Done
+            || !rig.perchBound) {
             return;
         }
         if (IsDormantAndIdle()) {
@@ -319,8 +337,8 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     // a perched cobra holds its last pose, so skip the spine rebuild, the
-    // costly part of a cobra (its whole body mesh made again on the CPU),
-    // while it is off screen or beyond its wake & tracking range; the
+    // costly part of a cobra, while the shared culling group says it is off
+    // the gameplay camera's view or beyond its wake & tracking range; the
     // margin lets any head turn finish first. Waking (Update) never waits
     // on it, and an awake cobra always rebuilds
     private bool IsDormantAndIdle() {
@@ -328,20 +346,46 @@ public class FallingCobraController: MonoBehaviour {
             || rig.player == null) {
             return false;
         }
-        if (rig.referenceRenderer != null && !rig.referenceRenderer.isVisible) {
-            return true;
+        return FallingCobraCulling.IsIdle(cullingHandle, CullingCenter(),
+            rig.player);
+    }
+
+    // seats the cobra in the shared culling group, once
+    private void JoinCullingGroup() {
+        if (cullingHandle != null) {
+            return;
         }
         float rangeU = Mathf.Max(config.HeadTrackingRangeU,
             config.TriggerDistanceU, rig.reachWakeDistanceU);
+        float radiusU = config.SmoothBodyLengthU * CULLING_RADIUS_SHARE;
+        // the group measures to the sphere, so the gate grows by its radius
         float gateU = rangeU + config.HeadTrackingExitPaddingU
-            + IDLE_MARGIN_U;
-        return (rig.player.position - transform.position).sqrMagnitude
-            > gateU * gateU;
+            + IDLE_MARGIN_U + radiusU;
+        cullingHandle = FallingCobraCulling.Register(CullingCenter(),
+            radiusU, gateU);
     }
+
+    private Vector3 CullingCenter() {
+        return transform.position + Vector3.up * CULLING_LIFT_U;
+    }
+
+    // the culling sphere's radius, as a share of the body length
+    private const float CULLING_RADIUS_SHARE = .5f;
+
+    // how far above the pivot the culling sphere sits; u
+    private const float CULLING_LIFT_U = 2f;
 
     // past the wake & tracking range, how far a perched cobra still
     // rebuilds its pose, so a head turn ends smoothly; u
     private const float IDLE_MARGIN_U = 4f;
+
+    // profiler markers  ------------------------------------------------------
+    private static readonly ProfilerMarker UPDATE_MARKER =
+        new("FallingCobra.Update");
+    private static readonly ProfilerMarker FIXED_UPDATE_MARKER =
+        new("FallingCobra.FixedUpdate");
+    private static readonly ProfilerMarker LATE_UPDATE_MARKER =
+        new("FallingCobra.LateUpdate");
 
     private void Start() {
         GameObject playerObject = MonkeyController.GetRootOrNull();
@@ -355,6 +399,7 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void Update() {
+        using var _ = UPDATE_MARKER.Auto();
         switch (rig.state) {
             case FallingCobraState.Dormant:
                 // a cobra never outlives its branch: one left in mid air by
@@ -373,6 +418,7 @@ public class FallingCobraController: MonoBehaviour {
     }
 
     private void FixedUpdate() {
+        using var _ = FIXED_UPDATE_MARKER.Auto();
         tracking.UpdateTrackedMonkey();
         if (rig.state == FallingCobraState.Warning && CanStartFall()) {
             StartFalling();
@@ -427,6 +473,10 @@ public class FallingCobraController: MonoBehaviour {
         if (sensor != null || !IsMonkeyPart(other)) {
             return;
         }
+        if (Debug.isDebugBuild) {
+            Debug.Log("FallingCobraController:	hit from monkey collider "
+                + ColliderPath(other), this);
+        }
         rig.state = FallingCobraState.Done;
         rig.hitCollider.enabled = false;
         HitBranchSensor receiver = sensor != null ? sensor : rig.playerSensor;
@@ -460,6 +510,20 @@ public class FallingCobraController: MonoBehaviour {
             }
         }
         return false;
+    }
+
+    // the collider's name chain up to the monkey root, to tell which
+    // part of the monkey a hit came from
+    private static string ColliderPath(Collider other) {
+        string path = other.name;
+        for (Transform t = other.transform.parent; t != null;
+            t = t.parent) {
+            path = t.name + "/" + path;
+            if (t.CompareTag(PLAYER_TAG)) {
+                break;
+            }
+        }
+        return path;
     }
 
     private void WatchMonkey() {

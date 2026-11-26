@@ -122,7 +122,7 @@ public sealed class FallingCobraTracking {
         if (!rig.supportCached
             || Vector3.Dot(direction, rig.supportDirection)<.99995f) {
             rig.supportMinimum = float.PositiveInfinity;
-            foreach (Vector3 vertex in rig.originalHeadVertices) {
+            foreach (Vector3 vertex in rig.headSupportPoints) {
                 rig.supportMinimum =
                     Mathf.Min(rig.supportMinimum,
                         Vector3.Dot(vertex, direction));
