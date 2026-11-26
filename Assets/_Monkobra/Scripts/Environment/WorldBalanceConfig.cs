@@ -70,9 +70,10 @@ public class WorldBalanceConfig: ScriptableObject {
 
     public float RoughBarkSpeedMultiplier => roughBarkSpeedMultiplier;
     public float RoughBarkBlendS => roughBarkBlendS;
-    public int RoughBarkAttemptCount => roughBarkAttemptCount;
-    public AnimationCurve RoughBarkSpawnProbabilityCurve =>
-        roughBarkSpawnProbabilityCurve;
+
+    /// <returns>x: ramped difficulty; y: expected rough bark patches per
+    /// <see cref="TrunkScatter.DENSITY_SPAN_U"/> of trunk</returns>
+    public AnimationCurve RoughBarkDensityCurve => roughBarkDensityCurve;
 
     /// <returns>x: ramped difficulty 0~3; y: expected webs per
     /// <see cref="TrunkScatter.DENSITY_SPAN_U"/> of trunk</returns>
@@ -288,14 +289,13 @@ public class WorldBalanceConfig: ScriptableObject {
     [Tooltip("time to blend into or out of the slowdown; s")]
     private float roughBarkBlendS = 0.18f;
 
-    [SerializeField, Min(0)]
-    [Tooltip("rough patch attempts per recycled tree segment")]
-    private int roughBarkAttemptCount = 2;
-
     [SerializeField]
-    [Tooltip("x: ramped difficulty; y: rough patch chance 0~1")]
-    private AnimationCurve roughBarkSpawnProbabilityCurve =
-        AnimationCurve.Linear(0f, 0.1f, 1f, 0.7f);
+    [Tooltip(
+        "x: ramped difficulty; y: expected rough patches per 10 u of "
+            + "trunk"
+    )]
+    private AnimationCurve roughBarkDensityCurve =
+        AnimationCurve.Linear(0f, 0.2f, 1f, 1.4f);
 
     [Header("Spider Web")]
     [SerializeField]
@@ -425,7 +425,6 @@ public class WorldBalanceConfig: ScriptableObject {
             1f
         );
         roughBarkBlendS = Mathf.Max(0.01f, roughBarkBlendS);
-        roughBarkAttemptCount = Mathf.Max(0, roughBarkAttemptCount);
         // the zone is ordered: start <= trigger <= end
         bossZoneStartU = Mathf.Max(0f, bossZoneStartU);
         bossTriggerHeightU = Mathf.Max(bossZoneStartU, bossTriggerHeightU);
