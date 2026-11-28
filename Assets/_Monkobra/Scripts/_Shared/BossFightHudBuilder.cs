@@ -419,12 +419,12 @@ public sealed class BossFightHudBuilder {
         return badge;
     }
 
-    // the monkey's hearts in the top left, where the stamina bar is hidden
-    // for the fight, w/ the armor mark at its end
+    // the monkey's hearts in the bottom left, left-justified, w/ the armor
+    // mark at its end
     public RectTransform CreateMonkeyHeartRow() {
         RectTransform row = CreateRect("MonkeyHearts", rig.rootRect);
-        row.anchorMin = row.anchorMax = row.pivot = new Vector2(0f, 1f);
-        row.anchoredPosition = new Vector2(40f, -40f);
+        row.anchorMin = row.anchorMax = row.pivot = new Vector2(0f, 0f);
+        row.anchoredPosition = new Vector2(40f, 40f);
         row.sizeDelta = new Vector2(300f, MONKEY_HEART_SIZE);
         RectTransform mark = CreateRect("ArmorMark", row);
         mark.anchorMin = mark.anchorMax = mark.pivot = new Vector2(0f, 0.5f);
