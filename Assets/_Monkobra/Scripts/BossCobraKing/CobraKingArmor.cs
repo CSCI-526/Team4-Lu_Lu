@@ -143,8 +143,21 @@ public sealed class CobraKingArmor {
         rig.hud.PopText("Shield!", rig.monkey.position, config.GoldenColor);
     }
 
+    // the hud badge follows the armor worn, shown once a won armor has
+    // landed; one sync here covers every way it is gained or lost
+    private void SyncArmorBadge() {
+        bool isWorn = rig.hasShield
+            && (rig.armorRewardTimeS < 0f || rig.hasArmorLanded);
+        if (isWorn == rig.isArmorBadgeOn) {
+            return;
+        }
+        rig.isArmorBadgeOn = isWorn;
+        rig.hud.ShowArmorBadge(isWorn);
+    }
+
     // the armor follows the monkey; its back faces out from the trunk
     public void UpdateShieldRing() {
+        SyncArmorBadge();
         if (rig.armor == null) {
             return;
         }

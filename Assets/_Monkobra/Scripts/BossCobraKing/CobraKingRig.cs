@@ -245,6 +245,8 @@ public sealed class CobraKingRig {
     // into the win swirl, -1 if none
     public bool hasArmorLanded;
     // the swirl's pieces have settled
+    public bool isArmorBadgeOn;
+    // the hud's armor badge was last told to show
     public bool isRewardPanelShown;
     // the win's pause panel is up
     // cached references  ------------------------------------------------------
