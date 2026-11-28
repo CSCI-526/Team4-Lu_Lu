@@ -655,12 +655,12 @@ public sealed class CobraKingArena {
 
     // Markers & Helpers  ------------------------------------------------------
     // a danger zone flat on the trunk, facing out: a dark red rim whose
-    // bright red center fills it as the hit nears, w/ a hud sign if worded
+    // bright red center fills it as the hit nears, w/ its hud sign
     public void AddTrunkZone(
         float angle,
         float y,
         float size,
-        string word,
+        TutorialItem? sign,
         bool hasRimSign
     ) {
         float radians = angle * Mathf.Deg2Rad;
@@ -686,8 +686,8 @@ public sealed class CobraKingArena {
             rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.07f);
         fill.transform.rotation = facing;
 
-        int warning = word != null
-            ? rig.hud.AddWarning(rim.transform.position, word)
+        int warning = sign.HasValue
+            ? rig.hud.AddAttackWarning(sign.Value, rim.transform.position)
             : -1;
         rig.markers.Add(new CobraKingMarker {
             rim = rim.transform,
@@ -705,7 +705,7 @@ public sealed class CobraKingArena {
         float topY,
         float bottomY,
         float width,
-        string word
+        TutorialItem? sign
     ) {
         float length = Mathf.Max(0.5f, topY - bottomY);
         float radians = angle * Mathf.Deg2Rad;
@@ -736,11 +736,11 @@ public sealed class CobraKingArena {
             facing
         );
 
-        int warning = word != null
-            ? rig.hud.AddWarning(
+        int warning = sign.HasValue
+            ? rig.hud.AddAttackWarning(
+                sign.Value,
                 rig.PointOnTrunk(angle, rig.minionLockY + 2.5f,
-                    config.TrunkRadiusU),
-                word
+                    config.TrunkRadiusU)
             )
             : -1;
         rig.markers.Add(new CobraKingMarker {

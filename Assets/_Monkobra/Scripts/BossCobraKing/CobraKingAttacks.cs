@@ -117,7 +117,7 @@ public sealed class CobraKingAttacks {
         rig.biteSpot =
             rig.PointOnTrunk(rig.lockAngle, rig.lockY, rig.MonkeyRadius());
         rig.Arena.AddTrunkZone(rig.lockAngle, rig.lockY,
-            config.BiteRadiusU * 2f, "BITE!", true);
+            config.BiteRadiusU * 2f, TutorialItem.AttackBite, true);
         rig.biteStarted = false;
     }
 
@@ -171,7 +171,9 @@ public sealed class CobraKingAttacks {
         band.transform.position = new Vector3(
             rig.trunkCenter.x, rig.lockY, rig.trunkCenter.z
         );
-        int warning = rig.hud.AddWarning(SweepSignPoint(), "TAIL!");
+        int warning = rig.hud.AddAttackWarning(
+            TutorialItem.AttackTail, SweepSignPoint()
+        );
         rig.markers.Add(new CobraKingMarker {
             fill = band.transform,
             warning = warning,

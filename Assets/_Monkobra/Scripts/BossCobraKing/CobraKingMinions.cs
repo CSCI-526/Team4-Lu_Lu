@@ -51,7 +51,7 @@ public sealed class CobraKingMinions {
             bool isGap = i == gap;
             if (!isGap) {
                 // the same filling danger zone as the first version; one
-                // LOOK UP! sign for the whole wave, on a middle zone
+                // sign for the whole wave, on a middle zone
                 // the strip is the minion's whole fall: from the coil it
                 // drops out of, to where it is gone
                 rig.Arena.AddTrunkStrip(
@@ -59,7 +59,9 @@ public sealed class CobraKingMinions {
                     rig.coilBottomY,
                     rig.MinionEndY,
                     config.MinionHitRadiusU * 1.4f,
-                    i == signAt ? "LOOK UP!" : null
+                    i == signAt
+                        ? (TutorialItem?)TutorialItem.AttackMinions
+                        : null
                 );
             }
             rig.minions.Add(new CobraKingMinion {
