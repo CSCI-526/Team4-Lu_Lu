@@ -42,8 +42,8 @@ todo add 3x fruit
 ##### Erik
 
 - every boss attack shows one standard sign: a red diamond with "!" and a
-  one word name in the Impact font (`Bite!`, `Tail!`, `Minions!`, `Web!`,
-  `Dash!`, `Slash!`), 3 times per attack per session, then none; the Spider
+  one word name in the Impact font (`Bite!`, `Tail!`, `Web!`, `Dash!`,
+  `Slash!`), 3 times per attack per session, then none; the Spider
   King's web shot and slash gain a sign; `Monkobra > Build > Warning Font`
   makes the font asset
 - the right-hand distance indicator hides during a boss fight

@@ -704,8 +704,7 @@ public sealed class CobraKingArena {
         float angle,
         float topY,
         float bottomY,
-        float width,
-        TutorialItem? sign
+        float width
     ) {
         float length = Mathf.Max(0.5f, topY - bottomY);
         float radians = angle * Mathf.Deg2Rad;
@@ -736,18 +735,11 @@ public sealed class CobraKingArena {
             facing
         );
 
-        int warning = sign.HasValue
-            ? rig.hud.AddAttackWarning(
-                sign.Value,
-                rig.PointOnTrunk(angle, rig.minionLockY + 2.5f,
-                    config.TrunkRadiusU)
-            )
-            : -1;
         rig.markers.Add(new CobraKingMarker {
             rim = rim.transform,
             fill = fill.transform,
             size = width,
-            warning = warning,
+            warning = -1,
             isBand = false,
             isStrip = true,
             topY = topY,

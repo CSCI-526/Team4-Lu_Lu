@@ -30,10 +30,8 @@ MonoBehaviour:
   - item: 14
     word: Tail!
   - item: 15
-    word: Minions!
-  - item: 16
     word: Web!
-  - item: 17
+  - item: 16
     word: Dash!
-  - item: 18
+  - item: 17
     word: Slash!

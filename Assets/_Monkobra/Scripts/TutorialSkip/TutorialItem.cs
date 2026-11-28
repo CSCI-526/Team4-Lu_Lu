@@ -18,7 +18,6 @@ public enum TutorialItem {
     ArmorWords,
     AttackBite,
     AttackTail,
-    AttackMinions,
     AttackWebShot,
     AttackDash,
     AttackSlash
