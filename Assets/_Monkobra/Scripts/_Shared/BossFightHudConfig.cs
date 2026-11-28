@@ -196,7 +196,7 @@ public class BossFightHudConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("how long the big boss name holds before it moves; s")]
-    private float nameIntroHoldS = 0.9f;
+    private float nameIntroHoldS = 1.8f;
 
     [SerializeField]
     [Tooltip("how long the boss name takes to shrink and glide to the bar; "

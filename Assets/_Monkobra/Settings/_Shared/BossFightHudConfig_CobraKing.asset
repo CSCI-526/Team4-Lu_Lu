@@ -33,7 +33,7 @@ MonoBehaviour:
   bossNameFont: {fileID: 11400000, guid: b22815bb64856dc42b3bb558722b603d, type: 2}
   nameIntroScale: 4
   nameIntroDrop: 0.25
-  nameIntroHoldS: 0.9
+  nameIntroHoldS: 1.8
   nameIntroGlideS: 0.7
   attackWords:
   - item: 13
