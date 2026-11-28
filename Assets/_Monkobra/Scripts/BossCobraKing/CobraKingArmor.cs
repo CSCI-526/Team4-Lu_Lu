@@ -124,7 +124,7 @@ public sealed class CobraKingArmor {
             stamina.AddStamina(stamina.MaxStamina);
         }
         rig.hasShield = true;
-        rig.hud.PopText("Shield!", rig.monkey.position, config.GoldenColor);
+        rig.hud.PopText("Crown!", rig.monkey.position, config.GoldenColor);
     }
 
     // the hud badge follows the armor worn, shown once a won armor has

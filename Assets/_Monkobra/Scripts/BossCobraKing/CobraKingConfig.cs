@@ -849,7 +849,7 @@ public class CobraKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("banner title as the fight begins in the gold armor; it stays up "
         + "until the first banana is thrown")]
-    private string armorIntroTitle = "You get a Golden Armor!";
+    private string armorIntroTitle = "You get a Golden Crown!";
 
     [SerializeField]
     [Tooltip("line under the banner: what the armor does")]
@@ -924,7 +924,7 @@ public class CobraKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("line under the win title")]
-    private string winLine = "Golden Armor is yours to keep!";
+    private string winLine = "Golden Crown is yours to keep!";
 
     [SerializeField]
     [Tooltip("small line under it: what the armor does")]

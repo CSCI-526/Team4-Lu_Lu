@@ -87,7 +87,7 @@ MonoBehaviour:
   goldenOutlineMaterial: {fileID: 2100000, guid: 4f18a8f2e3bd5c946afbf6e361590ba3, type: 2}
   goldenOutlineColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   goldenOutlineWidthScale: 2
-  armorIntroTitle: You get a Golden Armor!
+  armorIntroTitle: You get a Golden Crown!
   armorIntroLine: Blocks 1 fatal hit
   canRevive: 1
   reviveOfferS: 8
@@ -103,7 +103,7 @@ MonoBehaviour:
   easyRestFinalS: 2.35
   easyMinionWaves: 1
   winTitle: You win!
-  winLine: Golden Armor is yours to keep!
+  winLine: Golden Crown is yours to keep!
   winDetailLine: It blocks 1 fatal hit
   armorKnockBackU: 20
   armorCobraFreezeS: 15
