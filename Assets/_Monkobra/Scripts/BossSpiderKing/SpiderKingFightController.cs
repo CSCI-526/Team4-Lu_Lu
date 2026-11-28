@@ -586,9 +586,8 @@ public class SpiderKingFightController: MonoBehaviour {
         // first slash later teaches its own parry
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
             : SpiderKingTeachStep.Parry;
-        // the gold armor, as in the Cobra King's arena: it swirls on, no
-        // words; worn already, it stays
-        SpiderKingDamage.GiveArmor();
+        // no free armor at the start, as in the Cobra King's arena: the
+        // golden watermelon is its only source (a retry still hands it out)
         rig.hud.Say("My web, my rules!");
         if (Debug.isDebugBuild) {
             Debug.Log(

@@ -363,13 +363,9 @@ public class CobraKingFightController: MonoBehaviour {
     // a copy of the grabbed banana arcs up at the king, spinning, with a
     // trail of fading dots, so the throw reads at a glance
     private void LaunchBanana(GameObject source, Vector3 from) {
-        // the armor intro stays up until the first throw
         if (!rig.hasThrown) {
             rig.hasThrown = true;
             rig.hud.HideBanner();
-            if (PopUpManager.I != null) {
-                PopUpManager.I.Hide(PopUpId.BossArmorIntro);
-            }
         }
         GameObject copy = Instantiate(source, transform, true);
         // a bare look-alike: no scripts or colliders wake up on it
@@ -747,22 +743,9 @@ public class CobraKingFightController: MonoBehaviour {
         rig.hud.SetHealth(rig.health, rig.maxHealth);
         MonkeyHearts.Begin(rig.HeartsNow);
         rig.hud.Flash();
-        // the monkey starts in the gold armor, a spare life against the
-        // king; the golden banana brings it back once lost
-        rig.hasShield = true;
-        // the armor's words only the first time the player gets it in a
-        // session, in either mode
-        TutorialSkipManager skip = TutorialSkipManager.I;
-        if (rig.rushEncounter <= 0
-            && !(skip != null && skip.ShouldSkip(TutorialItem.ArmorWords))) {
-            if (skip != null) {
-                skip.MarkSeen(TutorialItem.ArmorWords);
-            }
-            // held on the popup plate till the first throw hides it
-            if (PopUpManager.I != null) {
-                PopUpManager.I.Show(PopUpId.BossArmorIntro);
-            }
-        }
+        // no free armor at a fight's start: the golden watermelon is its
+        // only source (a retry or revive still hands it out, & armor won
+        // earlier stays); the monkey's hearts are its spare lives
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CobraKingFightController:\tboss fight begins at y "

@@ -134,6 +134,10 @@ todo add 3x fruit
 - golden watermelon grab flies a gold armor sprite from the melon to the armor
   mark beside the hearts (new `FruitFlyTarget.ArmorMark`); the armor counts
   as worn at once, its mark pops in on landing
+- no free armor at a first fight's start (Loop 1 and later, both kings): the
+  armor popup is gone and the first hit costs a heart; the golden watermelon
+  is the only source, and armor won earlier stays; a retry, revive, EASY
+  (Loop 0) and the Hardcore start still hand it out
 
 ##### Houdong Pan
 

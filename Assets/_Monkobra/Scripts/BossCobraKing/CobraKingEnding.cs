@@ -96,9 +96,6 @@ public sealed class CobraKingEnding {
         rig.reviveLeftS = config.ReviveOfferS;
         Time.timeScale = 0f;
         rig.hud.HideBanner();
-        if (PopUpManager.I != null) {
-            PopUpManager.I.Hide(PopUpId.BossArmorIntro);
-        }
         rig.hud.ShowReviveOffer();
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(rig.reviveLeftS));
     }
