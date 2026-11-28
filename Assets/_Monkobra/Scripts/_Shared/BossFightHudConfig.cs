@@ -128,7 +128,7 @@ public class BossFightHudConfig: ScriptableObject {
     private Vector2 warningOffset = new Vector2(0f, 70f);
 
     [SerializeField]
-    [Tooltip("font of an attack sign's ! and word, the Impact SDF asset")]
+    [Tooltip("font of an attack sign's ! and word, the Anton SDF asset")]
     private TMP_FontAsset warningFont;
 
     [SerializeField]
