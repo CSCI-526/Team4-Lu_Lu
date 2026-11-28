@@ -10,6 +10,8 @@ public sealed class SpiderKingAttacks {
     // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingConfig config;
+    // the slash charge's sign, -1 w/o one; the web & dash use rig.warningId
+    private int slashWarningId = -1;
 
     public SpiderKingAttacks(SpiderKingRig rig) {
         this.rig = rig;
@@ -105,12 +107,17 @@ public sealed class SpiderKingAttacks {
                     config.WebShotWindUpS * slow * rig.TimeScaleNow;
                 rig.chargingShot =
                     rig.Shots.NewShot(SpiderKingShotKind.Web, rig.aimPoint);
+                rig.warningId = rig.hud.AddAttackWarning(
+                    TutorialItem.AttackWebShot, rig.aimPoint
+                );
                 rig.onWebCharge?.Invoke();
                 break;
             default:
                 rig.attackWindUpS =
                     config.DashWindUpS * slow * rig.TimeScaleNow;
-                rig.warningId = rig.hud.AddWarning(rig.aimPoint, "DASH!");
+                rig.warningId = rig.hud.AddAttackWarning(
+                    TutorialItem.AttackDash, rig.aimPoint
+                );
                 rig.onDashWarn?.Invoke();
                 break;
         }
@@ -367,6 +374,9 @@ public sealed class SpiderKingAttacks {
         rig.isSlashSlowFirst = Random.value < 0.5f;
         rig.nextSlashTime = Time.time;
         rig.isSlashAiming = false;
+        slashWarningId = rig.hud.AddAttackWarning(
+            TutorialItem.AttackSlash, rig.monkey.position
+        );
         rig.onSlashCharge?.Invoke();
     }
 
@@ -380,9 +390,11 @@ public sealed class SpiderKingAttacks {
             rig.body.SetCharge(charge);
             rig.body.SetSwipe(charge);
             UpdateSlashChargeFx(charge);
+            rig.hud.UpdateWarning(slashWarningId, rig.monkey.position, charge);
             if (rig.slashChargeLeftS <= 0f) {
                 rig.body.SetCharge(0f);
                 HideSlashSigil();
+                RemoveSlashWarning();
             }
             return 0f;
         }
@@ -492,12 +504,19 @@ public sealed class SpiderKingAttacks {
     // the slashes still to come stop; crescents in flight fly on
     public void StopSlashing() {
         HideSlashSigil();
+        RemoveSlashWarning();
         rig.isSlashing = false;
         rig.isSlashAiming = false;
         rig.slashChargeLeftS = 0f;
         rig.body.SetCharge(0f);
         ShowSlashAim(false);
         rig.body.SetSwipe(0f);
+    }
+
+    // the charge's sign goes once the red aim line takes over
+    private void RemoveSlashWarning() {
+        rig.hud.RemoveWarning(slashWarningId);
+        slashWarningId = -1;
     }
 
     // all of it gone, crescents too

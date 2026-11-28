@@ -552,13 +552,9 @@ public class BossFightHud: MonoBehaviour {
         return AddWarning(worldPosition, word);
     }
 
-    /// <summary>
-    /// Shows an attack warning over <paramref name="worldPosition"/>: a red
-    /// sign with "!" and <paramref name="word"/> under it, beating faster as
-    /// <paramref name="progress"/> 0~1 nears the hit.
-    /// </summary>
-    /// <returns>the warning's id for <see cref="UpdateWarning"/></returns>
-    public int AddWarning(Vector3 worldPosition, string word) {
+    // a red sign with "!" and the word under it, beating faster as its
+    // progress 0~1 nears the hit; every attack asks AddAttackWarning instead
+    private int AddWarning(Vector3 worldPosition, string word) {
         if (rig.rootRect == null) {
             return -1;
         }
