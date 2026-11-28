@@ -131,6 +131,9 @@ todo add 3x fruit
   pineapple-style popup (gold watermelon icon, hold hint, a line to the
   melon) once per session, until one is grabbed (`GoldenMelonHint`,
   `PopUpId.GoldenWatermelonFirst`, `TutorialItem.GoldenWatermelonGrab`)
+- golden watermelon grab flies a gold armor sprite from the melon to the armor
+  mark beside the hearts (new `FruitFlyTarget.ArmorMark`); the armor counts
+  as worn at once, its mark pops in on landing
 
 ##### Houdong Pan
 

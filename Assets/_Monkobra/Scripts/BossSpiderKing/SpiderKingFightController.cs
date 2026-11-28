@@ -164,6 +164,7 @@ public class SpiderKingFightController: MonoBehaviour {
         if (isGoldenGrab) {
             arena.HideGoldenMelon();
             GoldenMelonHint.Grabbed();
+            rig.hud.FlyArmor(from);
             rig.nextGoldenTime = Time.time + config.GoldenIntervalS;
             StaminaBarController full = StaminaBarController.I;
             if (full != null) {

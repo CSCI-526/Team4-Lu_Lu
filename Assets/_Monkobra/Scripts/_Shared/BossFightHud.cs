@@ -16,6 +16,11 @@ using static BossFightHudRig;
 /// </summary>
 public class BossFightHud: MonoBehaviour {
     public const float CALL_OUT_S = BossFightHudRig.CALL_OUT_S;
+
+    /// <returns>the armor mark beside the hearts, where an armor sprite
+    /// flies to; null before the fight's hearts show</returns>
+    public static RectTransform ArmorMarkTarget { get; private set; }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("every tuned value of the boss fight HUD")]
@@ -33,6 +38,12 @@ public class BossFightHud: MonoBehaviour {
 
     private void OnDisable() {
         MonkeyHearts.Changed -= OnMonkeyHeartsChanged;
+    }
+
+    private void OnDestroy() {
+        if (rig != null && ArmorMarkTarget == rig.armorMark) {
+            ArmorMarkTarget = null;
+        }
     }
 
     private void Awake() {
@@ -440,6 +451,14 @@ public class BossFightHud: MonoBehaviour {
             rig.armorBadge = builder.CreateArmorBadge();
         }
         rig.isArmorShown = isShown;
+        // a golden armor still flying in shows as it lands
+        if (isShown && rig.isArmorGainPending) {
+            rig.armorBadge.gameObject.SetActive(false);
+            if (rig.armorMark != null) {
+                rig.armorMark.gameObject.SetActive(false);
+            }
+            return;
+        }
         // in a fight the armor shows beside the hearts instead
         rig.armorBadge.gameObject.SetActive(isShown && !MonkeyHearts.IsActive);
         // a -1 still flying to the armor takes it away on arrival
@@ -488,8 +507,48 @@ public class BossFightHud: MonoBehaviour {
                 MonkeyHearts.Hearts);
             rig.monkeyHeartsShown = MonkeyHearts.Hearts;
         }
-        if (!HasArmorLossFlight()) {
+        ArmorMarkTarget = rig.armorMark;
+        if (!HasArmorLossFlight() && !rig.isArmorGainPending) {
             rig.armorMark.gameObject.SetActive(rig.isArmorShown);
+        }
+    }
+
+    /// <summary>
+    /// A gold armor sprite flies from <paramref name="fromWorld"/> (the
+    /// golden watermelon) to the armor mark beside the hearts, as a banana
+    /// flies to the energy bar. Call it as the armor is given: it counts as
+    /// worn at once, but its mark only shows, w/ a pop, on landing.
+    /// </summary>
+    public void FlyArmor(Vector3 fromWorld) {
+        if (rig.rootRect == null || FruitFlyEffect.I == null
+            || ArmorMarkTarget == null) {
+            return;
+        }
+        rig.isArmorGainPending = true;
+        rig.armorGainDeadlineS = Time.unscaledTime + ARMOR_GAIN_MAX_S;
+        Sprite sprite = config.ArmorSprite != null
+            ? config.ArmorSprite : BossFightHudBuilder.DrawnShield();
+        FruitFlyEffect.I.Play(fromWorld, FruitFlyTarget.ArmorMark, sprite,
+            OnArmorGainLanded, UIStyle.Gold);
+    }
+
+    // the armor sprite landed: its mark pops in
+    private void OnArmorGainLanded() {
+        if (!rig.isArmorGainPending) {
+            return;
+        }
+        rig.isArmorGainPending = false;
+        if (!rig.isArmorShown) {
+            return;
+        }
+        ShowArmorBadge(true);
+    }
+
+    // a flight cut by a lost run never lands, so the mark shows anyway
+    private void UpdateArmorGain() {
+        if (rig.isArmorGainPending
+            && Time.unscaledTime > rig.armorGainDeadlineS) {
+            OnArmorGainLanded();
         }
     }
 
@@ -841,6 +900,7 @@ public class BossFightHud: MonoBehaviour {
         motion.UpdatePops();
         motion.UpdateLossFlights();
         motion.UpdateDamageFlights();
+        UpdateArmorGain();
         UpdateHeartGrace();
         motion.UpdateWarnings();
         motion.UpdateCallOut();

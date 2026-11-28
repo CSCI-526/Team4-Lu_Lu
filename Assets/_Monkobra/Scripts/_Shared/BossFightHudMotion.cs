@@ -336,6 +336,9 @@ public sealed class BossFightHudMotion {
             Mathf.Max(0f, rig.armorBadgePopS - Time.unscaledDeltaTime);
         float left = rig.armorBadgePopS / ARMOR_BADGE_POP_S;
         rig.armorBadge.localScale = Vector3.one * (1f + 0.8f * left * left);
+        if (rig.armorMark != null) {
+            rig.armorMark.localScale = rig.armorBadge.localScale;
+        }
     }
 
 }

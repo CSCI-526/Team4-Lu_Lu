@@ -116,6 +116,7 @@ For a quick test use the [hack key](monkobra-tdd.md#hack-shortcuts) that spawns 
 | `EnergyBar` | banana (no `FruitFlyOnGrab`) | the `StaminaBar` |
 | `TopRightCounter` | `Coconut` | the icon of `CoconutHUD` |
 | `Monkey` | `Pineapple` | the monkey, found as the `MonkeyController` at start |
+| `ArmorMark` | golden watermelon (both boss arenas; `BossFightHud.FlyArmor`, a gold armor sprite) | the armor mark beside the boss fight hearts (`BossFightHud.ArmorMarkTarget`); the armor counts as worn at once, its mark pops in on landing |
 
 - Per Frame: the target's screen point is re-read every frame, so a punching bar or a moving camera never strands the sprite
 - Time: the flight runs on scaled time, so a pause freezes it

@@ -109,6 +109,11 @@ public sealed class BossFightHudRig {
     public RectTransform armorMark;
     public bool isArmorShown;
     public int monkeyHeartsShown = -1;
+    // a golden grab's armor sprite still flying to the mark: the armor counts
+    // as worn, its mark shows & pops on landing
+    public bool isArmorGainPending;
+    public float armorGainDeadlineS;
+    public const float ARMOR_GAIN_MAX_S = 2.5f;
     // -1 numbers flying to the heart row or the armor mark
     public readonly List<BossFightHudLossFlight> lossFlights =
         new List<BossFightHudLossFlight>();

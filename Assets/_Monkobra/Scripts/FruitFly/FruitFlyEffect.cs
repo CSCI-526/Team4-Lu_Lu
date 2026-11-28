@@ -36,11 +36,14 @@ public class FruitFlyEffect: MonoBehaviour {
     /// <param name="sprite">sprite to fly, null for the default</param>
     /// <param name="onArrived">called once on landing, never if the run ends
     /// first</param>
+    /// <param name="tint">color the sprite is drawn in, white keeps its own
+    /// </param>
     public void Play(
         Vector3 worldPos,
         FruitFlyTarget target,
         Sprite sprite,
-        Action onArrived = null
+        Action onArrived = null,
+        Color? tint = null
     ) {
         Camera worldCamera = Camera.main;
         Vector3 startScreen = worldCamera != null
@@ -55,7 +58,8 @@ public class FruitFlyEffect: MonoBehaviour {
         Sprite shownSprite = sprite != null ? sprite : defaultSprite;
         image.sprite = shownSprite;
         image.enabled = shownSprite != null || showsBlankSprite;
-        image.color = new Color(1f, 1f, 1f, config.Alpha);
+        Color color = tint ?? Color.white;
+        image.color = new Color(color.r, color.g, color.b, config.Alpha);
         image.rectTransform.sizeDelta = Vector2.one * config.SizePx;
 
         Flight flight = new Flight {
@@ -295,6 +299,9 @@ public class FruitFlyEffect: MonoBehaviour {
                 return TryGetRectScreen(energyBarTarget, out screen);
             case FruitFlyTarget.TopRightCounter:
                 return TryGetRectScreen(topRightCounterTarget, out screen);
+            case FruitFlyTarget.ArmorMark:
+                return TryGetRectScreen(BossFightHud.ArmorMarkTarget,
+                    out screen);
             case FruitFlyTarget.Monkey:
                 Camera worldCamera = Camera.main;
                 if (monkeyTarget != null && worldCamera != null) {

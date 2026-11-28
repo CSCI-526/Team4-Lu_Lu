@@ -480,7 +480,7 @@ public sealed class BossFightHudBuilder {
 
     // a plain white shield, its edge smoothed, until a sprite is assigned:
     // flat top, sides narrowing to a point at the bottom
-    private static Sprite DrawnShield() {
+    public static Sprite DrawnShield() {
         if (drawnShield != null) {
             return drawnShield;
         }
