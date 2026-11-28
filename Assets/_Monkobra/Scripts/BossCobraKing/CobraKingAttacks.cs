@@ -358,10 +358,9 @@ public sealed class CobraKingAttacks {
             return;
         }
         rig.hasWarnedChase = true;
-        rig.hud.ShowBannerFor(
-            "The cobra is coming!", "Climb!",
-            new Color(0.95f, 0.25f, 0.2f), 2.5f
-        );
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(PopUpId.BossCobraComing);
+        }
     }
 
 }

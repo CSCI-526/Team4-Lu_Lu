@@ -363,6 +363,9 @@ public class CobraKingFightController: MonoBehaviour {
         if (!rig.hasThrown) {
             rig.hasThrown = true;
             rig.hud.HideBanner();
+            if (PopUpManager.I != null) {
+                PopUpManager.I.Hide(PopUpId.BossArmorIntro);
+            }
         }
         GameObject copy = Instantiate(source, transform, true);
         // a bare look-alike: no scripts or colliders wake up on it
@@ -752,8 +755,10 @@ public class CobraKingFightController: MonoBehaviour {
             if (skip != null) {
                 skip.MarkSeen(TutorialItem.ArmorWords);
             }
-            rig.hud.ShowBannerFor(config.ArmorIntroTitle,
-                config.ArmorIntroLine, config.GoldenColor, 0f);
+            // held on the popup plate till the first throw hides it
+            if (PopUpManager.I != null) {
+                PopUpManager.I.Show(PopUpId.BossArmorIntro);
+            }
         } else {
             rig.hud.ShowBannerFor(config.BossName, "",
                 config.GoldenColor, 2f);
