@@ -64,6 +64,21 @@ public class BossFightHudConfig: ScriptableObject {
     /// <returns>how long a loss number flies to the heart row; s</returns>
     public float LossFlightS => lossFlightS;
 
+    /// <returns>font size of the -1 & -n numbers</returns>
+    public float NumberFontSize => numberFontSize;
+
+    /// <returns>how long a number's spawn punch lasts; s</returns>
+    public float NumberSpawnPopS => numberSpawnPopS;
+
+    /// <returns>peak scale factor of a number's spawn punch</returns>
+    public float NumberSpawnOvershoot => numberSpawnOvershoot;
+
+    /// <returns>how long a number punches at its target; s</returns>
+    public float NumberLandPunchS => numberLandPunchS;
+
+    /// <returns>peak scale factor of a number's landing punch</returns>
+    public float NumberLandPunchScale => numberLandPunchScale;
+
     /// <returns>tint of an attack warning</returns>
     public Color WarningColor => warningColor;
 
@@ -167,6 +182,31 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("how long a loss number flies to the heart row; s")]
     private float lossFlightS = 0.6f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("font size of the -1 & -n numbers")]
+    private float numberFontSize = 96f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("how long a number's spawn punch lasts; s")]
+    private float numberSpawnPopS = 0.25f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("peak scale factor of a number's spawn punch")]
+    private float numberSpawnOvershoot = 1.5f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("how long a number punches at its target, then fades; s")]
+    private float numberLandPunchS = 0.25f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("peak scale factor of a number's landing punch")]
+    private float numberLandPunchScale = 1.6f;
 
     [SerializeField]
     [Tooltip("tint of an attack warning")]

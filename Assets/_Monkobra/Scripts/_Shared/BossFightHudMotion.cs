@@ -67,7 +67,8 @@ public sealed class BossFightHudMotion {
     }
 
     // each -1 flies from the monkey to its heart or the armor mark, easing
-    // in; unscaled, so a slow motion finisher never stalls it
+    // in; it punches in on spawn & again as it lands, then fades; unscaled,
+    // so a slow motion finisher never stalls it
     public void UpdateLossFlights() {
         for (int i = rig.lossFlights.Count - 1; i >= 0; i--) {
             BossFightHudLossFlight flight = rig.lossFlights[i];
@@ -75,30 +76,67 @@ public sealed class BossFightHudMotion {
                 rig.lossFlights.RemoveAt(i);
                 continue;
             }
+            float flightS = Mathf.Max(0.05f, config.LossFlightS);
+            bool wasFlying = flight.ageS < flightS;
             flight.ageS += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(
-                flight.ageS / Mathf.Max(0.05f, config.LossFlightS)
-            );
-            Vector2 from = ScreenLocal(flight.worldPosition);
-            Vector2 to = LossTarget(flight);
-            float eased = t * t;
             RectTransform rect = flight.label.rectTransform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.Lerp(from, to, eased)
-                + new Vector2(0f, 40f * Mathf.Sin(t * Mathf.PI));
-            rect.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.8f, t);
-            if (t >= 1f) {
+            if (flight.ageS < flightS) {
+                float t = flight.ageS / flightS;
+                Vector2 from = ScreenLocal(flight.worldPosition);
+                Vector2 to = LossTarget(flight);
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.Lerp(from, to, t * t)
+                    + new Vector2(0f, 40f * Mathf.Sin(t * Mathf.PI));
+            }
+            if (PunchNumber(flight.label, flight.ageS, flightS)) {
                 UnityEngine.Object.Destroy(flight.label.gameObject);
                 rig.lossFlights.RemoveAt(i);
-                rig.LossLanded?.Invoke(flight);
                 continue;
             }
             rig.lossFlights[i] = flight;
+            if (wasFlying && flight.ageS >= flightS) {
+                rig.LossLanded?.Invoke(flight);
+            }
         }
     }
 
+    // scales & fades a flying number: a spawn punch w/ overshoot, a settle
+    // while it flies, a landing punch at the target; each time from the
+    // config
+    // :return: if the number is done & should go
+    private bool PunchNumber(
+        TextMeshProUGUI label, float ageS, float flightS
+    ) {
+        float t = Mathf.Clamp01(ageS / flightS);
+        float scale = Mathf.Lerp(1.4f, 0.8f, t);
+        float popS = Mathf.Max(0.01f, config.NumberSpawnPopS);
+        if (ageS < popS) {
+            float p = ageS / popS;
+            // 0.3 -> overshoot -> 1
+            scale *= p < 0.5f
+                ? Mathf.Lerp(0.3f, config.NumberSpawnOvershoot,
+                    Mathf.Sin(p * Mathf.PI))
+                : Mathf.Lerp(1f, config.NumberSpawnOvershoot,
+                    Mathf.Sin(p * Mathf.PI));
+        }
+        float alpha = 1f;
+        bool isDone = false;
+        if (ageS >= flightS) {
+            float punchS = Mathf.Max(0.01f, config.NumberLandPunchS);
+            float q = Mathf.Clamp01((ageS - flightS) / punchS);
+            scale *= 1f + (config.NumberLandPunchScale - 1f)
+                * Mathf.Sin(Mathf.Min(q * 2f, 1f) * Mathf.PI * 0.5f);
+            alpha = 1f - q * q;
+            isDone = q >= 1f;
+        }
+        label.rectTransform.localScale = Vector3.one * scale;
+        label.alpha = alpha;
+        return isDone;
+    }
+
     // each -n flies from the boss to the health bar & drops it on landing;
-    // unscaled, so the slow motion of a last blow never stalls it
+    // punches like the -1; unscaled, so the slow motion of a last blow never
+    // stalls it
     public void UpdateDamageFlights() {
         for (int i = rig.damageFlights.Count - 1; i >= 0; i--) {
             BossFightHudDamageFlight flight = rig.damageFlights[i];
@@ -106,26 +144,29 @@ public sealed class BossFightHudMotion {
                 rig.damageFlights.RemoveAt(i);
                 continue;
             }
+            float flightS = Mathf.Max(0.05f, config.LossFlightS);
+            bool wasFlying = flight.ageS < flightS;
             flight.ageS += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(
-                flight.ageS / Mathf.Max(0.05f, config.LossFlightS)
-            );
+            float t = Mathf.Clamp01(flight.ageS / flightS);
             Vector2 from = ScreenLocal(flight.worldPosition);
             Vector2 to = rig.healthFill != null && rig.canvasRect != null
                 ? (Vector2)rig.canvasRect.InverseTransformPoint(
                     rig.healthFill.parent.position)
                 : Vector2.zero;
             RectTransform rect = flight.label.rectTransform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.Lerp(from, to, t * t);
-            rect.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.8f, t);
-            if (t >= 1f) {
+            if (flight.ageS < flightS) {
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.Lerp(from, to, t * t);
+            }
+            if (PunchNumber(flight.label, flight.ageS, flightS)) {
                 UnityEngine.Object.Destroy(flight.label.gameObject);
                 rig.damageFlights.RemoveAt(i);
-                rig.DamageLanded?.Invoke(flight);
                 continue;
             }
             rig.damageFlights[i] = flight;
+            if (wasFlying && flight.ageS >= flightS) {
+                rig.DamageLanded?.Invoke(flight);
+            }
         }
     }
 

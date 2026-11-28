@@ -27,6 +27,11 @@ MonoBehaviour:
   heartLossColor: {r: 0.92, g: 0.2, b: 0.27, a: 1}
   armorLossColor: {r: 1, g: 0.82, b: 0.2, a: 1}
   lossFlightS: 0.6
+  numberFontSize: 96
+  numberSpawnPopS: 0.25
+  numberSpawnOvershoot: 1.5
+  numberLandPunchS: 0.25
+  numberLandPunchScale: 1.6
   warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
   warningOffset: {x: 0, y: 70}
   warningFont: {fileID: 11400000, guid: c702ba559046c9c4c9ffd7c3041c8a56, type: 2}
