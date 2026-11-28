@@ -258,9 +258,11 @@ public sealed class SpiderKingAttacks {
             rig.dashLane = new Transform[PATH_PARTS * 2];
             for (int i = 0; i < rig.dashLane.Length; i++) {
                 rig.dashLane[i] =
-                    rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
+                    rig.Feedback.CreateIndicator(PrimitiveType.Cylinder,
                         "DashLane",
-                    Vector3.one * 0.1f, config.WarnColor).transform;
+                    Vector3.one * 0.1f, config.WarnColor,
+                    config.ArrowHeavyMaterial, DangerIndicatorPlane.Line,
+                    1f).transform;
             }
         }
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 30f);
@@ -284,16 +286,17 @@ public sealed class SpiderKingAttacks {
                     rig.dashWayU * d1 + acrossU * sign,
                         rig.dashWayV * d1 + acrossV * sign);
                 SetDashLanePart(edge * PATH_PARTS + i, from, to, thickness,
-                    color);
+                    color, isLocked);
             }
         }
     }
 
     public void SetDashLanePart(int index, Vector3 from, Vector3 to,
-        float thickness, Color color) {
+        float thickness, Color color, bool isLocked) {
         SpiderKingFeedback.SetLine(rig.dashLane[index], from, to, thickness);
-        rig.Feedback.SetColor(rig.dashLane[index].GetComponent<Renderer>(),
-            color);
+        Renderer lane = rig.dashLane[index].GetComponent<Renderer>();
+        rig.Feedback.SetIndicatorColor(lane, color);
+        rig.Feedback.SetIndicatorUrgency(lane, isLocked ? 1f : 0f);
     }
 
     public void ClearDashLane() {
@@ -444,9 +447,11 @@ public sealed class SpiderKingAttacks {
             rig.slashAim = new Transform[PATH_PARTS];
             for (int i = 0; i < rig.slashAim.Length; i++) {
                 rig.slashAim[i] =
-                    rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
+                    rig.Feedback.CreateIndicator(PrimitiveType.Cylinder,
                         "SlashAim",
-                    Vector3.one * 0.1f, config.WarnColor).transform;
+                    Vector3.one * 0.1f, config.WarnColor,
+                    config.ArrowThinMaterial, DangerIndicatorPlane.Line,
+                    1f).transform;
             }
         }
         ShowSlashAim(true);
@@ -465,8 +470,9 @@ public sealed class SpiderKingAttacks {
                 BarkPoint(rig.spiderAngle, rig.spiderY, du * d0, dv * d0),
                 BarkPoint(rig.spiderAngle, rig.spiderY, du * d1, dv * d1),
                 Mathf.Lerp(0.06f, 0.14f, progress));
-            rig.Feedback.SetColor(rig.slashAim[i].GetComponent<Renderer>(),
-                color);
+            Renderer aim = rig.slashAim[i].GetComponent<Renderer>();
+            rig.Feedback.SetIndicatorColor(aim, color);
+            rig.Feedback.SetIndicatorUrgency(aim, progress);
         }
     }
 
@@ -555,8 +561,10 @@ public sealed class SpiderKingAttacks {
             rig.slashSigil = new Transform[SIGIL_PARTS];
             for (int i = 0; i < SIGIL_PARTS; i++) {
                 rig.slashSigil[i] =
-                    rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
-                    "SlashSign", Vector3.one, config.WarnColor).transform;
+                    rig.Feedback.CreateIndicator(PrimitiveType.Cylinder,
+                    "SlashSign", Vector3.one, config.WarnColor,
+                    config.StripThinMaterial, DangerIndicatorPlane.Line,
+                    1f).transform;
             }
         }
         // a crescent facing the camera, opening up over its head
@@ -581,8 +589,9 @@ public sealed class SpiderKingAttacks {
             rig.slashSigil[i].gameObject.SetActive(true);
             SpiderKingFeedback.SetLine(rig.slashSigil[i], p0, p1,
                 (0.05f + 0.2f * mid) * (0.5f + 0.5f * charge) * flicker);
-            rig.Feedback.SetColor(rig.slashSigil[i].GetComponent<Renderer>(),
-                color);
+            Renderer sign = rig.slashSigil[i].GetComponent<Renderer>();
+            rig.Feedback.SetIndicatorColor(sign, color);
+            rig.Feedback.SetIndicatorUrgency(sign, charge);
         }
     }
 

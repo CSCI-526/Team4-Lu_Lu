@@ -373,6 +373,30 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>tint of an attack warning</returns>
     public Color WarnColor => warnColor;
 
+    /// <returns>danger indicator material for a filled area: slanted heavy
+    /// stripes</returns>
+    public Material StripHeavyMaterial => stripHeavyMaterial;
+
+    /// <returns>danger indicator material for a sign or outline: slanted
+    /// thin bars</returns>
+    public Material StripThinMaterial => stripThinMaterial;
+
+    /// <returns>danger indicator material for a filled lane: heavy
+    /// chevrons</returns>
+    public Material ArrowHeavyMaterial => arrowHeavyMaterial;
+
+    /// <returns>danger indicator material for an aim line: thin
+    /// chevrons</returns>
+    public Material ArrowThinMaterial => arrowThinMaterial;
+
+    /// <returns>global opacity of every danger indicator, times the
+    /// opacity of its own material</returns>
+    public float IndicatorAlpha => indicatorAlpha;
+
+    /// <returns>how far an indicator's tint pulls its texture colour; 0 is
+    /// the pure texture</returns>
+    public float IndicatorTintStrength => indicatorTintStrength;
+
     /// <returns>tint of the spider's silk</returns>
     public Color SilkColor => silkColor;
 
@@ -924,6 +948,36 @@ public class SpiderKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("tint of an attack warning")]
     private Color warnColor = new Color(0.95f, 0.2f, 0.15f);
+
+    [Header("Danger Indicator")]
+    [SerializeField]
+    [Tooltip("material of a filled area warning: "
+        + "BossWarning/DangerStripHeavy")]
+    private Material stripHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of the slash sign: BossWarning/DangerStripThin")]
+    private Material stripThinMaterial;
+
+    [SerializeField]
+    [Tooltip("material of the dash lane: BossWarning/DangerArrowHeavy")]
+    private Material arrowHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of the slash aim line: BossWarning/DangerArrowThin")]
+    private Material arrowThinMaterial;
+
+    [SerializeField]
+    [Tooltip("global opacity of every danger indicator, times the opacity "
+        + "its own material sets")]
+    [Range(0f, 1f)]
+    private float indicatorAlpha = 1f;
+
+    [SerializeField]
+    [Tooltip("how far the warning tint pulls the texture's own colour; 0 is "
+        + "the pure texture, 1 the full tint")]
+    [Range(0f, 1f)]
+    private float indicatorTintStrength = 0.5f;
 
     [SerializeField]
     [Tooltip("tint of the spider's silk")]

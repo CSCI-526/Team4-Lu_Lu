@@ -86,6 +86,40 @@ public sealed class SpiderKingFeedback {
         return part;
     }
 
+    // a see-through warning primitive: the same shape as CreatePrimitive, in
+    // a danger indicator material that keeps its texture's own colour
+    public GameObject CreateIndicator(
+        PrimitiveType type,
+        string objectName,
+        Vector3 scale,
+        Color color,
+        Material material,
+        DangerIndicatorPlane plane,
+        float direction
+    ) {
+        GameObject part = CreatePrimitive(type, objectName, scale, color);
+        Renderer partRenderer = part.GetComponent<Renderer>();
+        DangerIndicator.Dress(
+            partRenderer, rig.colorBlock, material, plane, direction,
+            config.IndicatorTintStrength
+        );
+        SetIndicatorColor(partRenderer, color);
+        return part;
+    }
+
+    // the indicator's hue only: its opacity is the material's times the
+    // config's, so a dim or a lerp never changes it
+    public void SetIndicatorColor(Renderer target, Color hue) {
+        DangerIndicator.SetColor(
+            target, rig.colorBlock, hue, config.IndicatorAlpha
+        );
+    }
+
+    // how near the hit is, 0~1: faster pulse & more glow in the shader
+    public void SetIndicatorUrgency(Renderer target, float urgency) {
+        DangerIndicator.SetUrgency(target, rig.colorBlock, urgency);
+    }
+
     public void SetColor(Renderer target, Color color) {
         if (target == null) {
             return;
