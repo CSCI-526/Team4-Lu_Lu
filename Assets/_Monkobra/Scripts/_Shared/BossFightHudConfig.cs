@@ -1,3 +1,5 @@
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -55,6 +57,22 @@ public class BossFightHudConfig: ScriptableObject {
     /// <returns>warning sign offset over its zone, in canvas units</returns>
     public Vector2 WarningOffset => warningOffset;
 
+    /// <returns>font of an attack sign's "!" and word; null takes the TMP
+    /// default</returns>
+    public TMP_FontAsset WarningFont => warningFont;
+
+    /// <param name="item">the attack's <see cref="TutorialItem"/> key</param>
+    /// <returns>the word its sign shows, null if the table lacks the attack
+    /// </returns>
+    public string GetAttackWord(TutorialItem item) {
+        foreach (AttackWord entry in attackWords) {
+            if (entry.item == item) {
+                return entry.word;
+            }
+        }
+        return null;
+    }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("how long the entry flash takes to fade; s")]
@@ -108,4 +126,19 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("warning sign offset over its zone, in canvas units")]
     private Vector2 warningOffset = new Vector2(0f, 70f);
+
+    [SerializeField]
+    [Tooltip("font of an attack sign's ! and word, the Impact SDF asset")]
+    private TMP_FontAsset warningFont;
+
+    [SerializeField]
+    [Tooltip("the word each attack's sign shows, one word naming the attack")]
+    private AttackWord[] attackWords;
+
+    // private types  ###########################################################
+    [Serializable]
+    private struct AttackWord {
+        public TutorialItem item;
+        public string word;
+    }
 }

@@ -529,6 +529,30 @@ public class BossFightHud: MonoBehaviour {
     }
 
     /// <summary>
+    /// Shows the sign of attack <paramref name="item"/> over
+    /// <paramref name="worldPosition"/>, in the one standard look, the first
+    /// few times this session only; <see cref="TutorialSkipManager"/> counts
+    /// and limits them. The word comes from the config's attack table.
+    /// </summary>
+    /// <returns>the warning's id for <see cref="UpdateWarning"/>, -1 when
+    /// the sign is skipped or has no word; every warning call ignores -1
+    /// </returns>
+    public int AddAttackWarning(TutorialItem item, Vector3 worldPosition) {
+        TutorialSkipManager skip = TutorialSkipManager.I;
+        if (skip != null && skip.ShouldSkip(item)) {
+            return -1;
+        }
+        string word = config.GetAttackWord(item);
+        if (string.IsNullOrEmpty(word)) {
+            return -1;
+        }
+        if (skip != null) {
+            skip.MarkSeen(item);
+        }
+        return AddWarning(worldPosition, word);
+    }
+
+    /// <summary>
     /// Shows an attack warning over <paramref name="worldPosition"/>: a red
     /// sign with "!" and <paramref name="word"/> under it, beating faster as
     /// <paramref name="progress"/> 0~1 nears the hit.
@@ -563,6 +587,14 @@ public class BossFightHud: MonoBehaviour {
             "Word", sign, word, 30f, config.WarningColor
         );
         label.fontStyle = FontStyles.Bold;
+        // the standard sign font, never a fake bold on a heavy face
+        if (config.WarningFont != null) {
+            foreach (TextMeshProUGUI text in new[] { mark, label }) {
+                text.font = config.WarningFont;
+                text.fontSharedMaterial = config.WarningFont.material;
+                text.fontStyle = FontStyles.Normal;
+            }
+        }
         label.outlineWidth = 0.25f;
         label.outlineColor = Color.white;
         RectTransform labelRect = label.rectTransform;
