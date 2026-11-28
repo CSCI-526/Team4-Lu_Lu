@@ -160,10 +160,14 @@ public class ScoreManager: MonoBehaviour {
         cobraKing = CobraKingFightController.I;
         if (cobraKing != null) {
             cobraKing.FightEnded += OnCobraKingBeaten;
+            cobraKing.JewelHit += OnCrownHit;
         }
         spiderKing = SpiderKingFightController.I;
         if (spiderKing != null) {
             spiderKing.FightEnded += OnSpiderKingBeaten;
+            spiderKing.SpiderHit += OnSpiderHit;
+            spiderKing.Parried += OnTailParried;
+            spiderKing.DashDodged += OnDashDodged;
         }
         isRunEnded = RunController.I != null
             && RunController.I.State == GameState.Lost;
@@ -199,9 +203,13 @@ public class ScoreManager: MonoBehaviour {
         }
         if (cobraKing != null) {
             cobraKing.FightEnded -= OnCobraKingBeaten;
+            cobraKing.JewelHit -= OnCrownHit;
         }
         if (spiderKing != null) {
             spiderKing.FightEnded -= OnSpiderKingBeaten;
+            spiderKing.SpiderHit -= OnSpiderHit;
+            spiderKing.Parried -= OnTailParried;
+            spiderKing.DashDodged -= OnDashDodged;
         }
         if (I == this) {
             I = null;
@@ -252,9 +260,8 @@ public class ScoreManager: MonoBehaviour {
 
     // a king's FightEnded is raised only once it is beaten & its reward
     // taken, every fight of the hardcore run's rush included; the points wait
-    // for LateUpdate, since ScoreHeightBossHider brings the score HUD the
-    // Cobra King's fight hid back in a later listener of the same event, and
-    // the "+N" popup under it only hears a reward while shown
+    // for LateUpdate, since CanScore is false while time is frozen & a reward
+    // given then would be lost
     // the points scale w/ the Loop just beaten, read now, b4 a hardcore rush
     // arms the next one
     private void OnCobraKingBeaten() {
@@ -265,6 +272,29 @@ public class ScoreManager: MonoBehaviour {
     private void OnSpiderKingBeaten() {
         pendingBossRewards.Add(RewardKind.SpiderKingDefeat);
         pendingBossScales.Add(spiderKing != null ? spiderKing.PointsScale : 1f);
+    }
+
+    // boss hits & parries queue w/ scale 1, never scaled by the Loop; a parry
+    // freezes time, so the points are paid once it returns
+    private void OnCrownHit() {
+        QueueBossReward(RewardKind.CrownHit);
+    }
+
+    private void OnSpiderHit() {
+        QueueBossReward(RewardKind.SpiderHit);
+    }
+
+    private void OnTailParried() {
+        QueueBossReward(RewardKind.TailParry);
+    }
+
+    private void OnDashDodged() {
+        QueueBossReward(RewardKind.DashDodge);
+    }
+
+    private void QueueBossReward(RewardKind kind) {
+        pendingBossRewards.Add(kind);
+        pendingBossScales.Add(1f);
     }
 
     private void GrantBossRewards() {

@@ -43,6 +43,19 @@ public class ScoreConfig: ScriptableObject {
     /// <returns>points beating the Spider King adds</returns>
     public int SpiderKingDefeatPoints => spiderKingDefeatPoints;
 
+    /// <returns>points a fruit landing on the Cobra King's crown adds
+    /// </returns>
+    public int CrownHitPoints => crownHitPoints;
+
+    /// <returns>points hurting the Spider King adds</returns>
+    public int SpiderHitPoints => spiderHitPoints;
+
+    /// <returns>points parrying a Spider King tail strike adds</returns>
+    public int TailParryPoints => tailParryPoints;
+
+    /// <returns>points dodging a Spider King dash adds</returns>
+    public int DashDodgePoints => dashDodgePoints;
+
     // Public Methods  #########################################################
     /// <returns>points one reward of the kind adds</returns>
     public int PointsFor(RewardKind kind) {
@@ -63,6 +76,14 @@ public class ScoreConfig: ScriptableObject {
                 return cobraKingDefeatPoints;
             case RewardKind.SpiderKingDefeat:
                 return spiderKingDefeatPoints;
+            case RewardKind.CrownHit:
+                return crownHitPoints;
+            case RewardKind.SpiderHit:
+                return spiderHitPoints;
+            case RewardKind.TailParry:
+                return tailParryPoints;
+            case RewardKind.DashDodge:
+                return dashDodgePoints;
             default:
                 return 0;
         }
@@ -122,6 +143,26 @@ public class ScoreConfig: ScriptableObject {
     [Tooltip("points beating the Spider King adds, once its reward is taken")]
     private int spiderKingDefeatPoints = 2000;
 
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points a fruit landing on the Cobra King's crown adds")]
+    private int crownHitPoints = 100;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points hurting the Spider King adds")]
+    private int spiderHitPoints = 100;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points parrying a Spider King tail strike adds")]
+    private int tailParryPoints = 150;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points dodging a Spider King dash adds")]
+    private int dashDodgePoints = 75;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         pointsPerMeter = Mathf.Max(0, pointsPerMeter);
@@ -134,5 +175,9 @@ public class ScoreConfig: ScriptableObject {
         webEscapePoints = Mathf.Max(0, webEscapePoints);
         cobraKingDefeatPoints = Mathf.Max(0, cobraKingDefeatPoints);
         spiderKingDefeatPoints = Mathf.Max(0, spiderKingDefeatPoints);
+        crownHitPoints = Mathf.Max(0, crownHitPoints);
+        spiderHitPoints = Mathf.Max(0, spiderHitPoints);
+        tailParryPoints = Mathf.Max(0, tailParryPoints);
+        dashDodgePoints = Mathf.Max(0, dashDodgePoints);
     }
 }

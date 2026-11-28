@@ -104,6 +104,10 @@ public class SpiderKingFightController: MonoBehaviour {
     /// the slash it bats back</summary>
     public event System.Action Parried;
 
+    /// <summary>raised once as a dash ends on its own w/o catching the
+    /// monkey, never when a parry, a win or a reset cancels it</summary>
+    public event System.Action DashDodged;
+
     /// <summary>
     /// Called by <see cref="CobraSensor"/> when the great cobra catches the
     /// monkey: in the fight it is a fatal hit, taken by the armor if worn.
@@ -253,6 +257,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.onSlashCharge = () => SlashCharged?.Invoke();
         rig.onDashWarn = () => DashWarned?.Invoke();
         rig.onParried = () => Parried?.Invoke();
+        rig.onDashDodged = () => DashDodged?.Invoke();
         if (worldBalanceConfig == null || config.WebPrefab == null
             || config.WatermelonBranchPrefab == null) {
             Debug.LogError(
