@@ -35,16 +35,6 @@ public class BossFightHudConfig: ScriptableObject {
     public RuntimeAnimatorController PromptTouchController =>
         promptTouchController;
 
-    /// <returns>animates the banner's keycap while a keyboard is in
-    /// use (Space double tap); blank shows none</returns>
-    public RuntimeAnimatorController DoubleKeyboardController =>
-        doubleKeyboardController;
-
-    /// <returns>animates the banner's finger while touch is in use
-    /// (double tap); blank shows none</returns>
-    public RuntimeAnimatorController DoubleTouchController =>
-        doubleTouchController;
-
     /// <returns>the monkey's heart image in the heart row; null draws a
     /// plain heart</returns>
     public Sprite HeartSprite => heartSprite;
@@ -94,16 +84,6 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("animates the prompt finger while touch is in use (hold)")]
     private RuntimeAnimatorController promptTouchController;
-
-    [SerializeField]
-    [Tooltip("animates the banner's keycap while a keyboard is in use (Space "
-        + "double tap); blank shows none")]
-    private RuntimeAnimatorController doubleKeyboardController;
-
-    [SerializeField]
-    [Tooltip("animates the banner's finger while touch is in use (double "
-        + "tap); blank shows none")]
-    private RuntimeAnimatorController doubleTouchController;
 
     [SerializeField]
     [Tooltip("the monkey's heart in the heart row; blank draws a plain heart")]
