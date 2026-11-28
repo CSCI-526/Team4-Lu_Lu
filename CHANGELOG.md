@@ -1,6 +1,16 @@
 # Monkobra CHANGELOG
 
 <!--
+Bug cobra king boss fight 1st watermelon tutorial, be popup like
+Bug cobra king golden watermelon popup still wrong
+Bug right below Golden Crown indicator during normal mode -> make a crown symbol after energy bar
+
+Fixme Cobra king kill screen no need as a screen as popup
+Fixme intro anime scene: long press (space or press) to skip, w/ the symbol on left of the button
+Fixme re-organize hack keys
+Fixme hack key to unlock hardcore, rm menu unlock progress
+Fixme clean up helper scripts
+
 bug make leaderboard works
 fixme mpv ramping during normal gameplay
 todo lighting improvement
