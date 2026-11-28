@@ -115,6 +115,8 @@ todo add 3x fruit
   the lower half of the screen, holds a beat, then shrinks as it glides up to
   the bar; the start banners of both kings are gone (`BossFightHudConfig`
   `NameIntro*` values)
+- attack sign: only the red diamond and "!" shake (wobble and jitter, wider
+  and faster as the hit nears); the word keeps a fixed scale and place
 
 ##### Houdong Pan
 

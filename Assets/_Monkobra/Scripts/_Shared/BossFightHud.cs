@@ -559,8 +559,8 @@ public class BossFightHud: MonoBehaviour {
         return AddWarning(worldPosition, word);
     }
 
-    // a red sign with "!" and the word under it, beating faster as its
-    // progress 0~1 nears the hit; every attack asks AddAttackWarning instead
+    // a red sign with "!" and the word under it, its "!" shaking harder
+    // & faster as its progress 0~1 nears the hit, the word still; every attack asks AddAttackWarning instead
     private int AddWarning(Vector3 worldPosition, string word) {
         if (rig.rootRect == null) {
             return -1;
@@ -569,8 +569,12 @@ public class BossFightHud: MonoBehaviour {
             BossFightHudBuilder.CreateRect("Warning", rig.rootRect);
         sign.sizeDelta = new Vector2(70f, 70f);
 
-        // a red diamond with a white border & a big "!"
-        RectTransform border = BossFightHudBuilder.CreateRect("Border", sign);
+        // a red diamond with a white border & a big "!", shaking as one
+        RectTransform markGroup =
+            BossFightHudBuilder.CreateRect("MarkGroup", sign);
+        BossFightHudBuilder.Stretch(markGroup);
+        RectTransform border =
+            BossFightHudBuilder.CreateRect("Border", markGroup);
         BossFightHudBuilder.Stretch(border);
         border.localRotation = Quaternion.Euler(0f, 0f, 45f);
         border.sizeDelta = Vector2.zero;
@@ -581,7 +585,7 @@ public class BossFightHud: MonoBehaviour {
         face.offsetMax = new Vector2(-5f, -5f);
         BossFightHudBuilder.AddImage(face, config.WarningColor);
         TextMeshProUGUI mark =
-            BossFightHudBuilder.CreateLabel("Mark", sign, "!", 56f,
+            BossFightHudBuilder.CreateLabel("Mark", markGroup, "!", 56f,
                 Color.white);
         BossFightHudBuilder.Stretch(mark.rectTransform);
         mark.fontStyle = FontStyles.Bold;
@@ -609,6 +613,7 @@ public class BossFightHud: MonoBehaviour {
         rig.warnings.Add(new BossFightHudWarning {
             id = rig.nextWarningId,
             sign = sign,
+            mark = markGroup,
             worldPosition = worldPosition,
             progress = 0f
         });

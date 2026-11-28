@@ -66,19 +66,26 @@ public sealed class BossFightHudMotion {
         rig.nameIntroAgeS += Time.unscaledDeltaTime;
     }
 
-    // signs beat faster & grow as the hit nears
+    // the diamond & "!" wobble, faster & wider as the hit nears; the word
+    // keeps its scale & place
     public void UpdateWarnings() {
         foreach (BossFightHudWarning warning in rig.warnings) {
             if (warning.sign == null) {
                 continue;
             }
             Place(warning.sign, warning.worldPosition, config.WarningOffset);
-            float beatHz = Mathf.Lerp(2f, 9f, warning.progress);
-            float beat =
-                0.5f + 0.5f * Mathf.Sin(Time.time * beatHz * 2f * Mathf.PI);
-            float scale = Mathf.Lerp(0.9f, 1.3f, warning.progress)
-                * (1f + 0.12f * beat);
-            warning.sign.localScale = Vector3.one * scale;
+            if (warning.mark == null) {
+                continue;
+            }
+            float hz = Mathf.Lerp(3f, 12f, warning.progress);
+            float amp = Mathf.Lerp(0.3f, 1f, warning.progress);
+            float t = Time.time * hz * 2f * Mathf.PI;
+            warning.mark.localRotation =
+                Quaternion.Euler(0f, 0f, 12f * amp * Mathf.Sin(t));
+            warning.mark.anchoredPosition = new Vector2(
+                3f * amp * Mathf.Sin(t * 1.7f + 1f),
+                3f * amp * Mathf.Sin(t * 2.3f)
+            );
         }
     }
 

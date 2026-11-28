@@ -12,6 +12,8 @@ public struct BossFightHudPop {
 public struct BossFightHudWarning {
     public int id;
     public RectTransform sign;
+    // the diamond & "!" together, the only part that shakes
+    public RectTransform mark;
     public Vector3 worldPosition;
     public float progress;
     // 0 when shown, 1 at the hit
