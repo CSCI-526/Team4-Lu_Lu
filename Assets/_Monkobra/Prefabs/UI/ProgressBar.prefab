@@ -655,6 +655,8 @@ GameObject:
   - component: {fileID: 7780395253893913512}
   - component: {fileID: 6241500216018155920}
   - component: {fileID: 8115371848460610685}
+  - component: {fileID: 4430000000000000011}
+  - component: {fileID: 4430000000000000012}
   m_Layer: 5
   m_Name: ProgressBar
   m_TagString: Untagged
@@ -1084,3 +1086,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7880892504692061892}
   m_CullTransparentMesh: 1
+--- !u!225 &4430000000000000011
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2268733929864911862}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &4430000000000000012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2268733929864911862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c50c011bd6ca454a8c7395d372e0243e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ProgressBarBossHider
