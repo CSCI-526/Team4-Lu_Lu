@@ -64,6 +64,8 @@ public sealed class BossFightHudRig {
     public int heartHealth = -1;
     public float heartPopLeftS;
     public TextMeshProUGUI nameLabel;
+    // real s since the name's intro began; negative once it has docked
+    public float nameIntroAgeS = -1f;
     public RectTransform speechRect;
     public TextMeshProUGUI speechLabel;
     public KeyPromptWidget keyPrompt;

@@ -111,6 +111,10 @@ todo add 3x fruit
   `Monkobra > Report Trunk Scatter` evenness check
 - boss name font Creepster (OFL) added, built and assigned to both HUD
   configs by `Monkobra > Build > Warning Font`
+- boss name shows only above the health bar, in Creepster: it starts big in
+  the lower half of the screen, holds a beat, then shrinks as it glides up to
+  the bar; the start banners of both kings are gone (`BossFightHudConfig`
+  `NameIntro*` values)
 
 ##### Houdong Pan
 

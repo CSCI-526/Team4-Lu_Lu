@@ -65,6 +65,21 @@ public class BossFightHudConfig: ScriptableObject {
     /// TMP default</returns>
     public TMP_FontAsset BossNameFont => bossNameFont;
 
+    /// <returns>how many times bigger the boss name starts than its docked
+    /// size</returns>
+    public float NameIntroScale => nameIntroScale;
+
+    /// <returns>where the big boss name starts, as a fraction of the screen
+    /// height under the screen center</returns>
+    public float NameIntroDrop => nameIntroDrop;
+
+    /// <returns>how long the big boss name holds before it moves; s</returns>
+    public float NameIntroHoldS => nameIntroHoldS;
+
+    /// <returns>how long the boss name takes to shrink & glide to the bar;
+    /// s</returns>
+    public float NameIntroGlideS => nameIntroGlideS;
+
     /// <param name="item">the attack's <see cref="TutorialItem"/> key</param>
     /// <returns>the word its sign shows, null if the table lacks the attack
     /// </returns>
@@ -138,6 +153,25 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("font of the boss name, the Creepster SDF asset")]
     private TMP_FontAsset bossNameFont;
+
+    [SerializeField]
+    [Tooltip("how many times bigger the boss name starts than its docked "
+        + "size")]
+    private float nameIntroScale = 4f;
+
+    [SerializeField]
+    [Tooltip("where the big boss name starts, as a fraction of the screen "
+        + "height under the screen center")]
+    private float nameIntroDrop = 0.25f;
+
+    [SerializeField]
+    [Tooltip("how long the big boss name holds before it moves; s")]
+    private float nameIntroHoldS = 0.9f;
+
+    [SerializeField]
+    [Tooltip("how long the boss name takes to shrink and glide to the bar; "
+        + "s")]
+    private float nameIntroGlideS = 0.7f;
 
     [SerializeField]
     [Tooltip("the word each attack's sign shows, one word naming the attack")]

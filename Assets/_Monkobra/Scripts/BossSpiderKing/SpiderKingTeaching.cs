@@ -65,15 +65,6 @@ public sealed class SpiderKingTeaching {
         rig.teachTimeS = 0f;
         rig.nextAttackTime = Time.time + config.TeachGapS;
         rig.hud.SetPrompt(false, Vector3.zero);
-        ShowStepBanner();
-    }
-
-    public void ShowStepBanner() {
-        switch (rig.teach) {
-            case SpiderKingTeachStep.Parry:
-                Teach(config.BossName, "", config.WarnColor, 2f);
-                break;
-        }
     }
 
     public void Teach(string title, string line, Color color, float seconds) {

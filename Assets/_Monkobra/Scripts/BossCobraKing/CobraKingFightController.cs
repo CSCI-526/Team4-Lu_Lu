@@ -747,8 +747,7 @@ public class CobraKingFightController: MonoBehaviour {
         // king; the golden banana brings it back once lost
         rig.hasShield = true;
         // the armor's words only the first time the player gets it in a
-        // session, in either mode; after that, or at a later boss of the
-        // hardcore run's rush, the king only names itself
+        // session, in either mode
         TutorialSkipManager skip = TutorialSkipManager.I;
         if (rig.rushEncounter <= 0
             && !(skip != null && skip.ShouldSkip(TutorialItem.ArmorWords))) {
@@ -759,9 +758,6 @@ public class CobraKingFightController: MonoBehaviour {
             if (PopUpManager.I != null) {
                 PopUpManager.I.Show(PopUpId.BossArmorIntro);
             }
-        } else {
-            rig.hud.ShowBannerFor(config.BossName, "",
-                config.GoldenColor, 2f);
         }
         if (Debug.isDebugBuild) {
             Debug.Log(

@@ -38,6 +38,34 @@ public sealed class BossFightHudMotion {
         rig.callOutRect.localScale = Vector3.one * Mathf.Lerp(1.3f, 1f, pop);
     }
 
+    // the boss name starts big in the lower half, holds a beat, then shrinks
+    // as it glides up to its slot above the bar; unscaled, eased as the call
+    // out is
+    public void UpdateNameIntro() {
+        if (rig.nameLabel == null || rig.nameIntroAgeS < 0f) {
+            return;
+        }
+        RectTransform rect = rig.nameLabel.rectTransform;
+        float h = rig.canvasRect != null ? rig.canvasRect.rect.height : 1080f;
+        Vector2 docked = new Vector2(0f, -16f);
+        Vector2 start = new Vector2(
+            0f, -h * (0.5f + config.NameIntroDrop) + rect.rect.height
+        );
+        float glide = Mathf.Clamp01(
+            (rig.nameIntroAgeS - config.NameIntroHoldS)
+                / Mathf.Max(0.01f, config.NameIntroGlideS)
+        );
+        float eased = glide * glide * (3f - 2f * glide);
+        rect.anchoredPosition = Vector2.Lerp(start, docked, eased);
+        rect.localScale = Vector3.one
+            * Mathf.Lerp(config.NameIntroScale, 1f, eased);
+        if (glide >= 1f) {
+            rig.nameIntroAgeS = -1f;
+            return;
+        }
+        rig.nameIntroAgeS += Time.unscaledDeltaTime;
+    }
+
     // signs beat faster & grow as the hit nears
     public void UpdateWarnings() {
         foreach (BossFightHudWarning warning in rig.warnings) {

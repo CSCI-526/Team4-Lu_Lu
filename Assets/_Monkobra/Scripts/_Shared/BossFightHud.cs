@@ -58,7 +58,11 @@ public class BossFightHud: MonoBehaviour {
         rig.Motion = motion;
     }
 
-    /// <summary>Builds the UI and shows the health bar, full.</summary>
+    /// <summary>
+    /// Builds the UI and shows the health bar, full, & the boss name: big in
+    /// the lower half of the screen first, then shrinking as it glides up to
+    /// its place above the bar. It is never shown anywhere else.
+    /// </summary>
     public void Show(string bossName) {
         if (!builder.TryBuild()) {
             return;
@@ -70,6 +74,8 @@ public class BossFightHud: MonoBehaviour {
         }
         rig.nameLabel.gameObject.SetActive(true);
         rig.nameLabel.text = bossName;
+        rig.nameIntroAgeS = 0f;
+        motion.UpdateNameIntro();
         SetHealth(1f);
         rig.heartHealth = -1;
     }
@@ -453,6 +459,7 @@ public class BossFightHud: MonoBehaviour {
         if (rig.nameLabel != null) {
             rig.nameLabel.gameObject.SetActive(false);
         }
+        rig.nameIntroAgeS = -1f;
     }
 
     /// <summary>
@@ -678,6 +685,7 @@ public class BossFightHud: MonoBehaviour {
         motion.UpdatePops();
         motion.UpdateWarnings();
         motion.UpdateCallOut();
+        motion.UpdateNameIntro();
         UpdateHeart();
         UpdateMonkeyHearts();
         UpdateModeChoice();

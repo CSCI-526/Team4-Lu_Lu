@@ -68,6 +68,12 @@ public sealed class BossFightHudBuilder {
         CreateHeart(bar);
         rig.nameLabel =
             CreateLabel("Name", rig.rootRect, "", 28f, UIStyle.Cream);
+        if (config.BossNameFont != null) {
+            rig.nameLabel.font = config.BossNameFont;
+            rig.nameLabel.fontSharedMaterial = config.BossNameFont.material;
+        }
+        rig.nameLabel.outlineWidth = 0.2f;
+        rig.nameLabel.outlineColor = Color.black;
         RectTransform nameRect = rig.nameLabel.rectTransform;
         nameRect.anchorMin = nameRect.anchorMax = new Vector2(0.5f, 1f);
         nameRect.pivot = new Vector2(0.5f, 1f);

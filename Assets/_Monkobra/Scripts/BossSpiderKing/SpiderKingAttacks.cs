@@ -121,9 +121,6 @@ public sealed class SpiderKingAttacks {
                 rig.onDashWarn?.Invoke();
                 break;
         }
-        if (isTeaching) {
-            rig.Teaching.ShowStepBanner();
-        }
     }
 
     public float AttackGlow() {

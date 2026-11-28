@@ -584,7 +584,6 @@ public class SpiderKingFightController: MonoBehaviour {
         // first slash later teaches its own parry
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
             : SpiderKingTeachStep.Parry;
-        teaching.Teach(config.BossName, "", config.WarnColor, 2f);
         // the gold armor, as in the Cobra King's arena: it swirls on, no
         // words; worn already, it stays
         SpiderKingDamage.GiveArmor();
