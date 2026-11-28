@@ -123,6 +123,10 @@ todo add 3x fruit
 - a lost heart or armor shows a `-1` in Anton flying from the monkey to the
   heart row (red) or the armor mark (gold); the heart dims or the mark goes
   as it lands (`BossFightHud.PopLoss`); "Heart lost!" and "Saved!" are gone
+- boss damage shows a deep red `-n` in Anton flying from the head or weak
+  spot to the health bar; the bar and heart count drop as it lands
+  (`BossFightHud.PopDamage`, `BossHitColor`); a kill hit's finisher starts
+  at once
 
 ##### Houdong Pan
 

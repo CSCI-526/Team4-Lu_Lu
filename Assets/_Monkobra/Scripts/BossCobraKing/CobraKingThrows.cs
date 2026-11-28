@@ -112,8 +112,8 @@ public sealed class CobraKingThrows {
         rig.health = Mathf.Max(0, rig.health - damage);
         rig.body.FlashHit();
         rig.onJewelHit?.Invoke();
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        rig.hud.PopDamage("-" + damage, rig.body.WeakSpotPosition);
+        rig.hud.PopDamage(damage, rig.health, rig.maxHealth,
+            rig.body.WeakSpotPosition);
 
         if (rig.health <= 0) {
             rig.Ending.StartFinisher(true);

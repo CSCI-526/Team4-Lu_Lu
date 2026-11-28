@@ -97,6 +97,38 @@ public sealed class BossFightHudMotion {
         }
     }
 
+    // each -n flies from the boss to the health bar & drops it on landing;
+    // unscaled, so the slow motion of a last blow never stalls it
+    public void UpdateDamageFlights() {
+        for (int i = rig.damageFlights.Count - 1; i >= 0; i--) {
+            BossFightHudDamageFlight flight = rig.damageFlights[i];
+            if (flight.label == null) {
+                rig.damageFlights.RemoveAt(i);
+                continue;
+            }
+            flight.ageS += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(
+                flight.ageS / Mathf.Max(0.05f, config.LossFlightS)
+            );
+            Vector2 from = ScreenLocal(flight.worldPosition);
+            Vector2 to = rig.healthFill != null && rig.canvasRect != null
+                ? (Vector2)rig.canvasRect.InverseTransformPoint(
+                    rig.healthFill.parent.position)
+                : Vector2.zero;
+            RectTransform rect = flight.label.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.Lerp(from, to, t * t);
+            rect.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.8f, t);
+            if (t >= 1f) {
+                UnityEngine.Object.Destroy(flight.label.gameObject);
+                rig.damageFlights.RemoveAt(i);
+                rig.DamageLanded?.Invoke(flight);
+                continue;
+            }
+            rig.damageFlights[i] = flight;
+        }
+    }
+
     // canvas local point under a world point
     private Vector2 ScreenLocal(Vector3 world) {
         Camera cam = Camera.main;

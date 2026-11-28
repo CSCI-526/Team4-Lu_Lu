@@ -48,6 +48,10 @@ public class BossFightHudConfig: ScriptableObject {
     /// <returns>tint of the health bar</returns>
     public Color HealthColor => healthColor;
 
+    /// <returns>tint of the -n flying from a hit boss to its health bar,
+    /// a deeper red than the hearts'</returns>
+    public Color BossHitColor => bossHitColor;
+
     /// <returns>tint of a damage number</returns>
     public Color DamageColor => damageColor;
 
@@ -142,6 +146,11 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("tint of the health bar")]
     private Color healthColor = new Color(0.85f, 0.15f, 0.15f);
+
+    [SerializeField]
+    [Tooltip("tint of the -n flying from a hit boss to its health bar, a "
+        + "deeper red than the hearts'")]
+    private Color bossHitColor = new Color(0.6f, 0.03f, 0.07f);
 
     [SerializeField]
     [Tooltip("tint of a damage number")]

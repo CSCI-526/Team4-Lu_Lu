@@ -24,6 +24,15 @@ public struct BossFightHudLossFlight {
     public float ageS;
 }
 
+public struct BossFightHudDamageFlight {
+    public TextMeshProUGUI label;
+    public Vector3 worldPosition;
+    // the boss health the bar drops to as the number lands
+    public int health;
+    public int maxHealth;
+    public float ageS;
+}
+
 public struct BossFightHudWarning {
     public int id;
     public RectTransform sign;
@@ -104,6 +113,10 @@ public sealed class BossFightHudRig {
     public readonly List<BossFightHudLossFlight> lossFlights =
         new List<BossFightHudLossFlight>();
     public System.Action<BossFightHudLossFlight> LossLanded;
+    // -n numbers flying to the boss health bar
+    public readonly List<BossFightHudDamageFlight> damageFlights =
+        new List<BossFightHudDamageFlight>();
+    public System.Action<BossFightHudDamageFlight> DamageLanded;
     // real s a heart loss waits for its flight before it dims anyway
     public float heartGraceLeftS;
     public const float HEART_GRACE_S = 0.15f;

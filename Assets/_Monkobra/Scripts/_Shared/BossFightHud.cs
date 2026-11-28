@@ -57,6 +57,7 @@ public class BossFightHud: MonoBehaviour {
         rig.Builder = builder;
         rig.Motion = motion;
         rig.LossLanded = OnLossLanded;
+        rig.DamageLanded = OnDamageLanded;
     }
 
     /// <summary>
@@ -75,6 +76,7 @@ public class BossFightHud: MonoBehaviour {
         }
         rig.nameLabel.gameObject.SetActive(true);
         rig.nameLabel.text = bossName;
+        CancelDamageFlights();
         rig.nameIntroAgeS = 0f;
         motion.UpdateNameIntro();
         SetHealth(1f);
@@ -145,6 +147,11 @@ public class BossFightHud: MonoBehaviour {
     /// the bar; the heart pops as the count drops.
     /// </summary>
     public void SetHealth(int health, int maxHealth) {
+        CancelDamageFlights();
+        ApplyHealth(health, maxHealth);
+    }
+
+    private void ApplyHealth(int health, int maxHealth) {
         SetHealth(maxHealth > 0 ? health / (float)maxHealth : 0f);
         if (rig.heartLabel == null) {
             return;
@@ -226,9 +233,49 @@ public class BossFightHud: MonoBehaviour {
         rig.callOutAgeS = 0f;
     }
 
-    /// <summary>Pops a rising damage number at a world point.</summary>
-    public void PopDamage(string text, Vector3 worldPosition) {
-        PopText(text, worldPosition, config.DamageColor);
+    /// <summary>
+    /// A deep red -<paramref name="damage"/> flies from a world point (the
+    /// head or weak spot) up to the health bar; the bar & heart count drop
+    /// to <paramref name="health"/> of <paramref name="maxHealth"/> only as
+    /// it lands, so call this in place of <c>SetHealth</c>.
+    /// </summary>
+    public void PopDamage(
+        int damage, int health, int maxHealth, Vector3 worldPosition
+    ) {
+        if (rig.rootRect == null || rig.healthFill == null) {
+            ApplyHealth(health, maxHealth);
+            return;
+        }
+        TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
+            "Damage", rig.rootRect, "-" + damage, 64f, config.BossHitColor
+        );
+        BossFightHudBuilder.UseFont(label, config.WarningFont);
+        label.outlineWidth = 0.25f;
+        label.outlineColor = Color.white;
+        label.rectTransform.sizeDelta = new Vector2(160f, 80f);
+        rig.damageFlights.Add(new BossFightHudDamageFlight {
+            label = label,
+            worldPosition = worldPosition,
+            health = health,
+            maxHealth = maxHealth,
+            ageS = 0f
+        });
+        motion.UpdateDamageFlights();
+    }
+
+    // a -n landed: the bar & heart count drop
+    private void OnDamageLanded(BossFightHudDamageFlight flight) {
+        ApplyHealth(flight.health, flight.maxHealth);
+    }
+
+    // a reset or a hidden bar leaves no stale drop to land later
+    private void CancelDamageFlights() {
+        foreach (BossFightHudDamageFlight flight in rig.damageFlights) {
+            if (flight.label != null) {
+                Destroy(flight.label.gameObject);
+            }
+        }
+        rig.damageFlights.Clear();
     }
 
     /// <summary>Pops a rising word at a world point, eg "Blocked!".
@@ -563,6 +610,7 @@ public class BossFightHud: MonoBehaviour {
             rig.nameLabel.gameObject.SetActive(false);
         }
         rig.nameIntroAgeS = -1f;
+        CancelDamageFlights();
     }
 
     /// <summary>
@@ -792,6 +840,7 @@ public class BossFightHud: MonoBehaviour {
         }
         motion.UpdatePops();
         motion.UpdateLossFlights();
+        motion.UpdateDamageFlights();
         UpdateHeartGrace();
         motion.UpdateWarnings();
         motion.UpdateCallOut();
