@@ -384,6 +384,10 @@ public class CobraKingConfig: ScriptableObject {
     /// center; u</returns>
     public float ArmorHelmetU => armorHelmetU;
 
+    /// <returns>size of the golden crown on the monkey's head, times the
+    /// king's own crown</returns>
+    public float ArmorCrownScale => armorCrownScale;
+
     /// <returns>win reward: the armor pieces swirl in onto the monkey
     /// & pulse for this long; s</returns>
     public float ArmorRewardS => armorRewardS;
@@ -834,7 +838,7 @@ public class CobraKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("outline tint of the golden banana")]
-    private Color goldenOutlineColor = new Color(1f, 0.75f, 0f);
+    private Color goldenOutlineColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("golden banana outline width, times the usual grab outline's, so "
@@ -969,6 +973,12 @@ public class CobraKingConfig: ScriptableObject {
     private float armorHelmetU = 0.95f;
 
     [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("size of the golden crown on the monkey's head, times the king's "
+        + "own crown")]
+    private float armorCrownScale = 0.8f;
+
+    [SerializeField]
     [Tooltip("win reward: the armor pieces swirl in onto the monkey & pulse "
         + "for this long; s")]
     [Min(0.3f)]
@@ -1017,7 +1027,7 @@ public class CobraKingConfig: ScriptableObject {
     [Header("Colors")]
     [SerializeField]
     [Tooltip("tint of the golden armor & banana")]
-    private Color goldenColor = new Color(1f, 0.82f, 0.15f);
+    private Color goldenColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("tint of an attack warning at its brightest")]

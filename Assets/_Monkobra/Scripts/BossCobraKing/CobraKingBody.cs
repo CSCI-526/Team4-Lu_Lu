@@ -218,6 +218,38 @@ public class CobraKingBody: MonoBehaviour {
     }
 
     /// <summary>
+    /// Builds the crown model, a band & 3 points, at unit scale under
+    /// <paramref name="parent"/>: the king's own head wears it, & so does the
+    /// monkey's golden armor.
+    /// </summary>
+    /// <param name="parent">holder the crown hangs under</param>
+    /// <param name="material">material of every part, if any</param>
+    /// <param name="color">tint of every part</param>
+    /// <returns>the crown's root, at the parent's origin</returns>
+    public static Transform BuildCrown(
+        Transform parent, Material material, Color color
+    ) {
+        Transform root = new GameObject("Crown").transform;
+        root.SetParent(parent, false);
+        MakeCrownPart(
+            PrimitiveType.Cylinder, "Band", root, Vector3.zero,
+            new Vector3(1.4f, 0.16f, 1.4f), material, color
+        );
+        for (int i = 0; i < 3; i++) {
+            float radians = (90f + (i - 1) * 50f) * Mathf.Deg2Rad;
+            MakeCrownPart(
+                PrimitiveType.Cube, "Point" + i, root,
+                new Vector3(
+                    Mathf.Cos(radians) * 0.55f, 0.3f,
+                    Mathf.Sin(radians) * 0.55f
+                ),
+                new Vector3(0.24f, 0.45f, 0.24f), material, color
+            );
+        }
+        return root;
+    }
+
+    /// <summary>
     /// Drops a running strike's impact: the head still eases back, but
     /// <c>onImpact</c> never runs, eg when the fight restarts.
     /// </summary>
@@ -464,25 +496,8 @@ public class CobraKingBody: MonoBehaviour {
         }
 
         // small crown: a gold band, 3 points & the jewel weak spot in front
-        crown = new GameObject("Crown").transform;
-        crown.SetParent(head, false);
+        crown = BuildCrown(head, bodyMaterial, crownColor);
         crown.localPosition = new Vector3(0f, headSizeU.y * 0.47f, -0.05f);
-        CreatePart(
-            PrimitiveType.Cylinder, "Band", crown, Vector3.zero,
-            new Vector3(1.4f, 0.16f, 1.4f), crownColor, false, true
-        );
-        for (int i = 0; i < 3; i++) {
-            float radians = (90f + (i - 1) * 50f) * Mathf.Deg2Rad;
-            CreatePart(
-                PrimitiveType.Cube, "Point" + i, crown,
-                new Vector3(
-                    Mathf.Cos(radians) * 0.55f,
-                    0.3f,
-                    Mathf.Sin(radians) * 0.55f
-                ),
-                new Vector3(0.24f, 0.45f, 0.24f), crownColor, false, true
-            );
-        }
         // the spot thrown bananas fly at, on the crown's front; kept invisible
         weakSpot = CreatePart(
             PrimitiveType.Sphere, "Target", crown,
@@ -650,6 +665,30 @@ public class CobraKingBody: MonoBehaviour {
                 * (1f - piece.ageS / debrisLifeS);
             debris[i] = piece;
         }
+    }
+
+    // one plain, collider-free crown part, tinted by a property block
+    private static void MakeCrownPart(
+        PrimitiveType type, string partName, Transform parent,
+        Vector3 localPosition, Vector3 scale, Material material, Color color
+    ) {
+        GameObject part = GameObject.CreatePrimitive(type);
+        part.name = partName;
+        part.transform.SetParent(parent, false);
+        part.transform.localPosition = localPosition;
+        part.transform.localScale = scale;
+        Collider partCollider = part.GetComponent<Collider>();
+        if (partCollider != null) {
+            UnityEngine.Object.Destroy(partCollider);
+        }
+        Renderer partRenderer = part.GetComponent<Renderer>();
+        if (material != null) {
+            partRenderer.sharedMaterial = material;
+        }
+        var block = new MaterialPropertyBlock();
+        block.SetColor(BASE_COLOR, color);
+        block.SetColor(COLOR, color);
+        partRenderer.SetPropertyBlock(block);
     }
 
     private Renderer CreatePart(

@@ -85,7 +85,7 @@ MonoBehaviour:
   roughBarkHeightRangeU: {x: 5, y: 8.5}
   roughBarkArcRangeDeg: {x: 110, y: 170}
   goldenOutlineMaterial: {fileID: 2100000, guid: 4f18a8f2e3bd5c946afbf6e361590ba3, type: 2}
-  goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
+  goldenOutlineColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   goldenOutlineWidthScale: 2
   armorIntroTitle: You get a Golden Armor!
   armorIntroLine: Blocks 1 fatal hit
@@ -114,6 +114,7 @@ MonoBehaviour:
   goldenAboveMonkeyU: 3
   armorOutU: 0.45
   armorHelmetU: 0.95
+  armorCrownScale: 0.8
   armorRewardS: 1.6
   armorRewardRadiusU: 3
   finisherTimeScale: 0.2
@@ -124,7 +125,7 @@ MonoBehaviour:
   victoryDelayS: 0.8
   dotCount: 12
   dotRadiusU: 0.12
-  goldenColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+  goldenColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   warningColor: {r: 1, g: 0.15, b: 0.15, a: 1}
   warningDimColor: {r: 0.45, g: 0.05, b: 0.05, a: 1}
   stripHeavyMaterial: {fileID: 2100000, guid: 5170d7e776634416a7b1e1bada63c249, type: 2}

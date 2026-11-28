@@ -9,6 +9,7 @@ public sealed class CobraKingArmor {
     // private members  ########################################################
     private readonly CobraKingRig rig;
     private readonly CobraKingConfig config;
+    private Renderer[] crownRenderers; // parts of the worn crown, to tint
 
     public CobraKingArmor(CobraKingRig rig) {
         this.rig = rig;
@@ -102,29 +103,18 @@ public sealed class CobraKingArmor {
         }
     }
 
-    // gold armor worn while shielded: a back plate facing the camera, two
-    // shoulder pads & a helmet, all plain primitives
+    // the golden crown worn while shielded: the king's crown model, alone on
+    // the monkey's head
     public void BuildShieldRing() {
-        rig.armor = new Transform[4];
-        rig.armor[0] = rig.Feedback.CreatePrimitive(
-            PrimitiveType.Cylinder, "ArmorPlate",
-            new Vector3(1.1f, 0.08f, 1.3f), config.GoldenColor
-        ).transform;
-        for (int side = 0; side < 2; side++) {
-            rig.armor[1 + side] = rig.Feedback.CreatePrimitive(
-                PrimitiveType.Sphere, side == 0 ? "ArmorPadL" : "ArmorPadR",
-                new Vector3(0.6f, 0.4f, 0.6f), config.GoldenColor
-            ).transform;
-        }
-        rig.armor[3] = rig.Feedback.CreatePrimitive(
-            PrimitiveType.Sphere, "ArmorHelmet",
-            new Vector3(0.85f, 0.5f, 0.85f), config.GoldenColor
-        ).transform;
-        rig.armorBaseScales = new Vector3[rig.armor.Length];
-        for (int i = 0; i < rig.armor.Length; i++) {
-            rig.armorBaseScales[i] = rig.armor[i].localScale;
-            rig.armor[i].gameObject.SetActive(false);
-        }
+        Transform crown = CobraKingBody.BuildCrown(
+            rig.host, rig.body.PrimitiveMaterial, config.GoldenColor
+        );
+        crown.name = "ArmorCrown";
+        crown.localScale = Vector3.one * config.ArmorCrownScale;
+        crownRenderers = crown.GetComponentsInChildren<Renderer>();
+        rig.armor = new[] { crown };
+        rig.armorBaseScales = new[] { crown.localScale };
+        crown.gameObject.SetActive(false);
     }
 
     // Golden Banana  ----------------------------------------------------------
@@ -164,24 +154,15 @@ public sealed class CobraKingArmor {
         Color gold = Color.Lerp(config.GoldenColor, Color.white, shine * 0.35f);
         float rewardT = UpdateArmorReward();
 
-        Vector3[] positions = {
-            rig.monkey.position + outward * config.ArmorOutU + Vector3.up
-                * 0.15f,
-            rig.monkey.position + outward * (config.ArmorOutU * 0.6f) - side
-                * 0.55f
-                + Vector3.up * 0.6f,
-            rig.monkey.position + outward * (config.ArmorOutU * 0.6f) + side
-                * 0.55f
-                + Vector3.up * 0.6f,
-            rig.monkey.position + Vector3.up * config.ArmorHelmetU,
-        }
-        ;
+        // the crown sits on the monkey's head
+        Vector3 headPosition =
+            rig.monkey.position + Vector3.up * config.ArmorHelmetU;
         for (int i = 0; i < rig.armor.Length; i++) {
             rig.armor[i].gameObject.SetActive(rig.hasShield);
             if (!rig.hasShield) {
                 continue;
             }
-            Vector3 position = positions[i];
+            Vector3 position = headPosition;
             float scale = 1f;
             Color color = gold;
             if (rewardT >= 0f) {
@@ -206,10 +187,12 @@ public sealed class CobraKingArmor {
             }
             rig.armor[i].position = position;
             rig.armor[i].localScale = rig.armorBaseScales[i] * scale;
-            rig.armor[i].rotation = i == 0
-                ? Quaternion.FromToRotation(Vector3.up, outward)
-                : Quaternion.LookRotation(outward, Vector3.up);
-            rig.Feedback.SetColor(rig.armor[i].GetComponent<Renderer>(), color);
+            rig.armor[i].rotation = Quaternion.LookRotation(
+                outward, Vector3.up
+            );
+            foreach (Renderer part in crownRenderers) {
+                rig.Feedback.SetColor(part, color);
+            }
         }
     }
 
