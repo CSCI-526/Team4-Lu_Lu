@@ -19,11 +19,22 @@ MonoBehaviour:
   hintIconLibrary: {fileID: 11400000, guid: e27beeef1cc5f1d43b77440b64477b1d, type: 2}
   promptKeyboardController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
   promptTouchController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
+  heartSprite: {fileID: 0}
+  armorSprite: {fileID: 0}
   healthColor: {r: 0.85, g: 0.15, b: 0.15, a: 1}
+  bossHitColor: {r: 0.6, g: 0.03, b: 0.07, a: 1}
   damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  heartLossColor: {r: 0.92, g: 0.2, b: 0.27, a: 1}
+  armorLossColor: {r: 1, g: 0.82, b: 0.2, a: 1}
+  lossFlightS: 0.6
   warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
   warningOffset: {x: 0, y: 70}
   warningFont: {fileID: 11400000, guid: c702ba559046c9c4c9ffd7c3041c8a56, type: 2}
+  bossNameFont: {fileID: 11400000, guid: b22815bb64856dc42b3bb558722b603d, type: 2}
+  nameIntroScale: 4
+  nameIntroDrop: 0.25
+  nameIntroHoldS: 0.9
+  nameIntroGlideS: 0.7
   attackWords:
   - item: 13
     word: Bite!
