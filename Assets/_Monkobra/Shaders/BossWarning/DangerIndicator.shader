@@ -5,7 +5,7 @@ Shader "Monkobra/DangerIndicator" {
         _TintStrength("How far the tint pulls the texture colour", Range(0,1)) = 0.5
         [Enum(Strip top, 0, Arrow bottom, 1)] _Band("Band of the texture", Float) = 0
         [Enum(Disc XZ, 0, Line XY, 1, Wall round Y, 2)] _PlaneMode("Plane mode", Float) = 0
-        _TileSize("Disc and wall: world units per band height. Line: width multiple", Float) = 1
+        _TileSize("Disc and line: size multiple (bigger shows fewer bars). Wall: world units per band height", Float) = 1
         _BandInset("Gap kept from the band edge (V, 0 to 0.1)", Range(0, 0.1)) = 0.02
         _Scroll("Scroll along U, tiles per second", Float) = 0.5
         _Direction("Direction along U, 1 or -1 (flips arrows and scroll)", Float) = 1
@@ -64,9 +64,10 @@ Shader "Monkobra/DangerIndicator" {
                 float3 s=input.scaleWS;
                 float u,t;
                 if(_PlaneMode<0.5) {
-                    // disc: the flat cap, in the XZ plane
-                    u=(p.z*s.z)/(2.0*_TileSize);
-                    t=(p.x*s.x)/_TileSize+0.5;
+                    // disc: the flat cap in the XZ plane, the whole band fits the
+                    // diameter, so the bars count stays as the fill grows
+                    u=(p.z*s.z)/(2.0*max(s.x,0.0001)*_TileSize);
+                    t=p.x+0.5;
                 } else if(_PlaneMode<1.5) {
                     // line or strip: the whole band fits the width, U runs along Y
                     u=(p.y*s.y)/(2.0*max(s.x,0.0001)*_TileSize);

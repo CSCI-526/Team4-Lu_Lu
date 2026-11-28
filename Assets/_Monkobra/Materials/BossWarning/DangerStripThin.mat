@@ -37,7 +37,7 @@ Material:
     - _PulseRate: 5
     - _PulseRateMax: 18
     - _Scroll: 0.1
-    - _TileSize: 0.8
+    - _TileSize: 1
     - _TintStrength: 0.5
     - _Urgency: 0
     m_Colors:
