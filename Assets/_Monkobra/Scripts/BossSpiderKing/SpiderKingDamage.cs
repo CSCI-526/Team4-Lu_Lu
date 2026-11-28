@@ -91,7 +91,7 @@ public sealed class SpiderKingDamage {
         if (isTouch) {
             ShowTouchWarning(HasArmor());
         }
-        // the armor saves as in the Cobra King's arena: "Saved!" & the usual
+        // the armor saves as in the Cobra King's arena: a gold -1 & the usual
         // knock down; the spider goes on
         if (TryAbsorb()) {
             if (rig.mode == SpiderKingMode.Cocooning) {
@@ -200,7 +200,7 @@ public sealed class SpiderKingDamage {
         if (rig.struggle != null) {
             rig.struggle.ForceRelease();
         }
-        rig.hud.PopText("Heart lost!", rig.monkey.position, config.WarnColor);
+        rig.hud.PopLoss(BossFightHudLoss.Heart, rig.monkey.position);
         return true;
     }
 

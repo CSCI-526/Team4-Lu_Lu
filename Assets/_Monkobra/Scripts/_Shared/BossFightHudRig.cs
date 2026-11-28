@@ -9,6 +9,21 @@ public struct BossFightHudPop {
     public float ageS;
 }
 
+/// <summary>What a flying -1 stands for.</summary>
+public enum BossFightHudLoss {
+    Heart,
+    Armor
+}
+
+public struct BossFightHudLossFlight {
+    public TextMeshProUGUI label;
+    public BossFightHudLoss kind;
+    public Vector3 worldPosition;
+    // the heart that dims on arrival
+    public int heartIndex;
+    public float ageS;
+}
+
 public struct BossFightHudWarning {
     public int id;
     public RectTransform sign;
@@ -85,6 +100,13 @@ public sealed class BossFightHudRig {
     public RectTransform armorMark;
     public bool isArmorShown;
     public int monkeyHeartsShown = -1;
+    // -1 numbers flying to the heart row or the armor mark
+    public readonly List<BossFightHudLossFlight> lossFlights =
+        new List<BossFightHudLossFlight>();
+    public System.Action<BossFightHudLossFlight> LossLanded;
+    // real s a heart loss waits for its flight before it dims anyway
+    public float heartGraceLeftS;
+    public const float HEART_GRACE_S = 0.15f;
     public int monkeyHeartLostIndex = -1;
     public float monkeyHeartPopLeftS;
     public GameObject rewardPanel;

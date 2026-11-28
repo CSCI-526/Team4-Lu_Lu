@@ -66,6 +66,75 @@ public sealed class BossFightHudMotion {
         rig.nameIntroAgeS += Time.unscaledDeltaTime;
     }
 
+    // each -1 flies from the monkey to its heart or the armor mark, easing
+    // in; unscaled, so a slow motion finisher never stalls it
+    public void UpdateLossFlights() {
+        for (int i = rig.lossFlights.Count - 1; i >= 0; i--) {
+            BossFightHudLossFlight flight = rig.lossFlights[i];
+            if (flight.label == null) {
+                rig.lossFlights.RemoveAt(i);
+                continue;
+            }
+            flight.ageS += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(
+                flight.ageS / Mathf.Max(0.05f, config.LossFlightS)
+            );
+            Vector2 from = ScreenLocal(flight.worldPosition);
+            Vector2 to = LossTarget(flight);
+            float eased = t * t;
+            RectTransform rect = flight.label.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.Lerp(from, to, eased)
+                + new Vector2(0f, 40f * Mathf.Sin(t * Mathf.PI));
+            rect.localScale = Vector3.one * Mathf.Lerp(1.4f, 0.8f, t);
+            if (t >= 1f) {
+                UnityEngine.Object.Destroy(flight.label.gameObject);
+                rig.lossFlights.RemoveAt(i);
+                rig.LossLanded?.Invoke(flight);
+                continue;
+            }
+            rig.lossFlights[i] = flight;
+        }
+    }
+
+    // canvas local point under a world point
+    private Vector2 ScreenLocal(Vector3 world) {
+        Camera cam = Camera.main;
+        if (cam == null || rig.canvasRect == null) {
+            return Vector2.zero;
+        }
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            rig.canvasRect, cam.WorldToScreenPoint(world), rig.canvasCamera,
+            out Vector2 local
+        );
+        return local;
+    }
+
+    // where a -1 lands: its heart, the armor mark or badge, else the corner
+    private Vector2 LossTarget(BossFightHudLossFlight flight) {
+        RectTransform target = null;
+        if (flight.kind == BossFightHudLoss.Heart) {
+            if (flight.heartIndex >= 0
+                && flight.heartIndex < rig.monkeyHeartImages.Count) {
+                target = rig.monkeyHeartImages[flight.heartIndex]
+                    .rectTransform;
+            }
+        } else if (rig.armorMark != null
+            && rig.armorMark.gameObject.activeInHierarchy) {
+            target = rig.armorMark;
+        } else if (rig.armorBadge != null
+            && rig.armorBadge.gameObject.activeInHierarchy) {
+            target = rig.armorBadge;
+        }
+        if (target == null || rig.canvasRect == null) {
+            return rig.canvasRect != null
+                ? new Vector2(-rig.canvasRect.rect.width * 0.5f + 80f,
+                    -rig.canvasRect.rect.height * 0.5f + 60f)
+                : Vector2.zero;
+        }
+        return rig.canvasRect.InverseTransformPoint(target.position);
+    }
+
     // the diamond & "!" wobble, faster & wider as the hit nears; the word
     // keeps its scale & place
     public void UpdateWarnings() {

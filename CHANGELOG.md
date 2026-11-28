@@ -120,6 +120,9 @@ todo add 3x fruit
 - spider web escape bar fills in toxic purple (`SpiderWebWidget.fillColor`),
   no longer the gold of a reward
 - Spider King parry clashes with sparks and slow motion only, no "Nice!" text
+- a lost heart or armor shows a `-1` in Anton flying from the monkey to the
+  heart row (red) or the armor mark (gold); the heart dims or the mark goes
+  as it lands (`BossFightHud.PopLoss`); "Heart lost!" and "Saved!" are gone
 
 ##### Houdong Pan
 

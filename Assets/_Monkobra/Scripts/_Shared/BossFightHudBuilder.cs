@@ -643,6 +643,16 @@ public sealed class BossFightHudBuilder {
         return image;
     }
 
+    // wears a font asset & its material; null keeps the TMP default
+    public static void UseFont(TextMeshProUGUI label, TMP_FontAsset font) {
+        if (font == null) {
+            return;
+        }
+        label.font = font;
+        label.fontSharedMaterial = font.material;
+        label.fontStyle = FontStyles.Normal;
+    }
+
     public static TextMeshProUGUI CreateLabel(
         string labelName,
         Transform parent,

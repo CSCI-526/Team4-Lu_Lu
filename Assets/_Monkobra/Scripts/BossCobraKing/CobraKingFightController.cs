@@ -190,7 +190,8 @@ public class CobraKingFightController: MonoBehaviour {
 
     /// <summary>
     /// Spends the kept gold armor on a fatal hit somewhere else, eg in the
-    /// Spider King fight: the badge goes & "Saved!" pops at the monkey.
+    /// Spider King fight: a gold -1 flies from the monkey to the armor mark
+    /// & the badge goes as it lands.
     /// </summary>
     /// <returns>if there was armor to spend</returns>
     public bool TrySpendArmor() {
@@ -199,8 +200,8 @@ public class CobraKingFightController: MonoBehaviour {
         }
         rig.hasShield = false;
         ArmorAbsorbed?.Invoke();
+        rig.hud.PopLoss(BossFightHudLoss.Armor, rig.monkey.position);
         rig.hud.ShowArmorBadge(false);
-        rig.hud.PopText("Saved!", rig.monkey.position, config.GoldenColor);
         rig.hud.Flash(config.GoldenColor);
         // the armor shatters off at once, never left hanging where it was
         if (rig.armor != null) {
@@ -266,19 +267,20 @@ public class CobraKingFightController: MonoBehaviour {
                 return false;
             }
         }
+        rig.cobraSaveGraceEndTime = Time.time + 1f;
+        rig.hud.PopLoss(isHeartSave
+            ? BossFightHudLoss.Heart : BossFightHudLoss.Armor,
+            rig.monkey.position);
         if (!isHeartSave) {
             rig.hasShield = false;
             ArmorAbsorbed?.Invoke();
             rig.hud.ShowArmorBadge(false);
         }
-        rig.cobraSaveGraceEndTime = Time.time + 1f;
-        rig.hud.PopText(isHeartSave ? "Heart lost!" : "Saved!",
-            rig.monkey.position, config.GoldenColor);
         rig.hud.Flash(config.GoldenColor);
         // in the fight that is the guard below: its peek ends & the monkey
         // flies back up to where the fight began, never left under the guard,
         // where it could not climb back alive; no freeze, as in the fight
-        // the armor only saves, the same "Saved!" as any fatal hit
+        // the armor only saves, the same as any fatal hit
         bool isGuardStill = rig.phase == CobraKingPhase.Fighting
             || rig.phase == CobraKingPhase.Defeated
             || rig.phase == CobraKingPhase.Rewarding;
@@ -663,8 +665,8 @@ public class CobraKingFightController: MonoBehaviour {
         armor.BuildShieldRing();
         rig.hasShield = true;
         rig.phase = CobraKingPhase.Done;
-        // never shown as a fight, so its UI is built here: "Saved!" & the
-        // flash of a save need it
+        // never shown as a fight, so its UI is built here: the loss numbers
+        // & the flash of a save need it
         rig.hud.BuildQuiet();
         // no chase call: the cobra is already after the monkey
         rig.hasWarnedChase = true;

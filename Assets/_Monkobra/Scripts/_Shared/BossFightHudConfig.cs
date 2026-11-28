@@ -51,6 +51,15 @@ public class BossFightHudConfig: ScriptableObject {
     /// <returns>tint of a damage number</returns>
     public Color DamageColor => damageColor;
 
+    /// <returns>tint of the -1 flying to a lost heart</returns>
+    public Color HeartLossColor => heartLossColor;
+
+    /// <returns>tint of the -1 flying to a lost armor</returns>
+    public Color ArmorLossColor => armorLossColor;
+
+    /// <returns>how long a loss number flies to the heart row; s</returns>
+    public float LossFlightS => lossFlightS;
+
     /// <returns>tint of an attack warning</returns>
     public Color WarningColor => warningColor;
 
@@ -137,6 +146,18 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("tint of a damage number")]
     private Color damageColor = new Color(1f, 0.85f, 0.2f);
+
+    [SerializeField]
+    [Tooltip("tint of the -1 flying to a lost heart")]
+    private Color heartLossColor = new Color(0.92f, 0.2f, 0.27f);
+
+    [SerializeField]
+    [Tooltip("tint of the -1 flying to a lost armor")]
+    private Color armorLossColor = new Color(1f, 0.82f, 0.2f);
+
+    [SerializeField]
+    [Tooltip("how long a loss number flies to the heart row; s")]
+    private float lossFlightS = 0.6f;
 
     [SerializeField]
     [Tooltip("tint of an attack warning")]

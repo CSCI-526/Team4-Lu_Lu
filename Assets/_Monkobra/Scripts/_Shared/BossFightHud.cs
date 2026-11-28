@@ -56,6 +56,7 @@ public class BossFightHud: MonoBehaviour {
         motion = new BossFightHudMotion(rig);
         rig.Builder = builder;
         rig.Motion = motion;
+        rig.LossLanded = OnLossLanded;
     }
 
     /// <summary>
@@ -119,7 +120,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>
     /// Builds the UI w/o the name & health bar, eg for a fight skipped as
-    /// beaten, so its armor badge, "Saved!" & flash still show.
+    /// beaten, so its armor badge, loss numbers & flash still show.
     /// </summary>
     public void BuildQuiet() {
         if (!builder.TryBuild()) {
@@ -394,6 +395,11 @@ public class BossFightHud: MonoBehaviour {
         rig.isArmorShown = isShown;
         // in a fight the armor shows beside the hearts instead
         rig.armorBadge.gameObject.SetActive(isShown && !MonkeyHearts.IsActive);
+        // a -1 still flying to the armor takes it away on arrival
+        if (!isShown && HasArmorLossFlight()) {
+            rig.armorBadge.gameObject.SetActive(!MonkeyHearts.IsActive);
+            return;
+        }
         rig.armorBadgePopS = isShown ? ARMOR_BADGE_POP_S : 0f;
         rig.armorBadge.localScale = Vector3.one;
         if (rig.armorMark != null) {
@@ -423,13 +429,110 @@ public class BossFightHud: MonoBehaviour {
             rig.monkeyHeartsShown = -1;
             return;
         }
-        builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts, MonkeyHearts.Hearts);
-        rig.armorMark.gameObject.SetActive(rig.isArmorShown);
+        // a lost heart waits for its -1 to land, or a short grace if none
+        // comes; anything else syncs at once
         if (rig.monkeyHeartsShown > MonkeyHearts.Hearts) {
-            rig.monkeyHeartLostIndex = MonkeyHearts.Hearts;
-            rig.monkeyHeartPopLeftS = MONKEY_HEART_POP_S;
+            rig.heartGraceLeftS = HEART_GRACE_S;
+            builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts,
+                rig.monkeyHeartsShown);
+        } else {
+            rig.heartGraceLeftS = 0f;
+            builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts,
+                MonkeyHearts.Hearts);
+            rig.monkeyHeartsShown = MonkeyHearts.Hearts;
         }
-        rig.monkeyHeartsShown = MonkeyHearts.Hearts;
+        if (!HasArmorLossFlight()) {
+            rig.armorMark.gameObject.SetActive(rig.isArmorShown);
+        }
+    }
+
+    // dims one more heart with its pop, down to the hearts left
+    private void ShowHeartLoss(bool isFinal) {
+        int shown = isFinal
+            ? MonkeyHearts.Hearts
+            : Mathf.Max(MonkeyHearts.Hearts, rig.monkeyHeartsShown - 1);
+        rig.heartGraceLeftS = 0f;
+        if (!MonkeyHearts.IsActive || shown >= rig.monkeyHeartsShown) {
+            return;
+        }
+        builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts, shown);
+        rig.monkeyHeartLostIndex = shown;
+        rig.monkeyHeartPopLeftS = MONKEY_HEART_POP_S;
+        rig.monkeyHeartsShown = shown;
+    }
+
+    private bool HasArmorLossFlight() {
+        foreach (BossFightHudLossFlight flight in rig.lossFlights) {
+            if (flight.kind == BossFightHudLoss.Armor) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// A -1 appears at the monkey and flies to the heart row (red) or the
+    /// armor mark (gold); only as it lands does a heart dim or the armor
+    /// mark go. No words print.
+    /// </summary>
+    /// <param name="kind">which loss it stands for; call it right after the
+    /// loss, before <see cref="ShowArmorBadge"/> hides the armor</param>
+    /// <param name="monkeyWorld">where the -1 starts</param>
+    public void PopLoss(BossFightHudLoss kind, Vector3 monkeyWorld) {
+        if (rig.rootRect == null) {
+            return;
+        }
+        bool isHeart = kind == BossFightHudLoss.Heart;
+        TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
+            "Loss", rig.rootRect, "-1", 64f,
+            isHeart ? config.HeartLossColor : config.ArmorLossColor
+        );
+        BossFightHudBuilder.UseFont(label, config.WarningFont);
+        label.outlineWidth = 0.25f;
+        label.outlineColor = Color.black;
+        label.rectTransform.sizeDelta = new Vector2(160f, 80f);
+        rig.lossFlights.Add(new BossFightHudLossFlight {
+            label = label,
+            kind = kind,
+            worldPosition = monkeyWorld,
+            heartIndex = MonkeyHearts.Hearts,
+            ageS = 0f
+        });
+        motion.UpdateLossFlights();
+    }
+
+    // a -1 landed: its heart dims or its armor goes
+    private void OnLossLanded(BossFightHudLossFlight flight) {
+        if (flight.kind == BossFightHudLoss.Heart) {
+            ShowHeartLoss(false);
+            return;
+        }
+        if (!rig.isArmorShown) {
+            if (rig.armorMark != null) {
+                rig.armorMark.gameObject.SetActive(false);
+            }
+            if (rig.armorBadge != null) {
+                rig.armorBadge.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    // a heart loss with no -1 coming dims after its grace
+    private void UpdateHeartGrace() {
+        if (rig.heartGraceLeftS <= 0f) {
+            return;
+        }
+        rig.heartGraceLeftS -= Time.unscaledDeltaTime;
+        if (rig.heartGraceLeftS > 0f) {
+            return;
+        }
+        foreach (BossFightHudLossFlight flight in rig.lossFlights) {
+            if (flight.kind == BossFightHudLoss.Heart) {
+                rig.heartGraceLeftS = HEART_GRACE_S;
+                return;
+            }
+        }
+        ShowHeartLoss(true);
     }
 
     // a lost heart pops big & settles dim: real s
@@ -688,6 +791,8 @@ public class BossFightHud: MonoBehaviour {
             motion.Place(rig.normalTag, rig.normalTagWorld, rig.tagOffset);
         }
         motion.UpdatePops();
+        motion.UpdateLossFlights();
+        UpdateHeartGrace();
         motion.UpdateWarnings();
         motion.UpdateCallOut();
         motion.UpdateNameIntro();
