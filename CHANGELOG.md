@@ -119,6 +119,7 @@ todo add 3x fruit
   and faster as the hit nears); the word keeps a fixed scale and place
 - spider web escape bar fills in toxic purple (`SpiderWebWidget.fillColor`),
   no longer the gold of a reward
+- Spider King parry clashes with sparks and slow motion only, no "Nice!" text
 
 ##### Houdong Pan
 

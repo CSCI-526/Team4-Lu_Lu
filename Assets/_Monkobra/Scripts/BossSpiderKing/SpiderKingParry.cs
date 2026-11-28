@@ -72,7 +72,7 @@ public sealed class SpiderKingParry {
     }
 
     // a parry plays in slow motion w/ the camera close in on the monkey,
-    // no flash: "Nice!" & gold sparks
+    // no flash: gold sparks
     public void ParryEffect(Vector3 at) {
         // more on its way (a volley's next bullet, the next slash): only a
         // short beat, the camera barely in, so the next one is seen in time
@@ -271,14 +271,12 @@ public sealed class SpiderKingParry {
         return rig.monkey.position + outward * 0.25f;
     }
 
-    // the clash: sparks flying off the tail where the thing meets it, &
-    // "Nice!"
+    // the clash: sparks flying off the tail where the thing meets it
     public void Clash(Vector3 at) {
         rig.onParried?.Invoke();
         rig.clashStopEndTime = Time.unscaledTime + CLASH_STOP_S;
         rig.shotClashTime = Time.unscaledTime;
         rig.shakeEndTime = Time.unscaledTime + SHAKE_S;
-        rig.hud.PopText("Nice!", at, UIStyle.Gold);
         AddCross(at);
         BurstStreaks(at, new Color(1f, 0.55f, 0.1f), 26, 6f, 15f);
         BurstStreaks(at, new Color(1f, 0.9f, 0.4f), 16, 4f, 10f);
