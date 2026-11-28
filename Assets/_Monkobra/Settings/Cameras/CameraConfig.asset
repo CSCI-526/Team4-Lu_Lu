@@ -92,6 +92,12 @@ MonoBehaviour:
     minHoldS: 0.8
     cooldownS: 4
     priority: 20
+  bossIntroShot:
+    durationS: 8
+    minHoldS: 1
+    cooldownS: 0
+    priority: 60
+  bossIntroHoldS: 3.5
   cobraAlertTravelS: 3
   cobraAlertSeeS: 3.5
   cobraAlertCreepSpeedU: 7

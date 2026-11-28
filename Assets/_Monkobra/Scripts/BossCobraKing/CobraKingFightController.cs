@@ -607,6 +607,11 @@ public class CobraKingFightController: MonoBehaviour {
         }
 
         rig.body.Track(rig.monkey.position);
+        // the intro cut scene holds the fight: only the king's gaze runs
+        if (intro.IsPlaying) {
+            intro.Tick();
+            return;
+        }
         rig.hud.SpeechAnchor = rig.body.HeadPosition;
         throws.UpdateProjectiles();
         arena.UpdateFruits();
@@ -630,6 +635,9 @@ public class CobraKingFightController: MonoBehaviour {
             ending.UpdateVictory();
         }
     }
+
+    // the cut scene that opens the fight, ticked while it plays
+    private readonly BossIntroCutScene intro = new BossIntroCutScene();
 
     // Setup  ------------------------------------------------------------------
     private bool HasReachedTrigger() {
@@ -739,10 +747,6 @@ public class CobraKingFightController: MonoBehaviour {
             armor.BuildShieldRing();
         }
 
-        rig.hud.Show(config.BossName);
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        MonkeyHearts.Begin(rig.HeartsNow);
-        rig.hud.Flash();
         // no free armor at a fight's start: the golden watermelon is its
         // only source (a retry or revive still hands it out, & armor won
         // earlier stays); the monkey's hearts are its spare lives
@@ -753,6 +757,21 @@ public class CobraKingFightController: MonoBehaviour {
                 this
             );
         }
+        // the fight opens on the cut scene, then the boss name; a skipped
+        // scene shows the name at once
+        intro.Begin(
+            () => rig.body.HeadPosition, TutorialItem.CobraKingIntro,
+            ShowFightHud
+        );
+    }
+
+    // the UI of the fight, shown once the intro cut scene is over: the boss
+    // name, health & hearts
+    private void ShowFightHud() {
+        rig.hud.Show(config.BossName);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
+        MonkeyHearts.Begin(rig.HeartsNow);
+        rig.hud.Flash();
     }
 
 }

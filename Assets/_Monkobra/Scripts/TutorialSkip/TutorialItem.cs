@@ -21,5 +21,7 @@ public enum TutorialItem {
     AttackWebShot,
     AttackDash,
     AttackSlash,
-    GoldenWatermelonGrab
+    GoldenWatermelonGrab,
+    CobraKingIntro,
+    SpiderKingIntro
 }

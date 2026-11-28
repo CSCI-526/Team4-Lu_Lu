@@ -404,6 +404,11 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
 
+        // the intro cut scene holds the fight: the spider waits where it is
+        if (intro.IsPlaying) {
+            intro.Tick();
+            return;
+        }
         rig.hud.SpeechAnchor = rig.body.HeadPosition;
         feedback.UpdateCamera();
         parry.UpdateSparks();
@@ -429,6 +434,9 @@ public class SpiderKingFightController: MonoBehaviour {
             ending.UpdateDefeat();
         }
     }
+
+    // the cut scene that opens the fight, ticked while it plays
+    private readonly BossIntroCutScene intro = new BossIntroCutScene();
 
     // Setup  ------------------------------------------------------------------
     // after the Cobra King, never mid leap; in the hardcore run at its turn
@@ -568,12 +576,6 @@ public class SpiderKingFightController: MonoBehaviour {
         arena.ClearStickyWebs();
         movement.ResetSpiderState();
 
-        rig.hud.Show(config.BossName);
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        MonkeyHearts.Begin(rig.HeartsNow);
-        // flashes as the Cobra King's: at the start, the last blow & a
-        // spent armor; never on a revive or a reward
-        rig.hud.Flash();
         // a seen or dev-skipped lesson counts both lessons as taught
         if (TutorialSkipManager.I != null
             && TutorialSkipManager.I.ShouldSkip(
@@ -588,7 +590,6 @@ public class SpiderKingFightController: MonoBehaviour {
             : SpiderKingTeachStep.Parry;
         // no free armor at the start, as in the Cobra King's arena: the
         // golden watermelon is its only source (a retry still hands it out)
-        rig.hud.Say("My web, my rules!");
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "SpiderKingFightController:\tspider fight begins at y "
@@ -596,6 +597,24 @@ public class SpiderKingFightController: MonoBehaviour {
                 this
             );
         }
+        // the fight opens on the cut scene, then the boss name; a skipped
+        // scene shows the name at once
+        intro.Begin(
+            () => rig.body.HeadPosition, TutorialItem.SpiderKingIntro,
+            ShowFightHud
+        );
+    }
+
+    // the UI of the fight, shown once the intro cut scene is over: the boss
+    // name, health, hearts & the king's first line
+    private void ShowFightHud() {
+        rig.hud.Show(config.BossName);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
+        MonkeyHearts.Begin(rig.HeartsNow);
+        // flashes as the Cobra King's: at the start, the last blow & a
+        // spent armor; never on a revive or a reward
+        rig.hud.Flash();
+        rig.hud.Say("My web, my rules!");
     }
 
 }

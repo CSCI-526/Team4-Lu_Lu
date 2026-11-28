@@ -32,14 +32,21 @@ public class CameraRigManager: MonoBehaviour {
         CobraAlert,
         Leap,
         SpiderIntro,
+        // a boss fight's opening look at the boss, on the spider intro camera
+        BossIntro,
     }
 
     /// <param name="kind">which shot</param>
     /// <returns>if the shot looks away from the monkey, so the input is
     /// locked & the cut away bars show</returns>
     public static bool IsCutAwayShot(ShotKind kind) {
-        return kind == ShotKind.CobraAlert || kind == ShotKind.SpiderIntro;
+        return kind == ShotKind.CobraAlert || kind == ShotKind.SpiderIntro
+            || kind == ShotKind.BossIntro;
     }
+
+    /// <returns>how long a boss intro cut scene lasts; s, 0 w/o a config
+    /// </returns>
+    public float BossIntroHoldS => config != null ? config.BossIntroHoldS : 0f;
 
     /// <summary>
     /// Raised as an event shot goes live (true) or ends (false).
@@ -474,6 +481,7 @@ public class CameraRigManager: MonoBehaviour {
             ShotKind.CobraAlert => config.CobraAlertShot,
             ShotKind.Leap => config.LeapShot,
             ShotKind.SpiderIntro => config.SpiderIntroShot,
+            ShotKind.BossIntro => config.BossIntroShot,
             _ => null,
         };
     }
@@ -484,6 +492,7 @@ public class CameraRigManager: MonoBehaviour {
             ShotKind.CobraAlert => cobraAlertCamera,
             ShotKind.Leap => leapCamera,
             ShotKind.SpiderIntro => spiderIntroCamera,
+            ShotKind.BossIntro => spiderIntroCamera,
             _ => null,
         };
     }
@@ -512,10 +521,15 @@ public class CameraRigManager: MonoBehaviour {
     // the climb view always stands ready, the live shot rises above it
     private void ApplyPriorities() {
         SetPriority(climbCamera, CLIMB_PRIORITY);
+        // judged per camera: 2 shots may share one, so a standby shot never
+        // lowers the camera its live sibling is using
+        CinemachineCamera liveCamera =
+            liveKind.HasValue ? GetCamera(liveKind.Value) : null;
         foreach (ShotKind kind in System.Enum.GetValues(typeof(ShotKind))) {
-            bool isLive = liveKind.HasValue && liveKind.Value == kind;
+            CinemachineCamera view = GetCamera(kind);
+            bool isLive = view != null && view == liveCamera;
             SetPriority(
-                GetCamera(kind),
+                view,
                 isLive ? SHOT_LIVE_PRIORITY : SHOT_STANDBY_PRIORITY
             );
         }
