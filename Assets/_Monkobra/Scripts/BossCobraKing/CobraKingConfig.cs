@@ -184,8 +184,13 @@ public class CobraKingConfig: ScriptableObject {
     /// arena's own obstacle branches</returns>
     public GameObject BranchEmptyPrefab => branchEmptyPrefab;
 
-    /// <returns>mesh shown in place of the banana on every arena
-    /// fruit, grabbed & thrown; the watermelon</returns>
+    /// <returns>the watermelon branch prefab, a variant of the banana
+    /// branch, bearing every arena fruit; built by
+    /// <c>Monkobra > Build > Watermelon Prefab</c></returns>
+    public GameObject WatermelonBranchPrefab => watermelonBranchPrefab;
+
+    /// <returns>watermelon mesh, an input of the watermelon prefab
+    /// builder; the arena never swaps it at runtime</returns>
     public Mesh WatermelonMesh => watermelonMesh;
 
     /// <returns>local scale of the watermelon on its branch</returns>
@@ -680,8 +685,13 @@ public class CobraKingConfig: ScriptableObject {
     private GameObject branchEmptyPrefab;
 
     [SerializeField]
-    [Tooltip("mesh shown in place of the banana on every arena fruit, grabbed "
-        + "& thrown; the watermelon")]
+    [Tooltip("the watermelon branch prefab, a variant of the banana branch, "
+        + "bearing every arena fruit; from Monkobra > Build > Watermelon "
+        + "Prefab")]
+    private GameObject watermelonBranchPrefab;
+
+    [SerializeField]
+    [Tooltip("watermelon mesh, an input of the watermelon prefab builder")]
     private Mesh watermelonMesh;
 
     [SerializeField]

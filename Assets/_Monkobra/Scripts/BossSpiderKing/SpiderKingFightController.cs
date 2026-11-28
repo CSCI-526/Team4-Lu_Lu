@@ -254,10 +254,11 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.onDashWarn = () => DashWarned?.Invoke();
         rig.onParried = () => Parried?.Invoke();
         if (worldBalanceConfig == null || config.WebPrefab == null
-            || config.BananaBranchPrefab == null) {
+            || config.WatermelonBranchPrefab == null) {
             Debug.LogError(
                 "SpiderKingFightController:\tmust assign Inspector Fields: "
-                    + "worldBalanceConfig, webPrefab, bananaBranchPrefab",
+                    + "worldBalanceConfig, webPrefab, watermelonBranchPrefab "
+                    + "(run Monkobra > Build > Watermelon Prefab)",
                 this
             );
             enabled = false;

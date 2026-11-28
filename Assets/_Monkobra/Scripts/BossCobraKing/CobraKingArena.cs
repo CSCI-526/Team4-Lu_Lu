@@ -21,7 +21,7 @@ public sealed class CobraKingArena {
     // up to the nest, grown here once & kept through a restart
     public void SpawnArenaBranches() {
         if (config.BranchEmptyPrefab == null
-            || config.BananaBranchPrefab == null) {
+            || config.WatermelonBranchPrefab == null) {
             return;
         }
         float bottomY = rig.GuardBottomY;
@@ -72,7 +72,7 @@ public sealed class CobraKingArena {
             }
             bool hasFruit = Random.value < config.ArenaBranchFruitChance;
             GameObject branch = UnityEngine.Object.Instantiate(
-                hasFruit ? config.BananaBranchPrefab
+                hasFruit ? config.WatermelonBranchPrefab
                     : config.BranchEmptyPrefab, rig.host
             );
             branch.transform.SetPositionAndRotation(
@@ -87,7 +87,6 @@ public sealed class CobraKingArena {
                 ScorePickup pickup =
                     branch.GetComponentInChildren<ScorePickup>(true);
                 if (pickup != null) {
-                    ApplyWatermelon(pickup.gameObject);
                     rig.arenaBranchFruits.Add(pickup.gameObject);
                 }
             }
@@ -569,20 +568,20 @@ public sealed class CobraKingArena {
     }
 
     /// <returns>the new fruit's index in the fruit list</returns>
-    // a real banana branch, as the tree segments grow, always bearing; the
-    // golden one is the same banana tinted gold w/ a thick gold outline
+    // a watermelon branch, a banana branch variant, always bearing; the
+    // golden one is the same melon tinted gold w/ a thick gold outline
     public int AddFruit(float angle, float y, bool isGolden) {
-        GameObject branch =
-            UnityEngine.Object.Instantiate(config.BananaBranchPrefab, rig.host);
+        GameObject branch = UnityEngine.Object.Instantiate(
+            config.WatermelonBranchPrefab, rig.host
+        );
         PlaceBranch(branch.transform, angle, y);
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
             controller.Setup();
-            // the banana branch prefab bears a banana
+            // the watermelon branch prefab bears a melon
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject banana = pickup != null ? pickup.gameObject : branch;
-        ApplyWatermelon(banana);
         if (isGolden) {
             rig.Armor.MakeGolden(banana);
         }
@@ -605,21 +604,6 @@ public sealed class CobraKingArena {
                 config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
         );
-    }
-
-    // the arena's fruit looks like a watermelon: the banana model's mesh is
-    // swapped, its collider & scripts stay, so grab & throw work as before
-    public void ApplyWatermelon(GameObject fruit) {
-        if (config.WatermelonMesh == null || fruit == null) {
-            return;
-        }
-        foreach (MeshFilter filter in
-            fruit.GetComponentsInChildren<MeshFilter>(true)) {
-            filter.sharedMesh = config.WatermelonMesh;
-            filter.transform.localRotation = Quaternion.identity;
-            filter.transform.localScale = config.WatermelonScale;
-            filter.transform.localPosition = config.WatermelonOffset;
-        }
     }
 
     // EASY & NORMAL tags over the two choice bananas

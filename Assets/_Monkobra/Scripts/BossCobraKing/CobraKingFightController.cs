@@ -446,10 +446,11 @@ public class CobraKingFightController: MonoBehaviour {
             return;
         }
 
-        if (config.BananaBranchPrefab == null) {
+        if (config.WatermelonBranchPrefab == null) {
             Debug.LogError(
                 "CobraKingFightController:\tmust assign Inspector Field: "
-                    + "bananaBranchPrefab",
+                    + "watermelonBranchPrefab (run Monkobra > Build > "
+                    + "Watermelon Prefab)",
                 this
             );
             enabled = false;
