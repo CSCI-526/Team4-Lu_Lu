@@ -41,6 +41,8 @@ Each popup is one entry of `Settings/PopUp/PopUpCatalog`; open the asset and edi
 - Loss: on `GameState.Lost` the showing popup stops at once and the queue is cleared
 - Pause: timing follows `Time.deltaTime`, so a pause freezes a popup and a resume continues it
 - Holds: a popup with no show time, such as the web hint or a grab hint, stays until its owner calls `Hide`
+- Spider King tips: 4 held Message popups (`SpiderTipParry`, `SpiderTipMelon`, `SpiderTipDash`, `SpiderTipWebEscape`, priority 5, under the lesson's "Now!"), each w/ the animated key icon of the control style, shown & hidden by `SpiderKingTips`
+- Golden watermelon: `GoldenWatermelonFirst` is small plain gold text w/ its line to the melon, no icon or hold hint, shown only within `goldenMelonPopUpRadiusU` (`PlayerBalanceConfig`) of the melon
 
 ## Add a Popup
 

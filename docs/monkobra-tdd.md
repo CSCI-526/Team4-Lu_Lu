@@ -202,6 +202,8 @@ The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by def
 | `CobraChaseStart` | great cobra chase-start cut scene (`CameraRigManager.RequestCobraAlert`) | when the shot starts |
 | `SpiderWebIntro` | Spider King web intro (`SpiderWebIntroEvent`, Normal Play only) | when the event begins |
 | `CobraKingLesson`, `SpiderKingLesson` | each boss's lessons | when that boss is beaten, so a lost fight teaches again |
+| `CobraKingIntro`, `SpiderKingIntro` | each boss fight's intro cut scene (`BossIntroCutScene`, the `CameraRigManager.ShotKind.BossIntro` shot; the boss name always plays) | when the shot starts |
+| `SpiderTipParry`, `SpiderTipMelon`, `SpiderTipDash`, `SpiderTipWebEscape` | the Spider King fight's tutorial popups w/ key icons (`SpiderKingTips`) | when each is shown |
 | `ArmorWords` | the Cobra King's armor words (unused: no armor is handed out at the fight's start) | when they are shown |
 
 Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene adds a `TutorialItem`, asks the manager before it shows and marks itself seen; it never keeps a flag of its own.

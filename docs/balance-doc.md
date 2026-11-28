@@ -107,8 +107,9 @@ Hardcore Mode is the boss rush mode. Kings take turns every 100 u, and each repe
 
 - Stage 1 of the Spider King is always 1 slash; rounded features rise in steps, so 2 Loops can share one value (minion waves 5 at Loops 4 and 5) while health, time and points still climb every Loop
 - Cobra King health: Normal Play's Cobra King drops from 12 to 8 (`bossMaxHealth`); EASY keeps `easyHealthScale` 0.6, giving 5; the Loop Growth values live in `cobraKingLoopGrowth` & `spiderKingLoopGrowth` (`WorldBalanceConfig`)
+- Scores: Hardcore Mode scores `hardcoreScoreScale` (1.5) times every score (height, fruit, rewards, boss); a boss's hit, parry & dodge points (crown hit, spider hit, tail parry, dash dodge) take the live king's `PointsScale`, as the defeat points do, so they pay more from Loop 2 on
 - Monkey Hearts: 3 per boss fight in Normal and Loop 1; a fatal fight hit costs gold armor first, else 1 heart; the stamina bar is hidden during a fight and a heart row plus armor badge takes its place
-- Revive: Normal Play offers it unlimited, as Loop 0 (EASY) or a retry of Loop 1, hearts refilled to 3; Hardcore Mode has none, so hearts at 0 end the run
+- Revive: Normal Play offers it unlimited, w/o a difficulty card: the Cobra King restarts at Loop 0 (EASY), the Spider King on the same Loop, hearts refilled; Hardcore Mode has none, so hearts at 0 end the run
 
 ## Balance Lives In Three Assets
 

@@ -321,9 +321,17 @@ At the start the spider only fires web bullets (slowed, `teachSlowScale`) and no
 
 In normal play the slashes come one at a time, as two or three in a row proved too hard; rows of them only come from Loop 2 on in the hardcore run's Spider King fights, see Hardcore Loops.
 
-### Mode Choice
+### Boss Intro Cut Scene
 
-After a revive, as in the Cobra King's arena: time stops on the plain difficulty card (`BossFightHud.ShowModeChoice`), EASY or NORMAL, nothing attacks till one is picked; no choice melons. Easy: `easyHealthScale` of the health, rests, wind ups & gaps `easyTimeScale` slower, attacks & crawl at `easySpeedScale`, bullets' & slashes' gold & parry reach `easyReachScale` wider, never past the 2nd stage (now `easyHealthScale` 0.45, `easyTimeScale` 1.7, `easySpeedScale` 0.7, `easyReachScale` 1.3).
+Both fights open on `BossIntroCutScene`: the `BossIntro` shot (`CameraRigManager`, on the spider intro camera, `bossIntroShot` & `bossIntroHoldS` 3.5 s in `CameraConfig`) draws the cinema bars, hides the UI, locks the monkey & frames the monkey and the boss; the fight waits (the controller's update returns early while `IsPlaying`) and the boss plays its part through `Playing(elapsedS)`: the Cobra King makes harmless feints left then right round the monkey (`CobraKingIntro`, `introFeint*`), the Spider King drops in on a silk line, lands, rears & screeches (`SpiderKingIntro`, `intro*`). As the shot ends the bars draw out and the boss name shows (`BossFightHud.Show`, held `nameIntroHoldS` 1.8 s), then the fight starts: the Cobra King's rest starts at once (`CobraKingLoop.Intro` runs `StartRest`, never waiting on a first hit), the Spider King's timers & lessons start. The scene skips by `TutorialItem.CobraKingIntro` / `SpiderKingIntro` (seen once per session, the dev skip box); the name always plays.
+
+### Spider King Tips
+
+`SpiderKingTips` shows 4 popups w/ the animated key icon of the control style (`PopUpId.SpiderTipParry`, `SpiderTipMelon`, `SpiderTipDash`, `SpiderTipWebEscape`; double tap, hold, hold, rapid), each a `TutorialItem` of the same name: the parry tip on the first incoming bullet or slash, till the tail swings; the melon tip once the lessons are done, till a melon is grabbed; the dash tip during the first dash; the web tip while trapped.
+
+### Revive Difficulty
+
+A revive in either arena goes straight back into the fight, w/o a difficulty card: the Cobra King restarts at Loop 0 (EASY); the Spider King keeps its Loop. EASY: `easyHealthScale` of the health, rests, wind ups & gaps `easyTimeScale` slower, attacks & crawl at `easySpeedScale`, bullets' & slashes' gold & parry reach `easyReachScale` wider, never past the 2nd stage (now `easyHealthScale` 0.45, `easyTimeScale` 1.7, `easySpeedScale` 0.7, `easyReachScale` 1.3).
 
 ### Armor, Loss & Win
 
@@ -347,14 +355,14 @@ In a boss fight the monkey has hearts (`MonkeyHearts`, shared by both kings), `m
 
 ## Revive and Points by Mode
 
-- Revive: Normal Play offers it on every lost fight, unlimited, & the revive card has 2 choices, Loop 0 (EASY) or a retry of Loop 1, the hearts refilled; Hardcore Mode has none, so a lost fight (hearts at 0) ends the run at once, w/o the offer
+- Revive: Normal Play offers it on every lost fight, unlimited, w/o a difficulty card: the Cobra King restarts at Loop 0 (EASY), the Spider King on the same Loop, the hearts refilled; Hardcore Mode has none, so a lost fight (hearts at 0) ends the run at once, w/o the offer
 - Defeat points: `ScoreConfig`'s 1000 (Cobra King) & 2000 (Spider King) at Loop 0 & 1, scaled from Loop 2 on by the `points` Loop Growth (+0.5 per Loop: x1.5, x2, x2.5, ~), the total floored; `ScoreManager` reads the scale of the Loop just beaten (`PointsScale` of each fight controller)
 
 ## Hardcore Loops
 
 Each repeat of a king in the hardcore run is a Loop, counted per king (`HardcoreBossRush.LoopOf`, encounter / 2 + 1): Cobra King Loop 1 at 100 u, Spider King Loop 1 at 200 u, Cobra King Loop 2 at 300 u, ~. A fight reads its Loop from `bossLoop` on its rig, 1 int that replaces the old EASY flag:
 
-- Loop 0: the EASY fight, reached only through Normal Play's revive card; reads the EASY fields of the king's config, as before
+- Loop 0: the EASY fight, reached only through the Cobra King's revive in Normal Play; reads the EASY fields of the king's config, as before
 - Loop 1: that king's fight exactly as in Normal Play; reads the Normal fields (`bossMaxHealth` 8, `spiderMaxHealth` 15)
 - Loop 2 and up: generated per feature, `v(n) = clamp(round(v1 + step x (n - 1)), limit)` with `v1` the Loop 1 value, from `cobraKingLoopGrowth` & `spiderKingLoopGrowth` in `WorldBalanceConfig` (`LoopGrowth`: `step`, `rounding` of Floor / Ceil / None, `limit` as a cap for a rising value & a floor for a falling one); no stored rows
 - Features: Cobra King health (+2.5, ceil: 11 / 13 / 16 / 18 / 21 at Loop 2 ~ 6), wind ups, warnings & rests (x1 - 0.12 per Loop, floor 0.5), minion waves (+0.75, ceil, cap 8); Spider King health (+5, ceil: 20 / 25 / 30 ...), wind ups, gaps & rests (as the Cobra King's), shot, slash & dash speeds (+0.1, cap 1.5), slashes in a row in stage 2 (+0.5, ceil, cap 5) & stage 3 (+1, floor, cap 5), stage 1 always one

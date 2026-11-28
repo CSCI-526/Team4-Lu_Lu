@@ -3,44 +3,6 @@
 <!--
 BUG dev scene sometimes missing all HUD when launched
 
-TODO boss fight "intro cut scene":
-change aspect ratio -> boss animation + cinematic camera + monkey no mvmt
--> return aspect ratio -> boss name animation
-(boss fight cut scenes also skippable, except boss name animation always shown)
-
-FIXME boss name hold longer before move up
-
-TODO cobra boss intro animation: fake attack around monkey
-TODO spider king boss fight intro: entry animation (just like)
-
-FIXME boss fight only start after intro/cut scene, not by 1st watermelon
-
-FIXME boss fight -1 text need to be larger w/ scaling impact animation
-
-FIXME golden watermelon tutorial text: simple text, small sized popup: just explain it will give you golden crown
-FIXME golden watermelon tutorial text: only appears when player is even closer
-
-TODO spider king web & wave attack also need danger zone indicator
-show a thin path from spider to monkey
-also attach the warning "Web!" texts to the danger indicator path
-
-FIXME remove the normal/easy selector after revive:
-for cobra king: reduce to loop 0 (easy mode)
-for spider king: keep the same loop, just revive
-revive must not work in hardcore mode at all
-
-TODO need more tutorial for spider king, using keyboard press symbol in popup
-
-FIXME golden armor -> only use crown model
-FIXME update all texts & symbols to use golden crown
-FIXME golden crown related thing all use "gold" color, not yellow
-
-FIXME spider king web/wave projectile use pinkish purple (instead of white); and use red (danger) when close (instead of yellow)
-
-FIXME all scores are 1.5x during hardcore mode
-FIXME boss rewarding points should ramp up per loop
-
-
 bug make leaderboard works
 fixme mpv ramping during normal gameplay
 todo lighting improvement
@@ -120,6 +82,19 @@ todo add 3x fruit
   fight's own follow the `GameController` skip box; the Loop is the integer
   `loopOverride` on the `BossDevStart` object; built by `Monkobra > Build
   Boss Dev Scenes` or headless by `BossDevSceneBuilder.BuildInBatch`
+- boss intro cut scene: each boss fight opens on cinema bars, a cinematic
+  camera on the monkey and the boss, the monkey's input locked and a boss
+  animation, then the bars draw out and the boss name shows; the Cobra King
+  feints harmlessly left and right round the monkey, the Spider King drops in
+  on a silk line, lands, rears and screeches; the scene skips by
+  `TutorialItem.CobraKingIntro` / `SpiderKingIntro`, the name always plays
+  (`BossIntroCutScene`, `CameraRigManager.ShotKind.BossIntro`)
+- Spider King tutorial popups w/ the animated key icon: tail parry, melon
+  throw, dash dodge, web escape, each once a session on its first moment
+  (`SpiderKingTips`, `TutorialItem.SpiderTip*`)
+- Spider King web shot and wave show a thin danger path from the spider to
+  the monkey, and the "Web!" sign rides it
+- Hardcore Mode scores 1.5x on every score (`ScoreConfig.hardcoreScoreScale`)
 
 ### Changed
 
@@ -178,6 +153,20 @@ todo add 3x fruit
   armor popup is gone and the first hit costs a heart; the golden watermelon
   is the only source, and armor won earlier stays; a retry, revive, EASY
   (Loop 0) and the Hardcore start still hand it out
+- golden armor is now a golden crown: only the king's crown model sits on the
+  monkey's head, every text, badge and HUD symbol says Golden Crown, and every
+  golden thing uses `UIStyle.Gold`
+- boss fights start when the intro ends, not on the 1st thrown melon: the
+  Cobra King's attack loop starts at once, the Spider King's lessons and
+  attacks start at intro end
+- boss name holds 1.8 s (was 0.9) before it glides up; the -1 and -n numbers
+  start larger and punch in at spawn and again on landing
+- golden watermelon popup is small plain text, shown only within
+  `goldenMelonPopUpRadiusU` (12 u) of the melon
+- Spider King web shot and wave are pinkish purple, turning red as they near
+- boss hit, parry and dodge points ramp by Loop like the defeat points
+- revive goes straight back into the fight, w/o a difficulty card: the Cobra
+  King restarts at Loop 0 (EASY), the Spider King on the same Loop
 
 ##### Houdong Pan
 
@@ -212,6 +201,7 @@ todo add 3x fruit
   neck rounding (3)
 - hack keys 1 and 2, the jumps to the boss zone and to the Spider King: the
   boss dev scenes replace them
+- the revive's difficulty card, its EASY / NORMAL tags and choice fruits
 
 ### Fixed
 
