@@ -41,8 +41,8 @@ public class BossFightHudConfig: ScriptableObject {
     /// plain heart</returns>
     public Sprite HeartSprite => heartSprite;
 
-    /// <returns>the gold armor image beside the heart row; null draws a
-    /// plain gold diamond</returns>
+    /// <returns>the gold crown image beside the heart row; null draws a
+    /// plain gold crown</returns>
     public Sprite ArmorSprite => armorSprite;
 
     /// <returns>tint of the health bar</returns>
@@ -63,6 +63,21 @@ public class BossFightHudConfig: ScriptableObject {
 
     /// <returns>how long a loss number flies to the heart row; s</returns>
     public float LossFlightS => lossFlightS;
+
+    /// <returns>font size of the -1 & -n numbers</returns>
+    public float NumberFontSize => numberFontSize;
+
+    /// <returns>how long a number's spawn punch lasts; s</returns>
+    public float NumberSpawnPopS => numberSpawnPopS;
+
+    /// <returns>peak scale factor of a number's spawn punch</returns>
+    public float NumberSpawnOvershoot => numberSpawnOvershoot;
+
+    /// <returns>how long a number punches at its target; s</returns>
+    public float NumberLandPunchS => numberLandPunchS;
+
+    /// <returns>peak scale factor of a number's landing punch</returns>
+    public float NumberLandPunchScale => numberLandPunchScale;
 
     /// <returns>tint of an attack warning</returns>
     public Color WarningColor => warningColor;
@@ -140,7 +155,7 @@ public class BossFightHudConfig: ScriptableObject {
     private Sprite heartSprite;
 
     [SerializeField]
-    [Tooltip("the gold armor beside the heart row; blank draws a diamond")]
+    [Tooltip("the gold crown beside the heart row; blank draws a crown")]
     private Sprite armorSprite;
 
     [SerializeField]
@@ -162,11 +177,36 @@ public class BossFightHudConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("tint of the -1 flying to a lost armor")]
-    private Color armorLossColor = new Color(1f, 0.82f, 0.2f);
+    private Color armorLossColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("how long a loss number flies to the heart row; s")]
     private float lossFlightS = 0.6f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("font size of the -1 & -n numbers")]
+    private float numberFontSize = 96f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("how long a number's spawn punch lasts; s")]
+    private float numberSpawnPopS = 0.25f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("peak scale factor of a number's spawn punch")]
+    private float numberSpawnOvershoot = 1.5f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("how long a number punches at its target, then fades; s")]
+    private float numberLandPunchS = 0.25f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("peak scale factor of a number's landing punch")]
+    private float numberLandPunchScale = 1.6f;
 
     [SerializeField]
     [Tooltip("tint of an attack warning")]
@@ -196,7 +236,7 @@ public class BossFightHudConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("how long the big boss name holds before it moves; s")]
-    private float nameIntroHoldS = 0.9f;
+    private float nameIntroHoldS = 1.8f;
 
     [SerializeField]
     [Tooltip("how long the boss name takes to shrink and glide to the bar; "

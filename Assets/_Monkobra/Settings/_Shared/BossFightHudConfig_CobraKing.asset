@@ -25,15 +25,20 @@ MonoBehaviour:
   bossHitColor: {r: 0.6, g: 0.03, b: 0.07, a: 1}
   damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   heartLossColor: {r: 0.92, g: 0.2, b: 0.27, a: 1}
-  armorLossColor: {r: 1, g: 0.82, b: 0.2, a: 1}
+  armorLossColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   lossFlightS: 0.6
+  numberFontSize: 96
+  numberSpawnPopS: 0.25
+  numberSpawnOvershoot: 1.5
+  numberLandPunchS: 0.25
+  numberLandPunchScale: 1.6
   warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
   warningOffset: {x: 0, y: 70}
   warningFont: {fileID: 11400000, guid: c702ba559046c9c4c9ffd7c3041c8a56, type: 2}
   bossNameFont: {fileID: 11400000, guid: b22815bb64856dc42b3bb558722b603d, type: 2}
   nameIntroScale: 4
   nameIntroDrop: 0.25
-  nameIntroHoldS: 0.9
+  nameIntroHoldS: 1.8
   nameIntroGlideS: 0.7
   attackWords:
   - item: 13

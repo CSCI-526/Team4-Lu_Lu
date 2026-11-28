@@ -258,12 +258,13 @@ public class BossFightHud: MonoBehaviour {
             return;
         }
         TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
-            "Damage", rig.rootRect, "-" + damage, 64f, config.BossHitColor
+            "Damage", rig.rootRect, "-" + damage, config.NumberFontSize,
+            config.BossHitColor
         );
         BossFightHudBuilder.UseFont(label, config.WarningFont);
         label.outlineWidth = 0.25f;
         label.outlineColor = Color.white;
-        label.rectTransform.sizeDelta = new Vector2(160f, 80f);
+        label.rectTransform.sizeDelta = new Vector2(240f, 120f);
         rig.damageFlights.Add(new BossFightHudDamageFlight {
             label = label,
             worldPosition = worldPosition,
@@ -441,7 +442,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>
     /// Shows or hides the armor badge in the bottom right, kept up while the
-    /// monkey keeps the Golden Armor it won; it pops in when shown.
+    /// monkey keeps the Golden Crown it won; it pops in when shown.
     /// </summary>
     public void ShowArmorBadge(bool isShown) {
         if (rig.rootRect == null) {
@@ -451,7 +452,7 @@ public class BossFightHud: MonoBehaviour {
             rig.armorBadge = builder.CreateArmorBadge();
         }
         rig.isArmorShown = isShown;
-        // a golden armor still flying in shows as it lands
+        // a golden crown still flying in shows as it lands
         if (isShown && rig.isArmorGainPending) {
             rig.armorBadge.gameObject.SetActive(false);
             if (rig.armorMark != null) {
@@ -514,7 +515,7 @@ public class BossFightHud: MonoBehaviour {
     }
 
     /// <summary>
-    /// A gold armor sprite flies from <paramref name="fromWorld"/> (the
+    /// A gold crown sprite flies from <paramref name="fromWorld"/> (the
     /// golden watermelon) to the armor mark beside the hearts, as a banana
     /// flies to the energy bar. Call it as the armor is given: it counts as
     /// worn at once, but its mark only shows, w/ a pop, on landing.
@@ -527,7 +528,7 @@ public class BossFightHud: MonoBehaviour {
         rig.isArmorGainPending = true;
         rig.armorGainDeadlineS = Time.unscaledTime + ARMOR_GAIN_MAX_S;
         Sprite sprite = config.ArmorSprite != null
-            ? config.ArmorSprite : BossFightHudBuilder.DrawnShield();
+            ? config.ArmorSprite : BossFightHudBuilder.DrawnCrown();
         FruitFlyEffect.I.Play(fromWorld, FruitFlyTarget.ArmorMark, sprite,
             OnArmorGainLanded, UIStyle.Gold);
     }
@@ -567,9 +568,14 @@ public class BossFightHud: MonoBehaviour {
         rig.monkeyHeartsShown = shown;
     }
 
+    // a -1 still punching at its target has landed, so it is no flight
+    private bool IsFlying(BossFightHudLossFlight flight) {
+        return flight.ageS < Mathf.Max(0.05f, config.LossFlightS);
+    }
+
     private bool HasArmorLossFlight() {
         foreach (BossFightHudLossFlight flight in rig.lossFlights) {
-            if (flight.kind == BossFightHudLoss.Armor) {
+            if (flight.kind == BossFightHudLoss.Armor && IsFlying(flight)) {
                 return true;
             }
         }
@@ -590,13 +596,13 @@ public class BossFightHud: MonoBehaviour {
         }
         bool isHeart = kind == BossFightHudLoss.Heart;
         TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
-            "Loss", rig.rootRect, "-1", 64f,
+            "Loss", rig.rootRect, "-1", config.NumberFontSize,
             isHeart ? config.HeartLossColor : config.ArmorLossColor
         );
         BossFightHudBuilder.UseFont(label, config.WarningFont);
         label.outlineWidth = 0.25f;
         label.outlineColor = Color.black;
-        label.rectTransform.sizeDelta = new Vector2(160f, 80f);
+        label.rectTransform.sizeDelta = new Vector2(240f, 120f);
         rig.lossFlights.Add(new BossFightHudLossFlight {
             label = label,
             kind = kind,
@@ -633,7 +639,7 @@ public class BossFightHud: MonoBehaviour {
             return;
         }
         foreach (BossFightHudLossFlight flight in rig.lossFlights) {
-            if (flight.kind == BossFightHudLoss.Heart) {
+            if (flight.kind == BossFightHudLoss.Heart && IsFlying(flight)) {
                 rig.heartGraceLeftS = HEART_GRACE_S;
                 return;
             }
