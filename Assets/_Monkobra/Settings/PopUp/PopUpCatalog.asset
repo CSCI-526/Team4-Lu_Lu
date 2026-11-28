@@ -267,10 +267,10 @@ MonoBehaviour:
     touchHintController: {fileID: 0}
   - id: 14
     kind: 0
-    message: "You get a Golden Armor!\nBlocks 1 fatal hit"
+    message: "You get a Golden Crown!\nBlocks 1 fatal hit"
     touchMessage: 
     fontSize: 48
-    textColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+    textColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
     showS: 0
     fadeInS: 0.15
     fadeOutS: 0.5
@@ -285,10 +285,10 @@ MonoBehaviour:
     touchHintController: {fileID: 0}
   - id: 15
     kind: 0
-    message: "Golden watermelon!\nGrab it for a Golden Armor"
+    message: "Golden watermelon!\nGrab it for a Golden Crown"
     touchMessage: 
     fontSize: 48
-    textColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+    textColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
     showS: 3
     fadeInS: 0.15
     fadeOutS: 0.5
