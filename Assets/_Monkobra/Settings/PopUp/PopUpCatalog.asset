@@ -211,3 +211,93 @@ MonoBehaviour:
     icon: {fileID: 0}
     keyboardHintController: {fileID: 9100000, guid: d5a3e4b6c7d84930a1e2f3a4b5c6d7e8, type: 2}
     touchHintController: {fileID: 9100000, guid: e6b4f5c7d8e95a41b2f3a4b5c6d7e8f9, type: 2}
+  - id: 11
+    kind: 0
+    message: "Now!"
+    touchMessage: 
+    fontSize: 60
+    textColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
+    showS: 0
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 9
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.3
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintController: {fileID: 9100000, guid: f7c5a6d8e9fa6b52c3a4b5c6d7e8f9a0, type: 2}
+    touchHintController: {fileID: 9100000, guid: a8d6b7e9fa0b7c63d4b5c6d7e8f9a0b1, type: 2}
+  - id: 12
+    kind: 0
+    message: "Bounce it back too!"
+    touchMessage: 
+    fontSize: 48
+    textColor: {r: 0.95, g: 0.2, b: 0.15, a: 1}
+    showS: 0
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 8
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.3
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
+  - id: 13
+    kind: 0
+    message: "The cobra is coming!\nClimb!"
+    touchMessage: 
+    fontSize: 48
+    textColor: {r: 0.95, g: 0.25, b: 0.2, a: 1}
+    showS: 2.5
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 8
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.3
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
+  - id: 14
+    kind: 0
+    message: "You get a Golden Armor!\nBlocks 1 fatal hit"
+    touchMessage: 
+    fontSize: 48
+    textColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+    showS: 0
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 8
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.3
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
+  - id: 15
+    kind: 0
+    message: "Golden watermelon!\nGrab it for a Golden Armor"
+    touchMessage: 
+    fontSize: 48
+    textColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+    showS: 3
+    fadeInS: 0.15
+    fadeOutS: 0.5
+    pulseHz: 0
+    priority: 8
+    isRunOnly: 1
+    isOncePerScene: 0
+    anchorY: 0.3
+    offsetY: 0
+    icon: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}

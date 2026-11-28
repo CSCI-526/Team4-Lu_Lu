@@ -15,4 +15,9 @@ public enum PopUpId {
     BananaFirst,
     PineappleFirst,
     CoconutGrab,
+    BossParryNow,
+    BossBounceBack,
+    BossCobraComing,
+    BossArmorIntro,
+    BossGoldenWatermelon,
 }
