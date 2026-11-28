@@ -31,15 +31,21 @@ public class SpiderWebTrap: MonoBehaviour {
     /// <returns>if the web catches the monkey it touches</returns>
     public bool IsArmed { get; set; } = true;
 
+    /// <returns>where the web hub sits at rest, w/o any shake offset;
+    /// world position</returns>
+    public Vector3 RestWorldPosition =>
+        pulseTimeLeftS > 0f ? restWorldPosition : transform.position;
+
     // Public Methods  #########################################################
     /// <summary>
-    /// Plays a short squash and twist, visual feedback for 1 escape press.
-    /// The rest pose is captured only between pulses, so rapid presses
-    /// restart the pulse without ever drifting it.
+    /// Plays a short shake, a fading wobble of the web in its face plane and
+    /// a small twist about its normal, visual feedback for 1 escape press.
+    /// The rest pose is captured only between shakes, so rapid presses
+    /// restart the shake without ever drifting it.
     /// </summary>
     public void Pulse() {
         if (pulseTimeLeftS <= 0f) {
-            restScale = transform.localScale;
+            restWorldPosition = transform.position;
             restRotation = transform.localRotation;
         }
         pulseTimeLeftS = pulseDurationS;
@@ -55,20 +61,29 @@ public class SpiderWebTrap: MonoBehaviour {
     }
 
     // Inspector Fields  #######################################################
-    [Header("Escape Press Pulse")]
+    [Header("Escape Press Shake")]
     [SerializeField]
-    [Range(0f, 0.5f)]
-    [Tooltip("how far the web face squashes on each escape press; 0~1")]
-    private float pulseScale = 0.1f;
+    [Min(0f)]
+    [Tooltip(
+        "how far the web wobbles in its face plane at the start of a "
+            + "shake, fading to 0; world u"
+    )]
+    private float shakeAmplitudeU = 0.12f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("wobble speed of the shake; Hz")]
+    private float shakeFrequencyHz = 14f;
 
     [SerializeField]
     [Range(0f, 30f)]
-    [Tooltip("how far the web twists about its face normal per press; deg")]
+    [Tooltip("how far the web twists about its face normal at the start of "
+        + "a shake; deg")]
     private float pulseTwistDeg = 6f;
 
     [SerializeField]
-    [Tooltip("length of 1 escape press pulse; s")]
-    private float pulseDurationS = 0.15f;
+    [Tooltip("length of 1 escape press shake; s")]
+    private float pulseDurationS = 0.3f;
 
     [Header("Catch Zone")]
     [SerializeField]
@@ -99,26 +114,44 @@ public class SpiderWebTrap: MonoBehaviour {
         }
 
         pulseTimeLeftS = Mathf.Max(0f, pulseTimeLeftS - Time.deltaTime);
-        // t runs 0 to 1 over the pulse, both curves end back at rest
+        // back at rest exactly, so no shake ever leaves a drift behind
+        if (pulseTimeLeftS <= 0f) {
+            transform.SetPositionAndRotation(
+                restWorldPosition,
+                RestWorldRotation
+            );
+            return;
+        }
+
+        // t runs 0 to 1 over the shake, the fade makes both curves end at rest
         float t = 1f - pulseTimeLeftS / pulseDurationS;
+        float fade = 1f - t;
+        float phase = t * pulseDurationS * shakeFrequencyHz * 2f * Mathf.PI;
 
-        // squash the face only, local Y and Z, X is the normal into the bark
-        float faceScale = 1f - pulseScale * Mathf.Sin(t * Mathf.PI);
-        transform.localScale = new Vector3(
-            restScale.x,
-            restScale.y * faceScale,
-            restScale.z * faceScale
+        // wobble in the face plane only, 2 unequal rates so it never traces a
+        // plain line; local X is the normal into the bark and stays put
+        Quaternion faceRotation = RestWorldRotation;
+        Vector3 offset =
+            faceRotation
+            * new Vector3(
+                0f,
+                Mathf.Sin(phase),
+                Mathf.Sin(phase * 1.3f + 1.7f)
+            )
+            * (shakeAmplitudeU * fade);
+        // twist about the face normal, swinging both ways
+        float twistDeg = pulseTwistDeg * fade * Mathf.Sin(phase * 0.9f);
+        transform.SetPositionAndRotation(
+            restWorldPosition + offset,
+            faceRotation * Quaternion.Euler(twistDeg, 0f, 0f)
         );
-
-        // twist about the face normal, a full sine swings it both ways
-        float twistDeg = pulseTwistDeg * Mathf.Sin(t * 2f * Mathf.PI);
-        transform.localRotation =
-            restRotation * Quaternion.Euler(twistDeg, 0f, 0f);
     }
 
     // Editor Validation  ######################################################
     private void OnValidate() {
         pulseDurationS = Mathf.Max(0.01f, pulseDurationS);
+        shakeAmplitudeU = Mathf.Max(0f, shakeAmplitudeU);
+        shakeFrequencyHz = Mathf.Max(0f, shakeFrequencyHz);
     }
 
     // Event Handlers  #########################################################
@@ -135,8 +168,13 @@ public class SpiderWebTrap: MonoBehaviour {
     // private members  ########################################################
     private bool isEncountered; // whether the monkey already touched this web
     private float pulseTimeLeftS;
-    private Vector3 restScale = Vector3.one;
-    private Quaternion restRotation = Quaternion.identity;
+    private Vector3 restWorldPosition; // hub position between shakes
+    private Quaternion restRotation = Quaternion.identity; // local
+
+    private Quaternion RestWorldRotation =>
+        transform.parent != null
+            ? transform.parent.rotation * restRotation
+            : restRotation;
 
     // cached references  ------------------------------------------------------
     private BoxCollider trigger;

@@ -3934,9 +3934,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d93c5dea39ee4de3b58846c7a5ccc78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpiderWebTrap
-  pulseScale: 0.1
+  shakeAmplitudeU: 0.12
+  shakeFrequencyHz: 14
   pulseTwistDeg: 6
-  pulseDurationS: 0.15
+  pulseDurationS: 0.3
   catchRadiusU: 1.8
 --- !u!1 &2430151885042702714
 GameObject:
