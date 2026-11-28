@@ -1,16 +1,25 @@
 # Monkobra CHANGELOG
 
 <!--
-Bug erik boss make energy bar gone, better ways to indicate 1 kill
-Fixme erik mpv tutorial for boss fight
-Fixme erik b/t boss fight, better randomization
-
 bug make leaderboard works
+fixme mpv ramping during normal gameplay
 todo lighting improvement
 todo vertical version adaptation
 todo chinese version
 todo add 3x fruit
 -->
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## [Unreleased]
@@ -21,7 +30,7 @@ todo add 3x fruit
 
 - beating a boss scores: 1000 points for the Cobra King and 2000 for the
   Spider King, added as the climb goes on after the reward, every win of the
-  endless boss rush included
+  Hardcore boss rush included
 
 ##### Houdong Pan
 
@@ -32,6 +41,12 @@ todo add 3x fruit
 
 ##### Erik
 
+- every boss attack shows one standard sign: a red diamond with "!" and a
+  one word name in the Impact font (`Bite!`, `Tail!`, `Web!`, `Dash!`,
+  `Slash!`), 3 times per attack per session, then none; the Spider
+  King's web shot and slash gain a sign; `Monkobra > Build > Warning Font`
+  makes the font asset
+- the right-hand distance indicator hides during a boss fight
 - uniform outline design: banana, coconut, pineapple, the Spider King arena
   melons and the monkey share world-unit widths and are outlined once round
   the whole shape, never per mesh part; a fruit wears 3 tiers in its own hue:
@@ -44,7 +59,7 @@ todo add 3x fruit
   camera eases to the bare trunk, the king scuttles in round it from the far
   side, glows, and spits a web that traps the monkey, so the first web is
   always met with its escape hint; the great cobra holds still until the
-  monkey breaks free; never in Endless mode
+  monkey breaks free; never in Hardcore mode
 - slower great cobra start: the camera flies its own smooth journey, an eased
   pull away down the trunk round the tree to the cobra, a long look and the
   same way back; the cobra climbs 7 u/s during the pull away, then chases at
@@ -57,6 +72,27 @@ todo add 3x fruit
 - dev checkbox on `Prefabs/GameController/GameController.prefab` (off by default): skips
   every item at once, the intro comic too; only in Editor/development build,
   never in a release build
+- 2 boss dev scenes, `DEVBossCobraKingScene` & `DEVBossSpiderKingScene`: each
+  plays the first meeting with one boss, with no starting zone, the fight
+  beginning on the first live frame (the climb baseline moves down to the
+  boss location, test-only `startOffsetU`), through its own DEV copy of
+  `WorldBalanceConfig`; every tutorial off the boss fight is off, the boss
+  fight's own follow the `GameController` skip box; the Loop is the integer
+  `loopOverride` on the `BossDevStart` object; built by `Monkobra > Build
+  Boss Dev Scenes` or headless by `BossDevSceneBuilder.BuildInBatch`
+- boss intro cut scene: each boss fight opens on cinema bars, a cinematic
+  camera on the monkey and the boss, the monkey's input locked and a boss
+  animation, then the bars draw out and the boss name shows; the Cobra King
+  feints harmlessly left and right round the monkey, the Spider King drops in
+  on a silk line, lands, rears and screeches; the scene skips by
+  `TutorialItem.CobraKingIntro` / `SpiderKingIntro`, the name always plays
+  (`BossIntroCutScene`, `CameraRigManager.ShotKind.BossIntro`)
+- Spider King tutorial popups w/ the animated key icon: tail parry, melon
+  throw, dash dodge, web escape, each once a session on its first moment
+  (`SpiderKingTips`, `TutorialItem.SpiderTip*`)
+- Spider King web shot and wave show a thin danger path from the spider to
+  the monkey, and the "Web!" sign rides it
+- Hardcore Mode scores 1.5x on every score (`ScoreConfig.hardcoreScoreScale`)
 
 ### Changed
 
@@ -86,6 +122,49 @@ todo add 3x fruit
   bare stretches or segment seams, density curves per 10 u of trunk, a
   random tree each run (fixed seed on `TrunkScatter` replays one), new
   `Monkobra > Report Trunk Scatter` evenness check
+- boss name font Creepster (OFL) added, built and assigned to both HUD
+  configs by `Monkobra > Build > Warning Font`
+- boss name shows only above the health bar, in Creepster: it starts big in
+  the lower half of the screen, holds a beat, then shrinks as it glides up to
+  the bar; the start banners of both kings are gone (`BossFightHudConfig`
+  `NameIntro*` values)
+- attack sign: only the red diamond and "!" shake (wobble and jitter, wider
+  and faster as the hit nears); the word keeps a fixed scale and place
+- spider web escape bar fills in toxic purple (`SpiderWebWidget.fillColor`),
+  no longer the gold of a reward
+- Spider King parry clashes with sparks and slow motion only, no "Nice!" text
+- a lost heart or armor shows a `-1` in Anton flying from the monkey to the
+  heart row (red) or the armor mark (gold); the heart dims or the mark goes
+  as it lands (`BossFightHud.PopLoss`); "Heart lost!" and "Saved!" are gone
+- boss damage shows a deep red `-n` in Anton flying from the head or weak
+  spot to the health bar; the bar and heart count drop as it lands
+  (`BossFightHud.PopDamage`, `BossHitColor`); a kill hit's finisher starts
+  at once
+- golden watermelon: the floating word and the big toast give way to a
+  pineapple-style popup (gold watermelon icon, hold hint, a line to the
+  melon) once per session, until one is grabbed (`GoldenMelonHint`,
+  `PopUpId.GoldenWatermelonFirst`, `TutorialItem.GoldenWatermelonGrab`)
+- golden watermelon grab flies a gold armor sprite from the melon to the armor
+  mark beside the hearts (new `FruitFlyTarget.ArmorMark`); the armor counts
+  as worn at once, its mark pops in on landing
+- no free armor at a first fight's start (Loop 1 and later, both kings): the
+  armor popup is gone and the first hit costs a heart; the golden watermelon
+  is the only source, and armor won earlier stays; a retry, revive, EASY
+  (Loop 0) and the Hardcore start still hand it out
+- golden armor is now a golden crown: only the king's crown model sits on the
+  monkey's head, every text, badge and HUD symbol says Golden Crown, and every
+  golden thing uses `UIStyle.Gold`
+- boss fights start when the intro ends, not on the 1st thrown melon: the
+  Cobra King's attack loop starts at once, the Spider King's lessons and
+  attacks start at intro end
+- boss name holds 1.8 s (was 0.9) before it glides up; the -1 and -n numbers
+  start larger and punch in at spawn and again on landing
+- golden watermelon popup is small plain text, shown only within
+  `goldenMelonPopUpRadiusU` (12 u) of the melon
+- Spider King web shot and wave are pinkish purple, turning red as they near
+- boss hit, parry and dodge points ramp by Loop like the defeat points
+- revive goes straight back into the fight, w/o a difficulty card: the Cobra
+  King restarts at Loop 0 (EASY), the Spider King on the same Loop
 
 ##### Houdong Pan
 
@@ -118,6 +197,9 @@ todo add 3x fruit
 - tracked `tools/music/__pycache__` bytecode
 - 5 unused fields of the falling cobra config: body twist, neck thickness &
   neck rounding (3)
+- hack keys 1 and 2, the jumps to the boss zone and to the Spider King: the
+  boss dev scenes replace them
+- the revive's difficulty card, its EASY / NORMAL tags and choice fruits
 
 ### Fixed
 
@@ -143,6 +225,18 @@ todo add 3x fruit
 ### Security
 
 [unreleased]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.5...dev
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## [1.0.0-beta.5] - 2026-11-24
 
@@ -208,6 +302,18 @@ todo add 3x fruit
   errors
 
 [1.0.0-beta.5]: https://github.com/kami-lel/monkobra/compare/v1.0.0-beta.4...v1.0.0-beta.5
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## [1.0.0-beta.4] - 2026-11-17
 

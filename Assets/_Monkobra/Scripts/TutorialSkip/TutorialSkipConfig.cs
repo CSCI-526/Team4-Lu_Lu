@@ -2,9 +2,10 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Whether each <see cref="TutorialItem"/> skips once it was seen this
-/// session, so one item is switched back to always showing w/o a recompile.
-/// <see cref="TutorialSkipManager"/> reads it; an item missing here skips.
+/// How many times each <see cref="TutorialItem"/> shows this session before
+/// it skips, so one item is switched back to always showing or shown a few
+/// times w/o a recompile. <see cref="TutorialSkipManager"/> reads it; an item
+/// missing here skips after its first show.
 /// </summary>
 [CreateAssetMenu(
     fileName = "TutorialSkipConfig",
@@ -13,14 +14,20 @@ using UnityEngine;
 public class TutorialSkipConfig: ScriptableObject {
     // Public Members  #########################################################
     /// <param name="item">the tutorial or cut scene asked about</param>
-    /// <returns>if the item skips once seen this session</returns>
-    public bool IsSkippedOnceSeen(TutorialItem item) {
+    /// <returns>times the item shows this session before it skips: its
+    /// show limit when above 0, else 1 iff it skips once seen, else no limit
+    /// </returns>
+    public int GetShowLimit(TutorialItem item) {
         foreach (Entry entry in entries) {
-            if (entry.item == item) {
-                return entry.isSkippedOnceSeen;
+            if (entry.item != item) {
+                continue;
             }
+            if (entry.showLimit > 0) {
+                return entry.showLimit;
+            }
+            return entry.isSkippedOnceSeen ? 1 : int.MaxValue;
         }
-        return true;
+        return 1;
     }
 
     // Inspector Fields  #######################################################
@@ -32,7 +39,12 @@ public class TutorialSkipConfig: ScriptableObject {
         public TutorialItem item;
 
         [Tooltip("skip the item once it was seen this session; off shows it "
-            + "every run")]
+            + "every run; a show limit above 0 wins over it")]
         public bool isSkippedOnceSeen;
+
+        [Min(0)]
+        [Tooltip("times the item shows this session before it skips; 0 "
+            + "defers to the box above")]
+        public int showLimit;
     }
 }

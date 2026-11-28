@@ -10,6 +10,8 @@ public sealed class SpiderKingAttacks {
     // private members  ########################################################
     private readonly SpiderKingRig rig;
     private readonly SpiderKingConfig config;
+    // the slash charge's sign, -1 w/o one; the web & dash use rig.warningId
+    private int slashWarningId = -1;
 
     public SpiderKingAttacks(SpiderKingRig rig) {
         this.rig = rig;
@@ -105,17 +107,19 @@ public sealed class SpiderKingAttacks {
                     config.WebShotWindUpS * slow * rig.TimeScaleNow;
                 rig.chargingShot =
                     rig.Shots.NewShot(SpiderKingShotKind.Web, rig.aimPoint);
+                rig.warningId = rig.hud.AddAttackWarning(
+                    TutorialItem.AttackWebShot, rig.aimPoint
+                );
                 rig.onWebCharge?.Invoke();
                 break;
             default:
                 rig.attackWindUpS =
                     config.DashWindUpS * slow * rig.TimeScaleNow;
-                rig.warningId = rig.hud.AddWarning(rig.aimPoint, "DASH!");
+                rig.warningId = rig.hud.AddAttackWarning(
+                    TutorialItem.AttackDash, rig.aimPoint
+                );
                 rig.onDashWarn?.Invoke();
                 break;
-        }
-        if (isTeaching) {
-            rig.Teaching.ShowStepBanner();
         }
     }
 
@@ -134,7 +138,11 @@ public sealed class SpiderKingAttacks {
             rig.chargingShot.fill = progress;
         }
         if (rig.warningId >= 0) {
-            rig.hud.UpdateWarning(rig.warningId, rig.monkey.position, progress);
+            // a web sign rides its danger path, any other stays on the monkey
+            Vector3 signAt = rig.chargingShot != null
+                ? rig.Shots.SignPoint(rig.chargingShot)
+                : rig.monkey.position;
+            rig.hud.UpdateWarning(rig.warningId, signAt, progress);
         }
         if (rig.attack == SpiderKingAttack.Dash) {
             rig.body.SetSwipe(progress);
@@ -250,50 +258,55 @@ public sealed class SpiderKingAttacks {
     }
 
     // a red lane on the bark from the spider to the dash's end, as wide as
-    // the dash catches; dim while it aims, bright & flashing once locked
+    // the dash catches, filled all over, not only its edges; dim while it
+    // aims, bright & flashing once locked
     // the lane: exactly where the dash catches, its run (dashLengthU) plus
     // the catch reach (dashHitU) past its end, dashHitU to either side
     public void DrawDashLane(bool isLocked) {
         if (rig.dashLane == null) {
-            rig.dashLane = new Transform[PATH_PARTS * 2];
+            rig.dashLane = new Transform[PATH_PARTS];
             for (int i = 0; i < rig.dashLane.Length; i++) {
                 rig.dashLane[i] =
-                    rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
+                    rig.Feedback.CreateIndicator(PrimitiveType.Cube,
                         "DashLane",
-                    Vector3.one * 0.1f, config.WarnColor).transform;
+                    Vector3.one * 0.1f, config.WarnColor,
+                    config.ArrowHeavyMaterial, DangerIndicatorPlane.Line,
+                    1f).transform;
             }
         }
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 30f);
         Color color = isLocked
             ? Color.Lerp(config.WarnColor, Color.white, pulse * 0.5f)
             : config.WarnColor * 0.6f;
-        float thickness = isLocked ? 0.22f : 0.12f;
         float reach = rig.dashLengthU + config.DashHitU;
-        // across the way, on the bark
-        float acrossU = -rig.dashWayV * config.DashHitU;
-        float acrossV = rig.dashWayU * config.DashHitU;
-        for (int edge = 0; edge < 2; edge++) {
-            float sign = edge == 0 ? -1f : 1f;
-            for (int i = 0; i < PATH_PARTS; i++) {
-                float d0 = reach * i / PATH_PARTS;
-                float d1 = reach * (i + 1) / PATH_PARTS;
-                Vector3 from = BarkPoint(rig.dashStartAngle, rig.dashStartY,
-                    rig.dashWayU * d0 + acrossU * sign,
-                        rig.dashWayV * d0 + acrossV * sign);
-                Vector3 to = BarkPoint(rig.dashStartAngle, rig.dashStartY,
-                    rig.dashWayU * d1 + acrossU * sign,
-                        rig.dashWayV * d1 + acrossV * sign);
-                SetDashLanePart(edge * PATH_PARTS + i, from, to, thickness,
-                    color);
-            }
+        // the whole catch width, dashHitU to either side of the way
+        float width = config.DashHitU * 2f;
+        for (int i = 0; i < PATH_PARTS; i++) {
+            float d0 = reach * i / PATH_PARTS;
+            float d1 = reach * (i + 1) / PATH_PARTS;
+            Vector3 from = BarkPoint(rig.dashStartAngle, rig.dashStartY,
+                rig.dashWayU * d0, rig.dashWayV * d0);
+            Vector3 to = BarkPoint(rig.dashStartAngle, rig.dashStartY,
+                rig.dashWayU * d1, rig.dashWayV * d1);
+            SetDashLanePart(i, from, to, width, color, isLocked,
+                (d0 + d1) * 0.5f);
         }
     }
 
+    // a piece of the filled lane; alongU is its middle's distance from the
+    // lane's start, so the arrows run on unbroken from piece to piece
     public void SetDashLanePart(int index, Vector3 from, Vector3 to,
-        float thickness, Color color) {
-        SpiderKingFeedback.SetLine(rig.dashLane[index], from, to, thickness);
-        rig.Feedback.SetColor(rig.dashLane[index].GetComponent<Renderer>(),
-            color);
+        float width, Color color, bool isLocked, float alongU) {
+        Vector3 middle = (from + to) * 0.5f;
+        Vector3 outward = new Vector3(
+            middle.x - rig.trunkCenter.x, 0f, middle.z - rig.trunkCenter.z
+        ).normalized;
+        SpiderKingFeedback.SetStrip(rig.dashLane[index], from, to, width,
+            0.04f, outward);
+        Renderer lane = rig.dashLane[index].GetComponent<Renderer>();
+        rig.Feedback.SetIndicatorColor(lane, color);
+        rig.Feedback.SetIndicatorUrgency(lane, isLocked ? 1f : 0f);
+        rig.Feedback.SetIndicatorAlongOffset(lane, alongU);
     }
 
     public void ClearDashLane() {
@@ -334,6 +347,10 @@ public sealed class SpiderKingAttacks {
             return 1f;
         }
         rig.isDashing = false;
+        // the dash ran its lane w/o catching the monkey
+        if (!rig.hasDashHit) {
+            rig.onDashDodged?.Invoke();
+        }
         rig.body.SetSwipe(0f);
         ClearDashLane();
         rig.nextDashTime =
@@ -362,6 +379,9 @@ public sealed class SpiderKingAttacks {
         rig.isSlashSlowFirst = Random.value < 0.5f;
         rig.nextSlashTime = Time.time;
         rig.isSlashAiming = false;
+        slashWarningId = rig.hud.AddAttackWarning(
+            TutorialItem.AttackSlash, rig.monkey.position
+        );
         rig.onSlashCharge?.Invoke();
     }
 
@@ -375,9 +395,11 @@ public sealed class SpiderKingAttacks {
             rig.body.SetCharge(charge);
             rig.body.SetSwipe(charge);
             UpdateSlashChargeFx(charge);
+            rig.hud.UpdateWarning(slashWarningId, rig.monkey.position, charge);
             if (rig.slashChargeLeftS <= 0f) {
                 rig.body.SetCharge(0f);
                 HideSlashSigil();
+                RemoveSlashWarning();
             }
             return 0f;
         }
@@ -444,9 +466,11 @@ public sealed class SpiderKingAttacks {
             rig.slashAim = new Transform[PATH_PARTS];
             for (int i = 0; i < rig.slashAim.Length; i++) {
                 rig.slashAim[i] =
-                    rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
+                    rig.Feedback.CreateIndicator(PrimitiveType.Cylinder,
                         "SlashAim",
-                    Vector3.one * 0.1f, config.WarnColor).transform;
+                    Vector3.one * 0.1f, config.WarnColor,
+                    config.ArrowThinMaterial, DangerIndicatorPlane.Line,
+                    1f).transform;
             }
         }
         ShowSlashAim(true);
@@ -465,8 +489,9 @@ public sealed class SpiderKingAttacks {
                 BarkPoint(rig.spiderAngle, rig.spiderY, du * d0, dv * d0),
                 BarkPoint(rig.spiderAngle, rig.spiderY, du * d1, dv * d1),
                 Mathf.Lerp(0.06f, 0.14f, progress));
-            rig.Feedback.SetColor(rig.slashAim[i].GetComponent<Renderer>(),
-                color);
+            Renderer aim = rig.slashAim[i].GetComponent<Renderer>();
+            rig.Feedback.SetIndicatorColor(aim, color);
+            rig.Feedback.SetIndicatorUrgency(aim, progress);
         }
     }
 
@@ -484,12 +509,19 @@ public sealed class SpiderKingAttacks {
     // the slashes still to come stop; crescents in flight fly on
     public void StopSlashing() {
         HideSlashSigil();
+        RemoveSlashWarning();
         rig.isSlashing = false;
         rig.isSlashAiming = false;
         rig.slashChargeLeftS = 0f;
         rig.body.SetCharge(0f);
         ShowSlashAim(false);
         rig.body.SetSwipe(0f);
+    }
+
+    // the charge's sign goes once the red aim line takes over
+    private void RemoveSlashWarning() {
+        rig.hud.RemoveWarning(slashWarningId);
+        slashWarningId = -1;
     }
 
     // all of it gone, crescents too
@@ -555,8 +587,10 @@ public sealed class SpiderKingAttacks {
             rig.slashSigil = new Transform[SIGIL_PARTS];
             for (int i = 0; i < SIGIL_PARTS; i++) {
                 rig.slashSigil[i] =
-                    rig.Feedback.CreatePrimitive(PrimitiveType.Cylinder,
-                    "SlashSign", Vector3.one, config.WarnColor).transform;
+                    rig.Feedback.CreateIndicator(PrimitiveType.Cylinder,
+                    "SlashSign", Vector3.one, config.WarnColor,
+                    config.StripThinMaterial, DangerIndicatorPlane.Line,
+                    1f).transform;
             }
         }
         // a crescent facing the camera, opening up over its head
@@ -581,8 +615,9 @@ public sealed class SpiderKingAttacks {
             rig.slashSigil[i].gameObject.SetActive(true);
             SpiderKingFeedback.SetLine(rig.slashSigil[i], p0, p1,
                 (0.05f + 0.2f * mid) * (0.5f + 0.5f * charge) * flicker);
-            rig.Feedback.SetColor(rig.slashSigil[i].GetComponent<Renderer>(),
-                color);
+            Renderer sign = rig.slashSigil[i].GetComponent<Renderer>();
+            rig.Feedback.SetIndicatorColor(sign, color);
+            rig.Feedback.SetIndicatorUrgency(sign, charge);
         }
     }
 

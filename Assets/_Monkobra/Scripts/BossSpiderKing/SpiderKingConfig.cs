@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
@@ -24,7 +25,13 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>the climb's banana branch: bears the arena melons</returns>
     public GameObject BananaBranchPrefab => bananaBranchPrefab;
 
-    /// <returns>the melon model swapped onto the banana</returns>
+    /// <returns>the watermelon branch prefab, a variant of the banana
+    /// branch, bearing the arena melons; built by
+    /// <c>Monkobra > Build > Watermelon Prefab</c></returns>
+    public GameObject WatermelonBranchPrefab => watermelonBranchPrefab;
+
+    /// <returns>the melon model, an input of the watermelon prefab
+    /// builder</returns>
     public Mesh WatermelonMesh => watermelonMesh;
 
     /// <returns>local scale of the melon model on the banana's mesh
@@ -197,17 +204,8 @@ public class SpiderKingConfig: ScriptableObject {
     public Vector3Int WebShotsPerStage => webShotsPerStage;
 
     /// <returns>slashes in a row in stages 1, 2 & 3; one at a time, a
-    /// row of them only in the endless run's later fights</returns>
+    /// row of them only in the hardcore run's later fights</returns>
     public Vector3Int SlashesPerStage => slashesPerStage;
-
-    /// <returns>the most slashes in a row in stages 1, 2 & 3 in the
-    /// endless run's boss rush: each later Spider King fight adds
-    /// one, up to these</returns>
-    public Vector3Int EndlessSlashesPerStage => endlessSlashesPerStage;
-
-    /// <returns>scale on a slash's width in the endless run's boss
-    /// rush, where the monkey is quicker to step out of its way</returns>
-    public float EndlessSlashWidthScale => endlessSlashWidthScale;
 
     /// <returns>the long gap b/t two bullets of a volley; s</returns>
     public float VolleySlowGapS => volleySlowGapS;
@@ -363,10 +361,6 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>web escape gain scale the silk gloves give</returns>
     public float GlovesEscapeGainScale => glovesEscapeGainScale;
 
-    /// <returns>how far down the great cobra restarts its chase after
-    /// a win; u</returns>
-    public float WinCobraDropU => winCobraDropU;
-
     /// <returns>title of the victory panel</returns>
     public string WinTitle => winTitle;
 
@@ -379,8 +373,57 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>tint of an attack warning</returns>
     public Color WarnColor => warnColor;
 
+    /// <returns>danger indicator material for a filled area: slanted heavy
+    /// stripes</returns>
+    public Material StripHeavyMaterial => stripHeavyMaterial;
+
+    /// <returns>danger indicator material for a sign or outline: slanted
+    /// thin bars</returns>
+    public Material StripThinMaterial => stripThinMaterial;
+
+    /// <returns>danger indicator material for a filled lane: heavy
+    /// chevrons</returns>
+    public Material ArrowHeavyMaterial => arrowHeavyMaterial;
+
+    /// <returns>danger indicator material for an aim line: thin
+    /// chevrons</returns>
+    public Material ArrowThinMaterial => arrowThinMaterial;
+
+    /// <returns>global opacity of every danger indicator, times the
+    /// opacity of its own material</returns>
+    public float IndicatorAlpha => indicatorAlpha;
+
+    /// <returns>how far an indicator's tint pulls its texture colour; 0 is
+    /// the pure texture</returns>
+    public float IndicatorTintStrength => indicatorTintStrength;
+
+    /// <returns>width of the thin danger path of a web shot & a slash;
+    /// u</returns>
+    public float DangerPathWidthU => dangerPathWidthU;
+
     /// <returns>tint of the spider's silk</returns>
     public Color SilkColor => silkColor;
+
+    /// <returns>how high above its start spot the spider begins its drop in
+    /// the intro cut scene; u</returns>
+    public float IntroDropU => introDropU;
+
+    /// <returns>how long the intro drop on the silk line takes; s</returns>
+    public float IntroDropS => introDropS;
+
+    /// <returns>pause after the landing b4 the spider rears; s</returns>
+    public float IntroLandS => introLandS;
+
+    /// <returns>how long the spider takes to rear up & screech, its eyes
+    /// glowing; s</returns>
+    public float IntroScreechS => introScreechS;
+
+    /// <returns>thickness of the intro's silk line; u</returns>
+    public float IntroSilkWidthU => introSilkWidthU;
+
+    /// <returns>far tint of a web shot & a slash, which lerps to the warning
+    /// red as it nears</returns>
+    public Color ShotColor => shotColor;
 
     /// <returns>tint of the golden armor & banana</returns>
     public Color GoldenColor => goldenColor;
@@ -404,7 +447,13 @@ public class SpiderKingConfig: ScriptableObject {
     private GameObject bananaBranchPrefab;
 
     [SerializeField]
-    [Tooltip("the melon model swapped onto the banana")]
+    [Tooltip("the watermelon branch prefab, a variant of the banana branch, "
+        + "bearing the arena melons; from Monkobra > Build > Watermelon "
+        + "Prefab")]
+    private GameObject watermelonBranchPrefab;
+
+    [SerializeField]
+    [Tooltip("the melon model, an input of the watermelon prefab builder")]
     private Mesh watermelonMesh;
 
     [SerializeField]
@@ -463,7 +512,7 @@ public class SpiderKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("outline tint of the golden banana")]
-    private Color goldenOutlineColor = new Color(1f, 0.75f, 0f);
+    private Color goldenOutlineColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("outline width of the golden banana, as a multiple of the normal "
@@ -666,20 +715,8 @@ public class SpiderKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("slashes in a row in stages 1, 2 & 3; one at a time, a row of "
-        + "them only in the endless run's later fights")]
+        + "them only in the hardcore run's later fights")]
     private Vector3Int slashesPerStage = new Vector3Int(1, 1, 1);
-
-    [SerializeField]
-    [Tooltip("the most slashes in a row in stages 1, 2 & 3 in the endless "
-        + "run's boss rush: each later Spider King fight adds one, up to "
-        + "these")]
-    private Vector3Int endlessSlashesPerStage = new Vector3Int(1, 2, 3);
-
-    [SerializeField]
-    [Tooltip("scale on a slash's width in the endless run's boss rush, where "
-        + "the monkey is quicker to step out of its way")]
-    [Min(1f)]
-    private float endlessSlashWidthScale = 1f;
 
     [SerializeField]
     [Tooltip("the long gap b/t two bullets of a volley; s")]
@@ -856,6 +893,35 @@ public class SpiderKingConfig: ScriptableObject {
     [Min(0)]
     private int webParryDamage = 0;
 
+    [Header("Intro Cut Scene")]
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("how high above its start spot the spider begins its drop in "
+        + "the intro cut scene; u")]
+    private float introDropU = 9f;
+
+    [SerializeField]
+    [Min(0.3f)]
+    [Tooltip("how long the intro drop on the silk line takes; s")]
+    private float introDropS = 1.3f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("pause after the landing b4 the spider rears; s")]
+    private float introLandS = 0.3f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("how long the spider takes to rear up & screech, its eyes "
+        + "glowing; s; drop, landing & screech fit under the boss intro's "
+        + "hold in the CameraConfig")]
+    private float introScreechS = 1.6f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("thickness of the intro's silk line; u")]
+    private float introSilkWidthU = 0.06f;
+
     [Header("Teaching")]
     [SerializeField]
     [Tooltip("scale on wind ups in the lessons")]
@@ -921,11 +987,6 @@ public class SpiderKingConfig: ScriptableObject {
     private float glovesEscapeGainScale = 2f;
 
     [SerializeField]
-    [Tooltip("how far down the great cobra restarts its chase after a win; u")]
-    [Min(0f)]
-    private float winCobraDropU = 45f;
-
-    [SerializeField]
     [Tooltip("title of the victory panel")]
     private string winTitle = "SPIDER KING DEFEATED!";
 
@@ -942,11 +1003,51 @@ public class SpiderKingConfig: ScriptableObject {
     [Tooltip("tint of an attack warning")]
     private Color warnColor = new Color(0.95f, 0.2f, 0.15f);
 
+    [Header("Danger Indicator")]
+    [SerializeField]
+    [Tooltip("material of a filled area warning: "
+        + "BossWarning/DangerStripHeavy")]
+    private Material stripHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of the slash sign: BossWarning/DangerStripThin")]
+    private Material stripThinMaterial;
+
+    [SerializeField]
+    [Tooltip("material of the dash lane: BossWarning/DangerArrowHeavy")]
+    private Material arrowHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of the slash aim line: BossWarning/DangerArrowThin")]
+    private Material arrowThinMaterial;
+
+    [SerializeField]
+    [Tooltip("global opacity of every danger indicator, times the opacity "
+        + "its own material sets")]
+    [Range(0f, 1f)]
+    private float indicatorAlpha = 1f;
+
+    [SerializeField]
+    [Tooltip("how far the warning tint pulls the texture's own colour; 0 is "
+        + "the pure texture, 1 the full tint")]
+    [Range(0f, 1f)]
+    private float indicatorTintStrength = 0.5f;
+
+    [SerializeField]
+    [Tooltip("width of the thin danger path of a web shot & a slash; u")]
+    [Min(0.01f)]
+    private float dangerPathWidthU = 0.1f;
+
     [SerializeField]
     [Tooltip("tint of the spider's silk")]
     private Color silkColor = new Color(0.92f, 0.92f, 0.95f);
 
     [SerializeField]
     [Tooltip("tint of the golden armor & banana")]
-    private Color goldenColor = new Color(1f, 0.8f, 0.15f);
+    private Color goldenColor = UIStyle.Gold;
+
+    [SerializeField]
+    [Tooltip("far tint of a web shot & a slash, which lerps to the warning "
+        + "red as it nears")]
+    private Color shotColor = new Color(0.85f, 0.4f, 0.95f);
 }

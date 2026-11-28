@@ -64,7 +64,7 @@ The Windows build has no page: it opens on the title and shows no team logos.
 
 ## Dev Keys
 
-The hack keys (F1~F3 cheats, 1~2 jumps, 3~6 spawns, F8~F10 analytics, F12 turns them and their list on or off, see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)) and their hints show only when `Debug.isDebugBuild` is true, so the WebGL profiles (`GithubPages`, `ItchIO`) keep Development Build on and a player can press them after F12. A build with it off, e.g. Windows by default, shows no hints and keeps the keys live, F12 dead. The browser needs focus on the game canvas when F8 is pressed; F12 may also be taken by the browser (dev tools).
+The hack keys (F1~F3 cheats, 3~6 spawns, F8~F10 analytics, F12 turns them and their list on or off, see [Hack Shortcuts](monkobra-tdd.md#hack-shortcuts)) and their hints show only when `Debug.isDebugBuild` is true, so the WebGL profiles (`GithubPages`, `ItchIO`) keep Development Build on and a player can press them after F12. A build with it off, e.g. Windows by default, shows no hints and keeps the keys live, F12 dead. The browser needs focus on the game canvas when F8 is pressed; F12 may also be taken by the browser (dev tools).
 
 ## Windows
 

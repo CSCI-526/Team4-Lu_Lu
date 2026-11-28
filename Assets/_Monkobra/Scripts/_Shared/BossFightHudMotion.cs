@@ -38,19 +38,196 @@ public sealed class BossFightHudMotion {
         rig.callOutRect.localScale = Vector3.one * Mathf.Lerp(1.3f, 1f, pop);
     }
 
-    // signs beat faster & grow as the hit nears
+    // the boss name starts big in the lower half, holds a beat, then shrinks
+    // as it glides up to its slot above the bar; unscaled, eased as the call
+    // out is
+    public void UpdateNameIntro() {
+        if (rig.nameLabel == null || rig.nameIntroAgeS < 0f) {
+            return;
+        }
+        RectTransform rect = rig.nameLabel.rectTransform;
+        float h = rig.canvasRect != null ? rig.canvasRect.rect.height : 1080f;
+        Vector2 docked = new Vector2(0f, -16f);
+        Vector2 start = new Vector2(
+            0f, -h * (0.5f + config.NameIntroDrop) + rect.rect.height
+        );
+        float glide = Mathf.Clamp01(
+            (rig.nameIntroAgeS - config.NameIntroHoldS)
+                / Mathf.Max(0.01f, config.NameIntroGlideS)
+        );
+        float eased = glide * glide * (3f - 2f * glide);
+        rect.anchoredPosition = Vector2.Lerp(start, docked, eased);
+        rect.localScale = Vector3.one
+            * Mathf.Lerp(config.NameIntroScale, 1f, eased);
+        if (glide >= 1f) {
+            rig.nameIntroAgeS = -1f;
+            return;
+        }
+        rig.nameIntroAgeS += Time.unscaledDeltaTime;
+    }
+
+    // each -1 flies from the monkey to its heart or the armor mark, easing
+    // in; it punches in on spawn & again as it lands, then fades; unscaled,
+    // so a slow motion finisher never stalls it
+    public void UpdateLossFlights() {
+        for (int i = rig.lossFlights.Count - 1; i >= 0; i--) {
+            BossFightHudLossFlight flight = rig.lossFlights[i];
+            if (flight.label == null) {
+                rig.lossFlights.RemoveAt(i);
+                continue;
+            }
+            float flightS = Mathf.Max(0.05f, config.LossFlightS);
+            bool wasFlying = flight.ageS < flightS;
+            flight.ageS += Time.unscaledDeltaTime;
+            RectTransform rect = flight.label.rectTransform;
+            if (flight.ageS < flightS) {
+                float t = flight.ageS / flightS;
+                Vector2 from = ScreenLocal(flight.worldPosition);
+                Vector2 to = LossTarget(flight);
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.Lerp(from, to, t * t)
+                    + new Vector2(0f, 40f * Mathf.Sin(t * Mathf.PI));
+            }
+            if (PunchNumber(flight.label, flight.ageS, flightS)) {
+                UnityEngine.Object.Destroy(flight.label.gameObject);
+                rig.lossFlights.RemoveAt(i);
+                continue;
+            }
+            rig.lossFlights[i] = flight;
+            if (wasFlying && flight.ageS >= flightS) {
+                rig.LossLanded?.Invoke(flight);
+            }
+        }
+    }
+
+    // scales & fades a flying number: a spawn punch w/ overshoot, a settle
+    // while it flies, a landing punch at the target; each time from the
+    // config
+    // :return: if the number is done & should go
+    private bool PunchNumber(
+        TextMeshProUGUI label, float ageS, float flightS
+    ) {
+        float t = Mathf.Clamp01(ageS / flightS);
+        float scale = Mathf.Lerp(1.4f, 0.8f, t);
+        float popS = Mathf.Max(0.01f, config.NumberSpawnPopS);
+        if (ageS < popS) {
+            float p = ageS / popS;
+            // 0.3 -> overshoot -> 1
+            scale *= p < 0.5f
+                ? Mathf.Lerp(0.3f, config.NumberSpawnOvershoot,
+                    Mathf.Sin(p * Mathf.PI))
+                : Mathf.Lerp(1f, config.NumberSpawnOvershoot,
+                    Mathf.Sin(p * Mathf.PI));
+        }
+        float alpha = 1f;
+        bool isDone = false;
+        if (ageS >= flightS) {
+            float punchS = Mathf.Max(0.01f, config.NumberLandPunchS);
+            float q = Mathf.Clamp01((ageS - flightS) / punchS);
+            scale *= 1f + (config.NumberLandPunchScale - 1f)
+                * Mathf.Sin(Mathf.Min(q * 2f, 1f) * Mathf.PI * 0.5f);
+            alpha = 1f - q * q;
+            isDone = q >= 1f;
+        }
+        label.rectTransform.localScale = Vector3.one * scale;
+        label.alpha = alpha;
+        return isDone;
+    }
+
+    // each -n flies from the boss to the health bar & drops it on landing;
+    // punches like the -1; unscaled, so the slow motion of a last blow never
+    // stalls it
+    public void UpdateDamageFlights() {
+        for (int i = rig.damageFlights.Count - 1; i >= 0; i--) {
+            BossFightHudDamageFlight flight = rig.damageFlights[i];
+            if (flight.label == null) {
+                rig.damageFlights.RemoveAt(i);
+                continue;
+            }
+            float flightS = Mathf.Max(0.05f, config.LossFlightS);
+            bool wasFlying = flight.ageS < flightS;
+            flight.ageS += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(flight.ageS / flightS);
+            Vector2 from = ScreenLocal(flight.worldPosition);
+            Vector2 to = rig.healthFill != null && rig.canvasRect != null
+                ? (Vector2)rig.canvasRect.InverseTransformPoint(
+                    rig.healthFill.parent.position)
+                : Vector2.zero;
+            RectTransform rect = flight.label.rectTransform;
+            if (flight.ageS < flightS) {
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.Lerp(from, to, t * t);
+            }
+            if (PunchNumber(flight.label, flight.ageS, flightS)) {
+                UnityEngine.Object.Destroy(flight.label.gameObject);
+                rig.damageFlights.RemoveAt(i);
+                continue;
+            }
+            rig.damageFlights[i] = flight;
+            if (wasFlying && flight.ageS >= flightS) {
+                rig.DamageLanded?.Invoke(flight);
+            }
+        }
+    }
+
+    // canvas local point under a world point
+    private Vector2 ScreenLocal(Vector3 world) {
+        Camera cam = Camera.main;
+        if (cam == null || rig.canvasRect == null) {
+            return Vector2.zero;
+        }
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            rig.canvasRect, cam.WorldToScreenPoint(world), rig.canvasCamera,
+            out Vector2 local
+        );
+        return local;
+    }
+
+    // where a -1 lands: its heart, the armor mark or badge, else the corner
+    private Vector2 LossTarget(BossFightHudLossFlight flight) {
+        RectTransform target = null;
+        if (flight.kind == BossFightHudLoss.Heart) {
+            if (flight.heartIndex >= 0
+                && flight.heartIndex < rig.monkeyHeartImages.Count) {
+                target = rig.monkeyHeartImages[flight.heartIndex]
+                    .rectTransform;
+            }
+        } else if (rig.armorMark != null
+            && rig.armorMark.gameObject.activeInHierarchy) {
+            target = rig.armorMark;
+        } else if (rig.armorBadge != null
+            && rig.armorBadge.gameObject.activeInHierarchy) {
+            target = rig.armorBadge;
+        }
+        if (target == null || rig.canvasRect == null) {
+            return rig.canvasRect != null
+                ? new Vector2(-rig.canvasRect.rect.width * 0.5f + 80f,
+                    -rig.canvasRect.rect.height * 0.5f + 60f)
+                : Vector2.zero;
+        }
+        return rig.canvasRect.InverseTransformPoint(target.position);
+    }
+
+    // the diamond & "!" wobble, faster & wider as the hit nears; the word
+    // keeps its scale & place
     public void UpdateWarnings() {
         foreach (BossFightHudWarning warning in rig.warnings) {
             if (warning.sign == null) {
                 continue;
             }
             Place(warning.sign, warning.worldPosition, config.WarningOffset);
-            float beatHz = Mathf.Lerp(2f, 9f, warning.progress);
-            float beat =
-                0.5f + 0.5f * Mathf.Sin(Time.time * beatHz * 2f * Mathf.PI);
-            float scale = Mathf.Lerp(0.9f, 1.3f, warning.progress)
-                * (1f + 0.12f * beat);
-            warning.sign.localScale = Vector3.one * scale;
+            if (warning.mark == null) {
+                continue;
+            }
+            float hz = Mathf.Lerp(3f, 12f, warning.progress);
+            float amp = Mathf.Lerp(0.3f, 1f, warning.progress);
+            float t = Time.time * hz * 2f * Mathf.PI;
+            warning.mark.localRotation =
+                Quaternion.Euler(0f, 0f, 12f * amp * Mathf.Sin(t));
+            warning.mark.anchoredPosition = new Vector2(
+                3f * amp * Mathf.Sin(t * 1.7f + 1f),
+                3f * amp * Mathf.Sin(t * 2.3f)
+            );
         }
     }
 
@@ -200,6 +377,9 @@ public sealed class BossFightHudMotion {
             Mathf.Max(0f, rig.armorBadgePopS - Time.unscaledDeltaTime);
         float left = rig.armorBadgePopS / ARMOR_BADGE_POP_S;
         rig.armorBadge.localScale = Vector3.one * (1f + 0.8f * left * left);
+        if (rig.armorMark != null) {
+            rig.armorMark.localScale = rig.armorBadge.localScale;
+        }
     }
 
 }

@@ -8,6 +8,12 @@ using UnityEngine;
 public class ScoreManager: MonoBehaviour {
     // Public Members  #########################################################
     public static ScoreManager I { get; private set; }
+
+    // factor on every score: the config's Hardcore scale in Hardcore Mode,
+    // else 1
+    public float ModeScale =>
+        GameController.I != null && GameController.I.Mode == RunMode.Hardcore
+            ? scoreConfig.HardcoreScoreScale : 1f;
     public long TotalScore => DistanceScore + RewardScore;
     public long DistanceScore { get; private set; }
     public long RewardScore { get; private set; }
@@ -48,7 +54,7 @@ public class ScoreManager: MonoBehaviour {
         long oldScore = TotalScore;
         if (kind == PickupKind.Coconut) {
             long coconutPoints = Math.Min(
-                (long)scoreConfig.PointsFor(RewardKind.Coconut),
+                ScaledPoints(RewardKind.Coconut, 1f),
                 long.MaxValue - TotalScore);
             RewardScore += coconutPoints;
             rewardScoreByKind[(int)RewardKind.Coconut] += coconutPoints;
@@ -60,7 +66,7 @@ public class ScoreManager: MonoBehaviour {
         }
 
         long bananaPoints = Math.Min(
-            (long)scoreConfig.PointsFor(RewardKind.Banana),
+            ScaledPoints(RewardKind.Banana, 1f),
             long.MaxValue - TotalScore);
         RewardScore += bananaPoints;
         rewardScoreByKind[(int)RewardKind.Banana] += bananaPoints;
@@ -73,14 +79,14 @@ public class ScoreManager: MonoBehaviour {
     }
 
     // awards the config's points for a good deed that is not a fruit pickup
-    public bool AddReward(RewardKind kind) {
-        int points = scoreConfig.PointsFor(kind);
+    public bool AddReward(RewardKind kind, float scale = 1f) {
+        long points = ScaledPoints(kind, scale);
         if (!CanScore || points <= 0) {
             return false;
         }
 
         long oldScore = TotalScore;
-        long added = Math.Min((long)points, long.MaxValue - TotalScore);
+        long added = Math.Min(points, long.MaxValue - TotalScore);
         RewardScore += added;
         rewardScoreByKind[(int)kind] += added;
         NotifyIfChanged(oldScore);
@@ -160,10 +166,14 @@ public class ScoreManager: MonoBehaviour {
         cobraKing = CobraKingFightController.I;
         if (cobraKing != null) {
             cobraKing.FightEnded += OnCobraKingBeaten;
+            cobraKing.JewelHit += OnCrownHit;
         }
         spiderKing = SpiderKingFightController.I;
         if (spiderKing != null) {
             spiderKing.FightEnded += OnSpiderKingBeaten;
+            spiderKing.SpiderHit += OnSpiderHit;
+            spiderKing.Parried += OnTailParried;
+            spiderKing.DashDodged += OnDashDodged;
         }
         isRunEnded = RunController.I != null
             && RunController.I.State == GameState.Lost;
@@ -199,9 +209,13 @@ public class ScoreManager: MonoBehaviour {
         }
         if (cobraKing != null) {
             cobraKing.FightEnded -= OnCobraKingBeaten;
+            cobraKing.JewelHit -= OnCrownHit;
         }
         if (spiderKing != null) {
             spiderKing.FightEnded -= OnSpiderKingBeaten;
+            spiderKing.SpiderHit -= OnSpiderHit;
+            spiderKing.Parried -= OnTailParried;
+            spiderKing.DashDodged -= OnDashDodged;
         }
         if (I == this) {
             I = null;
@@ -223,6 +237,7 @@ public class ScoreManager: MonoBehaviour {
     private CobraKingFightController cobraKing;
     private SpiderKingFightController spiderKing;
     // beaten kings whose points wait for LateUpdate
+    private readonly List<float> pendingBossScales = new List<float>();
     private readonly List<RewardKind> pendingBossRewards =
         new List<RewardKind>();
 
@@ -250,23 +265,62 @@ public class ScoreManager: MonoBehaviour {
     }
 
     // a king's FightEnded is raised only once it is beaten & its reward
-    // taken, every fight of the endless run's rush included; the points wait
-    // for LateUpdate, since ScoreHeightBossHider brings the score HUD the
-    // Cobra King's fight hid back in a later listener of the same event, and
-    // the "+N" popup under it only hears a reward while shown
+    // taken, every fight of the hardcore run's rush included; the points wait
+    // for LateUpdate, since CanScore is false while time is frozen & a reward
+    // given then would be lost
+    // the points scale w/ the Loop just beaten, read now, b4 a hardcore rush
+    // arms the next one
     private void OnCobraKingBeaten() {
         pendingBossRewards.Add(RewardKind.CobraKingDefeat);
+        pendingBossScales.Add(cobraKing != null ? cobraKing.PointsScale : 1f);
     }
 
     private void OnSpiderKingBeaten() {
         pendingBossRewards.Add(RewardKind.SpiderKingDefeat);
+        pendingBossScales.Add(spiderKing != null ? spiderKing.PointsScale : 1f);
+    }
+
+    // boss hits, parries & dodges scale w/ the live king's Loop, as defeat
+    // points do; a parry freezes time, so the points are paid once it returns
+    private void OnCrownHit() {
+        QueueBossReward(
+            RewardKind.CrownHit,
+            cobraKing != null ? cobraKing.PointsScale : 1f);
+    }
+
+    private void OnSpiderHit() {
+        QueueBossReward(RewardKind.SpiderHit, SpiderPointsScale());
+    }
+
+    private void OnTailParried() {
+        QueueBossReward(RewardKind.TailParry, SpiderPointsScale());
+    }
+
+    private void OnDashDodged() {
+        QueueBossReward(RewardKind.DashDodge, SpiderPointsScale());
+    }
+
+    private float SpiderPointsScale() {
+        return spiderKing != null ? spiderKing.PointsScale : 1f;
+    }
+
+    private void QueueBossReward(RewardKind kind, float scale) {
+        pendingBossRewards.Add(kind);
+        pendingBossScales.Add(scale);
     }
 
     private void GrantBossRewards() {
-        foreach (RewardKind kind in pendingBossRewards) {
-            AddReward(kind);
+        for (int i = 0; i < pendingBossRewards.Count; i++) {
+            AddReward(pendingBossRewards[i], pendingBossScales[i]);
         }
         pendingBossRewards.Clear();
+        pendingBossScales.Clear();
+    }
+
+    // config points of a reward, times the caller's scale & the mode scale
+    private long ScaledPoints(RewardKind kind, float scale) {
+        return (long)Mathf.FloorToInt(
+            scoreConfig.PointsFor(kind) * scale * ModeScale);
     }
 
     private void SampleHeight() {
@@ -283,7 +337,8 @@ public class ScoreManager: MonoBehaviour {
 
         long oldScore = TotalScore;
         highestClimbedUnits = climbedUnits;
-        double points = Math.Floor(HighestClimbedMeters) * pointsPerMeter;
+        double points = Math.Floor(
+            Math.Floor(HighestClimbedMeters) * pointsPerMeter * ModeScale);
         //高度分 = 最高爬升米数向下取整 × 每米分值
         long available = long.MaxValue - RewardScore;
         DistanceScore = points >= available ? available : (long)points;

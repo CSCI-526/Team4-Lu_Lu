@@ -9,9 +9,35 @@ public struct BossFightHudPop {
     public float ageS;
 }
 
+/// <summary>What a flying -1 stands for.</summary>
+public enum BossFightHudLoss {
+    Heart,
+    Armor
+}
+
+public struct BossFightHudLossFlight {
+    public TextMeshProUGUI label;
+    public BossFightHudLoss kind;
+    public Vector3 worldPosition;
+    // the heart that dims on arrival
+    public int heartIndex;
+    public float ageS;
+}
+
+public struct BossFightHudDamageFlight {
+    public TextMeshProUGUI label;
+    public Vector3 worldPosition;
+    // the boss health the bar drops to as the number lands
+    public int health;
+    public int maxHealth;
+    public float ageS;
+}
+
 public struct BossFightHudWarning {
     public int id;
     public RectTransform sign;
+    // the diamond & "!" together, the only part that shakes
+    public RectTransform mark;
     public Vector3 worldPosition;
     public float progress;
     // 0 when shown, 1 at the hit
@@ -64,11 +90,12 @@ public sealed class BossFightHudRig {
     public int heartHealth = -1;
     public float heartPopLeftS;
     public TextMeshProUGUI nameLabel;
+    // real s since the name's intro began; negative once it has docked
+    public float nameIntroAgeS = -1f;
     public RectTransform speechRect;
     public TextMeshProUGUI speechLabel;
     public KeyPromptWidget keyPrompt;
     public TextMeshProUGUI bannerLabel;
-    public RectTransform doubleTapIcon;
     public GameObject revivePanel;
     public TextMeshProUGUI reviveCountLabel;
     public GameObject adPanel;
@@ -76,6 +103,30 @@ public sealed class BossFightHudRig {
     public readonly List<RectTransform> adShapes = new List<RectTransform>();
     public GameObject adSkipButton;
     public RectTransform armorBadge;
+    // the monkey's heart row in the stamina bar's place, & its armor mark
+    public RectTransform monkeyHeartRow;
+    public readonly List<Image> monkeyHeartImages = new List<Image>();
+    public RectTransform armorMark;
+    public bool isArmorShown;
+    public int monkeyHeartsShown = -1;
+    // a golden grab's armor sprite still flying to the mark: the armor counts
+    // as worn, its mark shows & pops on landing
+    public bool isArmorGainPending;
+    public float armorGainDeadlineS;
+    public const float ARMOR_GAIN_MAX_S = 2.5f;
+    // -1 numbers flying to the heart row or the armor mark
+    public readonly List<BossFightHudLossFlight> lossFlights =
+        new List<BossFightHudLossFlight>();
+    public System.Action<BossFightHudLossFlight> LossLanded;
+    // -n numbers flying to the boss health bar
+    public readonly List<BossFightHudDamageFlight> damageFlights =
+        new List<BossFightHudDamageFlight>();
+    public System.Action<BossFightHudDamageFlight> DamageLanded;
+    // real s a heart loss waits for its flight before it dims anyway
+    public float heartGraceLeftS;
+    public const float HEART_GRACE_S = 0.15f;
+    public int monkeyHeartLostIndex = -1;
+    public float monkeyHeartPopLeftS;
     public GameObject rewardPanel;
     public float rewardAgeS;
     public TextMeshProUGUI rewardTitle;
@@ -84,25 +135,8 @@ public sealed class BossFightHudRig {
     public RectTransform rewardButton;
     public float armorBadgePopS;
     // pop-in time left; unscaled s
-    // the difficulty choice after a revive  ---------------------------------
-    public GameObject modePanel;
-    public RectTransform easyButton;
-    public RectTransform normalButton;
-    public RectTransform easyRing;
-    public RectTransform normalRing;
-    public bool isModeEasy; // the picked choice, NORMAL first
-    public float modeAgeS; // real s it has been up
-    public bool isModeMoveHeld; // a sideways press not let go yet
-    public const float MODE_READY_S = 0.4f; // b4 a key may pick
-    public RectTransform easyTag;
-    public RectTransform normalTag;
-    public Vector3 easyTagWorld;
-    public Vector3 normalTagWorld;
-    public readonly Vector2 tagOffset = new Vector2(0f, 55f);
     public readonly Vector2 bannerCenterPosition = new Vector2(0f, 120f);
     public readonly Vector2 bannerLowPosition = new Vector2(0f, -150f);
-    // under the low banner's two lines
-    public readonly Vector2 doubleTapIconPosition = new Vector2(0f, -250f);
     public float bannerHideTime = -1f;
     // unscaled time a timed banner goes
     public Image flashImage;

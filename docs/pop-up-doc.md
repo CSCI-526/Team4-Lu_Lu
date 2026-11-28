@@ -41,6 +41,8 @@ Each popup is one entry of `Settings/PopUp/PopUpCatalog`; open the asset and edi
 - Loss: on `GameState.Lost` the showing popup stops at once and the queue is cleared
 - Pause: timing follows `Time.deltaTime`, so a pause freezes a popup and a resume continues it
 - Holds: a popup with no show time, such as the web hint or a grab hint, stays until its owner calls `Hide`
+- Spider King tips: 4 held Message popups (`SpiderTipParry`, `SpiderTipMelon`, `SpiderTipDash`, `SpiderTipWebEscape`, priority 5, under the lesson's "Now!"), each w/ the animated key icon of the control style, shown & hidden by `SpiderKingTips`
+- Golden watermelon: `GoldenWatermelonFirst` is small plain gold text w/ its line to the melon, no icon or hold hint, shown only within `goldenMelonPopUpRadiusU` (`PlayerBalanceConfig`) of the melon
 
 ## Add a Popup
 
@@ -52,4 +54,4 @@ An id with no definition logs a warning and shows nothing.
 
 ## Dev Skip
 
-`TutorialSkipManager` keeps 6 teaching pop ups from showing once seen in a session, or always while its dev checkbox is on (never in a release build): the fruit grabs (`BananaFirst`, `PineappleFirst`, `CoconutGrab`), `CoconutFirst`, `SpiderWebHint` and `LowStaminaHint`. The feedback pop ups still show. A new teaching pop up adds a `TutorialItem` and asks the manager, see [Tutorial Skip Manager](monkobra-tdd.md#tutorial-skip-manager).
+`TutorialSkipManager` keeps 7 teaching pop ups from showing once seen in a session, or always while its dev checkbox is on (never in a release build): the fruit grabs (`BananaFirst`, `PineappleFirst`, `CoconutGrab`), `GoldenWatermelonFirst` (a Fruit popup w/ a line to the golden watermelon, held by `GoldenMelonHint` while it is up, seen on its grab), `CoconutFirst`, `SpiderWebHint` and `LowStaminaHint`. The feedback pop ups still show. A new teaching pop up adds a `TutorialItem` and asks the manager, see [Tutorial Skip Manager](monkobra-tdd.md#tutorial-skip-manager).

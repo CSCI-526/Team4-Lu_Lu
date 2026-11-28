@@ -73,16 +73,16 @@ graph TD
 graph TD
   Title[Title: Space, click or tap] --> Select[Level selection]
   Select -->|Normal Play| Run[Run, boss fight included]
-  Select -->|Endless Mode, once the king is beaten| Endless[Run, no boss fight]
+  Select -->|Hardcore Mode, once the king is beaten| Hardcore[Run, no boss fight]
   Select -->|Back| Title
   Run --> Lose[Lose]
-  Endless --> Lose
+  Hardcore --> Lose
   Lose -->|R, or Restart| Run
   Lose -->|Exit| Select
   Run -.->|pause: Exit| Select
-  Lose -.->|from Endless| Endless
+  Lose -.->|from Hardcore| Hardcore
 ```
 
-- Start: the game opens on the title, then the level selection, where Normal Play or Endless Mode begins a run
-- Restart: R restarts inside the same scene, so an Endless run restarts as Endless
+- Start: the game opens on the title, then the level selection, where Normal Play or Hardcore Mode begins a run
+- Restart: R restarts inside the same scene, so an Hardcore run restarts as Hardcore
 - Exit: the pause and lose screens each offer Exit, next to Restart (and Resume while paused), which returns to the level selection

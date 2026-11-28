@@ -35,8 +35,8 @@ public sealed class SpiderKingDamage {
         }
         rig.health = Mathf.Max(0, rig.health - damage);
         rig.onSpiderHit?.Invoke();
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        rig.hud.PopDamage("-" + damage, rig.body.HeadPosition);
+        rig.hud.PopDamage(damage, rig.health, rig.maxHealth,
+            rig.body.HeadPosition);
         rig.Parry.Burst(rig.body.HeadPosition, new Color(0.9f, 0.2f, 0.25f),
             10);
         if (rig.health <= 0) {
@@ -91,9 +91,9 @@ public sealed class SpiderKingDamage {
         if (isTouch) {
             ShowTouchWarning(HasArmor());
         }
-        // the armor saves as in the Cobra King's arena: "Saved!" & the usual
+        // the armor saves as in the Cobra King's arena: a gold -1 & the usual
         // knock down; the spider goes on
-        if (TrySpendArmor()) {
+        if (TryAbsorb()) {
             if (rig.mode == SpiderKingMode.Cocooning) {
                 rig.Movement.SetMode(SpiderKingMode.Idle);
                 rig.nextAttackTime = Time.time + rig.Movement.RestNow();
@@ -186,6 +186,22 @@ public sealed class SpiderKingDamage {
         rig.monkeyController.PullTo(rig.returnTarget,
             config.ReviveReturnSpeedU);
         rig.isReturningToStart = true;
+    }
+
+    // the armor saves first, else a heart: either takes the fatal hit
+    public bool TryAbsorb() {
+        if (TrySpendArmor()) {
+            return true;
+        }
+        if (!MonkeyHearts.TryLose()) {
+            return false;
+        }
+        rig.saveGraceEndTime = Time.time + config.SaveGraceS;
+        if (rig.struggle != null) {
+            rig.struggle.ForceRelease();
+        }
+        rig.hud.PopLoss(BossFightHudLoss.Heart, rig.monkey.position);
+        return true;
     }
 
     // the Cobra King's leftover armor, if worn; frees the monkey too

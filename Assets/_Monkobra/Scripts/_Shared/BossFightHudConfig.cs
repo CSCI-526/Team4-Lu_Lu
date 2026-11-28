@@ -1,3 +1,5 @@
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,27 +37,88 @@ public class BossFightHudConfig: ScriptableObject {
     public RuntimeAnimatorController PromptTouchController =>
         promptTouchController;
 
-    /// <returns>animates the banner's keycap while a keyboard is in
-    /// use (Space double tap); blank shows none</returns>
-    public RuntimeAnimatorController DoubleKeyboardController =>
-        doubleKeyboardController;
+    /// <returns>the monkey's heart image in the heart row; null draws a
+    /// plain heart</returns>
+    public Sprite HeartSprite => heartSprite;
 
-    /// <returns>animates the banner's finger while touch is in use
-    /// (double tap); blank shows none</returns>
-    public RuntimeAnimatorController DoubleTouchController =>
-        doubleTouchController;
+    /// <returns>the gold crown image beside the heart row; null draws a
+    /// plain gold crown</returns>
+    public Sprite ArmorSprite => armorSprite;
 
     /// <returns>tint of the health bar</returns>
     public Color HealthColor => healthColor;
 
+    /// <returns>tint of the -n flying from a hit boss to its health bar,
+    /// a deeper red than the hearts'</returns>
+    public Color BossHitColor => bossHitColor;
+
     /// <returns>tint of a damage number</returns>
     public Color DamageColor => damageColor;
+
+    /// <returns>tint of the -1 flying to a lost heart</returns>
+    public Color HeartLossColor => heartLossColor;
+
+    /// <returns>tint of the -1 flying to a lost armor</returns>
+    public Color ArmorLossColor => armorLossColor;
+
+    /// <returns>how long a loss number flies to the heart row; s</returns>
+    public float LossFlightS => lossFlightS;
+
+    /// <returns>font size of the -1 & -n numbers</returns>
+    public float NumberFontSize => numberFontSize;
+
+    /// <returns>how long a number's spawn punch lasts; s</returns>
+    public float NumberSpawnPopS => numberSpawnPopS;
+
+    /// <returns>peak scale factor of a number's spawn punch</returns>
+    public float NumberSpawnOvershoot => numberSpawnOvershoot;
+
+    /// <returns>how long a number punches at its target; s</returns>
+    public float NumberLandPunchS => numberLandPunchS;
+
+    /// <returns>peak scale factor of a number's landing punch</returns>
+    public float NumberLandPunchScale => numberLandPunchScale;
 
     /// <returns>tint of an attack warning</returns>
     public Color WarningColor => warningColor;
 
     /// <returns>warning sign offset over its zone, in canvas units</returns>
     public Vector2 WarningOffset => warningOffset;
+
+    /// <returns>font of an attack sign's "!" and word; null takes the TMP
+    /// default</returns>
+    public TMP_FontAsset WarningFont => warningFont;
+
+    /// <returns>font of the boss name above the health bar; null takes the
+    /// TMP default</returns>
+    public TMP_FontAsset BossNameFont => bossNameFont;
+
+    /// <returns>how many times bigger the boss name starts than its docked
+    /// size</returns>
+    public float NameIntroScale => nameIntroScale;
+
+    /// <returns>where the big boss name starts, as a fraction of the screen
+    /// height under the screen center</returns>
+    public float NameIntroDrop => nameIntroDrop;
+
+    /// <returns>how long the big boss name holds before it moves; s</returns>
+    public float NameIntroHoldS => nameIntroHoldS;
+
+    /// <returns>how long the boss name takes to shrink & glide to the bar;
+    /// s</returns>
+    public float NameIntroGlideS => nameIntroGlideS;
+
+    /// <param name="item">the attack's <see cref="TutorialItem"/> key</param>
+    /// <returns>the word its sign shows, null if the table lacks the attack
+    /// </returns>
+    public string GetAttackWord(TutorialItem item) {
+        foreach (AttackWord entry in attackWords) {
+            if (entry.item == item) {
+                return entry.word;
+            }
+        }
+        return null;
+    }
 
     // Inspector Fields  #######################################################
     [SerializeField]
@@ -88,22 +151,62 @@ public class BossFightHudConfig: ScriptableObject {
     private RuntimeAnimatorController promptTouchController;
 
     [SerializeField]
-    [Tooltip("animates the banner's keycap while a keyboard is in use (Space "
-        + "double tap); blank shows none")]
-    private RuntimeAnimatorController doubleKeyboardController;
+    [Tooltip("the monkey's heart in the heart row; blank draws a plain heart")]
+    private Sprite heartSprite;
 
     [SerializeField]
-    [Tooltip("animates the banner's finger while touch is in use (double "
-        + "tap); blank shows none")]
-    private RuntimeAnimatorController doubleTouchController;
+    [Tooltip("the gold crown beside the heart row; blank draws a crown")]
+    private Sprite armorSprite;
 
     [SerializeField]
     [Tooltip("tint of the health bar")]
     private Color healthColor = new Color(0.85f, 0.15f, 0.15f);
 
     [SerializeField]
+    [Tooltip("tint of the -n flying from a hit boss to its health bar, a "
+        + "deeper red than the hearts'")]
+    private Color bossHitColor = new Color(0.6f, 0.03f, 0.07f);
+
+    [SerializeField]
     [Tooltip("tint of a damage number")]
     private Color damageColor = new Color(1f, 0.85f, 0.2f);
+
+    [SerializeField]
+    [Tooltip("tint of the -1 flying to a lost heart")]
+    private Color heartLossColor = new Color(0.92f, 0.2f, 0.27f);
+
+    [SerializeField]
+    [Tooltip("tint of the -1 flying to a lost armor")]
+    private Color armorLossColor = UIStyle.Gold;
+
+    [SerializeField]
+    [Tooltip("how long a loss number flies to the heart row; s")]
+    private float lossFlightS = 0.6f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("font size of the -1 & -n numbers")]
+    private float numberFontSize = 96f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("how long a number's spawn punch lasts; s")]
+    private float numberSpawnPopS = 0.25f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("peak scale factor of a number's spawn punch")]
+    private float numberSpawnOvershoot = 1.5f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("how long a number punches at its target, then fades; s")]
+    private float numberLandPunchS = 0.25f;
+
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("peak scale factor of a number's landing punch")]
+    private float numberLandPunchScale = 1.6f;
 
     [SerializeField]
     [Tooltip("tint of an attack warning")]
@@ -112,4 +215,42 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("warning sign offset over its zone, in canvas units")]
     private Vector2 warningOffset = new Vector2(0f, 70f);
+
+    [SerializeField]
+    [Tooltip("font of an attack sign's ! and word, the Anton SDF asset")]
+    private TMP_FontAsset warningFont;
+
+    [SerializeField]
+    [Tooltip("font of the boss name, the Creepster SDF asset")]
+    private TMP_FontAsset bossNameFont;
+
+    [SerializeField]
+    [Tooltip("how many times bigger the boss name starts than its docked "
+        + "size")]
+    private float nameIntroScale = 4f;
+
+    [SerializeField]
+    [Tooltip("where the big boss name starts, as a fraction of the screen "
+        + "height under the screen center")]
+    private float nameIntroDrop = 0.25f;
+
+    [SerializeField]
+    [Tooltip("how long the big boss name holds before it moves; s")]
+    private float nameIntroHoldS = 1.8f;
+
+    [SerializeField]
+    [Tooltip("how long the boss name takes to shrink and glide to the bar; "
+        + "s")]
+    private float nameIntroGlideS = 0.7f;
+
+    [SerializeField]
+    [Tooltip("the word each attack's sign shows, one word naming the attack")]
+    private AttackWord[] attackWords;
+
+    // private types  ###########################################################
+    [Serializable]
+    private struct AttackWord {
+        public TutorialItem item;
+        public string word;
+    }
 }

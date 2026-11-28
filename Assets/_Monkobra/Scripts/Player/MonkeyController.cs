@@ -287,8 +287,6 @@ public class MonkeyController: MonoBehaviour {
 
     private void Update() {
         UpdateSpeedBuffKey();
-        UpdateBossJumpKey();
-        UpdateSpiderJumpKey();
     }
 
     private void FixedUpdate() {
@@ -354,10 +352,10 @@ public class MonkeyController: MonoBehaviour {
             : climbConfig.ExhaustedSpeedMultiplier;
         float upSpeedScale = isExhausted ? exhaustedScale : 1f;
 
-        // rough bark slows the body, a boss arena, the endless run's boss
+        // rough bark slows the body, a boss arena, the hardcore run's boss
         // rush (outside a fight) & the dev speed buff multiply it
         float moveScale = roughBarkSpeedScale * ArenaSpeedScale
-            * EndlessBossRush.ClimbSpeedScale
+            * HardcoreBossRush.ClimbSpeedScale
             * (IsSpeedBuff ? SPEED_BUFF_SCALE : 1f);
 
         orbitAngleDeg -= directionalInput.x
@@ -482,8 +480,6 @@ public class MonkeyController: MonoBehaviour {
     private const float INPUT_DEADZONE = 0.1f;
     private const float INPUT_DEADZONE_SQR = INPUT_DEADZONE * INPUT_DEADZONE;
     private const float SPEED_BUFF_SCALE = 5f; // dev buff on climb & orbit
-    // the spider jump lands this far below the Spider King's trigger; u
-    private const float SPIDER_JUMP_BELOW_U = 6f;
 
     // private members  ########################################################
     private float orbitAngleDeg;
@@ -529,99 +525,6 @@ public class MonkeyController: MonoBehaviour {
         IsSpeedBuff = !IsSpeedBuff;
         if (Debug.isDebugBuild) {
             Debug.Log("MonkeyController:\tspeed buff " + IsSpeedBuff, this);
-        }
-    }
-
-    // dev/hack key teleporting the monkey to the boss zone start, so the
-    // approach to the fight can be tested from its first metre
-    private void UpdateBossJumpKey() {
-        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
-            return;
-        }
-
-        if (!hackShortcuts.WasPressedThisFrame(HackAction.BossJump)) {
-            return;
-        }
-
-        RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        bool isLive = RunController.I != null && RunController.I.IsRunLive;
-        if (ramp == null || worldBalanceConfig == null || body == null
-            || !isLive) {
-            return;
-        }
-
-        // the jump from the starting zone ends it, so the run is normal
-        // climbing & the boss trigger can fire (it needs Playing)
-        RunController.I.EndStartingZone();
-
-        // a hair over the zone start, so landing there surely counts as inside
-        Vector3 target = transform.position;
-        target.y = ramp.PlayerGameStartYPosition
-            + worldBalanceConfig.BossZoneStartU + 0.05f;
-        transform.position = target;
-        body.position = target;
-        climbSpeedU = 0f;
-        upHeldS = 0f;
-        downHeldS = 0f;
-        Physics.SyncTransforms();
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                $"MonkeyController:\tboss jump to y {target.y}",
-                this
-            );
-        }
-    }
-
-    // dev/hack key teleporting the monkey to just below the Spider King's
-    // fight, the Cobra King counted as beaten (its armor worn), so the
-    // second boss is tested w/o the climb
-    private void UpdateSpiderJumpKey() {
-        if (hackShortcuts == null || !HackShortcutConfig.IsActive) {
-            return;
-        }
-
-        if (!hackShortcuts.WasPressedThisFrame(HackAction.SpiderJump)) {
-            return;
-        }
-
-        RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        bool isLive = RunController.I != null && RunController.I.IsRunLive;
-        // the endless run's boss rush brings its own Spider King fights
-        if (ramp == null || worldBalanceConfig == null || body == null
-            || !isLive || IsHeld || EndlessBossRush.IsOn) {
-            return;
-        }
-        // not in the middle of a boss fight
-        CobraKingFightController cobraKing = CobraKingFightController.I;
-        if (cobraKing != null && !cobraKing.IsDone && !cobraKing.IsWaiting) {
-            return;
-        }
-        SpiderKingFightController spiderKing = SpiderKingFightController.I;
-        if (spiderKing != null && spiderKing.IsFraming) {
-            return;
-        }
-
-        RunController.I.EndStartingZone();
-        if (cobraKing != null) {
-            cobraKing.SkipForTest();
-        }
-
-        // a bit below the trigger, in the spider's bare zone, so it is seen
-        // waiting above & the fight starts after a short climb
-        Vector3 target = transform.position;
-        target.y = ramp.PlayerGameStartYPosition
-            + worldBalanceConfig.SpiderTriggerHeightU - SPIDER_JUMP_BELOW_U;
-        transform.position = target;
-        body.position = target;
-        climbSpeedU = 0f;
-        upHeldS = 0f;
-        downHeldS = 0f;
-        Physics.SyncTransforms();
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                $"MonkeyController:\tspider jump to y {target.y}",
-                this
-            );
         }
     }
 

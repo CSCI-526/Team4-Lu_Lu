@@ -25,3 +25,4 @@ MonoBehaviour:
   cobraFreezeDurationS: 10
   coconutThrowSpeedU: 30
   coconutThrowDistanceU: 25
+  goldenMelonPopUpRadiusU: 12

@@ -16,6 +16,11 @@ using static BossFightHudRig;
 /// </summary>
 public class BossFightHud: MonoBehaviour {
     public const float CALL_OUT_S = BossFightHudRig.CALL_OUT_S;
+
+    /// <returns>the armor mark beside the hearts, where an armor sprite
+    /// flies to; null before the fight's hearts show</returns>
+    public static RectTransform ArmorMarkTarget { get; private set; }
+
     // Inspector Fields  #######################################################
     [SerializeField]
     [Tooltip("every tuned value of the boss fight HUD")]
@@ -27,6 +32,20 @@ public class BossFightHud: MonoBehaviour {
     private BossFightHudMotion motion;
 
     // MonoBehaviour Lifecycle  ################################################
+    private void OnEnable() {
+        MonkeyHearts.Changed += OnMonkeyHeartsChanged;
+    }
+
+    private void OnDisable() {
+        MonkeyHearts.Changed -= OnMonkeyHeartsChanged;
+    }
+
+    private void OnDestroy() {
+        if (rig != null && ArmorMarkTarget == rig.armorMark) {
+            ArmorMarkTarget = null;
+        }
+    }
+
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
         if (config == null) {
@@ -48,9 +67,15 @@ public class BossFightHud: MonoBehaviour {
         motion = new BossFightHudMotion(rig);
         rig.Builder = builder;
         rig.Motion = motion;
+        rig.LossLanded = OnLossLanded;
+        rig.DamageLanded = OnDamageLanded;
     }
 
-    /// <summary>Builds the UI and shows the health bar, full.</summary>
+    /// <summary>
+    /// Builds the UI and shows the health bar, full, & the boss name: big in
+    /// the lower half of the screen first, then shrinking as it glides up to
+    /// its place above the bar. It is never shown anywhere else.
+    /// </summary>
     public void Show(string bossName) {
         if (!builder.TryBuild()) {
             return;
@@ -62,50 +87,16 @@ public class BossFightHud: MonoBehaviour {
         }
         rig.nameLabel.gameObject.SetActive(true);
         rig.nameLabel.text = bossName;
+        CancelDamageFlights();
+        rig.nameIntroAgeS = 0f;
+        motion.UpdateNameIntro();
         SetHealth(1f);
         rig.heartHealth = -1;
     }
 
     /// <summary>
-    /// Raised when a difficulty is picked on the choice card: true for EASY,
-    /// false for NORMAL.
-    /// </summary>
-    public event System.Action<bool> ModeChosen;
-
-    /// <returns>if the difficulty choice card is up</returns>
-    public bool IsChoosingMode => rig.modePanel != null
-        && rig.modePanel.activeSelf;
-
-    /// <summary>
-    /// Shows the difficulty choice after a revive over a dimmed screen: a
-    /// short title & two big buttons, EASY & NORMAL, NORMAL picked first;
-    /// A / D (or the arrows) move the pick, Space (or Enter) takes it, a tap
-    /// or click takes a button at once. <see cref="ModeChosen"/> tells which.
-    /// </summary>
-    public void ShowModeChoice() {
-        if (!builder.TryBuild()) {
-            return;
-        }
-        if (rig.modePanel == null) {
-            rig.modePanel = builder.CreateModeChoice(PickMode);
-        }
-        rig.modePanel.SetActive(true);
-        rig.isModeEasy = false;
-        rig.modeAgeS = 0f;
-        rig.isModeMoveHeld = true;
-        ShowModePick();
-    }
-
-    /// <summary>Hides the difficulty choice.</summary>
-    public void HideModeChoice() {
-        if (rig.modePanel != null) {
-            rig.modePanel.SetActive(false);
-        }
-    }
-
-    /// <summary>
     /// Builds the UI w/o the name & health bar, eg for a fight skipped as
-    /// beaten, so its armor badge, "Saved!" & flash still show.
+    /// beaten, so its armor badge, loss numbers & flash still show.
     /// </summary>
     public void BuildQuiet() {
         if (!builder.TryBuild()) {
@@ -130,6 +121,11 @@ public class BossFightHud: MonoBehaviour {
     /// the bar; the heart pops as the count drops.
     /// </summary>
     public void SetHealth(int health, int maxHealth) {
+        CancelDamageFlights();
+        ApplyHealth(health, maxHealth);
+    }
+
+    private void ApplyHealth(int health, int maxHealth) {
         SetHealth(maxHealth > 0 ? health / (float)maxHealth : 0f);
         if (rig.heartLabel == null) {
             return;
@@ -211,9 +207,50 @@ public class BossFightHud: MonoBehaviour {
         rig.callOutAgeS = 0f;
     }
 
-    /// <summary>Pops a rising damage number at a world point.</summary>
-    public void PopDamage(string text, Vector3 worldPosition) {
-        PopText(text, worldPosition, config.DamageColor);
+    /// <summary>
+    /// A deep red -<paramref name="damage"/> flies from a world point (the
+    /// head or weak spot) up to the health bar; the bar & heart count drop
+    /// to <paramref name="health"/> of <paramref name="maxHealth"/> only as
+    /// it lands, so call this in place of <c>SetHealth</c>.
+    /// </summary>
+    public void PopDamage(
+        int damage, int health, int maxHealth, Vector3 worldPosition
+    ) {
+        if (rig.rootRect == null || rig.healthFill == null) {
+            ApplyHealth(health, maxHealth);
+            return;
+        }
+        TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
+            "Damage", rig.rootRect, "-" + damage, config.NumberFontSize,
+            config.BossHitColor
+        );
+        BossFightHudBuilder.UseFont(label, config.WarningFont);
+        label.outlineWidth = 0.25f;
+        label.outlineColor = Color.white;
+        label.rectTransform.sizeDelta = new Vector2(240f, 120f);
+        rig.damageFlights.Add(new BossFightHudDamageFlight {
+            label = label,
+            worldPosition = worldPosition,
+            health = health,
+            maxHealth = maxHealth,
+            ageS = 0f
+        });
+        motion.UpdateDamageFlights();
+    }
+
+    // a -n landed: the bar & heart count drop
+    private void OnDamageLanded(BossFightHudDamageFlight flight) {
+        ApplyHealth(flight.health, flight.maxHealth);
+    }
+
+    // a reset or a hidden bar leaves no stale drop to land later
+    private void CancelDamageFlights() {
+        foreach (BossFightHudDamageFlight flight in rig.damageFlights) {
+            if (flight.label != null) {
+                Destroy(flight.label.gameObject);
+            }
+        }
+        rig.damageFlights.Clear();
     }
 
     /// <summary>Pops a rising word at a world point, eg "Blocked!".
@@ -277,7 +314,6 @@ public class BossFightHud: MonoBehaviour {
         }
         rig.bannerLabel.text = text;
         rig.bannerLabel.color = color;
-        ShowDoubleTapIcon(false);
         rig.bannerLabel.rectTransform.anchoredPosition =
             rig.bannerCenterPosition;
         rig.bannerLabel.gameObject.SetActive(true);
@@ -300,18 +336,8 @@ public class BossFightHud: MonoBehaviour {
         rig.bannerHideTime = seconds > 0f ? Time.unscaledTime + seconds : -1f;
     }
 
-    /// <summary>
-    /// Shows the animated double tap icon under the low banner, the keycap
-    /// of a keyboard or the finger of touch; it goes w/ the next banner or
-    /// <see cref="HideBanner"/>. Call it after the banner it teaches under.
-    /// </summary>
-    public void ShowDoubleTapHint() {
-        ShowDoubleTapIcon(true);
-    }
-
     /// <summary>Hides the big banner.</summary>
     public void HideBanner() {
-        ShowDoubleTapIcon(false);
         if (rig.bannerLabel == null) {
             return;
         }
@@ -379,7 +405,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>
     /// Shows or hides the armor badge in the bottom right, kept up while the
-    /// monkey keeps the Golden Armor it won; it pops in when shown.
+    /// monkey keeps the Golden Crown it won; it pops in when shown.
     /// </summary>
     public void ShowArmorBadge(bool isShown) {
         if (rig.rootRect == null) {
@@ -388,9 +414,218 @@ public class BossFightHud: MonoBehaviour {
         if (rig.armorBadge == null) {
             rig.armorBadge = builder.CreateArmorBadge();
         }
-        rig.armorBadge.gameObject.SetActive(isShown);
+        rig.isArmorShown = isShown;
+        // a golden crown still flying in shows as it lands
+        if (isShown && rig.isArmorGainPending) {
+            rig.armorBadge.gameObject.SetActive(false);
+            if (rig.armorMark != null) {
+                rig.armorMark.gameObject.SetActive(false);
+            }
+            return;
+        }
+        // in a fight the armor shows beside the hearts instead
+        rig.armorBadge.gameObject.SetActive(isShown && !MonkeyHearts.IsActive);
+        // a -1 still flying to the armor takes it away on arrival
+        if (!isShown && HasArmorLossFlight()) {
+            rig.armorBadge.gameObject.SetActive(!MonkeyHearts.IsActive);
+            return;
+        }
         rig.armorBadgePopS = isShown ? ARMOR_BADGE_POP_S : 0f;
         rig.armorBadge.localScale = Vector3.one;
+        if (rig.armorMark != null) {
+            rig.armorMark.gameObject.SetActive(isShown);
+        }
+    }
+
+    // the heart row follows the fight's hearts: up while they count, a lost
+    // one dimmed w/ a pop, the armor mark beside them while it is worn
+    private void OnMonkeyHeartsChanged() {
+        if (rig == null || rig.rootRect == null) {
+            return;
+        }
+        bool isActive = MonkeyHearts.IsActive;
+        if (rig.monkeyHeartRow == null) {
+            if (!isActive) {
+                return;
+            }
+            rig.monkeyHeartRow = builder.CreateMonkeyHeartRow();
+        }
+        rig.monkeyHeartRow.gameObject.SetActive(isActive);
+        if (rig.armorBadge != null) {
+            rig.armorBadge.gameObject.SetActive(
+                rig.isArmorShown && !isActive);
+        }
+        if (!isActive) {
+            rig.monkeyHeartsShown = -1;
+            return;
+        }
+        // a lost heart waits for its -1 to land, or a short grace if none
+        // comes; anything else syncs at once
+        if (rig.monkeyHeartsShown > MonkeyHearts.Hearts) {
+            rig.heartGraceLeftS = HEART_GRACE_S;
+            builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts,
+                rig.monkeyHeartsShown);
+        } else {
+            rig.heartGraceLeftS = 0f;
+            builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts,
+                MonkeyHearts.Hearts);
+            rig.monkeyHeartsShown = MonkeyHearts.Hearts;
+        }
+        ArmorMarkTarget = rig.armorMark;
+        if (!HasArmorLossFlight() && !rig.isArmorGainPending) {
+            rig.armorMark.gameObject.SetActive(rig.isArmorShown);
+        }
+    }
+
+    /// <summary>
+    /// A gold crown sprite flies from <paramref name="fromWorld"/> (the
+    /// golden watermelon) to the armor mark beside the hearts, as a banana
+    /// flies to the energy bar. Call it as the armor is given: it counts as
+    /// worn at once, but its mark only shows, w/ a pop, on landing.
+    /// </summary>
+    public void FlyArmor(Vector3 fromWorld) {
+        if (rig.rootRect == null || FruitFlyEffect.I == null
+            || ArmorMarkTarget == null) {
+            return;
+        }
+        rig.isArmorGainPending = true;
+        rig.armorGainDeadlineS = Time.unscaledTime + ARMOR_GAIN_MAX_S;
+        Sprite sprite = config.ArmorSprite != null
+            ? config.ArmorSprite : BossFightHudBuilder.DrawnCrown();
+        FruitFlyEffect.I.Play(fromWorld, FruitFlyTarget.ArmorMark, sprite,
+            OnArmorGainLanded, UIStyle.Gold);
+    }
+
+    // the armor sprite landed: its mark pops in
+    private void OnArmorGainLanded() {
+        if (!rig.isArmorGainPending) {
+            return;
+        }
+        rig.isArmorGainPending = false;
+        if (!rig.isArmorShown) {
+            return;
+        }
+        ShowArmorBadge(true);
+    }
+
+    // a flight cut by a lost run never lands, so the mark shows anyway
+    private void UpdateArmorGain() {
+        if (rig.isArmorGainPending
+            && Time.unscaledTime > rig.armorGainDeadlineS) {
+            OnArmorGainLanded();
+        }
+    }
+
+    // dims one more heart with its pop, down to the hearts left
+    private void ShowHeartLoss(bool isFinal) {
+        int shown = isFinal
+            ? MonkeyHearts.Hearts
+            : Mathf.Max(MonkeyHearts.Hearts, rig.monkeyHeartsShown - 1);
+        rig.heartGraceLeftS = 0f;
+        if (!MonkeyHearts.IsActive || shown >= rig.monkeyHeartsShown) {
+            return;
+        }
+        builder.SyncMonkeyHearts(MonkeyHearts.MaxHearts, shown);
+        rig.monkeyHeartLostIndex = shown;
+        rig.monkeyHeartPopLeftS = MONKEY_HEART_POP_S;
+        rig.monkeyHeartsShown = shown;
+    }
+
+    // a -1 still punching at its target has landed, so it is no flight
+    private bool IsFlying(BossFightHudLossFlight flight) {
+        return flight.ageS < Mathf.Max(0.05f, config.LossFlightS);
+    }
+
+    private bool HasArmorLossFlight() {
+        foreach (BossFightHudLossFlight flight in rig.lossFlights) {
+            if (flight.kind == BossFightHudLoss.Armor && IsFlying(flight)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// A -1 appears at the monkey and flies to the heart row (red) or the
+    /// armor mark (gold); only as it lands does a heart dim or the armor
+    /// mark go. No words print.
+    /// </summary>
+    /// <param name="kind">which loss it stands for; call it right after the
+    /// loss, before <see cref="ShowArmorBadge"/> hides the armor</param>
+    /// <param name="monkeyWorld">where the -1 starts</param>
+    public void PopLoss(BossFightHudLoss kind, Vector3 monkeyWorld) {
+        if (rig.rootRect == null) {
+            return;
+        }
+        bool isHeart = kind == BossFightHudLoss.Heart;
+        TextMeshProUGUI label = BossFightHudBuilder.CreateLabel(
+            "Loss", rig.rootRect, "-1", config.NumberFontSize,
+            isHeart ? config.HeartLossColor : config.ArmorLossColor
+        );
+        BossFightHudBuilder.UseFont(label, config.WarningFont);
+        label.outlineWidth = 0.25f;
+        label.outlineColor = Color.black;
+        label.rectTransform.sizeDelta = new Vector2(240f, 120f);
+        rig.lossFlights.Add(new BossFightHudLossFlight {
+            label = label,
+            kind = kind,
+            worldPosition = monkeyWorld,
+            heartIndex = MonkeyHearts.Hearts,
+            ageS = 0f
+        });
+        motion.UpdateLossFlights();
+    }
+
+    // a -1 landed: its heart dims or its armor goes
+    private void OnLossLanded(BossFightHudLossFlight flight) {
+        if (flight.kind == BossFightHudLoss.Heart) {
+            ShowHeartLoss(false);
+            return;
+        }
+        if (!rig.isArmorShown) {
+            if (rig.armorMark != null) {
+                rig.armorMark.gameObject.SetActive(false);
+            }
+            if (rig.armorBadge != null) {
+                rig.armorBadge.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    // a heart loss with no -1 coming dims after its grace
+    private void UpdateHeartGrace() {
+        if (rig.heartGraceLeftS <= 0f) {
+            return;
+        }
+        rig.heartGraceLeftS -= Time.unscaledDeltaTime;
+        if (rig.heartGraceLeftS > 0f) {
+            return;
+        }
+        foreach (BossFightHudLossFlight flight in rig.lossFlights) {
+            if (flight.kind == BossFightHudLoss.Heart && IsFlying(flight)) {
+                rig.heartGraceLeftS = HEART_GRACE_S;
+                return;
+            }
+        }
+        ShowHeartLoss(true);
+    }
+
+    // a lost heart pops big & settles dim: real s
+    private const float MONKEY_HEART_POP_S = 0.4f;
+
+    private void UpdateMonkeyHearts() {
+        if (rig.monkeyHeartPopLeftS <= 0f) {
+            return;
+        }
+        rig.monkeyHeartPopLeftS = Mathf.Max(0f,
+            rig.monkeyHeartPopLeftS - Time.unscaledDeltaTime);
+        int i = rig.monkeyHeartLostIndex;
+        if (i < 0 || i >= rig.monkeyHeartImages.Count) {
+            return;
+        }
+        float left = rig.monkeyHeartPopLeftS / MONKEY_HEART_POP_S;
+        rig.monkeyHeartImages[i].rectTransform.localScale =
+            Vector3.one * (1f + 0.7f * left * left);
     }
 
     /// <summary>Hides the king's name & health bar, eg once it is beaten.
@@ -402,29 +637,8 @@ public class BossFightHud: MonoBehaviour {
         if (rig.nameLabel != null) {
             rig.nameLabel.gameObject.SetActive(false);
         }
-    }
-
-    /// <summary>
-    /// Shows EASY & NORMAL tags over the two mode-choice bananas at
-    /// <paramref name="easyWorld"/> & <paramref name="normalWorld"/>, or
-    /// hides them.
-    /// </summary>
-    public void SetChoiceTags(
-        bool isShown, Vector3 easyWorld, Vector3 normalWorld
-    ) {
-        if (rig.rootRect == null) {
-            return;
-        }
-        if (rig.easyTag == null) {
-            rig.easyTag = builder.CreateTag("EasyTag", "EASY",
-                new Color(0.55f, 0.95f, 0.55f));
-            rig.normalTag =
-                builder.CreateTag("NormalTag", "NORMAL", UIStyle.Gold);
-        }
-        rig.easyTag.gameObject.SetActive(isShown);
-        rig.normalTag.gameObject.SetActive(isShown);
-        rig.easyTagWorld = easyWorld;
-        rig.normalTagWorld = normalWorld;
+        rig.nameIntroAgeS = -1f;
+        CancelDamageFlights();
     }
 
     /// <summary>
@@ -478,12 +692,32 @@ public class BossFightHud: MonoBehaviour {
     }
 
     /// <summary>
-    /// Shows an attack warning over <paramref name="worldPosition"/>: a red
-    /// sign with "!" and <paramref name="word"/> under it, beating faster as
-    /// <paramref name="progress"/> 0~1 nears the hit.
+    /// Shows the sign of attack <paramref name="item"/> over
+    /// <paramref name="worldPosition"/>, in the one standard look, the first
+    /// few times this session only; <see cref="TutorialSkipManager"/> counts
+    /// and limits them. The word comes from the config's attack table.
     /// </summary>
-    /// <returns>the warning's id for <see cref="UpdateWarning"/></returns>
-    public int AddWarning(Vector3 worldPosition, string word) {
+    /// <returns>the warning's id for <see cref="UpdateWarning"/>, -1 when
+    /// the sign is skipped or has no word; every warning call ignores -1
+    /// </returns>
+    public int AddAttackWarning(TutorialItem item, Vector3 worldPosition) {
+        TutorialSkipManager skip = TutorialSkipManager.I;
+        if (skip != null && skip.ShouldSkip(item)) {
+            return -1;
+        }
+        string word = config.GetAttackWord(item);
+        if (string.IsNullOrEmpty(word)) {
+            return -1;
+        }
+        if (skip != null) {
+            skip.MarkSeen(item);
+        }
+        return AddWarning(worldPosition, word);
+    }
+
+    // a red sign with "!" and the word under it, its "!" shaking harder
+    // & faster as its progress 0~1 nears the hit, the word still; every attack asks AddAttackWarning instead
+    private int AddWarning(Vector3 worldPosition, string word) {
         if (rig.rootRect == null) {
             return -1;
         }
@@ -491,8 +725,12 @@ public class BossFightHud: MonoBehaviour {
             BossFightHudBuilder.CreateRect("Warning", rig.rootRect);
         sign.sizeDelta = new Vector2(70f, 70f);
 
-        // a red diamond with a white border & a big "!"
-        RectTransform border = BossFightHudBuilder.CreateRect("Border", sign);
+        // a red diamond with a white border & a big "!", shaking as one
+        RectTransform markGroup =
+            BossFightHudBuilder.CreateRect("MarkGroup", sign);
+        BossFightHudBuilder.Stretch(markGroup);
+        RectTransform border =
+            BossFightHudBuilder.CreateRect("Border", markGroup);
         BossFightHudBuilder.Stretch(border);
         border.localRotation = Quaternion.Euler(0f, 0f, 45f);
         border.sizeDelta = Vector2.zero;
@@ -503,7 +741,7 @@ public class BossFightHud: MonoBehaviour {
         face.offsetMax = new Vector2(-5f, -5f);
         BossFightHudBuilder.AddImage(face, config.WarningColor);
         TextMeshProUGUI mark =
-            BossFightHudBuilder.CreateLabel("Mark", sign, "!", 56f,
+            BossFightHudBuilder.CreateLabel("Mark", markGroup, "!", 56f,
                 Color.white);
         BossFightHudBuilder.Stretch(mark.rectTransform);
         mark.fontStyle = FontStyles.Bold;
@@ -512,6 +750,14 @@ public class BossFightHud: MonoBehaviour {
             "Word", sign, word, 30f, config.WarningColor
         );
         label.fontStyle = FontStyles.Bold;
+        // the standard sign font, never a fake bold on a heavy face
+        if (config.WarningFont != null) {
+            foreach (TextMeshProUGUI text in new[] { mark, label }) {
+                text.font = config.WarningFont;
+                text.fontSharedMaterial = config.WarningFont.material;
+                text.fontStyle = FontStyles.Normal;
+            }
+        }
         label.outlineWidth = 0.25f;
         label.outlineColor = Color.white;
         RectTransform labelRect = label.rectTransform;
@@ -523,6 +769,7 @@ public class BossFightHud: MonoBehaviour {
         rig.warnings.Add(new BossFightHudWarning {
             id = rig.nextWarningId,
             sign = sign,
+            mark = markGroup,
             worldPosition = worldPosition,
             progress = 0f
         });
@@ -570,14 +817,6 @@ public class BossFightHud: MonoBehaviour {
         set => rig.speechWorldPosition = value;
     }
 
-    // the icon under the banner, on or off; a no-op w/o the icon
-    private void ShowDoubleTapIcon(bool isShown) {
-        if (rig.doubleTapIcon != null
-            && rig.doubleTapIcon.gameObject.activeSelf != isShown) {
-            rig.doubleTapIcon.gameObject.SetActive(isShown);
-        }
-    }
-
     private void Update() {
         if (rig.rootRect == null) {
             return;
@@ -591,7 +830,6 @@ public class BossFightHud: MonoBehaviour {
             && Time.unscaledTime >= rig.bannerHideTime) {
             rig.bannerHideTime = -1f;
             rig.bannerLabel.gameObject.SetActive(false);
-            ShowDoubleTapIcon(false);
         }
         if (rig.speechRect != null) {
             rig.speechLeftS -= Time.deltaTime;
@@ -601,71 +839,16 @@ public class BossFightHud: MonoBehaviour {
                 motion.PlaceSpeech();
             }
         }
-        if (rig.easyTag != null && rig.easyTag.gameObject.activeSelf) {
-            motion.Place(rig.easyTag, rig.easyTagWorld, rig.tagOffset);
-            motion.Place(rig.normalTag, rig.normalTagWorld, rig.tagOffset);
-        }
         motion.UpdatePops();
+        motion.UpdateLossFlights();
+        motion.UpdateDamageFlights();
+        UpdateArmorGain();
+        UpdateHeartGrace();
         motion.UpdateWarnings();
         motion.UpdateCallOut();
+        motion.UpdateNameIntro();
         UpdateHeart();
-        UpdateModeChoice();
-    }
-
-    // the choice card reads the UI map the event system reads: Navigate
-    // moves the pick, Submit takes it; time stands still, so unscaled
-    private void UpdateModeChoice() {
-        if (!IsChoosingMode) {
-            return;
-        }
-        rig.modeAgeS += Time.unscaledDeltaTime;
-        ShowModePick();
-        RunController game = RunController.I;
-        if (game != null && game.IsPaused) {
-            return;
-        }
-        InputSystemUIInputModule module = EventSystem.current != null
-            ? EventSystem.current.currentInputModule as InputSystemUIInputModule
-            : null;
-        InputAction move = module != null && module.move != null
-            ? module.move.action : null;
-        InputAction submit = module != null && module.submit != null
-            ? module.submit.action : null;
-        float x = move != null ? move.ReadValue<Vector2>().x : 0f;
-        // a press held from b4 the card (eg moving) only counts once let go
-        if (Mathf.Abs(x) < 0.5f) {
-            rig.isModeMoveHeld = false;
-        } else if (!rig.isModeMoveHeld) {
-            rig.isModeMoveHeld = true;
-            rig.isModeEasy = x < 0f;
-        }
-        if (rig.modeAgeS >= MODE_READY_S && submit != null
-            && submit.WasPressedThisFrame()) {
-            PickMode(rig.isModeEasy);
-        }
-    }
-
-    // the picked choice grows a little inside its cream ring
-    private void ShowModePick() {
-        if (rig.easyRing == null) {
-            return;
-        }
-        rig.easyRing.gameObject.SetActive(rig.isModeEasy);
-        rig.normalRing.gameObject.SetActive(!rig.isModeEasy);
-        float beat = 1f + 0.03f * Mathf.Sin(Time.unscaledTime * 5f);
-        Vector3 picked = Vector3.one * 1.08f * beat;
-        rig.easyButton.localScale = rig.isModeEasy ? picked : Vector3.one;
-        rig.normalButton.localScale = rig.isModeEasy ? Vector3.one : picked;
-        rig.easyRing.localScale = rig.easyButton.localScale;
-        rig.normalRing.localScale = rig.normalButton.localScale;
-    }
-
-    private void PickMode(bool isEasy) {
-        if (!IsChoosingMode) {
-            return;
-        }
-        HideModeChoice();
-        ModeChosen?.Invoke(isEasy);
+        UpdateMonkeyHearts();
     }
 
     /// <summary>Takes the docked call out away.</summary>

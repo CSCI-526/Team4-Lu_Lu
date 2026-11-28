@@ -112,8 +112,8 @@ public sealed class CobraKingThrows {
         rig.health = Mathf.Max(0, rig.health - damage);
         rig.body.FlashHit();
         rig.onJewelHit?.Invoke();
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        rig.hud.PopDamage("-" + damage, rig.body.WeakSpotPosition);
+        rig.hud.PopDamage(damage, rig.health, rig.maxHealth,
+            rig.body.WeakSpotPosition);
 
         if (rig.health <= 0) {
             rig.Ending.StartFinisher(true);
@@ -123,7 +123,6 @@ public sealed class CobraKingThrows {
             rig.hasHit = true;
             rig.Feedback.Say(config.FirstHitLine);
             rig.nextGoldenTime = Time.time + config.GoldenFirstDelayS;
-            rig.Attacks.StartRest();
         } else if (rig.Third > lastThird) {
             // each lost third: more bananas to throw & more webs
             rig.Arena.AddBananas(config.BananasPerThird);
@@ -133,26 +132,15 @@ public sealed class CobraKingThrows {
 
     // Hint, Fruits, Camera  ---------------------------------------------------
     public void UpdateFirstThrowHint() {
-        // until a mode is picked: the key prompt between the two choices,
-        // the dotted line from there to the crown
-        bool isShown;
-        Vector3 from;
-        if (rig.isChoosing && rig.choices.Count == 2) {
-            isShown = rig.choices[0].root != null
-                && rig.choices[1].root != null;
-            from = isShown
-                ? (rig.choices[0].root.transform.position
-                    + rig.choices[1].root.transform.position) * 0.5f
-                : Vector3.zero;
-        } else {
-            CobraKingArenaFruit first = rig.fruits.Count > 0 ? rig.fruits[0]
-                : default;
-            isShown = !rig.hasHit && first.root != null
-                && first.root.activeSelf;
-            from = first.root != null
-                ? first.root.transform.position
-                : Vector3.zero;
-        }
+        // until the first hit: the key prompt on the first banana, the
+        // dotted line from there to the crown
+        CobraKingArenaFruit first = rig.fruits.Count > 0 ? rig.fruits[0]
+            : default;
+        bool isShown = !rig.hasHit && first.root != null
+            && first.root.activeSelf;
+        Vector3 from = first.root != null
+            ? first.root.transform.position
+            : Vector3.zero;
         // a seen or dev-skipped lesson shows no prompt and no dotted line
         if (TutorialSkipManager.I != null
             && TutorialSkipManager.I.ShouldSkip(TutorialItem.CobraKingLesson)) {

@@ -72,7 +72,8 @@ public sealed class CobraKingEnding {
             Defeat();
             return;
         }
-        if (config.CanRevive) {
+        // Hardcore Mode has no revive: the lost fight ends the run
+        if (config.CanRevive && !HardcoreBossRush.IsOn) {
             OfferRevive();
             return;
         }
@@ -153,8 +154,8 @@ public sealed class CobraKingEnding {
     }
 
     // after the ad the fight starts over: the monkey flies back to where it
-    // began, in the armor, full stamina, a full-health king & the mode
-    // choice again
+    // began, in the armor, full stamina, a full-health king, always at Loop 0
+    // (EASY), w/ no difficulty card
     public void RestartFight() {
         rig.hud.HideRevive();
         Time.timeScale = 1f;
@@ -182,10 +183,12 @@ public sealed class CobraKingEnding {
         rig.hasThrown = false;
         // a new try, so the minion call is heard again
         rig.hasCalledMinions = false;
-        rig.isEasy = false;
+        // a revive restarts at Loop 0, the EASY fight, however far the run got
+        rig.bossLoop = 0;
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(rig.health, rig.maxHealth);
+        MonkeyHearts.Begin(rig.HeartsNow);
         rig.hasShield = true;
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
@@ -210,9 +213,11 @@ public sealed class CobraKingEnding {
         }
         rig.Arena.SpawnWebs(config.WebCount);
         rig.Arena.SpawnLowWebs();
-        // a plain difficulty card, time stopped till a pick
-        rig.isChoosing = true;
-        rig.hud.ShowModeChoice();
+        // the fight goes straight on: the new try is EASY
+        rig.Arena.SpawnFruits();
+        rig.hud.PopText(
+            "Easy mode", rig.monkey.position, new Color(0.55f, 0.95f, 0.55f)
+        );
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CobraKingFightController:\trevived after the ad, fight "
@@ -274,6 +279,7 @@ public sealed class CobraKingEnding {
     // Victory  ----------------------------------------------------------------
     public void Defeat() {
         rig.phase = CobraKingPhase.Defeated;
+        MonkeyHearts.End();
         ProgressStore.MarkBossBeaten();
         // only a win ends the lessons, so a lost fight teaches again
         if (TutorialSkipManager.I != null) {
@@ -288,7 +294,7 @@ public sealed class CobraKingEnding {
         rig.hud.SetPrompt(false, Vector3.zero);
         rig.hud.SetHealth(0, rig.maxHealth);
 
-        // a later boss of the endless run's rush: the last crown makes way
+        // a later boss of the hardcore run's rush: the last crown makes way
         if (rig.crown != null) {
             UnityEngine.Object.Destroy(rig.crown.gameObject);
             rig.crown = null;
@@ -397,7 +403,7 @@ public sealed class CobraKingEnding {
         // called out a moment after
         if (rig.greatCobra != null) {
             rig.greatCobra.StopGuard();
-            rig.greatCobra.KnockBack(config.WinCobraDropU);
+            rig.greatCobra.KnockBack(rig.Layout.DropU);
         }
         rig.chaseWarnTime = Time.time + 1f;
         rig.hasWarnedChase = false;
@@ -419,11 +425,11 @@ public sealed class CobraKingEnding {
         }
     }
 
-    // Endless Boss Rush  ------------------------------------------------------
+    // Hardcore Boss Rush  ------------------------------------------------------
     // the king waits again two bosses on, the Spider King's in b/t, harder;
     // the won armor stays on & the crown on the monkey's head
     public void ArmNextRush() {
-        rig.Arena.ReleaseRushRange();
+        rig.Arena.ReleaseRushArena();
         rig.rushEncounter += 2;
         rig.phase = CobraKingPhase.Waiting;
         rig.body.Clear();
@@ -446,8 +452,7 @@ public sealed class CobraKingEnding {
         rig.hasCalledMinions = false;
         rig.hasWon = false;
         rig.isFinisherWin = false;
-        rig.isEasy = false;
-        rig.isChoosing = false;
+        rig.ResetLoop();
         rig.isArenaFruitGone = false;
         rig.arenaBranchSpots.Clear();
         rig.arenaBranchFruits.Clear();
@@ -458,7 +463,7 @@ public sealed class CobraKingEnding {
         if (rig.cameraFraming != null) {
             rig.cameraFraming.SetBossFraming(0f, 1f);
         }
-        rig.Arena.ReserveRushRange();
+        rig.Arena.ReserveRushArena();
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CobraKingFightController:\tnext rush fight at "

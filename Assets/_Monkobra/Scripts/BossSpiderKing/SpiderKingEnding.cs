@@ -28,6 +28,7 @@ public sealed class SpiderKingEnding {
         rig.finisherTimeS = 0f;
         rig.Attacks.CancelAttack();
         rig.hud.HideBanner();
+        rig.Teaching.HideLessonToasts();
         rig.hud.ClearCallOut();
         rig.hud.ClearWarnings();
         rig.hud.SetPrompt(false, Vector3.zero);
@@ -75,7 +76,20 @@ public sealed class SpiderKingEnding {
             Defeat();
             return;
         }
+        // Hardcore Mode has no revive: the lost fight ends the run
+        if (HardcoreBossRush.IsOn) {
+            EndAsLoss();
+            return;
+        }
         OfferRevive();
+    }
+
+    public void EndAsLoss() {
+        rig.phase = SpiderKingPhase.Over;
+        SpiderKingFeedback.SetUntouchable(false);
+        if (RunController.I != null) {
+            RunController.I.LoseGame();
+        }
     }
 
     public void OfferRevive() {
@@ -83,6 +97,7 @@ public sealed class SpiderKingEnding {
         rig.reviveLeftS = config.ReviveOfferS;
         Time.timeScale = 0f;
         rig.hud.HideBanner();
+        rig.Teaching.HideLessonToasts();
         rig.hud.ShowReviveOffer();
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(rig.reviveLeftS));
     }
@@ -130,11 +145,7 @@ public sealed class SpiderKingEnding {
         }
         rig.hud.HideRevive();
         Time.timeScale = 1f;
-        rig.phase = SpiderKingPhase.Over;
-        SpiderKingFeedback.SetUntouchable(false);
-        if (RunController.I != null) {
-            RunController.I.LoseGame();
-        }
+        EndAsLoss();
     }
 
     public void SkipAd() {
@@ -152,8 +163,8 @@ public sealed class SpiderKingEnding {
         }
     }
 
-    // after the ad the fight starts over at full health; a spent armor
-    // stays spent
+    // after the ad the fight starts over at full health, on the same Loop;
+    // a spent armor stays spent
     public void RestartFight() {
         rig.hud.HideRevive();
         Time.timeScale = 1f;
@@ -177,16 +188,17 @@ public sealed class SpiderKingEnding {
         rig.spiderY = rig.startY;
         rig.Movement.ResetSpiderState();
         rig.teachTimeS = 0f;
-        // as in the Cobra King's arena: two melons, a plain EASY & a golden
-        // NORMAL; the first grabbed picks, & the fight waits till then
-        rig.isEasy = false;
+        // the Loop stays: the new try plays the Loop the fight began on, w/
+        // no difficulty card
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        // a plain difficulty card, time stopped till a pick; the spider
-        // waits meanwhile
-        rig.teach = SpiderKingTeachStep.Choose;
+        rig.lastStage = 0;
+        MonkeyHearts.Begin(rig.HeartsNow);
+        // the parry lesson again only if it was never passed
+        rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
+            : SpiderKingTeachStep.Parry;
         rig.hud.HideBanner();
-        rig.hud.ShowModeChoice();
+        rig.Teaching.HideLessonToasts();
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
             stamina.AddStamina(stamina.MaxStamina);
@@ -239,6 +251,7 @@ public sealed class SpiderKingEnding {
             TutorialSkipManager.I.MarkSeen(TutorialItem.SpiderKingLesson);
         }
         rig.phase = SpiderKingPhase.Defeated;
+        MonkeyHearts.End();
         rig.onDefeated?.Invoke();
         rig.defeatTimeS = 0f;
         rig.hud.SetHealth(0, rig.maxHealth);
@@ -295,12 +308,11 @@ public sealed class SpiderKingEnding {
         Time.timeScale = 1f;
         rig.phase = SpiderKingPhase.Done;
         rig.Arena.ClearMelons();
-        rig.Arena.ClearChoices();
         rig.Arena.ClearSkyWeb();
         rig.Arena.EndBareArena();
         if (rig.greatCobra != null) {
             rig.greatCobra.StopGuard();
-            rig.greatCobra.KnockBack(config.WinCobraDropU);
+            rig.greatCobra.KnockBack(rig.Layout.DropU);
         }
         if (rig.monkeyController != null) {
             rig.monkeyController.ClearHeightCeiling();
@@ -308,8 +320,9 @@ public sealed class SpiderKingEnding {
         if (rig.cameraFraming != null) {
             rig.cameraFraming.SetBossFraming(0f, 1f);
         }
-        rig.hud.ShowBannerFor("The cobra is coming!", "Climb!",
-            new Color(0.95f, 0.25f, 0.2f), 2.5f);
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(PopUpId.BossCobraComing);
+        }
         onFightEnded?.Invoke();
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -322,16 +335,16 @@ public sealed class SpiderKingEnding {
         }
     }
 
-    // Endless Boss Rush  ------------------------------------------------------
+    // Hardcore Boss Rush  ------------------------------------------------------
     // the spider waits again two bosses on, the Cobra King's in b/t, harder;
     // the gloves' effect stays on
     public void ArmNextRush() {
         rig.rushEncounter += 2;
         rig.phase = SpiderKingPhase.Waiting;
         rig.hud.ClearCallOut();
-        rig.isEasy = false;
+        rig.ResetLoop();
         rig.lastStage = 0;
-        rig.Arena.ReserveRushRange();
+        rig.Arena.ReserveRushArena();
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "SpiderKingFightController:\tnext rush fight at "

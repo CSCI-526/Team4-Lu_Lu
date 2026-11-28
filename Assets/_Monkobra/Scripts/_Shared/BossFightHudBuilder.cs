@@ -15,8 +15,6 @@ public sealed class BossFightHudBuilder {
     private readonly System.Action onCoursePageClicked;
     private readonly System.Action onContinueClicked;
     private readonly System.Action onSkipAdClicked;
-    // the double tap icon's height; canvas units
-    private const float DOUBLE_TAP_ICON_SIZE = 96f;
 
     public BossFightHudBuilder(BossFightHudRig rig,
         System.Action onWatchAdClicked, System.Action onGiveUpClicked,
@@ -70,6 +68,12 @@ public sealed class BossFightHudBuilder {
         CreateHeart(bar);
         rig.nameLabel =
             CreateLabel("Name", rig.rootRect, "", 28f, UIStyle.Cream);
+        if (config.BossNameFont != null) {
+            rig.nameLabel.font = config.BossNameFont;
+            rig.nameLabel.fontSharedMaterial = config.BossNameFont.material;
+        }
+        rig.nameLabel.outlineWidth = 0.2f;
+        rig.nameLabel.outlineColor = Color.black;
         RectTransform nameRect = rig.nameLabel.rectTransform;
         nameRect.anchorMin = nameRect.anchorMax = new Vector2(0.5f, 1f);
         nameRect.pivot = new Vector2(0.5f, 1f);
@@ -99,21 +103,6 @@ public sealed class BossFightHudBuilder {
         rig.bannerLabel.rectTransform.sizeDelta = new Vector2(1100f, 240f);
         rig.bannerLabel.rectTransform.anchoredPosition = new Vector2(0f, 120f);
         rig.bannerLabel.gameObject.SetActive(false);
-
-        // animated double tap icon under the low banner, shown by a lesson
-        rig.doubleTapIcon = HintIconWidget.Create(
-            rig.rootRect, config.HintIconLibrary,
-            config.DoubleKeyboardController, config.DoubleTouchController,
-            DOUBLE_TAP_ICON_SIZE
-        );
-        if (rig.doubleTapIcon != null) {
-            rig.doubleTapIcon.anchorMin = rig.doubleTapIcon.anchorMax =
-                new Vector2(0.5f, 0.5f);
-            rig.doubleTapIcon.sizeDelta = new Vector2(
-                DOUBLE_TAP_ICON_SIZE, DOUBLE_TAP_ICON_SIZE);
-            rig.doubleTapIcon.anchoredPosition = rig.doubleTapIconPosition;
-            rig.doubleTapIcon.gameObject.SetActive(false);
-        }
 
         // entry flash, on top of the rest of the hud
         RectTransform flash = CreateRect("Flash", rig.rootRect);
@@ -330,11 +319,12 @@ public sealed class BossFightHudBuilder {
         RectTransform panel = CreateRect("RewardPanel", rig.rootRect);
         Stretch(panel);
         AddImage(panel, Tint(UIStyle.Background, 0.75f));
-        RectTransform diamond = CreateRect("Diamond", panel);
-        diamond.anchoredPosition = new Vector2(0f, 190f);
-        diamond.sizeDelta = new Vector2(56f, 56f);
-        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        AddImage(diamond, gold);
+        RectTransform crown = CreateRect("Crown", panel);
+        crown.anchoredPosition = new Vector2(0f, 190f);
+        crown.sizeDelta = new Vector2(84f, 84f);
+        Image crownImage = AddImage(crown, gold);
+        crownImage.sprite = DrawnCrown();
+        crownImage.preserveAspect = true;
         rig.rewardTitle = CreateLabel("Title", panel, "", 84f, gold);
         rig.rewardTitle.fontStyle = FontStyles.Bold;
         PlaceLabel(rig.rewardTitle, new Vector2(0f, 100f),
@@ -357,59 +347,7 @@ public sealed class BossFightHudBuilder {
         return panel.gameObject;
     }
 
-    // the difficulty choice after a revive: a short title & two big
-    // buttons, EASY & NORMAL, side by side; the picked one rings in cream
-    public GameObject CreateModeChoice(System.Action<bool> onPick) {
-        RectTransform panel = CreateRect("ModeChoice", rig.rootRect);
-        Stretch(panel);
-        AddImage(panel, Tint(UIStyle.Background, 0.75f));
-        RectTransform card = CreateRect("Card", panel);
-        card.sizeDelta = new Vector2(620f, 320f);
-        AddImage(card, Tint(UIStyle.Panel, 0.96f));
-        TextMeshProUGUI title = CreateLabel("Title", card, "Difficulty", 56f,
-            UIStyle.Gold);
-        title.fontStyle = FontStyles.Bold;
-        PlaceLabel(title, new Vector2(0f, 100f), new Vector2(580f, 70f));
-        rig.easyRing = CreateRing("EasyRing", card, new Vector2(-140f, -5f));
-        rig.normalRing = CreateRing("NormalRing", card,
-            new Vector2(140f, -5f));
-        rig.easyButton = CreateChoiceButton("Easy", card,
-            new Vector2(-140f, -5f), EASY_COLOR, () => onPick(true));
-        rig.normalButton = CreateChoiceButton("Normal", card,
-            new Vector2(140f, -5f), UIStyle.Gold, () => onPick(false));
-        TextMeshProUGUI hint = CreateLabel("Hint", card, "", 24f,
-            Tint(UIStyle.Cream, 0.85f));
-        PlaceLabel(hint, new Vector2(0f, -110f), new Vector2(580f, 36f));
-        AddStyleText(hint, "A / D, then Space", "Tap one");
-        panel.gameObject.SetActive(false);
-        return panel.gameObject;
-    }
-
-    // the EASY signal green, as on the old choice tags
-    private static readonly Color EASY_COLOR = new Color(0.55f, 0.95f, 0.55f);
-
-    private static RectTransform CreateChoiceButton(string word,
-        Transform parent, Vector2 position, Color face, System.Action onClick) {
-        RectTransform rect = (RectTransform)CreateButton(word, parent, word,
-            face, position, onClick, word, UIStyle.Brown).transform;
-        rect.sizeDelta = new Vector2(240f, 96f);
-        TextMeshProUGUI label = rect.GetComponentInChildren<TextMeshProUGUI>();
-        label.fontSize = 40f;
-        label.fontStyle = FontStyles.Bold;
-        return rect;
-    }
-
-    // a cream ring behind a choice, shown while it is picked
-    private static RectTransform CreateRing(string ringName, Transform parent,
-        Vector2 position) {
-        RectTransform ring = CreateRect(ringName, parent);
-        ring.anchoredPosition = position;
-        ring.sizeDelta = new Vector2(256f, 112f);
-        AddImage(ring, UIStyle.Cream);
-        return ring;
-    }
-
-    // a dark plate w/ a gold diamond & GOLDEN ARMOR
+    // a dark plate w/ a gold crown & GOLDEN CROWN
     public RectTransform CreateArmorBadge() {
         Color gold = UIStyle.Gold;
         RectTransform badge = CreateRect("ArmorBadge", rig.rootRect);
@@ -418,14 +356,15 @@ public sealed class BossFightHudBuilder {
         badge.anchoredPosition = new Vector2(-70f, 24f);
         badge.sizeDelta = new Vector2(250f, 54f);
         AddImage(badge, Tint(UIStyle.Panel, 0.85f));
-        RectTransform diamond = CreateRect("Diamond", badge);
-        diamond.anchorMin = diamond.anchorMax = new Vector2(0f, 0.5f);
-        diamond.anchoredPosition = new Vector2(30f, 0f);
-        diamond.sizeDelta = new Vector2(26f, 26f);
-        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        AddImage(diamond, gold);
+        RectTransform crown = CreateRect("Crown", badge);
+        crown.anchorMin = crown.anchorMax = new Vector2(0f, 0.5f);
+        crown.anchoredPosition = new Vector2(30f, 0f);
+        crown.sizeDelta = new Vector2(38f, 38f);
+        Image crownImage = AddImage(crown, gold);
+        crownImage.sprite = DrawnCrown();
+        crownImage.preserveAspect = true;
         TextMeshProUGUI label = CreateLabel(
-            "Label", badge, "GOLDEN ARMOR", 24f, gold
+            "Label", badge, "GOLDEN CROWN", 24f, gold
         );
         RectTransform labelRect = label.rectTransform;
         labelRect.anchorMin = new Vector2(0f, 0f);
@@ -436,15 +375,116 @@ public sealed class BossFightHudBuilder {
         return badge;
     }
 
-    // a dark plate w/ a colored word, placed over a world point
-    public RectTransform CreateTag(string tagName, string text, Color color) {
-        RectTransform tag = CreateRect(tagName, rig.rootRect);
-        tag.sizeDelta = new Vector2(130f, 40f);
-        AddImage(tag, Tint(UIStyle.Panel, 0.85f));
-        TextMeshProUGUI label = CreateLabel("Label", tag, text, 26f, color);
-        Stretch(label.rectTransform);
-        tag.gameObject.SetActive(false);
-        return tag;
+    // the monkey's hearts in the bottom left, left-justified, w/ the armor
+    // mark at its end
+    public RectTransform CreateMonkeyHeartRow() {
+        RectTransform row = CreateRect("MonkeyHearts", rig.rootRect);
+        row.anchorMin = row.anchorMax = row.pivot = new Vector2(0f, 0f);
+        row.anchoredPosition = new Vector2(40f, 40f);
+        row.sizeDelta = new Vector2(300f, MONKEY_HEART_SIZE);
+        RectTransform mark = CreateRect("ArmorMark", row);
+        mark.anchorMin = mark.anchorMax = mark.pivot = new Vector2(0f, 0.5f);
+        mark.sizeDelta = new Vector2(MONKEY_HEART_SIZE * 0.8f, MONKEY_HEART_SIZE * 0.8f);
+        Image markImage = AddImage(mark, UIStyle.Gold);
+        markImage.sprite = rig.config.ArmorSprite != null
+            ? rig.config.ArmorSprite : DrawnCrown();
+        markImage.preserveAspect = true;
+        rig.armorMark = mark;
+        row.gameObject.SetActive(false);
+        return row;
+    }
+
+    // as many hearts as the fight gave, the lost ones dimmed
+    public void SyncMonkeyHearts(int max, int left) {
+        RectTransform row = rig.monkeyHeartRow;
+        while (rig.monkeyHeartImages.Count < max) {
+            int i = rig.monkeyHeartImages.Count;
+            RectTransform heart = CreateRect("Heart" + i, row);
+            heart.anchorMin = heart.anchorMax = heart.pivot =
+                new Vector2(0f, 0.5f);
+            heart.sizeDelta = new Vector2(MONKEY_HEART_SIZE, MONKEY_HEART_SIZE);
+            Image image = AddImage(heart, Color.white);
+            image.sprite = rig.config.HeartSprite != null
+                ? rig.config.HeartSprite : DrawnHeart();
+            image.preserveAspect = true;
+            rig.monkeyHeartImages.Add(image);
+        }
+        for (int i = 0; i < rig.monkeyHeartImages.Count; i++) {
+            Image image = rig.monkeyHeartImages[i];
+            image.gameObject.SetActive(i < max);
+            image.rectTransform.anchoredPosition =
+                new Vector2(i * (MONKEY_HEART_SIZE + MONKEY_HEART_GAP), 0f);
+            image.color = i < left ? MONKEY_HEART_FULL : MONKEY_HEART_LOST;
+        }
+        rig.armorMark.anchoredPosition = new Vector2(
+            max * (MONKEY_HEART_SIZE + MONKEY_HEART_GAP), 0f);
+    }
+
+    private const float MONKEY_HEART_SIZE = 44f;
+    private const float MONKEY_HEART_GAP = 6f;
+    private static readonly Color MONKEY_HEART_FULL = new Color(0.92f, 0.2f, 0.27f);
+    private static readonly Color MONKEY_HEART_LOST = new Color(0.25f, 0.25f, 0.3f, 0.55f);
+    private static Sprite drawnHeart;
+
+    private static Sprite drawnCrown;
+
+    // a plain white crown, its edge smoothed, until a sprite is assigned:
+    // a band under 3 points
+    public static Sprite DrawnCrown() {
+        if (drawnCrown != null) {
+            return drawnCrown;
+        }
+        const int SIZE = 64;
+        Texture2D texture = new Texture2D(SIZE, SIZE, TextureFormat.RGBA32,
+            false);
+        texture.wrapMode = TextureWrapMode.Clamp;
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                float u = ((x + 0.5f) / SIZE - 0.5f) * 2f;
+                float v = (y + 0.5f) / SIZE;
+                // the 3 points rise from the band's top edge, v 0.4
+                float spike = 0f;
+                for (int k = -1; k <= 1; k++) {
+                    spike = Mathf.Max(spike,
+                        1f - Mathf.Abs(u - k * 0.62f) / 0.31f);
+                }
+                float top = 0.4f + 0.5f * spike;
+                float side = (0.93f - Mathf.Abs(u)) * SIZE * 0.5f;
+                float alpha = Mathf.Clamp01(Mathf.Min(
+                    Mathf.Min(side, (top - v) * SIZE),
+                    (v - 0.1f) * SIZE) + 0.5f);
+                texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        texture.Apply();
+        drawnCrown = Sprite.Create(texture, new Rect(0f, 0f, SIZE, SIZE),
+            new Vector2(0.5f, 0.5f), SIZE);
+        return drawnCrown;
+    }
+
+    // a plain heart drawn from its curve, until a sprite is assigned
+    private static Sprite DrawnHeart() {
+        if (drawnHeart != null) {
+            return drawnHeart;
+        }
+        const int SIZE = 64;
+        Texture2D texture = new Texture2D(SIZE, SIZE, TextureFormat.RGBA32,
+            false);
+        texture.wrapMode = TextureWrapMode.Clamp;
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                float u = (x + 0.5f) / SIZE * 3f - 1.5f;
+                float v = (y + 0.5f) / SIZE * 3f - 1.3f;
+                float a = u * u + v * v - 1f;
+                float inside = a * a * a - u * u * v * v * v;
+                float alpha = Mathf.Clamp01(0.5f - inside * 6f);
+                texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        texture.Apply();
+        drawnHeart = Sprite.Create(texture, new Rect(0f, 0f, SIZE, SIZE),
+            new Vector2(0.5f, 0.5f), SIZE);
+        return drawnHeart;
     }
 
     public static void PlaceLabel(
@@ -544,6 +584,16 @@ public sealed class BossFightHudBuilder {
         image.color = color;
         image.raycastTarget = false;
         return image;
+    }
+
+    // wears a font asset & its material; null keeps the TMP default
+    public static void UseFont(TextMeshProUGUI label, TMP_FontAsset font) {
+        if (font == null) {
+            return;
+        }
+        label.font = font;
+        label.fontSharedMaterial = font.material;
+        label.fontStyle = FontStyles.Normal;
     }
 
     public static TextMeshProUGUI CreateLabel(

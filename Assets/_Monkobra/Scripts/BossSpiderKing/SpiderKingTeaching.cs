@@ -21,10 +21,6 @@ public sealed class SpiderKingTeaching {
     // other attack meanwhile & a lesson never kills (only the guard below)
     public float UpdateTeach() {
         rig.teachTimeS += Time.deltaTime;
-        if (rig.teach == SpiderKingTeachStep.Choose) {
-            rig.Arena.UpdateChoiceTags();
-            return 0f;
-        }
         bool isTrapped = rig.struggle != null && rig.struggle.IsTrapped;
         if (isTrapped) {
             rig.nextAttackTime = Time.time + config.TeachGapS;
@@ -41,7 +37,7 @@ public sealed class SpiderKingTeaching {
                 bool isSlashFree = !rig.isSlashing
                     && !rig.crescents.Exists(c => !c.isReflected);
                 if (Time.time >= rig.nextAttackTime && isFree && isSlashFree) {
-                    Teach("Bounce it back too!", "", config.WarnColor, 0f);
+                    ShowLessonToast(PopUpId.BossBounceBack);
                     rig.Attacks.StartSlash(true);
                 }
                 return 0f;
@@ -52,6 +48,7 @@ public sealed class SpiderKingTeaching {
                 if (rig.teachTimeS >= waitS) {
                     rig.teach = SpiderKingTeachStep.Done;
                     rig.hud.HideBanner();
+                    HideLessonToasts();
                     rig.nextAttackTime = Time.time + 1.5f;
                 }
                 return 0f;
@@ -64,19 +61,27 @@ public sealed class SpiderKingTeaching {
         rig.teachTimeS = 0f;
         rig.nextAttackTime = Time.time + config.TeachGapS;
         rig.hud.SetPrompt(false, Vector3.zero);
-        ShowStepBanner();
-    }
-
-    public void ShowStepBanner() {
-        switch (rig.teach) {
-            case SpiderKingTeachStep.Parry:
-                Teach(config.BossName, "", config.WarnColor, 2f);
-                break;
-        }
     }
 
     public void Teach(string title, string line, Color color, float seconds) {
         rig.hud.ShowBannerFor(title, line, color, seconds);
+    }
+
+    // a lesson's words on the common popup plate; time may be frozen, so
+    // the toast holds & its owner hides it, see HideLessonToasts
+    public void ShowLessonToast(PopUpId id) {
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(id);
+        }
+    }
+
+    // both lesson toasts; hiding one not showing is harmless
+    public void HideLessonToasts() {
+        if (PopUpManager.I == null) {
+            return;
+        }
+        PopUpManager.I.Hide(PopUpId.BossParryNow);
+        PopUpManager.I.Hide(PopUpId.BossBounceBack);
     }
 
 }

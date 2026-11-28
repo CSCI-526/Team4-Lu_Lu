@@ -49,6 +49,9 @@ public sealed class CobraKingFeedback {
             if (marker.fill == null || marker.isStrip != isStrips) {
                 continue;
             }
+            // the nearer the hit, the faster & brighter the texture pulses
+            SetUrgency(marker.fill, progress);
+            SetUrgency(marker.rim, progress);
             if (marker.isStrip) {
                 // the full strip glows red, beating faster & brighter as
                 // the minions near
@@ -56,7 +59,7 @@ public sealed class CobraKingFeedback {
                     Time.time * Mathf.Lerp(6f, 22f, progress)
                 );
                 float glow = Mathf.Lerp(0.55f, 1f, Mathf.Max(beat, progress));
-                SetColor(
+                SetIndicatorColor(
                     marker.fill.GetComponent<Renderer>(),
                     Color.Lerp(config.WarningDimColor, config.WarningColor,
                         glow)
@@ -226,6 +229,44 @@ public sealed class CobraKingFeedback {
         }
         SetColor(partRenderer, color);
         return part;
+    }
+
+    // a see-through warning primitive: the same shape as CreatePrimitive, in
+    // a danger indicator material that keeps its texture's own colour
+    public GameObject CreateIndicator(
+        PrimitiveType type,
+        string objectName,
+        Vector3 scale,
+        Color color,
+        Material material,
+        DangerIndicatorPlane plane,
+        float direction
+    ) {
+        GameObject part = CreatePrimitive(type, objectName, scale, color);
+        Renderer partRenderer = part.GetComponent<Renderer>();
+        DangerIndicator.Dress(
+            partRenderer, rig.colorBlock, material, plane, direction,
+            config.IndicatorTintStrength
+        );
+        SetIndicatorColor(partRenderer, color);
+        return part;
+    }
+
+    // the indicator's hue only: its opacity is the material's times the
+    // config's, so a dim or a lerp never changes it
+    public void SetIndicatorColor(Renderer target, Color hue) {
+        DangerIndicator.SetColor(
+            target, rig.colorBlock, hue, config.IndicatorAlpha
+        );
+    }
+
+    private void SetUrgency(Transform part, float urgency) {
+        if (part == null) {
+            return;
+        }
+        DangerIndicator.SetUrgency(
+            part.GetComponent<Renderer>(), rig.colorBlock, urgency
+        );
     }
 
     public void SetColor(Renderer target, Color color) {

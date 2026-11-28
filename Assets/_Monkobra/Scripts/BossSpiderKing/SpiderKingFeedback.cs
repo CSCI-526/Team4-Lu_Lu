@@ -86,6 +86,45 @@ public sealed class SpiderKingFeedback {
         return part;
     }
 
+    // a see-through warning primitive: the same shape as CreatePrimitive, in
+    // a danger indicator material that keeps its texture's own colour
+    public GameObject CreateIndicator(
+        PrimitiveType type,
+        string objectName,
+        Vector3 scale,
+        Color color,
+        Material material,
+        DangerIndicatorPlane plane,
+        float direction
+    ) {
+        GameObject part = CreatePrimitive(type, objectName, scale, color);
+        Renderer partRenderer = part.GetComponent<Renderer>();
+        DangerIndicator.Dress(
+            partRenderer, rig.colorBlock, material, plane, direction,
+            config.IndicatorTintStrength
+        );
+        SetIndicatorColor(partRenderer, color);
+        return part;
+    }
+
+    // the indicator's hue only: its opacity is the material's times the
+    // config's, so a dim or a lerp never changes it
+    public void SetIndicatorColor(Renderer target, Color hue) {
+        DangerIndicator.SetColor(
+            target, rig.colorBlock, hue, config.IndicatorAlpha
+        );
+    }
+
+    // a piece's distance from its lane's start, so the pattern is unbroken
+    public void SetIndicatorAlongOffset(Renderer target, float offsetU) {
+        DangerIndicator.SetAlongOffset(target, rig.colorBlock, offsetU);
+    }
+
+    // how near the hit is, 0~1: faster pulse & more glow in the shader
+    public void SetIndicatorUrgency(Renderer target, float urgency) {
+        DangerIndicator.SetUrgency(target, rig.colorBlock, urgency);
+    }
+
     public void SetColor(Renderer target, Color color) {
         if (target == null) {
             return;
@@ -119,6 +158,21 @@ public sealed class SpiderKingFeedback {
         );
         line.localScale = new Vector3(thickness, span.magnitude * 0.5f,
             thickness);
+    }
+
+    // a flat cube laid b/t two world points: its Y runs along the span, its
+    // X is the width, its Z faces out from the trunk
+    public static void SetStrip(Transform strip, Vector3 from, Vector3 to,
+        float width, float depth, Vector3 outward) {
+        Vector3 span = to - from;
+        if (span.sqrMagnitude < 0.000001f) {
+            return;
+        }
+        strip.SetPositionAndRotation(
+            (from + to) * 0.5f,
+            Quaternion.LookRotation(outward, span.normalized)
+        );
+        strip.localScale = new Vector3(width, span.magnitude, depth);
     }
 
     // a prefab copy kept only as a picture: no script, no collider; the

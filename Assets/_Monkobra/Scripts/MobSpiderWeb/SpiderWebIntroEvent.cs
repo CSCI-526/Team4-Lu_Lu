@@ -5,7 +5,7 @@ using UnityEngine;
 /// escape: a player may reach the web zone and never meet a web, so once per
 /// Normal Play run, at a fixed climbed height set in
 /// <see cref="SpiderWebIntroConfig"/>, the king appears on the trunk above
-/// the monkey and the camera cuts to it. Never in Endless mode. A fresh scene
+/// the monkey and the camera cuts to it. Never in Hardcore mode. A fresh scene
 /// load makes a fresh event, so every run gets its own.
 /// <para>
 /// Phases: <see cref="Phase.Waiting"/> for the trigger, then
@@ -86,7 +86,7 @@ public class SpiderWebIntroEvent: MonoBehaviour {
     }
 
     private void Start() {
-        // a climb in the endless run has its own boss rush, no intro; a seen or
+        // a climb in the hardcore run has its own boss rush, no intro; a seen or
         // dev-skipped intro is not played either
         if (GameController.I != null
             && GameController.I.Mode != RunMode.Full

@@ -184,8 +184,13 @@ public class CobraKingConfig: ScriptableObject {
     /// arena's own obstacle branches</returns>
     public GameObject BranchEmptyPrefab => branchEmptyPrefab;
 
-    /// <returns>mesh shown in place of the banana on every arena
-    /// fruit, grabbed & thrown; the watermelon</returns>
+    /// <returns>the watermelon branch prefab, a variant of the banana
+    /// branch, bearing every arena fruit; built by
+    /// <c>Monkobra > Build > Watermelon Prefab</c></returns>
+    public GameObject WatermelonBranchPrefab => watermelonBranchPrefab;
+
+    /// <returns>watermelon mesh, an input of the watermelon prefab
+    /// builder; the arena never swaps it at runtime</returns>
     public Mesh WatermelonMesh => watermelonMesh;
 
     /// <returns>local scale of the watermelon on its branch</returns>
@@ -270,15 +275,6 @@ public class CobraKingConfig: ScriptableObject {
     /// <returns>patch width round the trunk, the climb's own; deg</returns>
     public Vector2 RoughBarkArcRangeDeg => roughBarkArcRangeDeg;
 
-    /// <returns>banner title when the golden watermelon shows up</returns>
-    public string GoldenHintTitle => goldenHintTitle;
-
-    /// <returns>line under it</returns>
-    public string GoldenHintLine => goldenHintLine;
-
-    /// <returns>how long that banner stays; s</returns>
-    public float GoldenHintS => goldenHintS;
-
     /// <returns>outline material copied for the golden banana's thick
     /// border, eg the bananas' grabbable outline</returns>
     public Material GoldenOutlineMaterial => goldenOutlineMaterial;
@@ -361,11 +357,6 @@ public class CobraKingConfig: ScriptableObject {
     /// reward; s</returns>
     public float ArmorCobraFreezeS => armorCobraFreezeS;
 
-    /// <returns>after a win the great cobra chases again from this
-    /// far further down the trunk than its guard spot, a head start;
-    /// u</returns>
-    public float WinCobraDropU => winCobraDropU;
-
     /// <returns>the golden banana first shows up this long after the
     /// first hit on the king; s</returns>
     public float GoldenFirstDelayS => goldenFirstDelayS;
@@ -392,6 +383,31 @@ public class CobraKingConfig: ScriptableObject {
     /// <returns>the armor's helmet sits this far above the monkey's
     /// center; u</returns>
     public float ArmorHelmetU => armorHelmetU;
+
+    /// <returns>size of the golden crown on the monkey's head, times the
+    /// king's own crown</returns>
+    public float ArmorCrownScale => armorCrownScale;
+
+    /// <returns>how many harmless strikes the king makes round the monkey
+    /// during the intro cut scene</returns>
+    public int IntroFeintCount => introFeintCount;
+
+    /// <returns>time into the intro the first feint starts; s</returns>
+    public float IntroFeintStartS => introFeintStartS;
+
+    /// <returns>time b/t the starts of two intro feints; s</returns>
+    public float IntroFeintGapS => introFeintGapS;
+
+    /// <returns>how long the king rears b4 an intro feint dives; s</returns>
+    public float IntroFeintWindUpS => introFeintWindUpS;
+
+    /// <returns>how far to the side of the monkey an intro feint dives; u
+    /// </returns>
+    public float IntroFeintMissU => introFeintMissU;
+
+    /// <returns>how far above the monkey's height an intro feint dives; u
+    /// </returns>
+    public float IntroFeintLiftU => introFeintLiftU;
 
     /// <returns>win reward: the armor pieces swirl in onto the monkey
     /// & pulse for this long; s</returns>
@@ -433,6 +449,30 @@ public class CobraKingConfig: ScriptableObject {
 
     /// <returns>tint of an attack warning at its dimmest</returns>
     public Color WarningDimColor => warningDimColor;
+
+    /// <returns>danger indicator material for a filled area: slanted heavy
+    /// stripes</returns>
+    public Material StripHeavyMaterial => stripHeavyMaterial;
+
+    /// <returns>danger indicator material for an area's outline: slanted thin
+    /// bars</returns>
+    public Material StripThinMaterial => stripThinMaterial;
+
+    /// <returns>danger indicator material for a filled lane: heavy
+    /// chevrons</returns>
+    public Material ArrowHeavyMaterial => arrowHeavyMaterial;
+
+    /// <returns>danger indicator material for a lane's outline: thin
+    /// chevrons</returns>
+    public Material ArrowThinMaterial => arrowThinMaterial;
+
+    /// <returns>global opacity of every danger indicator, times the
+    /// opacity of its own material</returns>
+    public float IndicatorAlpha => indicatorAlpha;
+
+    /// <returns>how far an indicator's tint pulls its texture colour; 0 is
+    /// the pure texture</returns>
+    public float IndicatorTintStrength => indicatorTintStrength;
 
     /// <returns>tint of the minions</returns>
     public Color MinionColor => minionColor;
@@ -685,8 +725,13 @@ public class CobraKingConfig: ScriptableObject {
     private GameObject branchEmptyPrefab;
 
     [SerializeField]
-    [Tooltip("mesh shown in place of the banana on every arena fruit, grabbed "
-        + "& thrown; the watermelon")]
+    [Tooltip("the watermelon branch prefab, a variant of the banana branch, "
+        + "bearing every arena fruit; from Monkobra > Build > Watermelon "
+        + "Prefab")]
+    private GameObject watermelonBranchPrefab;
+
+    [SerializeField]
+    [Tooltip("watermelon mesh, an input of the watermelon prefab builder")]
     private Mesh watermelonMesh;
 
     [SerializeField]
@@ -806,19 +851,37 @@ public class CobraKingConfig: ScriptableObject {
     [Tooltip("patch width round the trunk, the climb's own; deg")]
     private Vector2 roughBarkArcRangeDeg = new Vector2(110f, 170f);
 
-    [Header("Golden Hint")]
+    [Header("Intro Cut Scene")]
     [SerializeField]
-    [Tooltip("banner title when the golden watermelon shows up")]
-    private string goldenHintTitle = "Golden watermelon!";
+    [Min(0)]
+    [Tooltip("harmless strikes the king makes round the monkey while the "
+        + "intro cut scene plays, to the left then the right")]
+    private int introFeintCount = 2;
 
     [SerializeField]
-    [Tooltip("line under it")]
-    private string goldenHintLine = "Grab it for a Golden Armor";
+    [Min(0f)]
+    [Tooltip("time into the intro the first feint starts; s")]
+    private float introFeintStartS = 0.8f;
 
     [SerializeField]
-    [Tooltip("how long that banner stays; s")]
+    [Min(0.1f)]
+    [Tooltip("time b/t the starts of two intro feints; s")]
+    private float introFeintGapS = 1.2f;
+
+    [SerializeField]
+    [Min(0.05f)]
+    [Tooltip("how long the king rears b4 an intro feint dives; s")]
+    private float introFeintWindUpS = 0.45f;
+
+    [SerializeField]
     [Min(0.5f)]
-    private float goldenHintS = 3f;
+    [Tooltip("how far to the side of the monkey an intro feint dives, so it "
+        + "never touches; u")]
+    private float introFeintMissU = 2.5f;
+
+    [SerializeField]
+    [Tooltip("how far above the monkey's height an intro feint dives; u")]
+    private float introFeintLiftU = 0.5f;
 
     [Header("Golden Banana")]
     [SerializeField]
@@ -828,7 +891,7 @@ public class CobraKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("outline tint of the golden banana")]
-    private Color goldenOutlineColor = new Color(1f, 0.75f, 0f);
+    private Color goldenOutlineColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("golden banana outline width, times the usual grab outline's, so "
@@ -839,7 +902,7 @@ public class CobraKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("banner title as the fight begins in the gold armor; it stays up "
         + "until the first banana is thrown")]
-    private string armorIntroTitle = "You get a Golden Armor!";
+    private string armorIntroTitle = "You get a Golden Crown!";
 
     [SerializeField]
     [Tooltip("line under the banner: what the armor does")]
@@ -914,7 +977,7 @@ public class CobraKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("line under the win title")]
-    private string winLine = "Golden Armor is yours to keep!";
+    private string winLine = "Golden Crown is yours to keep!";
 
     [SerializeField]
     [Tooltip("small line under it: what the armor does")]
@@ -930,11 +993,6 @@ public class CobraKingConfig: ScriptableObject {
         + "freeze, as the armor is the boss fight's one-off reward; s")]
     [Min(0f)]
     private float armorCobraFreezeS = 15f;
-
-    [SerializeField]
-    [Tooltip("after a win the great cobra chases again from this far further "
-        + "down the trunk than its guard spot, a head start; u")]
-    private float winCobraDropU = 45f;
 
     [SerializeField]
     [Tooltip("the golden banana first shows up this long after the first hit "
@@ -966,6 +1024,12 @@ public class CobraKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("the armor's helmet sits this far above the monkey's center; u")]
     private float armorHelmetU = 0.95f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("size of the golden crown on the monkey's head, times the king's "
+        + "own crown")]
+    private float armorCrownScale = 0.8f;
 
     [SerializeField]
     [Tooltip("win reward: the armor pieces swirl in onto the monkey & pulse "
@@ -1016,7 +1080,7 @@ public class CobraKingConfig: ScriptableObject {
     [Header("Colors")]
     [SerializeField]
     [Tooltip("tint of the golden armor & banana")]
-    private Color goldenColor = new Color(1f, 0.82f, 0.15f);
+    private Color goldenColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("tint of an attack warning at its brightest")]
@@ -1025,6 +1089,39 @@ public class CobraKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("tint of an attack warning at its dimmest")]
     private Color warningDimColor = new Color(0.45f, 0.05f, 0.05f);
+
+    [Header("Danger Indicator")]
+    [SerializeField]
+    [Tooltip("material of a filled area warning (zone fill, sweep band): "
+        + "BossWarning/DangerStripHeavy")]
+    private Material stripHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of an area's outline (zone rim): "
+        + "BossWarning/DangerStripThin")]
+    private Material stripThinMaterial;
+
+    [SerializeField]
+    [Tooltip("material of a filled lane warning (minion strip fill): "
+        + "BossWarning/DangerArrowHeavy")]
+    private Material arrowHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of a lane's outline (minion strip rim): "
+        + "BossWarning/DangerArrowThin")]
+    private Material arrowThinMaterial;
+
+    [SerializeField]
+    [Tooltip("global opacity of every danger indicator, times the opacity "
+        + "its own material sets")]
+    [Range(0f, 1f)]
+    private float indicatorAlpha = 1f;
+
+    [SerializeField]
+    [Tooltip("how far the warning tint pulls the texture's own colour; 0 is "
+        + "the pure texture, 1 the full tint")]
+    [Range(0f, 1f)]
+    private float indicatorTintStrength = 0.5f;
 
     [SerializeField]
     [Tooltip("tint of the minions")]

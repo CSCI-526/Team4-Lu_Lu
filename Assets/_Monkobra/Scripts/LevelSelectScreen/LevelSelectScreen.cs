@@ -1,10 +1,11 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// the mode menu: Normal Play, Endless Mode (locked until the Cobra King has
+/// the mode menu: Normal Play, Hardcore Mode (locked until the Cobra King has
 /// been beaten once), and Back to the title
 /// </summary>
 public class LevelSelectScreen: MonoBehaviour {
@@ -14,16 +15,18 @@ public class LevelSelectScreen: MonoBehaviour {
     private Button normalButton;
 
     [SerializeField]
-    [Tooltip("loads the endless run, greyed out while locked")]
-    private Button endlessButton;
+    [Tooltip("loads the hardcore run, greyed out while locked")]
+    [FormerlySerializedAs("endlessButton")]
+    private Button hardcoreButton;
 
     [SerializeField]
     [Tooltip("returns to the title screen")]
     private Button backButton;
 
     [SerializeField]
-    [Tooltip("unlock hint, shown only while Endless is locked")]
-    private TMP_Text endlessLockedHint;
+    [Tooltip("unlock hint, shown only while Hardcore is locked")]
+    [FormerlySerializedAs("endlessLockedHint")]
+    private TMP_Text hardcoreLockedHint;
 
     [SerializeField]
     [Tooltip("goes back to the title, the UI/Cancel action (Esc, P)")]
@@ -32,21 +35,21 @@ public class LevelSelectScreen: MonoBehaviour {
     // MonoBehaviour Lifecycle  ################################################
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
-        if (normalButton == null || endlessButton == null
+        if (normalButton == null || hardcoreButton == null
             || backButton == null) {
             Debug.LogError(
                 "LevelSelectScreen:\tmust assign Inspector Fields: "
-                    + "Normal Button, Endless Button, Back Button",
+                    + "Normal Button, Hardcore Button, Back Button",
                 this
             );
             enabled = false;
             return;
         }
 
-        if (endlessLockedHint == null) {
+        if (hardcoreLockedHint == null) {
             Debug.LogError(
                 "LevelSelectScreen:\tmust assign Inspector Field: "
-                    + "Endless Locked Hint",
+                    + "Hardcore Locked Hint",
                 this
             );
         }
@@ -69,14 +72,14 @@ public class LevelSelectScreen: MonoBehaviour {
     }
 
     private void Start() {
-        bool isUnlocked = ProgressStore.IsEndlessUnlocked;
-        endlessButton.interactable = isUnlocked;
-        if (endlessLockedHint != null) {
-            endlessLockedHint.gameObject.SetActive(!isUnlocked);
+        bool isUnlocked = ProgressStore.IsHardcoreUnlocked;
+        hardcoreButton.interactable = isUnlocked;
+        if (hardcoreLockedHint != null) {
+            hardcoreLockedHint.gameObject.SetActive(!isUnlocked);
         }
 
         normalButton.onClick.AddListener(OnNormalClicked);
-        endlessButton.onClick.AddListener(OnEndlessClicked);
+        hardcoreButton.onClick.AddListener(OnHardcoreClicked);
         backButton.onClick.AddListener(OnBackClicked);
     }
 
@@ -90,8 +93,8 @@ public class LevelSelectScreen: MonoBehaviour {
         if (normalButton != null) {
             normalButton.onClick.RemoveListener(OnNormalClicked);
         }
-        if (endlessButton != null) {
-            endlessButton.onClick.RemoveListener(OnEndlessClicked);
+        if (hardcoreButton != null) {
+            hardcoreButton.onClick.RemoveListener(OnHardcoreClicked);
         }
         if (backButton != null) {
             backButton.onClick.RemoveListener(OnBackClicked);
@@ -103,9 +106,9 @@ public class LevelSelectScreen: MonoBehaviour {
         SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Full);
     }
 
-    private void OnEndlessClicked() {
-        if (ProgressStore.IsEndlessUnlocked) {
-            SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Endless);
+    private void OnHardcoreClicked() {
+        if (ProgressStore.IsHardcoreUnlocked) {
+            SceneNames.Load(SceneNames.GAMEPLAY, RunMode.Hardcore);
         }
     }
 

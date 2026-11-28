@@ -197,6 +197,13 @@ public class CameraConfig: ScriptableObject {
     /// it releases it, capped by its duration</returns>
     public ShotSettings SpiderIntroShot => spiderIntroShot;
 
+    /// <returns>the cut to a boss fight's intro, on the spider intro camera,
+    /// ended by its hold or capped by its duration</returns>
+    public ShotSettings BossIntroShot => bossIntroShot;
+
+    /// <returns>how long a boss intro cut scene lasts; s</returns>
+    public float BossIntroHoldS => bossIntroHoldS;
+
     /// <returns>how far out from the monkey the spider intro camera stands,
     /// horizontally; u</returns>
     public float SpiderIntroDistanceU => spiderIntroDistanceU;
@@ -497,6 +504,19 @@ public class CameraConfig: ScriptableObject {
     [Tooltip("time the intro's aim and field of view take to follow the "
         + "king; s")]
     private float spiderIntroSmoothTimeS = 0.3f;
+
+    [Header("Shot: Boss Intro")]
+    [SerializeField]
+    [Tooltip("boss fight intro shot timing & priority, on the spider intro "
+        + "camera, framed like the spider king's intro; its duration is only "
+        + "the safety cap; s")]
+    private ShotSettings bossIntroShot = new ShotSettings(8f, 1f, 0f, 60);
+
+    [SerializeField]
+    [Min(0.5f)]
+    [Tooltip("how long a boss intro cut scene lasts, before the boss name "
+        + "shows; under the shot's duration; s")]
+    private float bossIntroHoldS = 3.5f;
 
     [Header("Shot: Pineapple Leap")]
     [SerializeField]

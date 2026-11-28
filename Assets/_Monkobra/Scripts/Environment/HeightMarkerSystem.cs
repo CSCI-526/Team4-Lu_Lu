@@ -255,7 +255,7 @@ public class HeightMarkerSystem: MonoBehaviour {
         int interval = IntervalU;
         // the boss fight's height gets its own look, no extra words
         CobraKingFightController bossFight = CobraKingFightController.I;
-        // the endless run marks the boss rush's next fights, the kings'
+        // the hardcore run marks the boss rush's next fights, the kings'
         // own trigger heights following it
         // the trigger height rarely lands on a marker (525 vs. every 50), so
         // the boss look goes to the marker just below it, the 500 m one

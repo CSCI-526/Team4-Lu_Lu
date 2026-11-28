@@ -16,6 +16,7 @@ MonoBehaviour:
   giveUpAction: {fileID: 1131574531699320856, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   webPrefab: {fileID: -7967758877750076835, guid: 4cd205f4962424e6aa5c63515c047fde, type: 3}
   bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
+  watermelonBranchPrefab: {fileID: 602886499398111576, guid: db507406c985a914b8be53f4f2c7c0d4, type: 3}
   watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
   watermelonScale: {x: 6, y: 6, z: 6}
   watermelonOffset: {x: 0, y: -0.629, z: 0.06}
@@ -28,7 +29,7 @@ MonoBehaviour:
   easyReachScale: 1.3
   airWallMaterial: {fileID: 2100000, guid: dc212d9a9b084ef7b9e5d17d8f252ae7, type: 2}
   goldenOutlineMaterial: {fileID: 2100000, guid: 4f18a8f2e3bd5c946afbf6e361590ba3, type: 2}
-  goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
+  goldenOutlineColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   goldenOutlineWidthScale: 2
   goldenIntervalS: 10
   goldenShowS: 8
@@ -66,8 +67,6 @@ MonoBehaviour:
   stageLostShares: {x: 0.5, y: 0.8}
   webShotsPerStage: {x: 1, y: 2, z: 2}
   slashesPerStage: {x: 1, y: 1, z: 1}
-  endlessSlashesPerStage: {x: 1, y: 2, z: 3}
-  endlessSlashWidthScale: 1
   volleySlowGapS: 1.1
   volleyFastGapS: 0.7
   lateSpeedScale: 1.25
@@ -100,6 +99,11 @@ MonoBehaviour:
   parryRollDeg: 10
   slashParryDamage: 1
   webParryDamage: 0
+  introDropU: 9
+  introDropS: 1.3
+  introLandS: 0.3
+  introScreechS: 1.6
+  introSilkWidthU: 0.06
   teachSlowScale: 1.8
   teachGapS: 1.6
   finalS: 2
@@ -112,10 +116,17 @@ MonoBehaviour:
   reviveReturnSpeedU: 20
   defeatFallS: 2
   glovesEscapeGainScale: 2
-  winCobraDropU: 45
   winTitle: SPIDER KING DEFEATED!
   winLine: You got the Silk Gloves
   winDetailLine: Get out of webs 2x faster
   warnColor: {r: 0.95, g: 0.2, b: 0.15, a: 1}
+  stripHeavyMaterial: {fileID: 2100000, guid: 5170d7e776634416a7b1e1bada63c249, type: 2}
+  stripThinMaterial: {fileID: 2100000, guid: e6ac44386ff5459994771c33a2cd8024, type: 2}
+  arrowHeavyMaterial: {fileID: 2100000, guid: 90893d0f9e204ed18981afe03743d006, type: 2}
+  arrowThinMaterial: {fileID: 2100000, guid: db346edbebd1456bba5fc865369bf4ed, type: 2}
+  indicatorAlpha: 1
+  indicatorTintStrength: 0.5
+  dangerPathWidthU: 0.1
   silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
-  goldenColor: {r: 1, g: 0.8, b: 0.15, a: 1}
+  goldenColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
+  shotColor: {r: 0.85, g: 0.4, b: 0.95, a: 1}

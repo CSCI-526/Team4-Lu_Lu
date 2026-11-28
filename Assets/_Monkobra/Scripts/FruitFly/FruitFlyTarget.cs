@@ -5,4 +5,5 @@ public enum FruitFlyTarget {
     EnergyBar, // bottom-left stamina bar, the banana's
     TopRightCounter, // top-right coconut HUD icon, the coconut's
     Monkey, // the monkey on screen, re-projected each frame; the pineapple's
+    ArmorMark, // the armor mark beside the boss fight hearts; golden melon's
 }

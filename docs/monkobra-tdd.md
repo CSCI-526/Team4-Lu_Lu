@@ -38,7 +38,7 @@ A system gets its own document when it spans several scripts and carries rules a
 | --- | --- |
 | `TitleScene` | the startup scene of every build: Space, a click or a tap opens the intro comic the first time a launch, else the level selection; its picture is the last frame of the WebGL loading page, see [Build](build-doc.md#loading-page) |
 | `IntroComicScene` | the story in five motion-comic panels (the drought, the hungry family, the rainforest, the hero setting off, the cobra waiting under the fruit tree); a press lets a panel finish, then turns the page; Esc or Skip leaves at once; built by `Monkobra > Build > Intro Comic` from `tools/comic/panels/` |
-| `LevelSelectScene` | Normal Play, Endless Mode (locked until the Cobra King has been beaten once), Back |
+| `LevelSelectScene` | Normal Play, Hardcore Mode (locked until the Cobra King has been beaten once), Back |
 | `GameplayScene` | both run modes (see Run mode below); its root is 8 prefab instances (`Cameras`, `DirectionalLight`, `GlobalVolume`, `EventSystem`, `CobraKingFight`, `SpiderKingFight`, `RunController`, `GameController`) plus 4 plain objects, `UI` (the `Canvas`), `Envs`, `Entities` (parent of `_Monkey` and `GreatCobra`, the monkey's orbit center), and a Cinemachine `Target Group`; `DynamicTreeSegmentPool` also holds the spider web and falling cobra spawners |
 
 ```mermaid
@@ -47,7 +47,7 @@ graph LR
   Title -->|Space, click, tap, later| Select[LevelSelectScene]
   Comic -->|last page, Esc, Skip| Select
   Select -->|Normal Play| Play[GameplayScene, Full]
-  Select -->|Endless Mode, unlocked| Play2[GameplayScene, Endless]
+  Select -->|Hardcore Mode, unlocked| Play2[GameplayScene, Hardcore]
   Select -->|Back, Esc| Title
   Play -->|R restarts| Play
   Play2 -->|R restarts| Play2
@@ -57,9 +57,9 @@ graph LR
 
 Every scene change goes through `SceneNames.Load`, which resets the time scale and audio pause and raises `Loading` first, so analytics closes the open run. The menu scenes use their own event system (`EventSystem_Menu`) bound to the UI map of `InputSystem_Actions`, where Space, Enter and a left click confirm, W, S and the arrows move, and `StartPress` (Space, left click, a touch, gamepad start) serves the title; the gameplay `EventSystem` keeps the package default, so Space never presses a focused gameplay button.
 
-Run mode: `GameController.Mode` (`RunMode.Full` or `Endless`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Endless` the run is a boss rush (`EndlessBossRush`, see [Mobs](mob-doc.md#endless-boss-rush)): the Cobra King and the Spider King take turns every `endlessBossIntervalU` (300 u), each harder than the last, starting in the gold armor; the monkey and the great cobra climb at normal speed (`endlessSpeedScale`, 1); `RampedDifficultyManager` reads the post boss curve from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
+Run mode: `GameController.Mode` (`RunMode.Full` or `Hardcore`, set by `SceneNames.Load(SceneNames.GAMEPLAY, mode)` and kept across a restart) tells the gameplay scene how to behave. In `Hardcore` the run is a boss rush (`HardcoreBossRush`, see [Mobs](mob-doc.md#hardcore-boss-rush)): the Cobra King and the Spider King take turns every `hardcoreBossIntervalU` (100 u), each repeat a harder Loop, starting without armor as Normal Play does; the monkey and the great cobra climb at normal speed (`hardcoreSpeedScale`, 1); `RampedDifficultyManager` holds Normal Play's plateau (`PlateauValue`) from the starting zone exit on, w/o the fixed boss zones, each coming arena kept bare by its own extra zone; `HeightMarkerSystem` marks each next boss.
 
-Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Endless out until it is set. The Editor menu items `Monkobra/Progress/Unlock Endless` and `Monkobra/Progress/Reset Progress` flip it for testing.
+Unlock store: `ProgressStore` keeps one `PlayerPrefs` flag, set once by `CobraKingFightController.Defeat`; the level selection greys Hardcore out until it is set. The Editor menu items `Monkobra/Progress/Unlock Hardcore` and `Monkobra/Progress/Reset Progress` flip it for testing.
 
 Personal copies of `GameplayScene` are allowed for experiments, see [AGENTS.md](../AGENTS.md#git-workflow).
 
@@ -137,8 +137,6 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F1 | toggle `RunController.CobraNoClip`, the great cobra no longer kills | `RunController` |
 | F2 | toggle max energy: the stamina bar stays at max (`StaminaBarController.IsMaxStamina`) | `StaminaBarController` |
 | F3 | toggle the speed buff: climb up, climb down and orbit run at 5 times normal speed (`MonkeyController.IsSpeedBuff`) | `MonkeyController` |
-| 1 | jump to the boss zone start: teleport the monkey to `BossZoneStartU`, ending the starting zone if still on, live run only | `MonkeyController` |
-| 2 | jump to the Spider King: teleport the monkey 6 u below `SpiderTriggerHeightU`, ending the starting zone & counting the Cobra King as beaten (`CobraKingFightController.SkipForTest`, its armor worn), live run only, never mid boss fight, never in the endless run (its boss rush brings the Spider King itself) | `MonkeyController` |
 | 3 | spawn a pineapple branch straight above the monkey | `HackPineappleSpawner` |
 | 4 | spawn a coconut branch straight above the monkey | `HackPineappleSpawner` |
 | 5 | hang a dormant falling cobra above the monkey, it wakes and drops on it | `HackPineappleSpawner` |
@@ -148,18 +146,48 @@ Every dev key lives in one asset, `Settings/HackShortcuts/HackShortcutConfig.ass
 | F10 | save a mock analytics session file | `AnalyticsManager` |
 | F12 | turn the hack layer on or off: this list on screen and every key above (dev build only, off when the game starts) | `HackShortcutPanel` |
 
-The keys group by use: F1~F3 cheats that toggle, 1~2 jumps, 3~6 spawns, F8~F10 analytics, F12 the switch. F4~F7 and F11 stay free, since F5 reloads and F11 fullscreens a WebGL page; 7~0 are free too.
+The keys group by use: F1~F3 cheats that toggle, 3~6 spawns, F8~F10 analytics, F12 the switch. F4~F7 and F11 stay free, since F5 reloads and F11 fullscreens a WebGL page; 1~2 and 7~0 are free too. The old boss jump keys 1 and 2 are gone: the [Boss Dev Scenes](#boss-dev-scenes) replace them, and their `HackAction` values 3 and 12 stay unused, since the asset stores the numbers.
 
 `HackShortcutPanel` on a TMP text writes these lines from the asset in `Awake`, and hides its object unless `AreHintsShown`, ie outside a development build; inside one the text starts hidden, so it never covers the HUD in a playtest, and `ToggleHints` turns the hack layer on or off: one shared static state (`HackShortcutConfig.TryToggleLayer`, off at every play start) that shows the list and lets every other hack key run, so a tester never triggers one by accident. `ToggleHints` reads only when `AreHintsShown`, so it never works in a release build, where the other keys stay live. The state holds across scenes, but only the gameplay scene's panel can flip it. A new hack key is a new `HackAction` plus an entry in the asset.
+
+### Boss Dev Scenes
+
+`DEVBossCobraKingScene` and `DEVBossSpiderKingScene` (in `Scenes/`) test the 2 boss fights, each playing like the player's **first** meeting with that boss. They are generated, never edited by hand: `Monkobra > Build Boss Dev Scenes` (`BossDevSceneBuilder`) copies `GameplayScene.unity` over them, so run it again after the main scene or the balance changes. It never edits the main scene or the main balance asset, and lists the 2 scenes, disabled, in the Editor Build Settings, so a restart by scene name finds them.
+
+- **The fight opens after a short climb, the monkey never teleports.** The builder copies `WorldBalanceConfig` into one DEV asset per scene (`Settings/DevScenes/DEVBossCobraKingWorldBalanceConfig.asset`, `DEVBossSpiderKingWorldBalanceConfig.asset`; always regenerated from the main asset, never edited by hand) and repoints every reference to the main asset in that scene. In the copy the boss under test sits at the lowest location the asset allows, since a bare zone stays above the climb start (`BossArenaLayout`, `WorldBalanceConfig.OnValidate`): half an arena height. Cobra King scene: the Spider King zone starts `otherKingGapU` (50 u) above the Cobra King zone top. Spider King scene: the Cobra King layout is collapsed to a 1 u zone at the start, since that king is skipped, and the Spider King zone sits on its top. The builder then sets `startOffsetU` of `RampedDifficultyManager` to that location less `approachU` (5 u): the climb baseline moves down by it, so the monkey starts `approachU` below the fight trigger (its climbed height reads that number), climbs a few units into it, and the fight opens with its whole start, the Spider King's waiting preview included; the king's nest is `NestHeightU` above the monkey.
+- **No starting zone.** The builder adds a `DEVRampBase` object at the monkey's start and assigns it to the `rampBase` of `RampedDifficultyManager`, so no height counts as the starting zone, and `BossDevStart` ends the starting zone on the first live frame.
+- **First-time state, no saved data.** `BossDevStart` (one object per scene) sets the run mode to Full and tells `TutorialSkipManager.MarkSeen` for the items a player would have met on the climb, so every tutorial and cut scene off the boss fight is always off, and leaves the boss's own items unseen: `ArmorWords` and `CobraKingLesson` in the Cobra King scene, `SpiderKingLesson` in the Spider King scene. Those follow the **Is Skipping Tutorials And Cutscenes** box on the scene's `GameController`: ticked skips them, not ticked shows them as on a first meeting (the seen set is empty at every launch, so they show each time Play starts). The builder keeps the box across a rebuild; a first build leaves it not ticked. `SpiderWebIntro` counts as seen, so the Spider King scene has no web intro, and it calls `CobraKingFightController.SkipForTest` so the Cobra King counts as beaten, its armor worn.
+- **Loop Override.** The `BossDevStart` component on each scene's `BossDevStart` object has `loopOverride` (default 1): Play opens that king's fight at that Loop (`SetLoopOverride` on its fight controller): its health, speed & rows, the monkey's hearts & the defeat points, no lessons from Loop 2 on; 0 is EASY, 1 is Normal; the revive card keeps Normal Play's rule. `BossDevStart` sets it in `Start`, before the fight can begin, so the fight opens on it. The builder reads the value back before it rebuilds a scene & writes it again, so it survives `Build Boss Dev Scenes`.
+- **Numbers in one asset.** `BossDevStartConfig` (`Settings/DevScenes/DEVBossStartConfig.asset`) holds `otherKingGapU`, `approachU` and the 2 pre-seen lists; change it, then rebuild (the scenes keep the `startOffsetU` the last build wrote).
+- **Headless build.** `Unity.exe -batchmode -nographics -quit -projectPath . -executeMethod BossDevSceneBuilder.BuildInBatch -logFile <log>` does the menu's build without the Editor window (the project must not be open in the Editor).
+
+### Boss Danger Indicators
+
+Every boss attack warning is a see-through, animated, textured surface in the one shader `Monkobra/DangerIndicator` (`Shaders/BossWarning/`), instead of a solid tinted primitive. The art is the Stencil Painted Decal Pack (see [CREDITS.md](../CREDITS.md)): 2 PNGs in `Textures/BossWarning/`, `StripesLargeRed1` (heavy, wide stripes) and `StripesLargeRed2` (thin bars). Each PNG holds 2 bands, the **top band slanted bars** (a *strip*, for an area) and the **bottom band chevrons `>`** (an *arrow*, for a path). The texture's own dark red grain is shown; the shader multiplies its alpha by the material opacity and a pulse, and the tint only nudges the hue.
+
+| Material (`Materials/BossWarning/`) | Texture and band | Used for |
+| --- | --- | --- |
+| `DangerStripHeavy` | `StripesLargeRed1`, top | Cobra King ZoneFill (bite mark) and SweepBand |
+| `DangerStripThin` | `StripesLargeRed2`, top | Cobra King ZoneRim, Spider King SlashSign |
+| `DangerArrowHeavy` | `StripesLargeRed1`, bottom | Cobra King StripFill (minion line), Spider King DashLane |
+| `DangerArrowThin` | `StripesLargeRed2`, bottom | Cobra King StripRim, Spider King SlashAim |
+
+The rule: a **fill** takes the heavy texture, a **rim, aim line or sign** takes the thin one. The Spider King dash lane is filled across its whole catch width (2 x `DashHitU`), as a row of `PATH_PARTS` flat pieces that share one continuous pattern (`SetStrip`, `_AlongOffset`), not 2 edge lines. The Cobra minion arrows point and run down the trunk.
+
+- **Config.** `CobraKingConfig` and `SpiderKingConfig` each hold the 4 material slots (`stripHeavyMaterial`, `stripThinMaterial`, `arrowHeavyMaterial`, `arrowThinMaterial`), `indicatorAlpha` (global opacity, times each material's own) and `indicatorTintStrength` (0 is the pure texture, 1 the full tint). A warning is made by `CreateIndicator` in `CobraKingFeedback` / `SpiderKingFeedback`, with its plane and direction.
+- **Shared helper.** `DangerIndicator` (`Scripts/BossWarning/`) dresses a renderer through a `MaterialPropertyBlock`: `Dress` (material, plane, direction, tint), `SetColor` (the hue only, alpha fixed to material opacity x `indicatorAlpha`, so a dim or a lerp never changes opacity), `SetUrgency` (the attack's progress: faster pulse, more glow) and `SetAlongOffset`.
+- **Planes.** `DangerIndicatorPlane.Disc` (a flat cylinder cap, the trunk zones), `Line` (a cube face or a cylinder side, along its Y: strips, lanes, aim, sign) and `Wall` (a cylinder wall round the trunk, the sweep band). Disc and Line fit the band to the object's width, so the bar count stays as a fill grows; Wall tiles in world units.
+- **Tuning.** Opacity: a material's `_BaseColor` alpha, then `indicatorAlpha`. Bar count: `_TileSize` on a material (Disc and Line: a size multiple, bigger shows fewer bars; Wall: world units per band height). Motion: `_Scroll` (tiles per second, the sign is the direction), `_PulseRate`, `_PulseRateMax`, `_PulseDepth`, `_Glow`. Hue pull: `indicatorTintStrength`. Which art a warning takes: swap its material slot in the config asset. Only the look is set here; warning durations, hit distances and `AttackDangerLeftS` are untouched.
+- **Cost.** 2 textures at 2048 x 2048, about 5.3 MB each with mipmaps; a per-platform 1024 override on a `.meta` halves it if WebGL memory is tight.
 
 ### Tutorial Skip Manager
 
 One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Prefabs/GameController/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
 
-- `ShouldSkip(TutorialItem)`: true if the dev checkbox is on, or the item was already seen this session and its entry in `TutorialSkipConfig` (`Settings/TutorialSkip/TutorialSkipConfig.asset`) skips it once seen; a release build never honours the checkbox
-- `MarkSeen(TutorialItem)`: the item calls it once it has shown or been completed
+- `ShouldSkip(TutorialItem)`: true if the dev checkbox is on, or the item was already shown this session as often as its entry in `TutorialSkipConfig` (`Settings/TutorialSkip/TutorialSkipConfig.asset`) allows: its `showLimit` when above 0, else once if it skips once seen; a release build never honours the checkbox
+- `MarkSeen(TutorialItem)`: the item calls it once per show or completion; each call counts one show
 
-The scope is once per session, with nothing saved: an item shows on the first run of a launch and skips on every later run and scene load until the game is closed. The session set lives on the persistent `GameController`, so it survives a restart. To make one item show every run again, untick its entry in `TutorialSkipConfig`; no recompile.
+The scope is per session, with nothing saved: an item shows on the first run of a launch and skips on every later run and scene load until the game is closed; an item with a `showLimit` shows that many times first. The 5 boss attack signs (`AttackBite`, `AttackTail`, `AttackWebShot`, `AttackDash`, `AttackSlash`) are the items with limit 3: `BossFightHud.AddAttackWarning` asks the manager, counts the show, and draws the one standard sign with the word from `BossFightHudConfig`. The counts live on the persistent `GameController`, so they survive a restart. To make one item show every run again, untick its entry in `TutorialSkipConfig` and set its `showLimit` to 0; no recompile.
 
 The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by default and honoured only when `Debug.isDebugBuild` (the Editor or a development build): open `Prefabs/GameController/GameController.prefab` and tick it to skip every item at once. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
 
@@ -174,7 +202,9 @@ The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by def
 | `CobraChaseStart` | great cobra chase-start cut scene (`CameraRigManager.RequestCobraAlert`) | when the shot starts |
 | `SpiderWebIntro` | Spider King web intro (`SpiderWebIntroEvent`, Normal Play only) | when the event begins |
 | `CobraKingLesson`, `SpiderKingLesson` | each boss's lessons | when that boss is beaten, so a lost fight teaches again |
-| `ArmorWords` | the Cobra King's armor words | when they are shown |
+| `CobraKingIntro`, `SpiderKingIntro` | each boss fight's intro cut scene (`BossIntroCutScene`, the `CameraRigManager.ShotKind.BossIntro` shot; the boss name always plays) | when the shot starts |
+| `SpiderTipParry`, `SpiderTipMelon`, `SpiderTipDash`, `SpiderTipWebEscape` | the Spider King fight's tutorial popups w/ key icons (`SpiderKingTips`) | when each is shown |
+| `ArmorWords` | the Cobra King's armor words (unused: no armor is handed out at the fight's start) | when they are shown |
 
 Feedback pop ups (coconut frozen, refused & thawed, the cobra speed up, "Run!") and the gameplay shots stay. A new tutorial or cut scene adds a `TutorialItem`, asks the manager before it shows and marks itself seen; it never keeps a flag of its own.
 
@@ -193,7 +223,7 @@ Game balance numbers live in 3 assets plus the score config, split by what they 
 | 〃 | Branch | `startingZoneBranchClearRadiusU`, `startingZoneBananaBranchDensity`, and per kind (empty, banana, coconut, pineapple) `<kind>BranchDensityCurve` (expected branches per 10 u), plus `coconutGuaranteedHeightU`, `pineappleGuaranteedHeightU` & `guaranteedBranchYawSpreadDeg` (how far a guaranteed branch may sit from the monkey's angle) | `TreeSegmentController` |
 | 〃 | Rough Bark | `roughBarkSpeedMultiplier`, `roughBarkBlendS`, `roughBarkDensityCurve` | `RoughBarkSpawner`, `MonkeyController` |
 | 〃 | Spider Web | `webDensityCurve` | `SpiderWebSpawner` |
-| 〃 | Boss Fight | `bossZoneStartU`, `bossTriggerHeightU`, `bossZoneEndU`, `bossMaxHealth`, `bossBananaDamage` | `CobraKingFightController`, `RampedDifficultyManager` |
+| 〃 | Boss Fight | `cobraKingArena`, `bossMaxHealth`, `bossBananaDamage` | `CobraKingFightController`, `RampedDifficultyManager` |
 | `CobraBalanceConfig` | Falling Cobra | `fallingCobraDensityCurve`, `fallingCobraFallSpeedU`, `fallingCobraHorizontalSpeedU`, `fallingCobraReachWakeDistanceU`, `fallingCobraBananaAmbushChance`, `fallingCobraRehitGraceS`, `fallingCobraMaxHits` | `FallingCobraSpawner`, `FallingCobraController` |
 | 〃 | Great Cobra | `cobraBaseSpeedCurve`, `cobraDistanceSpeedCurve`, `cobraSurgePerMistakeS`, `cobraMaxSurgeS`, `cobraSurgeSpeedPerMistakeU`, `cobraSurgeStackShareCurve`, `cobraMaxSurgeSpeedU`, `cobraExitBoostSpeedU`, `cobraExitBoostDurationS`, `cobraSpeedChangeRateU` | `CobraMotor` |
 | `TrunkScatterConfig` | Spacing | `jitterFraction`, `yawJitterDeg`, `maxRetries`, `integrationStepU` (system tuning, not balance) | `TrunkScatter` |
@@ -250,7 +280,7 @@ All values live in `Settings/Player/PlayerBalanceConfig.asset`.
 
 - Distance Score: whole meters of the highest point climbed, read from `RampedDifficultyManager.CurrentPlayerClimbedYDistance`, refreshed every frame (player y minus the y at game start), times points per meter. Only a new high counts, so falling and re-climbing earns nothing
 - Reward Score: points from each banana collected through its `ScorePickup`; `ScoreManager.BananaCollectedCount` counts those pickups. A coconut's `ScorePickup` (kind `Coconut`) adds the config's coconut points instead, kept in `ScoreManager.RewardScoreOf(RewardKind.Coconut)`, counted in `CoconutCollectedCount`, and raises `CoconutCollected`
-- Other Rewards: `ScoreManager.AddReward(RewardKind)` adds to Reward Score for every good deed that is not a fruit pickup, a pineapple grab, a cobra freeze (`CoconutManager.Frozen`), a new height marker reached (`HeightMarkerSystem.MarkerReached`, once per marker above the highest already reached) a spider web escaped (`SpiderWebStruggle.Escaped`), and a king beaten (`CobraKingFightController.FightEnded`, `SpiderKingFightController.FightEnded`, raised only on a win once its reward is taken, so every win of the endless rush pays too), granted in the next `LateUpdate` so the score HUD the Cobra King's fight hid is back for its popup; each grant raises `RewardAdded(RewardKind, points)`, which the score popup reads. The point values are in `ScoreConfig`
+- Other Rewards: `ScoreManager.AddReward(RewardKind)` adds to Reward Score for every good deed that is not a fruit pickup, a pineapple grab, a cobra freeze (`CoconutManager.Frozen`), a new height marker reached (`HeightMarkerSystem.MarkerReached`, once per marker above the highest already reached) a spider web escaped (`SpiderWebStruggle.Escaped`), and a king beaten (`CobraKingFightController.FightEnded`, `SpiderKingFightController.FightEnded`, raised only on a win once its reward is taken, so every win of the hardcore rush pays too), granted in the next `LateUpdate` so the score HUD the Cobra King's fight hid is back for its popup; each grant raises `RewardAdded(RewardKind, points)`, which the score popup reads. The point values are in `ScoreConfig`
 - Gate: `CanScore` is true only after start, before `EndRun`, while unpaused, and while the game is not over
 - Display: `ScoreWidget` shows the total on the HUD and on the lose panel
 - Units: `unitsPerMeter` only converts climbed world units to the meters the distance score pays for. Every height the player reads is plain world units: the trunk height markers and the progress bar's cobra gap label them `m`, and the lose panel's final height shows the bare number
@@ -321,7 +351,7 @@ The lose-screen leaderboard optionally uses Firebase Anonymous Auth and Firestor
 REST. `FirebaseLeaderboardConfig` enables it without a native SDK; the existing
 practice board remains when unconfigured. `FirebaseLeaderboardClient` persists a
 pending best before uploading, uses an atomic maximum to preserve high scores,
-and loads the top ten separately for normal and endless modes. Setup, failure
+and loads the top ten separately for normal and hardcore modes. Setup, failure
 behaviour, identity limits and emulator verification are in
 [Firebase Leaderboard](leaderboard-doc.md).
 
@@ -357,7 +387,7 @@ The HUD canvas `UI` is a plain `Canvas` whose direct children are one prefab eac
 The height markers replace a HUD height label. `HeightMarkerSystem` sits on `Envs/HeightMarkerSystem`, whose position marks the trunk axis, and works as follows:
 
 - Pool: TextMeshPro labels are built at runtime in right and left pairs, marker k always on pair k mod pair count, so every marker shows on both sides of the trunk, and only markers from `showBelowU` under to `showAboveU` over the monkey show. Markers follow height, not tree segments, so a recycled segment can neither leave one behind nor show one twice
-- Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in a config, e.g. `bossTriggerHeightU`, reads straight off the trunk
+- Text: whole climbed world units (`GetClimbedYDistance`) plus `unitSuffix` (` m`), white bold, so a height tuned in a config, e.g. a boss arena location, reads straight off the trunk
 - Plate: each label sits on a `SpriteRenderer` plate sliced from a circle texture generated at runtime, no imported art, colored like the progress bar's distance readout and sized to the glyphs; a sorting order keeps the text above it
 - Placement: each frame after the `CinemachineBrain` (execution order 200 against its 100), the labels move beside the trunk silhouette, one on each side as seen from the camera, just far enough out that the trunk never hides them and a little behind the axis so branches and fruit draw over them, and face the screen. The monkey climbs on the camera-facing front, so they never cover it
 - Boss Marker: the marker at or just below `CobraKingFightController.TriggerHeightU` (the trigger height rarely lands on a marker, so it snaps down to the interval) gets a bigger, red, beating plate (Boss Marker fields) and a small Cobra King look-alike from `CobraKingFightController.BuildMarkerFigure` holding it, kept on whichever pooled label shows it; once `CobraKingFightController.IsInArena` it is no longer shown. The Spider King's marker (`SpiderKingFightController.TriggerHeightU`, 1,050 m) gets the same plate and a spider look-alike from `SpiderKingFightController.BuildMarkerFigure`, gone once `IsMarkerDone`. A look-alike is a `BossMarkerFigure`, primitives in the label's space that the marker system fits to the plate each frame (`Fit`): the cobra coils round both ends & drapes along the top, the spider perches on the top edge gripping the face & sides; both animate

@@ -127,7 +127,7 @@ public sealed class SpiderKingArena {
     // cobras, rough bark
     public void MakeArenaBare() {
         // down past the guard: the whole boss area grows only the fight's
-        rig.bareBottomY = rig.entryY - config.GuardDepthU - 4f;
+        rig.bareBottomY = rig.GuardBottomY - 4f;
         rig.bareTopY = rig.entryY + config.ArenaHeightU + 6f;
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
@@ -160,16 +160,15 @@ public sealed class SpiderKingArena {
         TreeSegmentController.BranchesGenerated += OnBranchesGenerated;
     }
 
-    // the endless run's rush: the coming fight's range is kept bare as the
+    // the hardcore run's rush: the coming fight's range is kept bare as the
     // tree grows toward it, as the arena will be
-    public void ReserveRushRange() {
+    public void ReserveRushArena() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp == null || !rig.IsRush) {
             return;
         }
-        float entryY = EndlessBossRush.TriggerWorldY(rig.rushEncounter);
-        ramp.SetExtraBossZone(rig.owner, entryY - config.GuardDepthU - 4f,
-            entryY + config.ArenaHeightU + 6f);
+        Vector2 range = rig.WorldBare;
+        ramp.SetExtraBossZone(rig.owner, range.x, range.y);
     }
 
     public void RemoveIfInArena(GameObject thing) {
@@ -231,11 +230,13 @@ public sealed class SpiderKingArena {
         rig.stickyWebs.RemoveAll(w => w.web == null);
     }
 
-    // the climb's banana branch, its banana swapped for a melon model; the
-    // collider & scripts stay, so the grab works as on any fruit
+    // the watermelon branch prefab, a banana branch variant wearing the Melon
+    // outline; its collider & scripts are the banana's, so the grab works as
+    // on any fruit
     public SpiderKingMelon AddMelon(float angle, float y) {
-        GameObject branch =
-            UnityEngine.Object.Instantiate(config.BananaBranchPrefab, rig.host);
+        GameObject branch = UnityEngine.Object.Instantiate(
+            config.WatermelonBranchPrefab, rig.host
+        );
         branch.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, y + BANANA_HANG_U, config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
@@ -243,24 +244,10 @@ public sealed class SpiderKingArena {
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
             controller.Setup();
-            // the banana branch prefab bears a banana
+            // the watermelon branch prefab bears a melon
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject fruit = pickup != null ? pickup.gameObject : branch;
-        if (config.WatermelonMesh != null) {
-            foreach (MeshFilter filter in
-                fruit.GetComponentsInChildren<MeshFilter>(true)) {
-                filter.sharedMesh = config.WatermelonMesh;
-                filter.transform.localRotation = Quaternion.identity;
-                filter.transform.localScale = config.WatermelonScale;
-                filter.transform.localPosition = config.WatermelonOffset;
-            }
-        }
-        // the branch's banana outline becomes the melon's own hue
-        foreach (FruitOutlineListener listener in
-            branch.GetComponentsInChildren<FruitOutlineListener>(true)) {
-            listener.SetKind(FruitKind.Melon);
-        }
         Collider trigger = fruit.GetComponent<Collider>();
         if (trigger == null) {
             trigger = fruit.GetComponentInChildren<Collider>(true);
@@ -367,12 +354,8 @@ public sealed class SpiderKingArena {
         rig.goldenHideTime = Time.time + config.GoldenShowS;
         rig.Parry.Burst(rig.goldenMelon.root.transform.position,
             config.GoldenColor, 10);
-        rig.hud.PopText("Golden watermelon!",
-            rig.goldenMelon.root.transform.position,
-            UIStyle.Gold);
-        rig.hud.ShowBannerFor("Golden watermelon!",
-            "Grab it for a Golden Armor",
-            UIStyle.Gold, 3f);
+        // the first one of a session gets the popup w/ a line to it
+        GoldenMelonHint.Show(rig.goldenMelon.root.transform);
     }
 
     // as the Cobra King's golden watermelon: its reach outline swapped for a
@@ -586,72 +569,6 @@ public sealed class SpiderKingArena {
             }
         }
         rig.stickyWebs.Clear();
-    }
-
-    // Mode Choice  ------------------------------------------------------------
-    // the two choice melons beside where the fight began; the rest hidden
-    public void SpawnChoices() {
-        ClearChoices();
-        foreach (SpiderKingMelon melon in rig.melons) {
-            if (melon.branch != null) {
-                ForgetFruits(melon.branch);
-                melon.branch.SetActive(false);
-            }
-        }
-        float angle = rig.AngleOf(rig.entryPosition);
-        float y = rig.entryY + config.ChoiceAboveU;
-        rig.choiceEasy = AddMelon(angle - config.ChoiceSideDeg, y);
-        rig.choiceNormal = AddMelon(angle + config.ChoiceSideDeg, y);
-        MakeGolden(rig.choiceNormal.root);
-    }
-
-    public void ClearChoices() {
-        foreach (SpiderKingMelon choice in new[] { rig.choiceEasy,
-            rig.choiceNormal }) {
-            if (choice != null && choice.branch != null) {
-                ForgetFruits(choice.branch);
-                UnityEngine.Object.Destroy(choice.branch);
-            }
-        }
-        rig.choiceEasy = null;
-        rig.choiceNormal = null;
-        rig.hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
-    }
-
-    public void UpdateChoiceTags() {
-        if (rig.teach != SpiderKingTeachStep.Choose || rig.choiceEasy == null
-            || rig.choiceNormal == null) {
-            return;
-        }
-        rig.hud.SetChoiceTags(true, rig.choiceEasy.root.transform.position,
-            rig.choiceNormal.root.transform.position);
-    }
-
-    // easy: less health, slower & gentler, never past the 2nd stage
-    public void ChooseMode(bool isEasyPick) {
-        rig.isEasy = isEasyPick;
-        ClearChoices();
-        foreach (SpiderKingMelon melon in rig.melons) {
-            if (melon.branch != null) {
-                melon.branch.SetActive(true);
-                melon.root.SetActive(true);
-                melon.backTime = -1f;
-            }
-        }
-        rig.maxHealth = rig.isEasy
-            ? Mathf.Max(1,
-                Mathf.RoundToInt(rig.BaseMaxHealth * config.EasyHealthScale))
-            : rig.BaseMaxHealth;
-        rig.health = rig.maxHealth;
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        rig.lastStage = 0;
-        // the parry lesson again if it was never passed
-        rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Ready
-            : SpiderKingTeachStep.Parry;
-        rig.teachTimeS = 0f;
-        rig.Teaching.Teach(rig.isEasy ? "EASY" : "NORMAL", "", rig.isEasy
-            ? new Color(0.55f, 0.95f, 0.55f)
-            : UIStyle.Gold, config.ReadyS);
     }
 
     public static void ForgetFruits(GameObject branch) {

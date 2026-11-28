@@ -194,7 +194,7 @@ public static class TrunkScatterReport {
         float climbedY,
         WorldBalanceConfig world
     ) {
-        float zoneStartU = world.BossZoneStartU;
+        float zoneStartU = world.CobraKingLayout.BareBottomU;
         if (climbedY < EXIT_CLIMBED_U || zoneStartU <= EXIT_CLIMBED_U) {
             return climbedY < zoneStartU ? 0f : GetBossStagesValue(
                 climbedY,
@@ -213,28 +213,28 @@ public static class TrunkScatterReport {
         float climbedY,
         WorldBalanceConfig world
     ) {
-        if (climbedY <= world.BossZoneEndU) {
+        if (climbedY <= world.CobraKingLayout.BareTopU) {
             return 1f;
         }
-        if (climbedY < world.SpiderZoneStartU) {
-            float progress = (climbedY - world.BossZoneEndU)
-                / (world.SpiderZoneStartU - world.BossZoneEndU);
+        if (climbedY < world.SpiderKingLayout.BareBottomU) {
+            float progress = (climbedY - world.CobraKingLayout.BareTopU)
+                / (world.SpiderKingLayout.BareBottomU - world.CobraKingLayout.BareTopU);
             return Mathf.Max(1f, world.MidBossRampCurve.Evaluate(progress));
         }
-        if (climbedY <= world.SpiderZoneEndU) {
+        if (climbedY <= world.SpiderKingLayout.BareTopU) {
             return 2f;
         }
         return Mathf.Max(
             2f,
-            world.PostBossRampCurve.Evaluate(climbedY - world.SpiderZoneEndU)
+            world.PostBossRampCurve.Evaluate(climbedY - world.SpiderKingLayout.BareTopU)
         );
     }
 
     private static bool IsInBossZone(float climbedY, WorldBalanceConfig world) {
-        return (climbedY >= world.BossZoneStartU
-                && climbedY <= world.BossZoneEndU)
-            || (climbedY >= world.SpiderZoneStartU
-                && climbedY <= world.SpiderZoneEndU);
+        return (climbedY >= world.CobraKingLayout.BareBottomU
+                && climbedY <= world.CobraKingLayout.BareTopU)
+            || (climbedY >= world.SpiderKingLayout.BareBottomU
+                && climbedY <= world.SpiderKingLayout.BareTopU);
     }
 
     // iff a boss zone lies wholly or partly b/t the 2 heights
@@ -243,7 +243,7 @@ public static class TrunkScatterReport {
         float highY,
         WorldBalanceConfig world
     ) {
-        return (lowY < world.BossZoneEndU && highY > world.BossZoneStartU)
-            || (lowY < world.SpiderZoneEndU && highY > world.SpiderZoneStartU);
+        return (lowY < world.CobraKingLayout.BareTopU && highY > world.CobraKingLayout.BareBottomU)
+            || (lowY < world.SpiderKingLayout.BareTopU && highY > world.SpiderKingLayout.BareBottomU);
     }
 }

@@ -21,10 +21,10 @@ public sealed class CobraKingArena {
     // up to the nest, grown here once & kept through a restart
     public void SpawnArenaBranches() {
         if (config.BranchEmptyPrefab == null
-            || config.BananaBranchPrefab == null) {
+            || config.WatermelonBranchPrefab == null) {
             return;
         }
-        float bottomY = rig.entryY - config.GuardDepthU;
+        float bottomY = rig.GuardBottomY;
         float topY =
             rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
         List<Vector3> placed = new List<Vector3>();
@@ -72,7 +72,7 @@ public sealed class CobraKingArena {
             }
             bool hasFruit = Random.value < config.ArenaBranchFruitChance;
             GameObject branch = UnityEngine.Object.Instantiate(
-                hasFruit ? config.BananaBranchPrefab
+                hasFruit ? config.WatermelonBranchPrefab
                     : config.BranchEmptyPrefab, rig.host
             );
             branch.transform.SetPositionAndRotation(
@@ -87,7 +87,6 @@ public sealed class CobraKingArena {
                 ScorePickup pickup =
                     branch.GetComponentInChildren<ScorePickup>(true);
                 if (pickup != null) {
-                    ApplyWatermelon(pickup.gameObject);
                     rig.arenaBranchFruits.Add(pickup.gameObject);
                 }
             }
@@ -98,58 +97,52 @@ public sealed class CobraKingArena {
         }
     }
 
-    // the arena, guard cobra down to the king's nest, belongs inside the boss
-    // zone, where nothing else is generated
+    // the arena, guard cobra down to the king's nest, belongs inside the bare
+    // zone, where nothing else is generated: the guard hangs as deep as the
+    // layout allows, the nest must fit the half above the location
     public void WarnIfArenaLeavesZone() {
-        RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        // the endless run's rush keeps its own bare range
-        if (ramp == null || rig.IsRush) {
-            return;
-        }
-        float zoneStartY = ramp.PlayerGameStartYPosition
-            + rig.worldBalanceConfig.BossZoneStartU;
-        if (rig.entryY - config.GuardDepthU < zoneStartY) {
+        BossArenaLayout layout = rig.Layout;
+        if (config.GuardDepthU > layout.heightU * 0.5f) {
             Debug.LogWarning(
-                "CobraKingFightController:\tthe guard cobra hangs below the "
-                    + "boss "
-                + "zone start, ordinary hazards may reach the arena; move "
-                + "the trigger up or shorten guardDepthU",
+                "CobraKingFightController:\tguardDepthU is deeper than half "
+                    + "the arena height, the guard is held at half; raise "
+                    + "the arena height or shorten guardDepthU",
+                rig.owner
+            );
+        }
+        if (!layout.FitsAbove(config.NestHeightU)) {
+            Debug.LogWarning(
+                "CobraKingFightController:\tthe nest reaches over the bare "
+                    + "zone, ordinary hazards may reach it; raise the arena "
+                    + "height or lower NestHeightU",
                 rig.owner
             );
         }
     }
 
-    // Endless Boss Rush -------------------------------------------------------
-    // the world y range a boss of the endless run's rush keeps bare, from
-    // under its guard to over its coil
-    public Vector2 RushRange(float entryY) {
-        return new Vector2(entryY - config.GuardDepthU - 4f,
-            entryY + config.NestHeightU + 10f);
-    }
-
-    // the coming fight's range is kept bare as the tree grows toward it
-    public void ReserveRushRange() {
+    // Hardcore Boss Rush -------------------------------------------------------
+    // the coming fight's bare zone is kept bare as the tree grows toward it
+    public void ReserveRushArena() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp == null || !rig.IsRush) {
             return;
         }
-        Vector2 range = RushRange(
-            EndlessBossRush.TriggerWorldY(rig.rushEncounter));
+        Vector2 range = rig.WorldBare;
         ramp.SetExtraBossZone(rig.owner, range.x, range.y);
     }
 
-    public void ReleaseRushRange() {
+    public void ReleaseRushArena() {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
             ramp.ClearExtraBossZone(rig.owner);
         }
     }
 
-    // what the endless tree grew in the arena b4 it was reserved goes:
+    // what the hardcore tree grew in the arena b4 it was reserved goes:
     // branches w/ their fruit, webs, falling cobras, rough bark
     public void ClearRushArena() {
-        Vector2 range = RushRange(rig.entryY);
-        ReserveRushRangeAt(range);
+        Vector2 range = rig.WorldBare;
+        ReserveRangeAt(range);
         foreach (BranchController branch in
             UnityEngine.Object.FindObjectsByType<BranchController>(
                 FindObjectsSortMode.None)) {
@@ -172,7 +165,7 @@ public sealed class CobraKingArena {
         }
     }
 
-    private void ReserveRushRangeAt(Vector2 range) {
+    private void ReserveRangeAt(Vector2 range) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
         if (ramp != null) {
             ramp.SetExtraBossZone(rig.owner, range.x, range.y);
@@ -200,9 +193,9 @@ public sealed class CobraKingArena {
     public void ClearBranchesNearNest(BranchController[] branches) {
         float minY =
             rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
-        // the endless run's rush: only up to its arena's top, the climb
+        // the hardcore run's rush: only up to its arena's top, the climb
         // above keeps its branches
-        float maxY = rig.IsRush ? RushRange(rig.entryY).y
+        float maxY = rig.IsRush ? rig.WorldBare.y
             : float.PositiveInfinity;
         foreach (BranchController branch in branches) {
             float branchY = branch.transform.position.y;
@@ -222,50 +215,6 @@ public sealed class CobraKingArena {
                 cobra.gameObject.SetActive(false);
                 UnityEngine.Object.Destroy(cobra.gameObject);
             }
-        }
-    }
-
-    // two banana branches beside the monkey, plain & golden: the first throw
-    // picks easy or normal mode
-    public void SpawnChoices() {
-        float angle = rig.AngleOf(rig.entryPosition);
-        float y = rig.entryPosition.y + config.ChoiceAboveU;
-        AddFruit(angle - config.ChoiceSideDeg, y, false);
-        AddFruit(angle + config.ChoiceSideDeg, y, true);
-        rig.choices.Add(rig.fruits[rig.fruits.Count - 2]);
-        rig.choices.Add(rig.fruits[rig.fruits.Count - 1]);
-        rig.fruits.RemoveRange(rig.fruits.Count - 2, 2);
-        rig.isChoosing = true;
-    }
-
-    public void ChooseMode(bool isEasyPick) {
-        rig.isChoosing = false;
-        rig.isEasy = isEasyPick;
-        rig.maxHealth = rig.isEasy
-            ? Mathf.Max(
-                1,
-                Mathf.RoundToInt(rig.BaseMaxHealth * config.EasyHealthScale)
-            )
-            : rig.BaseMaxHealth;
-        rig.health = rig.maxHealth;
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        foreach (CobraKingArenaFruit choice in rig.choices) {
-            RemoveBranch(choice.branch);
-        }
-        rig.choices.Clear();
-        rig.hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
-        SpawnFruits();
-        rig.hud.PopText(
-            rig.isEasy ? "Easy mode" : "Normal mode",
-            rig.monkey.position,
-            rig.isEasy ? new Color(0.55f, 0.95f, 0.55f) : config.GoldenColor
-        );
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                "CobraKingFightController:\t" + (rig.isEasy ? "easy" : "normal")
-                    + " mode, king health " + rig.maxHealth,
-                rig.owner
-            );
         }
     }
 
@@ -297,13 +246,7 @@ public sealed class CobraKingArena {
             RemoveBranch(fruit.branch);
         }
         rig.fruits.Clear();
-        foreach (CobraKingArenaFruit choice in rig.choices) {
-            RemoveBranch(choice.branch);
-        }
-        rig.choices.Clear();
         rig.goldenIndex = -1;
-        rig.isChoosing = false;
-        rig.hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
     }
 
     public void SpawnFruits() {
@@ -362,7 +305,7 @@ public sealed class CobraKingArena {
         if (config.WebPrefab == null) {
             return;
         }
-        float bottomY = rig.entryY - config.GuardDepthU;
+        float bottomY = rig.GuardBottomY;
         float topY = rig.entryY - 3f;
         for (float sliceY = bottomY; sliceY < topY; sliceY += 10f) {
             float sliceTopY = Mathf.Min(topY, sliceY + 10f);
@@ -438,7 +381,7 @@ public sealed class CobraKingArena {
         // as the climb's spawner: per 10 u a few rolls, each patch kept
         // clear of the others' heights, of branches & webs, & here of the
         // monkey's start spot
-        float bottomY = rig.entryY - config.GuardDepthU;
+        float bottomY = rig.GuardBottomY;
         float topY =
             rig.coilBottomY - rig.body.HangDepthU - config.NestClearanceU;
         List<Vector3> patches = new List<Vector3>();
@@ -580,20 +523,20 @@ public sealed class CobraKingArena {
     }
 
     /// <returns>the new fruit's index in the fruit list</returns>
-    // a real banana branch, as the tree segments grow, always bearing; the
-    // golden one is the same banana tinted gold w/ a thick gold outline
+    // a watermelon branch, a banana branch variant, always bearing; the
+    // golden one is the same melon tinted gold w/ a thick gold outline
     public int AddFruit(float angle, float y, bool isGolden) {
-        GameObject branch =
-            UnityEngine.Object.Instantiate(config.BananaBranchPrefab, rig.host);
+        GameObject branch = UnityEngine.Object.Instantiate(
+            config.WatermelonBranchPrefab, rig.host
+        );
         PlaceBranch(branch.transform, angle, y);
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
             controller.Setup();
-            // the banana branch prefab bears a banana
+            // the watermelon branch prefab bears a melon
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject banana = pickup != null ? pickup.gameObject : branch;
-        ApplyWatermelon(banana);
         if (isGolden) {
             rig.Armor.MakeGolden(banana);
         }
@@ -615,33 +558,6 @@ public sealed class CobraKingArena {
             rig.PointOnTrunk(angle, fruitY + BANANA_HANG_U,
                 config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
-        );
-    }
-
-    // the arena's fruit looks like a watermelon: the banana model's mesh is
-    // swapped, its collider & scripts stay, so grab & throw work as before
-    public void ApplyWatermelon(GameObject fruit) {
-        if (config.WatermelonMesh == null || fruit == null) {
-            return;
-        }
-        foreach (MeshFilter filter in
-            fruit.GetComponentsInChildren<MeshFilter>(true)) {
-            filter.sharedMesh = config.WatermelonMesh;
-            filter.transform.localRotation = Quaternion.identity;
-            filter.transform.localScale = config.WatermelonScale;
-            filter.transform.localPosition = config.WatermelonOffset;
-        }
-    }
-
-    // EASY & NORMAL tags over the two choice bananas
-    public void UpdateChoiceTags() {
-        if (!rig.isChoosing || rig.choices.Count < 2) {
-            return;
-        }
-        rig.hud.SetChoiceTags(
-            true,
-            rig.choices[0].root.transform.position,
-            rig.choices[1].root.transform.position
         );
     }
 
@@ -682,12 +598,12 @@ public sealed class CobraKingArena {
 
     // Markers & Helpers  ------------------------------------------------------
     // a danger zone flat on the trunk, facing out: a dark red rim whose
-    // bright red center fills it as the hit nears, w/ a hud sign if worded
+    // bright red center fills it as the hit nears, w/ its hud sign
     public void AddTrunkZone(
         float angle,
         float y,
         float size,
-        string word,
+        TutorialItem? sign,
         bool hasRimSign
     ) {
         float radians = angle * Mathf.Deg2Rad;
@@ -695,24 +611,26 @@ public sealed class CobraKingArena {
             new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
         Quaternion facing = Quaternion.FromToRotation(Vector3.up, outward);
 
-        GameObject rim = rig.Feedback.CreatePrimitive(
+        GameObject rim = rig.Feedback.CreateIndicator(
             PrimitiveType.Cylinder, "ZoneRim",
-            new Vector3(size, 0.02f, size), config.WarningDimColor
+            new Vector3(size, 0.02f, size), config.WarningDimColor,
+            config.StripThinMaterial, DangerIndicatorPlane.Disc, 1f
         );
         rim.transform.position =
             rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.04f);
         rim.transform.rotation = facing;
 
-        GameObject fill = rig.Feedback.CreatePrimitive(
+        GameObject fill = rig.Feedback.CreateIndicator(
             PrimitiveType.Cylinder, "ZoneFill",
-            new Vector3(0.01f, 0.03f, 0.01f), config.WarningColor
+            new Vector3(0.01f, 0.03f, 0.01f), config.WarningColor,
+            config.StripHeavyMaterial, DangerIndicatorPlane.Disc, 1f
         );
         fill.transform.position =
             rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.07f);
         fill.transform.rotation = facing;
 
-        int warning = word != null
-            ? rig.hud.AddWarning(rim.transform.position, word)
+        int warning = sign.HasValue
+            ? rig.hud.AddAttackWarning(sign.Value, rim.transform.position)
             : -1;
         rig.markers.Add(new CobraKingMarker {
             rim = rim.transform,
@@ -729,8 +647,7 @@ public sealed class CobraKingArena {
         float angle,
         float topY,
         float bottomY,
-        float width,
-        string word
+        float width
     ) {
         float length = Mathf.Max(0.5f, topY - bottomY);
         float radians = angle * Mathf.Deg2Rad;
@@ -738,9 +655,11 @@ public sealed class CobraKingArena {
             new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
         Quaternion facing = Quaternion.LookRotation(outward, Vector3.up);
 
-        GameObject rim = rig.Feedback.CreatePrimitive(
+        // the minions fall, so the arrows point & run down the trunk
+        GameObject rim = rig.Feedback.CreateIndicator(
             PrimitiveType.Cube, "StripRim",
-            new Vector3(width, length, 0.04f), config.WarningDimColor
+            new Vector3(width, length, 0.04f), config.WarningDimColor,
+            config.ArrowThinMaterial, DangerIndicatorPlane.Line, -1f
         );
         rim.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, topY - length * 0.5f,
@@ -748,9 +667,10 @@ public sealed class CobraKingArena {
             facing
         );
         // the whole line is red from the start, it only beats faster
-        GameObject fill = rig.Feedback.CreatePrimitive(
+        GameObject fill = rig.Feedback.CreateIndicator(
             PrimitiveType.Cube, "StripFill",
-            new Vector3(width * 0.8f, length, 0.06f), config.WarningColor
+            new Vector3(width * 0.8f, length, 0.06f), config.WarningColor,
+            config.ArrowHeavyMaterial, DangerIndicatorPlane.Line, -1f
         );
         fill.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, topY - length * 0.5f,
@@ -758,18 +678,11 @@ public sealed class CobraKingArena {
             facing
         );
 
-        int warning = word != null
-            ? rig.hud.AddWarning(
-                rig.PointOnTrunk(angle, rig.minionLockY + 2.5f,
-                    config.TrunkRadiusU),
-                word
-            )
-            : -1;
         rig.markers.Add(new CobraKingMarker {
             rim = rim.transform,
             fill = fill.transform,
             size = width,
-            warning = warning,
+            warning = -1,
             isBand = false,
             isStrip = true,
             topY = topY,

@@ -83,11 +83,18 @@ graph TD
 ## Win and Lose
 
 - Win: none, the tree is endless and a run only ends in a loss
-- Lose: the cobra touches the monkey; an empty stamina bar only slows the climb
+- Lose: the cobra touches the monkey on the climb; in a boss fight, the monkey's hearts run out; an empty stamina bar only slows the climb
 - Result: the loss ends the run and shows the final height, score, and bananas collected
-- Modes: Normal Play is the full run, starting zone and Cobra King included; Endless Mode is the same climb without the king, and both end only in a loss
-- Endless Mode: starts at the base of the tree in the state right after the king's defeat, ie the gold armor already worn as a spare life, and the hazards at post-boss density from the end of the starting zone, with no hazard-free stretch and no boss marker; it is for the player who has beaten the king and wants the climb alone
-- Unlock: Endless Mode stays greyed out until the Cobra King has been beaten once, remembered on the player's device
+- Modes: Normal Play is the full run, starting zone and both kings included; Hardcore Mode is a boss rush with a short climb between kings; both end only in a loss
+- Normal Play: the Cobra King waits at 525 u and the Spider King at 1025 u, both fixed; past the Spider King difficulty takes a short ramp then a plateau, so the climb feels constant forever
+- Hardcore Mode: the boss rush mode; starts at the base of the tree without gold armor, as Normal Play does; the kings take turns every 100 u (Cobra King at 100 u, Spider King at 200 u, Cobra King at 300 u, ~), each repeat a new Loop
+- Loop: 1 pass of a king's fight; the Loop counts up per king, so the Cobra King at 100 u is Cobra King Loop 1 and at 300 u Loop 2
+  - Loop 1 plays exactly as that king's first fight in Normal Play; only Loop 2 and up change, each growing harder than the last
+  - Loop 0 is the EASY fight, reached only through Normal Play's revive card
+- Monkey Hearts: each boss fight starts the monkey with 3 hearts (fewer in later Hardcore Loops); a fatal fight hit is absorbed by gold armor first, else costs 1 heart, and the monkey flies back to the fight start; 0 hearts lose the fight; the climb keeps its old rules (a great cobra catch ends the run, gold armor saves once)
+- Revive: in Normal Play a lost fight offers an unlimited revive, with a choice of Loop 0 (EASY) or a retry of Loop 1; Hardcore Mode has no revive, so a lost fight ends the run
+- Climb Between Kings: in Hardcore Mode the climb holds Normal Play's plateau difficulty from the starting zone exit on, the same at every Loop; each fight arena is 40 u tall, so 60 u of real climbing separates two fights
+- Unlock: Hardcore Mode stays greyed out until the Cobra King has been beaten once, remembered on the player's device
 
 ## Player Experience
 
@@ -97,6 +104,8 @@ The intended arc is steady tension broken by short bursts of risk. The player cl
 
 - Ramp: branches, spider webs, and falling cobras are spread along the trunk by height against a density curve of the ramped difficulty, so each grows denser the higher the monkey climbs, at rates tuned in the balance config. Numbers are in [Mobs](mob-doc.md#placement-1)
 - Falling Cobra Ramp: hangs dormant on the trunk, wakes when the monkey comes near, and falls while sliding toward the monkey's side. Numbers are in [Mobs](mob-doc.md#falling-cobra)
+- Post Boss Plateau: after the Spider King the ramped difficulty climbs briefly then holds flat, so the run never keeps getting harder by height alone; Hardcore Mode holds that same value for its whole climb
+- Boss Loops: Hardcore Mode's difficulty comes from Loops, not height; every Loop 2 and up grows each king's health, speed, minion waves or slash chains, and shortens its wind ups, while the monkey's hearts shrink toward 1; numbers are in [Balance](balance-doc.md#hardcore-loops)
 - Future Work: broader scaling, such as cobra speed or hazard frequency, is not yet designed
 
 ## Analytics

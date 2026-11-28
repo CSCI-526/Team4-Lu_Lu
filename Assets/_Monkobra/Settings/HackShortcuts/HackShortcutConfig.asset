@@ -22,12 +22,6 @@ MonoBehaviour:
   - action: 2
     key: 96
     description: speed x3
-  - action: 3
-    key: 41
-    description: jump to boss zone start
-  - action: 12
-    key: 42
-    description: jump to spider king
   - action: 4
     key: 43
     description: spawn pineapple

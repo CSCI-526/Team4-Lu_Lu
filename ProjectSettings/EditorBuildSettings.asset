@@ -17,6 +17,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Monkobra/Scenes/GameplayScene.unity
     guid: 3ca9bdee83785cc40a2a7012369a7268
+  - enabled: 0
+    path: Assets/_Monkobra/Scenes/DEVBossCobraKingScene.unity
+    guid: 5d4f7a18dd55a204d8f170124378fd2d
+  - enabled: 0
+    path: Assets/_Monkobra/Scenes/DEVBossSpiderKingScene.unity
+    guid: 4dfa974de33f17149ad4e83a63b4c062
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

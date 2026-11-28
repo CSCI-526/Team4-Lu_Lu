@@ -42,6 +42,19 @@ public class SpiderKingFightController: MonoBehaviour {
     /// King's leftover armor logic leaves it alone</returns>
     public bool IsFraming => rig.IsInArena;
 
+    /// <summary>
+    /// Test hook for the boss dev scenes (<see cref="BossDevStart"/>): this
+    /// fight plays <paramref name="loop"/>, 0 EASY, 1 Normal, 2 and up
+    /// grown; a revive keeps Normal Play's rule.
+    /// </summary>
+    public void SetLoopOverride(int loop) {
+        rig.overrideLoop = Mathf.Max(0, loop);
+        rig.ResetLoop();
+    }
+
+    /// <returns>scale on this fight's defeat points, by its Loop</returns>
+    public float PointsScale => rig.PointsScale;
+
     /// <returns>climbed height the fight starts at, for its trunk height
     /// marker; u, -1 when unknown</returns>
     public float TriggerHeightU => worldBalanceConfig != null
@@ -91,6 +104,10 @@ public class SpiderKingFightController: MonoBehaviour {
     /// the slash it bats back</summary>
     public event System.Action Parried;
 
+    /// <summary>raised once as a dash ends on its own w/o catching the
+    /// monkey, never when a parry, a win or a reset cancels it</summary>
+    public event System.Action DashDodged;
+
     /// <summary>
     /// Called by <see cref="CobraSensor"/> when the great cobra catches the
     /// monkey: in the fight it is a fatal hit, taken by the armor if worn.
@@ -114,7 +131,7 @@ public class SpiderKingFightController: MonoBehaviour {
         if (Time.time < rig.saveGraceEndTime) {
             return true;
         }
-        if (damage.TrySpendArmor()) {
+        if (damage.TryAbsorb()) {
             if (rig.greatCobra != null) {
                 rig.greatCobra.KnockBack(0f);
             }
@@ -146,6 +163,8 @@ public class SpiderKingFightController: MonoBehaviour {
             || (rig.goldenTwin != null && rig.goldenTwin.trigger == fruit);
         if (isGoldenGrab) {
             arena.HideGoldenMelon();
+            GoldenMelonHint.Grabbed();
+            rig.hud.FlyArmor(from);
             rig.nextGoldenTime = Time.time + config.GoldenIntervalS;
             StaminaBarController full = StaminaBarController.I;
             if (full != null) {
@@ -154,18 +173,9 @@ public class SpiderKingFightController: MonoBehaviour {
             SpiderKingDamage.GiveArmor();
             return true;
         }
-        // a choice melon picks the mode, & is thrown too
-        bool isEasyChoice = rig.choiceEasy != null
-            && rig.choiceEasy.trigger == fruit;
-        bool isNormalChoice = rig.choiceNormal != null
-            && rig.choiceNormal.trigger == fruit;
-        if (isEasyChoice || isNormalChoice) {
-            melons.LaunchMelon(fruit.gameObject, from);
-            arena.ChooseMode(isEasyChoice);
-            return true;
-        }
         int index = rig.melons.FindIndex(m => m.trigger == fruit);
         if (index >= 0) {
+            tips.NotifyMelonGrabbed();
             rig.melons[index].backTime = Time.time + config.MelonRespawnS;
         }
         StaminaBarController stamina = StaminaBarController.I;
@@ -197,6 +207,10 @@ public class SpiderKingFightController: MonoBehaviour {
     private SpiderKingDamage damage;
     private SpiderKingEnding ending;
     private SpiderKingFeedback feedback;
+    // the spider's entry during the intro cut scene, its animation hook
+    private SpiderKingIntro kingIntro;
+    // the fight's tutorial popups w/ key icons
+    private SpiderKingTips tips;
 
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -223,6 +237,8 @@ public class SpiderKingFightController: MonoBehaviour {
         ending = new SpiderKingEnding(rig, () => Revived?.Invoke(),
             () => FightEnded?.Invoke());
         feedback = new SpiderKingFeedback(rig);
+        kingIntro = new SpiderKingIntro(rig);
+        tips = new SpiderKingTips(rig);
         rig.Arena = arena;
         rig.Melons = melons;
         rig.Movement = movement;
@@ -240,11 +256,13 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.onSlashCharge = () => SlashCharged?.Invoke();
         rig.onDashWarn = () => DashWarned?.Invoke();
         rig.onParried = () => Parried?.Invoke();
+        rig.onDashDodged = () => DashDodged?.Invoke();
         if (worldBalanceConfig == null || config.WebPrefab == null
-            || config.BananaBranchPrefab == null) {
+            || config.WatermelonBranchPrefab == null) {
             Debug.LogError(
                 "SpiderKingFightController:\tmust assign Inspector Fields: "
-                    + "worldBalanceConfig, webPrefab, bananaBranchPrefab",
+                    + "worldBalanceConfig, webPrefab, watermelonBranchPrefab "
+                    + "(run Monkobra > Build > Watermelon Prefab)",
                 this
             );
             enabled = false;
@@ -274,7 +292,6 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.hud.CoursePageClicked += ending.OpenCoursePage;
         rig.hud.ContinueClicked += ending.ContinueAfterReward;
         rig.hud.SkipAdClicked += ending.SkipAd;
-        rig.hud.ModeChosen += OnModeChosen;
         rig.colorBlock = new MaterialPropertyBlock();
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -285,23 +302,12 @@ public class SpiderKingFightController: MonoBehaviour {
         }
     }
 
-    // the endless run: the boss rush's second fight, & every other one
+    // the hardcore run: the boss rush's second fight, & every other one
     // after, is the spider's
     private void Start() {
-        if (I == this && EndlessBossRush.IsOn) {
+        if (I == this && HardcoreBossRush.IsOn) {
             rig.rushEncounter = 1;
         }
-    }
-
-    // the revive's difficulty card picked: time runs again & the fight goes
-    // on in that mode
-    private void OnModeChosen(bool isEasy) {
-        if (rig.teach != SpiderKingTeachStep.Choose
-            || rig.phase != SpiderKingPhase.Fighting) {
-            return;
-        }
-        Time.timeScale = 1f;
-        arena.ChooseMode(isEasy);
     }
 
     private void OnDestroy() {
@@ -357,9 +363,9 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == SpiderKingPhase.Waiting) {
-            // the endless run's rush keeps the coming arena bare; kept up
+            // the hardcore run's rush keeps the coming arena bare; kept up
             // every frame, as the run's start y is only known after a Start
-            arena.ReserveRushRange();
+            arena.ReserveRushArena();
             UpdatePreview(game);
             if (CanBegin(game)) {
                 BeginFight();
@@ -372,17 +378,16 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == SpiderKingPhase.Rewarding) {
+            tips.Update(false);
             ending.UpdateRewardPause(game);
             return;
         }
-        // the revive's difficulty card holds time still till a pick
-        if (rig.phase == SpiderKingPhase.Fighting
-            && rig.teach == SpiderKingTeachStep.Choose
-            && rig.hud.IsChoosingMode) {
-            Time.timeScale = 0f;
+        // the intro cut scene holds the fight: the spider waits where it is
+        if (intro.IsPlaying) {
+            intro.Tick();
             return;
         }
-
+        tips.Update(rig.phase == SpiderKingPhase.Fighting);
         rig.hud.SpeechAnchor = rig.body.HeadPosition;
         feedback.UpdateCamera();
         parry.UpdateSparks();
@@ -409,8 +414,11 @@ public class SpiderKingFightController: MonoBehaviour {
         }
     }
 
+    // the cut scene that opens the fight, ticked while it plays
+    private readonly BossIntroCutScene intro = new BossIntroCutScene();
+
     // Setup  ------------------------------------------------------------------
-    // after the Cobra King, never mid leap; in the endless run at its turn
+    // after the Cobra King, never mid leap; in the hardcore run at its turn
     // of the boss rush
     private bool CanBegin(RunController game) {
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
@@ -421,7 +429,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return game.State == GameState.Playing
                 && ramp.CurrentPlayerClimbedYDistance >= rig.TriggerClimbU;
         }
-        if (GameController.I.Mode == RunMode.Endless) {
+        if (GameController.I.Mode == RunMode.Hardcore) {
             return false;
         }
         if (config.IsTestAtStart) {
@@ -434,7 +442,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return false;
         }
         return ramp.CurrentPlayerClimbedYDistance
-            >= worldBalanceConfig.SpiderTriggerHeightU;
+            >= rig.TriggerClimbU;
     }
 
     // from just below the spider jump height on, the Spider King already
@@ -460,14 +468,12 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (!game.IsRunLive
-            || (GameController.I.Mode == RunMode.Endless && !rig.IsRush)) {
+            || (GameController.I.Mode == RunMode.Hardcore && !rig.IsRush)) {
             return;
         }
-        // seen waiting from a bit below: the jump height, or 50 u below the
-        // fight in the endless run's rush
+        // seen waiting from one arena height below the fight
         RampedDifficultyManager ramp = RampedDifficultyManager.I;
-        float seenFromU = rig.IsRush ? rig.TriggerClimbU - 50f
-            : worldBalanceConfig.SpiderJumpHeightU - 5f;
+        float seenFromU = rig.Layout.SeenWaitingU;
         if (ramp == null || ramp.CurrentPlayerClimbedYDistance < seenFromU) {
             return;
         }
@@ -512,7 +518,7 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.cameraFraming = FindFirstObjectByType<CameraClimbFraming>();
         rig.greatCobra = FindFirstObjectByType<CobraMotor>();
         if (rig.greatCobra != null) {
-            rig.greatCobra.StartGuard(rig.entryY - config.GuardDepthU);
+            rig.greatCobra.StartGuard(rig.GuardBottomY);
         }
         // a web breaks in as many presses as in the Cobra King's arena
         rig.struggle = FindFirstObjectByType<SpiderWebStruggle>();
@@ -539,21 +545,40 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.startY = rig.entryY + START_ABOVE_U;
         rig.spiderAngle = rig.startAngle;
         rig.spiderY = rig.startY;
+        rig.ResetLoop();
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
-        rig.isEasy = false;
         rig.lastStage = 0;
         rig.body.Build(rig.trunkCenter, rig.spiderAngle, rig.spiderY);
         // the whole arena is there from the start, melons too
         arena.SpawnMelons();
         arena.ClearStickyWebs();
-        movement.ResetSpiderState();
 
-        rig.hud.Show(config.BossName);
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        // flashes as the Cobra King's: at the start, the last blow & a
-        // spent armor; never on a revive or a reward
-        rig.hud.Flash();
+        // no free armor at the start, as in the Cobra King's arena: the
+        // golden watermelon is its only source (a retry still hands it out)
+        if (Debug.isDebugBuild) {
+            Debug.Log(
+                "SpiderKingFightController:\tspider fight begins at y "
+                    + rig.entryY,
+                this
+            );
+        }
+        // the fight opens on the cut scene, then the boss name; a skipped
+        // scene shows the name at once
+        intro.Playing += kingIntro.Update;
+        intro.Begin(
+            () => rig.body.HeadPosition, TutorialItem.SpiderKingIntro,
+            OnIntroEnded
+        );
+    }
+
+    // the intro cut scene is over: the spider's timers & the lessons start
+    // now, so nothing is due b4 the player may act; then the UI of the
+    // fight, the boss name, health, hearts & the king's first line
+    private void OnIntroEnded() {
+        intro.Playing -= kingIntro.Update;
+        kingIntro.End();
+        movement.ResetSpiderState();
         // a seen or dev-skipped lesson counts both lessons as taught
         if (TutorialSkipManager.I != null
             && TutorialSkipManager.I.ShouldSkip(
@@ -566,18 +591,14 @@ public class SpiderKingFightController: MonoBehaviour {
         // first slash later teaches its own parry
         rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
             : SpiderKingTeachStep.Parry;
-        teaching.Teach(config.BossName, "", config.WarnColor, 2f);
-        // the gold armor, as in the Cobra King's arena: it swirls on, no
-        // words; worn already, it stays
-        SpiderKingDamage.GiveArmor();
+
+        rig.hud.Show(config.BossName);
+        rig.hud.SetHealth(rig.health, rig.maxHealth);
+        MonkeyHearts.Begin(rig.HeartsNow);
+        // flashes as the Cobra King's: at the start, the last blow & a
+        // spent armor; never on a revive or a reward
+        rig.hud.Flash();
         rig.hud.Say("My web, my rules!");
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                "SpiderKingFightController:\tspider fight begins at y "
-                    + rig.entryY,
-                this
-            );
-        }
     }
 
 }

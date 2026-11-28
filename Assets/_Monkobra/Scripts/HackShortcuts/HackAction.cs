@@ -13,40 +13,35 @@ public enum HackAction {
     /// movement runs at 5 times its normal speed</summary>
     SpeedBuff,
 
-    /// <summary>teleports the monkey to the boss zone start, ending the
-    /// starting zone if it is still on</summary>
-    BossJump,
-
+    // the values below are the ones the config asset stores, so they stay
+    // fixed: 3 & 12 belonged to the boss jump keys, removed for the boss dev
+    // scenes, never reuse them
     /// <summary>spawns a pineapple branch above the monkey</summary>
-    SpawnPineapple,
+    SpawnPineapple = 4,
 
     /// <summary>spawns a branch bearing a coconut above the monkey, to test
     /// the cobra freeze w/o climbing to the coconuts</summary>
-    SpawnCoconut,
+    SpawnCoconut = 5,
 
     /// <summary>hangs a dormant falling cobra above the monkey</summary>
-    SpawnFallingCobra,
+    SpawnFallingCobra = 6,
 
     /// <summary>sticks a spider web on the trunk above the monkey</summary>
-    SpawnSpiderWeb,
+    SpawnSpiderWeb = 7,
 
     /// <summary>downloads the analytics session report in the browser</summary>
-    DownloadReport,
+    DownloadReport = 8,
 
     /// <summary>closes the analytics session and opens a new file</summary>
-    RestartSession,
+    RestartSession = 9,
 
     /// <summary>saves a mock analytics session file, for layout checks
     /// </summary>
-    MockSession,
+    MockSession = 10,
 
     /// <summary>turns the hack layer on or off in a development build: the
     /// on-screen list of hack keys (<see cref="HackShortcutPanel"/>) and every
     /// other hack key, off when the game starts; never runs elsewhere
     /// </summary>
-    ToggleHints,
-
-    /// <summary>teleports the monkey to just below the Spider King's
-    /// trigger height, the Cobra King counted as beaten</summary>
-    SpiderJump,
+    ToggleHints = 11,
 }

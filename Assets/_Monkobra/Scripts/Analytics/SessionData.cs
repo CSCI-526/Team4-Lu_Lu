@@ -36,6 +36,6 @@ public class SessionData {
     /// occurred</returns>
     public bool HasLostRunsOfBothModes() {
         return GetLostDeathCauses(RunMode.Full).Count > 0
-            && GetLostDeathCauses(RunMode.Endless).Count > 0;
+            && GetLostDeathCauses(RunMode.Hardcore).Count > 0;
     }
 }

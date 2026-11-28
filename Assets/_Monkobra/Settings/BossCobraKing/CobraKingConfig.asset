@@ -58,6 +58,7 @@ MonoBehaviour:
   webEscapeGainScale: 2
   webFruitGapDeg: 25
   bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
+  watermelonBranchPrefab: {fileID: 602886499398111576, guid: db507406c985a914b8be53f4f2c7c0d4, type: 3}
   branchEmptyPrefab: {fileID: 7490866546275933270, guid: 92e3089d439b48538d1aca56cda3a5bf, type: 3}
   watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
   watermelonScale: {x: 6, y: 6, z: 6}
@@ -83,13 +84,10 @@ MonoBehaviour:
   roughBarkChance: 0.35
   roughBarkHeightRangeU: {x: 5, y: 8.5}
   roughBarkArcRangeDeg: {x: 110, y: 170}
-  goldenHintTitle: Golden watermelon!
-  goldenHintLine: Grab it for a Golden Armor
-  goldenHintS: 3
   goldenOutlineMaterial: {fileID: 2100000, guid: 4f18a8f2e3bd5c946afbf6e361590ba3, type: 2}
-  goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
+  goldenOutlineColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   goldenOutlineWidthScale: 2
-  armorIntroTitle: You get a Golden Armor!
+  armorIntroTitle: You get a Golden Crown!
   armorIntroLine: Blocks 1 fatal hit
   canRevive: 1
   reviveOfferS: 8
@@ -105,11 +103,10 @@ MonoBehaviour:
   easyRestFinalS: 2.35
   easyMinionWaves: 1
   winTitle: You win!
-  winLine: Golden Armor is yours to keep!
+  winLine: Golden Crown is yours to keep!
   winDetailLine: It blocks 1 fatal hit
   armorKnockBackU: 20
   armorCobraFreezeS: 15
-  winCobraDropU: 45
   goldenFirstDelayS: 8
   goldenIntervalS: 15
   goldenShowS: 8
@@ -117,6 +114,13 @@ MonoBehaviour:
   goldenAboveMonkeyU: 3
   armorOutU: 0.45
   armorHelmetU: 0.95
+  armorCrownScale: 0.8
+  introFeintCount: 2
+  introFeintStartS: 0.8
+  introFeintGapS: 1.2
+  introFeintWindUpS: 0.45
+  introFeintMissU: 2.5
+  introFeintLiftU: 0.5
   armorRewardS: 1.6
   armorRewardRadiusU: 3
   finisherTimeScale: 0.2
@@ -127,9 +131,15 @@ MonoBehaviour:
   victoryDelayS: 0.8
   dotCount: 12
   dotRadiusU: 0.12
-  goldenColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+  goldenColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   warningColor: {r: 1, g: 0.15, b: 0.15, a: 1}
   warningDimColor: {r: 0.45, g: 0.05, b: 0.05, a: 1}
+  stripHeavyMaterial: {fileID: 2100000, guid: 5170d7e776634416a7b1e1bada63c249, type: 2}
+  stripThinMaterial: {fileID: 2100000, guid: e6ac44386ff5459994771c33a2cd8024, type: 2}
+  arrowHeavyMaterial: {fileID: 2100000, guid: 90893d0f9e204ed18981afe03743d006, type: 2}
+  arrowThinMaterial: {fileID: 2100000, guid: db346edbebd1456bba5fc865369bf4ed, type: 2}
+  indicatorAlpha: 1
+  indicatorTintStrength: 0.5
   minionColor: {r: 0.45, g: 0.8, b: 0.45, a: 1}
   tailColor: {r: 0.72, g: 0.56, b: 0.95, a: 1}
   approachLine: Stay away from me!

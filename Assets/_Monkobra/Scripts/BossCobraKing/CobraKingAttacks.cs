@@ -21,7 +21,10 @@ public sealed class CobraKingAttacks {
     public void UpdateFightLoop() {
         switch (rig.loop) {
             case CobraKingLoop.Intro:
-                // waits for the first hit, which starts the first rest
+                // the intro cut scene held the fight; once it lets the loop
+                // run, or after a revive restart, the first rest starts at
+                // once, never waiting on a hit
+                StartRest();
                 break;
             case CobraKingLoop.Rest:
                 rig.loopTimeS -= Time.deltaTime;
@@ -44,7 +47,7 @@ public sealed class CobraKingAttacks {
         rig.loopTimeS = (rig.isEasy
             ? (rig.Third >= 2 ? config.EasyRestFinalS : config.EasyRestS)
             : (rig.Third >= 2 ? config.RestFinalS : config.RestS))
-            * rig.RushTimeScale;
+            * rig.LoopTimeScale;
         rig.body.SetWeakSpotLit(true);
     }
 
@@ -117,7 +120,7 @@ public sealed class CobraKingAttacks {
         rig.biteSpot =
             rig.PointOnTrunk(rig.lockAngle, rig.lockY, rig.MonkeyRadius());
         rig.Arena.AddTrunkZone(rig.lockAngle, rig.lockY,
-            config.BiteRadiusU * 2f, "BITE!", true);
+            config.BiteRadiusU * 2f, TutorialItem.AttackBite, true);
         rig.biteStarted = false;
     }
 
@@ -158,19 +161,22 @@ public sealed class CobraKingAttacks {
     // Sweep: a red band fills round the trunk at the height, then the tail
     // circles it
     public void StartSweep() {
-        GameObject band = rig.Feedback.CreatePrimitive(
+        GameObject band = rig.Feedback.CreateIndicator(
             PrimitiveType.Cylinder, "SweepBand",
             new Vector3(
                 (config.TrunkRadiusU + 0.08f) * 2f,
                 0.01f,
                 (config.TrunkRadiusU + 0.08f) * 2f
             ),
-            config.WarningColor
+            config.WarningColor,
+            config.StripHeavyMaterial, DangerIndicatorPlane.Wall, 1f
         );
         band.transform.position = new Vector3(
             rig.trunkCenter.x, rig.lockY, rig.trunkCenter.z
         );
-        int warning = rig.hud.AddWarning(SweepSignPoint(), "TAIL!");
+        int warning = rig.hud.AddAttackWarning(
+            TutorialItem.AttackTail, SweepSignPoint()
+        );
         rig.markers.Add(new CobraKingMarker {
             fill = band.transform,
             warning = warning,
@@ -278,7 +284,14 @@ public sealed class CobraKingAttacks {
         }
         if (rig.hasShield) {
             rig.hasShield = false;
-            rig.hud.PopText("Saved!", rig.monkey.position, config.GoldenColor);
+            rig.hud.PopLoss(BossFightHudLoss.Armor, rig.monkey.position);
+            KnockDown(rig.body.HeadCollider);
+            return;
+        }
+        // no armor: a heart takes it, the same knock down; none left, the
+        // fight is lost
+        if (MonkeyHearts.TryLose()) {
+            rig.hud.PopLoss(BossFightHudLoss.Heart, rig.monkey.position);
             KnockDown(rig.body.HeadCollider);
             return;
         }
@@ -350,10 +363,9 @@ public sealed class CobraKingAttacks {
             return;
         }
         rig.hasWarnedChase = true;
-        rig.hud.ShowBannerFor(
-            "The cobra is coming!", "Climb!",
-            new Color(0.95f, 0.25f, 0.2f), 2.5f
-        );
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(PopUpId.BossCobraComing);
+        }
     }
 
 }

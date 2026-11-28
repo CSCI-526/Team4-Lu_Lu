@@ -67,7 +67,7 @@ Drawn from the `Lost` runs only; when lost runs of both run modes occur, one blo
 
 ### Run Header
 
-- Mode: `Full` or `Endless`, the run mode of the scene that played the run
+- Mode: `Full` or `Hardcore`, the run mode of the scene that played the run
 - Status: shown only when the run is not `Lost`
 - Highest Height: highest point reached, which can exceed where the run ended
 - Death Height: height at the moment of the loss, shown for a lost run
@@ -159,7 +159,7 @@ The lose screen also carries a Download Analytics button at the top right (`Lose
 - Per Run: a small simulation of the real game, ie the monkey climbs on the climb speed curve, stamina drains and refills, hazards and fruit are rolled per trunk segment from the difficulty ramp and each chance curve, and the great cobra chases on its base and distance speed curves with its surge and exit boost
 - Ending: a run ends where a real one would, when the cobra catches a monkey that lost too much time to branches, webs, and grabs; a run past the boss zone trigger plays out a timed Cobra King fight, with armor saves, revives, and an occasional win, and a run that won it plays out a timed Spider King fight at its trigger the same way (a little harder, with its own start, revive and win rows)
 - Skill: each run has a skill value from 0 to 1 that sets how often the monkey walks into hazards, grabs fruit, and uses coconuts; it climbs over the session along a learning curve, with the odd distracted run
-- Modes: Endless runs appear only once the tester has beaten the king, in this session or an earlier one
+- Modes: Hardcore runs appear only once the tester has beaten the king, in this session or an earlier one
 - Metrics: every event metric of the report is generated, and scores follow the real scoring rule
 - Mirror: the generator holds a copy of the balance numbers it needs, flagged at the top of its constants, so a retune of `PlayerBalanceConfig`, `WorldBalanceConfig`, `CobraBalanceConfig`, `MonkeyClimbConfig`, or `PineappleLeapConfig` needs the copy updated by hand
 - Assumptions: the trunk segment height, the starting zone exit height, and the cobra's opening gap are not in any asset, so the generator guesses them

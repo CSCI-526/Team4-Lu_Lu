@@ -41,8 +41,6 @@ public sealed class CobraKingMinions {
         int gap = Random.Range(1, Mathf.Max(2, config.MinionCount - 1));
         float direction = Random.value < 0.5f ? -1f : 1f;
         float warn = config.MinionWarnS * rig.WarnScale;
-        int signAt = config.MinionCount / 2 == gap ? gap + 1
-            : config.MinionCount / 2;
         int order = 0;
         for (int i = 0; i < config.MinionCount; i++) {
             float angle = rig.minionLockAngle
@@ -50,16 +48,14 @@ public sealed class CobraKingMinions {
                     * config.MinionSpreadDeg;
             bool isGap = i == gap;
             if (!isGap) {
-                // the same filling danger zone as the first version; one
-                // LOOK UP! sign for the whole wave, on a middle zone
+                // the same filling danger zone as the first version
                 // the strip is the minion's whole fall: from the coil it
                 // drops out of, to where it is gone
                 rig.Arena.AddTrunkStrip(
                     angle,
                     rig.coilBottomY,
                     rig.MinionEndY,
-                    config.MinionHitRadiusU * 1.4f,
-                    i == signAt ? "LOOK UP!" : null
+                    config.MinionHitRadiusU * 1.4f
                 );
             }
             rig.minions.Add(new CobraKingMinion {
