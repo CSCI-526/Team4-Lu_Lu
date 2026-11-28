@@ -357,9 +357,9 @@ public sealed class SpiderKingArena {
         rig.hud.PopText("Golden watermelon!",
             rig.goldenMelon.root.transform.position,
             UIStyle.Gold);
-        rig.hud.ShowBannerFor("Golden watermelon!",
-            "Grab it for a Golden Armor",
-            UIStyle.Gold, 3f);
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(PopUpId.BossGoldenWatermelon);
+        }
     }
 
     // as the Cobra King's golden watermelon: its reach outline swapped for a

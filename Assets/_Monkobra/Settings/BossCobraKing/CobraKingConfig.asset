@@ -83,9 +83,6 @@ MonoBehaviour:
   roughBarkChance: 0.35
   roughBarkHeightRangeU: {x: 5, y: 8.5}
   roughBarkArcRangeDeg: {x: 110, y: 170}
-  goldenHintTitle: Golden watermelon!
-  goldenHintLine: Grab it for a Golden Armor
-  goldenHintS: 3
   goldenOutlineMaterial: {fileID: 2100000, guid: 4f18a8f2e3bd5c946afbf6e361590ba3, type: 2}
   goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
   goldenOutlineWidthScale: 2

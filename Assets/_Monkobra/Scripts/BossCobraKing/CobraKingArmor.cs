@@ -86,11 +86,10 @@ public sealed class CobraKingArmor {
             "Golden watermelon!", golden.root.transform.position,
                 config.GoldenColor
         );
-        // & a banner low on screen, so it is never missed
-        rig.hud.ShowBannerFor(
-            config.GoldenHintTitle, config.GoldenHintLine, config.GoldenColor,
-                config.GoldenHintS
-        );
+        // & a toast on the popup plate, so it is never missed
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(PopUpId.BossGoldenWatermelon);
+        }
     }
 
     public void HideGolden() {

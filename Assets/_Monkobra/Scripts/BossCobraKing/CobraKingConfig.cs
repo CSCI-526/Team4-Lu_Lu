@@ -275,15 +275,6 @@ public class CobraKingConfig: ScriptableObject {
     /// <returns>patch width round the trunk, the climb's own; deg</returns>
     public Vector2 RoughBarkArcRangeDeg => roughBarkArcRangeDeg;
 
-    /// <returns>banner title when the golden watermelon shows up</returns>
-    public string GoldenHintTitle => goldenHintTitle;
-
-    /// <returns>line under it</returns>
-    public string GoldenHintLine => goldenHintLine;
-
-    /// <returns>how long that banner stays; s</returns>
-    public float GoldenHintS => goldenHintS;
-
     /// <returns>outline material copied for the golden banana's thick
     /// border, eg the bananas' grabbable outline</returns>
     public Material GoldenOutlineMaterial => goldenOutlineMaterial;
@@ -810,20 +801,6 @@ public class CobraKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("patch width round the trunk, the climb's own; deg")]
     private Vector2 roughBarkArcRangeDeg = new Vector2(110f, 170f);
-
-    [Header("Golden Hint")]
-    [SerializeField]
-    [Tooltip("banner title when the golden watermelon shows up")]
-    private string goldenHintTitle = "Golden watermelon!";
-
-    [SerializeField]
-    [Tooltip("line under it")]
-    private string goldenHintLine = "Grab it for a Golden Armor";
-
-    [SerializeField]
-    [Tooltip("how long that banner stays; s")]
-    [Min(0.5f)]
-    private float goldenHintS = 3f;
 
     [Header("Golden Banana")]
     [SerializeField]
