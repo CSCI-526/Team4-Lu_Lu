@@ -250,15 +250,16 @@ public sealed class SpiderKingAttacks {
     }
 
     // a red lane on the bark from the spider to the dash's end, as wide as
-    // the dash catches; dim while it aims, bright & flashing once locked
+    // the dash catches, filled all over, not only its edges; dim while it
+    // aims, bright & flashing once locked
     // the lane: exactly where the dash catches, its run (dashLengthU) plus
     // the catch reach (dashHitU) past its end, dashHitU to either side
     public void DrawDashLane(bool isLocked) {
         if (rig.dashLane == null) {
-            rig.dashLane = new Transform[PATH_PARTS * 2];
+            rig.dashLane = new Transform[PATH_PARTS];
             for (int i = 0; i < rig.dashLane.Length; i++) {
                 rig.dashLane[i] =
-                    rig.Feedback.CreateIndicator(PrimitiveType.Cylinder,
+                    rig.Feedback.CreateIndicator(PrimitiveType.Cube,
                         "DashLane",
                     Vector3.one * 0.1f, config.WarnColor,
                     config.ArrowHeavyMaterial, DangerIndicatorPlane.Line,
@@ -269,34 +270,35 @@ public sealed class SpiderKingAttacks {
         Color color = isLocked
             ? Color.Lerp(config.WarnColor, Color.white, pulse * 0.5f)
             : config.WarnColor * 0.6f;
-        float thickness = isLocked ? 0.22f : 0.12f;
         float reach = rig.dashLengthU + config.DashHitU;
-        // across the way, on the bark
-        float acrossU = -rig.dashWayV * config.DashHitU;
-        float acrossV = rig.dashWayU * config.DashHitU;
-        for (int edge = 0; edge < 2; edge++) {
-            float sign = edge == 0 ? -1f : 1f;
-            for (int i = 0; i < PATH_PARTS; i++) {
-                float d0 = reach * i / PATH_PARTS;
-                float d1 = reach * (i + 1) / PATH_PARTS;
-                Vector3 from = BarkPoint(rig.dashStartAngle, rig.dashStartY,
-                    rig.dashWayU * d0 + acrossU * sign,
-                        rig.dashWayV * d0 + acrossV * sign);
-                Vector3 to = BarkPoint(rig.dashStartAngle, rig.dashStartY,
-                    rig.dashWayU * d1 + acrossU * sign,
-                        rig.dashWayV * d1 + acrossV * sign);
-                SetDashLanePart(edge * PATH_PARTS + i, from, to, thickness,
-                    color, isLocked);
-            }
+        // the whole catch width, dashHitU to either side of the way
+        float width = config.DashHitU * 2f;
+        for (int i = 0; i < PATH_PARTS; i++) {
+            float d0 = reach * i / PATH_PARTS;
+            float d1 = reach * (i + 1) / PATH_PARTS;
+            Vector3 from = BarkPoint(rig.dashStartAngle, rig.dashStartY,
+                rig.dashWayU * d0, rig.dashWayV * d0);
+            Vector3 to = BarkPoint(rig.dashStartAngle, rig.dashStartY,
+                rig.dashWayU * d1, rig.dashWayV * d1);
+            SetDashLanePart(i, from, to, width, color, isLocked,
+                (d0 + d1) * 0.5f);
         }
     }
 
+    // a piece of the filled lane; alongU is its middle's distance from the
+    // lane's start, so the arrows run on unbroken from piece to piece
     public void SetDashLanePart(int index, Vector3 from, Vector3 to,
-        float thickness, Color color, bool isLocked) {
-        SpiderKingFeedback.SetLine(rig.dashLane[index], from, to, thickness);
+        float width, Color color, bool isLocked, float alongU) {
+        Vector3 middle = (from + to) * 0.5f;
+        Vector3 outward = new Vector3(
+            middle.x - rig.trunkCenter.x, 0f, middle.z - rig.trunkCenter.z
+        ).normalized;
+        SpiderKingFeedback.SetStrip(rig.dashLane[index], from, to, width,
+            0.04f, outward);
         Renderer lane = rig.dashLane[index].GetComponent<Renderer>();
         rig.Feedback.SetIndicatorColor(lane, color);
         rig.Feedback.SetIndicatorUrgency(lane, isLocked ? 1f : 0f);
+        rig.Feedback.SetIndicatorAlongOffset(lane, alongU);
     }
 
     public void ClearDashLane() {

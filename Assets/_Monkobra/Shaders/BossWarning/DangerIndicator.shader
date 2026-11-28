@@ -9,6 +9,7 @@ Shader "Monkobra/DangerIndicator" {
         _BandInset("Gap kept from the band edge (V, 0 to 0.1)", Range(0, 0.1)) = 0.02
         _Scroll("Scroll along U, tiles per second", Float) = 0.5
         _Direction("Direction along U, 1 or -1 (flips arrows and scroll)", Float) = 1
+        _AlongOffset("Line mode: world distance of this piece from its lane start", Float) = 0
         _PulseRate("Pulse rate at rest, rad per second", Float) = 5
         _PulseRateMax("Pulse rate at full urgency", Float) = 20
         _PulseDepth("Pulse depth, 0 steady to 1 blinking", Range(0,1)) = 0.35
@@ -37,7 +38,7 @@ Shader "Monkobra/DangerIndicator" {
                 float4 _BaseMap_ST;
                 half4 _BaseColor;
                 half _TintStrength, _PulseDepth, _Glow, _Urgency;
-                float _Band, _PlaneMode, _TileSize, _BandInset, _Scroll, _Direction;
+                float _Band, _PlaneMode, _TileSize, _BandInset, _Scroll, _Direction, _AlongOffset;
                 float _PulseRate, _PulseRateMax;
             CBUFFER_END
             struct Attributes {float4 positionOS:POSITION;};
@@ -70,7 +71,7 @@ Shader "Monkobra/DangerIndicator" {
                     t=p.x+0.5;
                 } else if(_PlaneMode<1.5) {
                     // line or strip: the whole band fits the width, U runs along Y
-                    u=(p.y*s.y)/(2.0*max(s.x,0.0001)*_TileSize);
+                    u=(p.y*s.y+_AlongOffset)/(2.0*max(s.x,0.0001)*_TileSize);
                     t=p.x+0.5;
                 } else {
                     // wall: round the cylinder, U along the arc, V up the height

@@ -23,6 +23,8 @@ public static class DangerIndicator {
     private static readonly int TINT_STRENGTH =
         Shader.PropertyToID("_TintStrength");
     private static readonly int URGENCY = Shader.PropertyToID("_Urgency");
+    private static readonly int ALONG_OFFSET =
+        Shader.PropertyToID("_AlongOffset");
 
     // Public Methods  #########################################################
     // puts the material & its per-object plane, direction & tint on the
@@ -65,6 +67,21 @@ public static class DangerIndicator {
         }
         target.GetPropertyBlock(block);
         block.SetColor(BASE_COLOR, new Color(hue.r, hue.g, hue.b, alpha));
+        target.SetPropertyBlock(block);
+    }
+
+    // a lane built from many pieces: each piece's distance from the lane's
+    // start, u, so the pattern runs on unbroken across the joints
+    public static void SetAlongOffset(
+        Renderer target,
+        MaterialPropertyBlock block,
+        float offsetU
+    ) {
+        if (target == null) {
+            return;
+        }
+        target.GetPropertyBlock(block);
+        block.SetFloat(ALONG_OFFSET, offsetU);
         target.SetPropertyBlock(block);
     }
 
