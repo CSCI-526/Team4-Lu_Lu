@@ -121,6 +121,7 @@ MonoBehaviour:
   arrowThinMaterial: {fileID: 2100000, guid: db346edbebd1456bba5fc865369bf4ed, type: 2}
   indicatorAlpha: 1
   indicatorTintStrength: 0.5
+  dangerPathWidthU: 0.1
   silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
   goldenColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   shotColor: {r: 0.85, g: 0.4, b: 0.95, a: 1}

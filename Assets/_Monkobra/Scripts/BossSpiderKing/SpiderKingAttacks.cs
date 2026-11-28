@@ -138,7 +138,11 @@ public sealed class SpiderKingAttacks {
             rig.chargingShot.fill = progress;
         }
         if (rig.warningId >= 0) {
-            rig.hud.UpdateWarning(rig.warningId, rig.monkey.position, progress);
+            // a web sign rides its danger path, any other stays on the monkey
+            Vector3 signAt = rig.chargingShot != null
+                ? rig.Shots.SignPoint(rig.chargingShot)
+                : rig.monkey.position;
+            rig.hud.UpdateWarning(rig.warningId, signAt, progress);
         }
         if (rig.attack == SpiderKingAttack.Dash) {
             rig.body.SetSwipe(progress);

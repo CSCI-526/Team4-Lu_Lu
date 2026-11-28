@@ -48,6 +48,8 @@ public class SpiderKingCrescent {
     public float distanceU;
     // how far it has flown
     public Transform[] parts;
+    public Transform[] path;
+    // its danger path, ahead of it to the end of its range
     public bool isReflected;
     // batted back at the spider
     public float clashS;
@@ -87,6 +89,8 @@ public class SpiderKingShot {
     public Transform ball;
     public Transform wave;
     // a web shot's silk bullet
+    public Transform[] path;
+    // its danger path, from where it is to the monkey
     public Vector3 from;
     public Vector3 target;
     public float t;

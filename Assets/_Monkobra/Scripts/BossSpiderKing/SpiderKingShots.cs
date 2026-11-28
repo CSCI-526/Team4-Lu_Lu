@@ -72,6 +72,7 @@ public sealed class SpiderKingShots {
                 rig.Parry.ClashTrail(crescent.clashS,
                     CrescentPoint(crescent, 0f),
                     ref crescent.nextFxS);
+                ClearPath(ref crescent.path);
                 DrawCrescent(crescent, true);
                 continue;
             }
@@ -89,6 +90,7 @@ public sealed class SpiderKingShots {
             bool isGold = isOnWay && ahead >= -0.5f
                 && ahead <= rig.WaveGoldNowU;
             DrawCrescent(crescent, isGold);
+            DrawCrescentPath(crescent);
             if (isOnWay && ahead >= -0.5f && ahead <= rig.ParryReachNowU
                 && rig.Parry.IsParryArmed()) {
                 rig.Parry.OnCrescentParried(crescent);
@@ -227,12 +229,93 @@ public sealed class SpiderKingShots {
     }
 
     public void RemoveCrescent(SpiderKingCrescent crescent) {
+        ClearPath(ref crescent.path);
         foreach (Transform part in crescent.parts) {
             if (part != null) {
                 UnityEngine.Object.Destroy(part.gameObject);
             }
         }
         rig.crescents.Remove(crescent);
+    }
+
+    // Danger Path  ------------------------------------------------------------
+    // a thin line that shows where a web shot or a slash will go: dim when
+    // far, red & pulsing when near; it shrinks behind the shot as it flies
+    public void DrawShotPath(SpiderKingShot shot) {
+        if (shot.path == null) {
+            shot.path = BuildPath("WebPath");
+        }
+        float start = shot.isCharging ? 0f : shot.t;
+        float urgency = shot.isCharging ? shot.fill : shot.t;
+        Vector3 last = PathPoint(shot, start);
+        for (int i = 0; i < PATH_PARTS; i++) {
+            Vector3 next = PathPoint(shot,
+                Mathf.Lerp(start, 1f, (i + 1f) / PATH_PARTS));
+            SetPathPart(shot.path[i], last, next, urgency);
+            last = next;
+        }
+    }
+
+    // where the "Web!" sign rides: the middle of the shot's path
+    public Vector3 SignPoint(SpiderKingShot shot) {
+        float start = shot.isCharging ? 0f : shot.t;
+        return PathPoint(shot, Mathf.Lerp(start, 1f, 0.5f));
+    }
+
+    // the slash's path: straight along its way from the blade's front to the
+    // end of its range
+    public void DrawCrescentPath(SpiderKingCrescent crescent) {
+        if (crescent.path == null) {
+            crescent.path = BuildPath("SlashPath");
+        }
+        float range = Mathf.Max(0.1f, config.SlashRangeU);
+        float urgency = Mathf.Clamp01(crescent.distanceU / range);
+        float radians = crescent.directionDeg * Mathf.Deg2Rad;
+        float du = Mathf.Cos(radians);
+        float dv = Mathf.Sin(radians);
+        float first = Mathf.Min(crescent.distanceU, range);
+        for (int i = 0; i < PATH_PARTS; i++) {
+            float d0 = Mathf.Lerp(first, range, i / (float)PATH_PARTS);
+            float d1 = Mathf.Lerp(first, range, (i + 1f) / PATH_PARTS);
+            SetPathPart(crescent.path[i],
+                rig.Attacks.BarkPoint(crescent.originAngle, crescent.originY,
+                    du * d0, dv * d0),
+                rig.Attacks.BarkPoint(crescent.originAngle, crescent.originY,
+                    du * d1, dv * d1),
+                urgency);
+        }
+    }
+
+    private Transform[] BuildPath(string objectName) {
+        Transform[] path = new Transform[PATH_PARTS];
+        for (int i = 0; i < path.Length; i++) {
+            path[i] = rig.Feedback.CreateIndicator(PrimitiveType.Cylinder,
+                objectName, Vector3.one * 0.1f, config.WarnColor,
+                config.ArrowThinMaterial, DangerIndicatorPlane.Line,
+                1f).transform;
+        }
+        return path;
+    }
+
+    private void SetPathPart(Transform part, Vector3 from, Vector3 to,
+        float urgency) {
+        SpiderKingFeedback.SetLine(part, from, to, config.DangerPathWidthU);
+        Renderer renderer = part.GetComponent<Renderer>();
+        rig.Feedback.SetIndicatorColor(renderer,
+            Color.Lerp(config.WarnColor * 0.5f, config.WarnColor, urgency));
+        rig.Feedback.SetIndicatorUrgency(renderer, urgency);
+    }
+
+    private static void ClearPath(ref Transform[] path) {
+        if (path == null) {
+            return;
+        }
+        foreach (Transform part in path) {
+            if (part != null) {
+                UnityEngine.Object.Destroy(part.gameObject);
+            }
+        }
+        path = null;
     }
 
     // Shots  ------------------------------------------------------------------
@@ -276,6 +359,7 @@ public sealed class SpiderKingShots {
     }
 
     public void RemoveShot(SpiderKingShot shot) {
+        ClearPath(ref shot.path);
         if (shot.ball != null) {
             UnityEngine.Object.Destroy(shot.ball.gameObject);
         }
@@ -325,9 +409,11 @@ public sealed class SpiderKingShots {
                 shot.ball.position = rig.body.HeadPosition;
                 shot.ball.localScale = Vector3.one
                     * (0.2f + 0.9f * shot.fill) * throb;
+                DrawShotPath(shot);
                 continue;
             }
             if (shot.isReflected) {
+                ClearPath(ref shot.path);
                 UpdateClashShot(shot);
                 continue;
             }
@@ -343,6 +429,7 @@ public sealed class SpiderKingShots {
                 - MONKEY_EDGE_U;
             bool isGold = toMonkey <= rig.WaveGoldNowU;
             DrawWave(shot, at, isGold);
+            DrawShotPath(shot);
             if (toMonkey <= rig.ParryReachNowU && rig.Parry.IsParryArmed()) {
                 rig.Parry.OnParry(shot, at);
                 continue;

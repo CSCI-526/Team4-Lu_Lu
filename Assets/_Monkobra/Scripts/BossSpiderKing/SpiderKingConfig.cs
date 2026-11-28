@@ -397,6 +397,10 @@ public class SpiderKingConfig: ScriptableObject {
     /// the pure texture</returns>
     public float IndicatorTintStrength => indicatorTintStrength;
 
+    /// <returns>width of the thin danger path of a web shot & a slash;
+    /// u</returns>
+    public float DangerPathWidthU => dangerPathWidthU;
+
     /// <returns>tint of the spider's silk</returns>
     public Color SilkColor => silkColor;
 
@@ -982,6 +986,11 @@ public class SpiderKingConfig: ScriptableObject {
         + "the pure texture, 1 the full tint")]
     [Range(0f, 1f)]
     private float indicatorTintStrength = 0.5f;
+
+    [SerializeField]
+    [Tooltip("width of the thin danger path of a web shot & a slash; u")]
+    [Min(0.01f)]
+    private float dangerPathWidthU = 0.1f;
 
     [SerializeField]
     [Tooltip("tint of the spider's silk")]
