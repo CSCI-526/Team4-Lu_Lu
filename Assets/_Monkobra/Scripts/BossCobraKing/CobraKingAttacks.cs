@@ -21,7 +21,10 @@ public sealed class CobraKingAttacks {
     public void UpdateFightLoop() {
         switch (rig.loop) {
             case CobraKingLoop.Intro:
-                // waits for the first hit, which starts the first rest
+                // the intro cut scene held the fight; once it lets the loop
+                // run, or after a revive restart, the first rest starts at
+                // once, never waiting on a hit
+                StartRest();
                 break;
             case CobraKingLoop.Rest:
                 rig.loopTimeS -= Time.deltaTime;

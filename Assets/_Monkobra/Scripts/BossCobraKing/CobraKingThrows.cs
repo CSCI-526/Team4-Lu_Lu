@@ -123,7 +123,6 @@ public sealed class CobraKingThrows {
             rig.hasHit = true;
             rig.Feedback.Say(config.FirstHitLine);
             rig.nextGoldenTime = Time.time + config.GoldenFirstDelayS;
-            rig.Attacks.StartRest();
         } else if (rig.Third > lastThird) {
             // each lost third: more bananas to throw & more webs
             rig.Arena.AddBananas(config.BananasPerThird);

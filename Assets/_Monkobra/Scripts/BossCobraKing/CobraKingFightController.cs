@@ -761,13 +761,14 @@ public class CobraKingFightController: MonoBehaviour {
         // scene shows the name at once
         intro.Begin(
             () => rig.body.HeadPosition, TutorialItem.CobraKingIntro,
-            ShowFightHud
+            OnIntroEnded
         );
     }
 
-    // the UI of the fight, shown once the intro cut scene is over: the boss
-    // name, health & hearts
-    private void ShowFightHud() {
+    // the intro cut scene is over: the UI of the fight shows, the boss name,
+    // health & hearts; the attack loop starts on its own the frame after
+    // (CobraKingAttacks.UpdateFightLoop), w/o a hit
+    private void OnIntroEnded() {
         rig.hud.Show(config.BossName);
         rig.hud.SetHealth(rig.health, rig.maxHealth);
         MonkeyHearts.Begin(rig.HeartsNow);

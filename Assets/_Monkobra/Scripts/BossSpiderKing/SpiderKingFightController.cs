@@ -574,20 +574,7 @@ public class SpiderKingFightController: MonoBehaviour {
         // the whole arena is there from the start, melons too
         arena.SpawnMelons();
         arena.ClearStickyWebs();
-        movement.ResetSpiderState();
 
-        // a seen or dev-skipped lesson counts both lessons as taught
-        if (TutorialSkipManager.I != null
-            && TutorialSkipManager.I.ShouldSkip(
-                TutorialItem.SpiderKingLesson
-            )) {
-            rig.hasTaughtWeb = true;
-            rig.hasTaughtSlash = true;
-        }
-        // only web bullets till the first parry is done, then the fight; the
-        // first slash later teaches its own parry
-        rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
-            : SpiderKingTeachStep.Parry;
         // no free armor at the start, as in the Cobra King's arena: the
         // golden watermelon is its only source (a retry still hands it out)
         if (Debug.isDebugBuild) {
@@ -601,13 +588,28 @@ public class SpiderKingFightController: MonoBehaviour {
         // scene shows the name at once
         intro.Begin(
             () => rig.body.HeadPosition, TutorialItem.SpiderKingIntro,
-            ShowFightHud
+            OnIntroEnded
         );
     }
 
-    // the UI of the fight, shown once the intro cut scene is over: the boss
-    // name, health, hearts & the king's first line
-    private void ShowFightHud() {
+    // the intro cut scene is over: the spider's timers & the lessons start
+    // now, so nothing is due b4 the player may act; then the UI of the
+    // fight, the boss name, health, hearts & the king's first line
+    private void OnIntroEnded() {
+        movement.ResetSpiderState();
+        // a seen or dev-skipped lesson counts both lessons as taught
+        if (TutorialSkipManager.I != null
+            && TutorialSkipManager.I.ShouldSkip(
+                TutorialItem.SpiderKingLesson
+            )) {
+            rig.hasTaughtWeb = true;
+            rig.hasTaughtSlash = true;
+        }
+        // only web bullets till the first parry is done, then the fight; the
+        // first slash later teaches its own parry
+        rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
+            : SpiderKingTeachStep.Parry;
+
         rig.hud.Show(config.BossName);
         rig.hud.SetHealth(rig.health, rig.maxHealth);
         MonkeyHearts.Begin(rig.HeartsNow);
