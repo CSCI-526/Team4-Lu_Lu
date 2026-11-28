@@ -27,4 +27,13 @@ public enum RewardKind {
 
     /// <summary>the Spider King was beaten & its reward taken</summary>
     SpiderKingDefeat,
+
+    /// <summary>a thrown fruit landed on the Cobra King's crown</summary>
+    CrownHit,
+
+    /// <summary>a melon or batted slash hurt the Spider King</summary>
+    SpiderHit,
+
+    /// <summary>the monkey parried a Spider King tail strike</summary>
+    TailParry,
 }

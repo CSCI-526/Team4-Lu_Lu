@@ -360,6 +360,12 @@ public static class AnalyticsMarkdownWriter {
                 return "Cobra King Defeat";
             case RewardKind.SpiderKingDefeat:
                 return "Spider King Defeat";
+            case RewardKind.CrownHit:
+                return "Crown Hit";
+            case RewardKind.SpiderHit:
+                return "Spider Hit";
+            case RewardKind.TailParry:
+                return "Tail Parry";
             default:
                 return kind.ToString();
         }

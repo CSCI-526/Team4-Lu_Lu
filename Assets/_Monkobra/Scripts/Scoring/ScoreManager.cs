@@ -160,10 +160,13 @@ public class ScoreManager: MonoBehaviour {
         cobraKing = CobraKingFightController.I;
         if (cobraKing != null) {
             cobraKing.FightEnded += OnCobraKingBeaten;
+            cobraKing.JewelHit += OnCrownHit;
         }
         spiderKing = SpiderKingFightController.I;
         if (spiderKing != null) {
             spiderKing.FightEnded += OnSpiderKingBeaten;
+            spiderKing.SpiderHit += OnSpiderHit;
+            spiderKing.Parried += OnTailParried;
         }
         isRunEnded = RunController.I != null
             && RunController.I.State == GameState.Lost;
@@ -199,9 +202,12 @@ public class ScoreManager: MonoBehaviour {
         }
         if (cobraKing != null) {
             cobraKing.FightEnded -= OnCobraKingBeaten;
+            cobraKing.JewelHit -= OnCrownHit;
         }
         if (spiderKing != null) {
             spiderKing.FightEnded -= OnSpiderKingBeaten;
+            spiderKing.SpiderHit -= OnSpiderHit;
+            spiderKing.Parried -= OnTailParried;
         }
         if (I == this) {
             I = null;
@@ -264,6 +270,25 @@ public class ScoreManager: MonoBehaviour {
     private void OnSpiderKingBeaten() {
         pendingBossRewards.Add(RewardKind.SpiderKingDefeat);
         pendingBossScales.Add(spiderKing != null ? spiderKing.PointsScale : 1f);
+    }
+
+    // boss hits & parries queue w/ scale 1, never scaled by the Loop; a parry
+    // freezes time, so the points are paid once it returns
+    private void OnCrownHit() {
+        QueueBossReward(RewardKind.CrownHit);
+    }
+
+    private void OnSpiderHit() {
+        QueueBossReward(RewardKind.SpiderHit);
+    }
+
+    private void OnTailParried() {
+        QueueBossReward(RewardKind.TailParry);
+    }
+
+    private void QueueBossReward(RewardKind kind) {
+        pendingBossRewards.Add(kind);
+        pendingBossScales.Add(1f);
     }
 
     private void GrantBossRewards() {
