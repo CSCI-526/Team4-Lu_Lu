@@ -206,6 +206,8 @@ public class SpiderKingFightController: MonoBehaviour {
     private SpiderKingDamage damage;
     private SpiderKingEnding ending;
     private SpiderKingFeedback feedback;
+    // the spider's entry during the intro cut scene, its animation hook
+    private SpiderKingIntro kingIntro;
 
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -232,6 +234,7 @@ public class SpiderKingFightController: MonoBehaviour {
         ending = new SpiderKingEnding(rig, () => Revived?.Invoke(),
             () => FightEnded?.Invoke());
         feedback = new SpiderKingFeedback(rig);
+        kingIntro = new SpiderKingIntro(rig);
         rig.Arena = arena;
         rig.Melons = melons;
         rig.Movement = movement;
@@ -556,6 +559,7 @@ public class SpiderKingFightController: MonoBehaviour {
         }
         // the fight opens on the cut scene, then the boss name; a skipped
         // scene shows the name at once
+        intro.Playing += kingIntro.Update;
         intro.Begin(
             () => rig.body.HeadPosition, TutorialItem.SpiderKingIntro,
             OnIntroEnded
@@ -566,6 +570,8 @@ public class SpiderKingFightController: MonoBehaviour {
     // now, so nothing is due b4 the player may act; then the UI of the
     // fight, the boss name, health, hearts & the king's first line
     private void OnIntroEnded() {
+        intro.Playing -= kingIntro.Update;
+        kingIntro.End();
         movement.ResetSpiderState();
         // a seen or dev-skipped lesson counts both lessons as taught
         if (TutorialSkipManager.I != null

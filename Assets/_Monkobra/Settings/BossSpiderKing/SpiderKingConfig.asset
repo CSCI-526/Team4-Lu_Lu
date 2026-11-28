@@ -99,6 +99,11 @@ MonoBehaviour:
   parryRollDeg: 10
   slashParryDamage: 1
   webParryDamage: 0
+  introDropU: 9
+  introDropS: 1.3
+  introLandS: 0.3
+  introScreechS: 1.6
+  introSilkWidthU: 0.06
   teachSlowScale: 1.8
   teachGapS: 1.6
   finalS: 2

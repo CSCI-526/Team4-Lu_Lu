@@ -404,6 +404,23 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>tint of the spider's silk</returns>
     public Color SilkColor => silkColor;
 
+    /// <returns>how high above its start spot the spider begins its drop in
+    /// the intro cut scene; u</returns>
+    public float IntroDropU => introDropU;
+
+    /// <returns>how long the intro drop on the silk line takes; s</returns>
+    public float IntroDropS => introDropS;
+
+    /// <returns>pause after the landing b4 the spider rears; s</returns>
+    public float IntroLandS => introLandS;
+
+    /// <returns>how long the spider takes to rear up & screech, its eyes
+    /// glowing; s</returns>
+    public float IntroScreechS => introScreechS;
+
+    /// <returns>thickness of the intro's silk line; u</returns>
+    public float IntroSilkWidthU => introSilkWidthU;
+
     /// <returns>far tint of a web shot & a slash, which lerps to the warning
     /// red as it nears</returns>
     public Color ShotColor => shotColor;
@@ -875,6 +892,35 @@ public class SpiderKingConfig: ScriptableObject {
         + "only sticks it")]
     [Min(0)]
     private int webParryDamage = 0;
+
+    [Header("Intro Cut Scene")]
+    [SerializeField]
+    [Min(1f)]
+    [Tooltip("how high above its start spot the spider begins its drop in "
+        + "the intro cut scene; u")]
+    private float introDropU = 9f;
+
+    [SerializeField]
+    [Min(0.3f)]
+    [Tooltip("how long the intro drop on the silk line takes; s")]
+    private float introDropS = 1.3f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("pause after the landing b4 the spider rears; s")]
+    private float introLandS = 0.3f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("how long the spider takes to rear up & screech, its eyes "
+        + "glowing; s; drop, landing & screech fit under the boss intro's "
+        + "hold in the CameraConfig")]
+    private float introScreechS = 1.6f;
+
+    [SerializeField]
+    [Min(0.01f)]
+    [Tooltip("thickness of the intro's silk line; u")]
+    private float introSilkWidthU = 0.06f;
 
     [Header("Teaching")]
     [SerializeField]
