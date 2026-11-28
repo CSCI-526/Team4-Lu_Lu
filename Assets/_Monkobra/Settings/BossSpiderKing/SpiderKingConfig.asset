@@ -29,7 +29,7 @@ MonoBehaviour:
   easyReachScale: 1.3
   airWallMaterial: {fileID: 2100000, guid: dc212d9a9b084ef7b9e5d17d8f252ae7, type: 2}
   goldenOutlineMaterial: {fileID: 2100000, guid: 4f18a8f2e3bd5c946afbf6e361590ba3, type: 2}
-  goldenOutlineColor: {r: 1, g: 0.75, b: 0, a: 1}
+  goldenOutlineColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
   goldenOutlineWidthScale: 2
   goldenIntervalS: 10
   goldenShowS: 8
@@ -122,4 +122,5 @@ MonoBehaviour:
   indicatorAlpha: 1
   indicatorTintStrength: 0.5
   silkColor: {r: 0.92, g: 0.92, b: 0.95, a: 1}
-  goldenColor: {r: 1, g: 0.8, b: 0.15, a: 1}
+  goldenColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
+  shotColor: {r: 0.85, g: 0.4, b: 0.95, a: 1}

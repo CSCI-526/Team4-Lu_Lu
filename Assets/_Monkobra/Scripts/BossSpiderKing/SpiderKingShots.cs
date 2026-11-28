@@ -139,17 +139,15 @@ public sealed class SpiderKingShots {
     }
 
     // a silk blade: three silk strands one behind the other, tied by short
-    // spokes like a torn piece of web; thick & flickering red-white so it
-    // reads from afar, gold & flashing when it can be batted back, gold
-    // flying back; only its look, its width & hit are as before
+    // spokes like a torn piece of web; thick & pinkish purple, reddening as
+    // it nears, flashing red when it can be batted back, gold flying back;
+    // only its look, its width & hit are as before
     public void DrawCrescent(SpiderKingCrescent crescent, bool isGold) {
-        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
-        float flicker = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 14f);
+        float near = Mathf.Clamp01(crescent.distanceU
+            / Mathf.Max(0.1f, config.SlashRangeU));
         Color color = crescent.isReflected
             ? config.GoldenColor
-            : isGold ? Color.Lerp(config.GoldenColor, Color.white, pulse)
-                : Color.Lerp(Color.white, config.WarnColor,
-                    CRESCENT_WARN_TINT * flicker);
+            : ShotTint(near, isGold);
         int index = 0;
         for (int strand = 0; strand < CRESCENT_STRANDS; strand++) {
             float back = strand * 0.3f;
@@ -183,8 +181,19 @@ public sealed class SpiderKingShots {
     private const float CRESCENT_FRONT_THICK_U = 0.42f;
     private const float CRESCENT_BACK_THICK_U = 0.24f;
     private const float CRESCENT_SPOKE_THICK_U = 0.1f;
-    // share of red its white flickers to
-    private const float CRESCENT_WARN_TINT = 0.45f;
+    // share of white the red of a shot in its parry window flashes to
+    private const float PARRY_FLASH_WHITE = 0.5f;
+
+    // a shot's tint: pinkish purple far, red near, flashing red in its parry
+    // window
+    private Color ShotTint(float near, bool isParryWindow) {
+        if (isParryWindow) {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
+            return Color.Lerp(config.WarnColor, Color.white,
+                pulse * PARRY_FLASH_WHITE);
+        }
+        return Color.Lerp(config.ShotColor, config.WarnColor, near);
+    }
 
     public void SetCrescentPart(SpiderKingCrescent crescent, int index,
         Vector3 from,
@@ -391,7 +400,8 @@ public sealed class SpiderKingShots {
         ColorWave(shot.wave, config.GoldenColor);
     }
 
-    // the bullet flies along its length; white, gold & flashing once close
+    // the bullet flies along its length; pinkish purple, reddening as it
+    // nears, flashing red once close
     // enough to parry
     public void DrawWave(SpiderKingShot shot, Vector3 at, bool isGold) {
         shot.wave.gameObject.SetActive(true);
@@ -407,11 +417,9 @@ public sealed class SpiderKingShots {
         } else {
             shot.wave.position = at;
         }
-        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 30f);
         Color color = shot.isReflected
             ? config.GoldenColor
-            : isGold ? Color.Lerp(config.GoldenColor, Color.white, pulse)
-                : Color.white;
+            : ShotTint(shot.t, isGold);
         shot.wave.localScale = Vector3.one * (isGold ? 1.25f : 1f);
         ColorWave(shot.wave, color);
     }

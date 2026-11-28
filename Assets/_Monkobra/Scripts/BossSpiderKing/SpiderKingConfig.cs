@@ -400,6 +400,10 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>tint of the spider's silk</returns>
     public Color SilkColor => silkColor;
 
+    /// <returns>far tint of a web shot & a slash, which lerps to the warning
+    /// red as it nears</returns>
+    public Color ShotColor => shotColor;
+
     /// <returns>tint of the golden armor & banana</returns>
     public Color GoldenColor => goldenColor;
 
@@ -487,7 +491,7 @@ public class SpiderKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("outline tint of the golden banana")]
-    private Color goldenOutlineColor = new Color(1f, 0.75f, 0f);
+    private Color goldenOutlineColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("outline width of the golden banana, as a multiple of the normal "
@@ -985,5 +989,10 @@ public class SpiderKingConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("tint of the golden armor & banana")]
-    private Color goldenColor = new Color(1f, 0.8f, 0.15f);
+    private Color goldenColor = UIStyle.Gold;
+
+    [SerializeField]
+    [Tooltip("far tint of a web shot & a slash, which lerps to the warning "
+        + "red as it nears")]
+    private Color shotColor = new Color(0.85f, 0.4f, 0.95f);
 }
