@@ -117,6 +117,8 @@ todo add 3x fruit
   `NameIntro*` values)
 - attack sign: only the red diamond and "!" shake (wobble and jitter, wider
   and faster as the hit nears); the word keeps a fixed scale and place
+- spider web escape bar fills in toxic purple (`SpiderWebWidget.fillColor`),
+  no longer the gold of a reward
 
 ##### Houdong Pan
 

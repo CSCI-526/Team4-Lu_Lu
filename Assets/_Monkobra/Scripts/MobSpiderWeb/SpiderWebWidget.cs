@@ -32,6 +32,11 @@ public class SpiderWebWidget: MonoBehaviour {
     [Tooltip("fill image, set to a 120 deg ring band at runtime")]
     private Image progressFill;
 
+    [SerializeField]
+    [Tooltip("fill tint, a toxic purple so it never reads as a reward or a "
+        + "health bar")]
+    private Color fillColor = new Color(0.6f, 0.1f, 0.85f);
+
     [Header("Arc")]
     [SerializeField]
     [Range(0f, 360f)]
@@ -175,6 +180,7 @@ public class SpiderWebWidget: MonoBehaviour {
 
         ringSprite = BuildRingSprite(bandThickness);
         ConfigureArcImage(progressFill);
+        progressFill.color = fillColor;
         progressFill.fillAmount = 0f;
 
         if (progressBar == null) {
