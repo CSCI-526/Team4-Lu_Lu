@@ -49,6 +49,10 @@ public class SpiderWebStruggle: MonoBehaviour {
     /// </summary>
     public float EscapeGainScale { get; set; } = 1f;
 
+    /// <returns>the web holding the monkey right now, null when free,
+    /// eg for a HUD that follows it</returns>
+    public SpiderWebTrap TrapWeb => trapWeb;
+
     /// <returns>escape progress, 0~1, 1 breaks free</returns>
     public float EscapeProgress => escapeProgress;
 

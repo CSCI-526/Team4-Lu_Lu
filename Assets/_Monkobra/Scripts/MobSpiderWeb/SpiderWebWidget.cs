@@ -4,8 +4,9 @@ using UnityEngine.UI;
 /// <summary>
 /// Screen-space UI for the spider web trap, driven by the monkey's
 /// <see cref="SpiderWebStruggle"/> events. A trap asks for the web hint
-/// popup until the first escape of the session, and always shows the progress
-/// bar; breaking free hides both and marks the hint seen. The hint ranks
+/// popup until the first escape of the session, and always shows the escape
+/// progress as a 120 degree band that follows the web on screen; breaking
+/// free hides both and marks the hint seen. The hint ranks
 /// above the low-stamina hint, which the <see cref="PopUpManager"/> resumes
 /// afterward; a loss drops it there too.
 /// <para>
@@ -67,6 +68,13 @@ public class SpiderWebWidget: MonoBehaviour {
             );
         }
 
+        if (progressBar != null) {
+            arcRect = progressBar.transform as RectTransform;
+            parentRect = progressBar.transform.parent as RectTransform;
+        }
+        Canvas ownCanvas = GetComponentInParent<Canvas>();
+        rootCanvas = ownCanvas != null ? ownCanvas.rootCanvas : null;
+
         ConfigureFill();
         SetVisible(false);
     }
@@ -106,6 +114,13 @@ public class SpiderWebWidget: MonoBehaviour {
         }
     }
 
+    // after the camera moved this frame, so the arc never trails the web
+    private void LateUpdate() {
+        if (isVisible) {
+            FollowWeb();
+        }
+    }
+
     // Event Handlers  #########################################################
     // the hint returns on each trap until one escape marks it seen
     private void OnTrapped(bool _) {
@@ -131,6 +146,19 @@ public class SpiderWebWidget: MonoBehaviour {
     // private members  ########################################################
     private bool isVisible; // bar shown right now
     private Sprite ringSprite; // runtime ring both arc images draw
+    private bool isArcInFront = true; // web hub is ahead of the camera
+
+    // cached references  ------------------------------------------------------
+    private RectTransform arcRect;
+    private RectTransform parentRect;
+    private Canvas rootCanvas;
+
+    // overlay canvases take no camera for screen conversions
+    private Camera CanvasCamera =>
+        rootCanvas == null
+        || rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : rootCanvas.worldCamera;
 
     private const float ARC_SPAN_DEG = 120f; // sweep of the whole band
     private const float ARC_FRACTION = ARC_SPAN_DEG / 360f; // of the ring
@@ -164,6 +192,46 @@ public class SpiderWebWidget: MonoBehaviour {
             0f,
             arcCenterDeg + ARC_SPAN_DEG * 0.5f - 90f
         );
+    }
+
+    // pins the arc's center on the web hub, its resting spot so the web's
+    // shake never shakes the HUD; a hub behind the camera hides the arc
+    private void FollowWeb() {
+        SpiderWebTrap web = struggle != null ? struggle.TrapWeb : null;
+        Camera view = Camera.main;
+        if (
+            web == null
+            || view == null
+            || arcRect == null
+            || parentRect == null
+        ) {
+            return;
+        }
+
+        Vector3 screen = view.WorldToScreenPoint(web.RestWorldPosition);
+        bool isInFront = screen.z > 0f;
+        if (isInFront != isArcInFront) {
+            isArcInFront = isInFront;
+            progressBar.SetActive(isInFront);
+        }
+        if (!isInFront) {
+            return;
+        }
+
+        if (
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                screen,
+                CanvasCamera,
+                out Vector2 local
+            )
+        ) {
+            arcRect.localPosition = new Vector3(
+                local.x,
+                local.y,
+                arcRect.localPosition.z
+            );
+        }
     }
 
     private void ConfigureArcImage(Image arc) {
@@ -239,6 +307,7 @@ public class SpiderWebWidget: MonoBehaviour {
 
     private void SetVisible(bool showBar) {
         isVisible = showBar;
+        isArcInFront = true; // FollowWeb hides it again if the hub is behind
         if (progressBar != null) {
             progressBar.SetActive(showBar);
         }
