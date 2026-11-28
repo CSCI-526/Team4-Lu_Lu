@@ -430,12 +430,9 @@ public sealed class BossFightHudBuilder {
         mark.anchorMin = mark.anchorMax = mark.pivot = new Vector2(0f, 0.5f);
         mark.sizeDelta = new Vector2(MONKEY_HEART_SIZE * 0.8f, MONKEY_HEART_SIZE * 0.8f);
         Image markImage = AddImage(mark, UIStyle.Gold);
-        if (rig.config.ArmorSprite != null) {
-            markImage.sprite = rig.config.ArmorSprite;
-        } else {
-            mark.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            mark.sizeDelta = new Vector2(MONKEY_HEART_SIZE * 0.55f, MONKEY_HEART_SIZE * 0.55f);
-        }
+        markImage.sprite = rig.config.ArmorSprite != null
+            ? rig.config.ArmorSprite : DrawnShield();
+        markImage.preserveAspect = true;
         rig.armorMark = mark;
         row.gameObject.SetActive(false);
         return row;
@@ -464,7 +461,7 @@ public sealed class BossFightHudBuilder {
             image.color = i < left ? MONKEY_HEART_FULL : MONKEY_HEART_LOST;
         }
         rig.armorMark.anchoredPosition = new Vector2(
-            max * (MONKEY_HEART_SIZE + MONKEY_HEART_GAP) + MONKEY_HEART_SIZE * 0.2f, 0f);
+            max * (MONKEY_HEART_SIZE + MONKEY_HEART_GAP), 0f);
     }
 
     private const float MONKEY_HEART_SIZE = 44f;
@@ -472,6 +469,38 @@ public sealed class BossFightHudBuilder {
     private static readonly Color MONKEY_HEART_FULL = new Color(0.92f, 0.2f, 0.27f);
     private static readonly Color MONKEY_HEART_LOST = new Color(0.25f, 0.25f, 0.3f, 0.55f);
     private static Sprite drawnHeart;
+
+    private static Sprite drawnShield;
+
+    // a plain white shield, its edge smoothed, until a sprite is assigned:
+    // flat top, sides narrowing to a point at the bottom
+    private static Sprite DrawnShield() {
+        if (drawnShield != null) {
+            return drawnShield;
+        }
+        const int SIZE = 64;
+        Texture2D texture = new Texture2D(SIZE, SIZE, TextureFormat.RGBA32,
+            false);
+        texture.wrapMode = TextureWrapMode.Clamp;
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                float u = ((x + 0.5f) / SIZE - 0.5f) * 2f;
+                float v = (y + 0.5f) / SIZE;
+                float half = v > 0.45f
+                    ? 0.85f
+                    : 0.85f * Mathf.Pow(Mathf.Max(v - 0.04f, 0f) / 0.41f,
+                        0.6f);
+                float side = (half - Mathf.Abs(u)) * SIZE * 0.5f;
+                float top = (0.96f - v) * SIZE;
+                float alpha = Mathf.Clamp01(Mathf.Min(side, top) + 0.5f);
+                texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        texture.Apply();
+        drawnShield = Sprite.Create(texture, new Rect(0f, 0f, SIZE, SIZE),
+            new Vector2(0.5f, 0.5f), SIZE);
+        return drawnShield;
+    }
 
     // a plain heart drawn from its curve, until a sprite is assigned
     private static Sprite DrawnHeart() {
