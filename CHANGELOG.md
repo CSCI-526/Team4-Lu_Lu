@@ -1,8 +1,6 @@
 # Monkobra CHANGELOG
 
 <!--
-BUG dev scene sometimes missing all HUD when launched
-
 bug make leaderboard works
 fixme mpv ramping during normal gameplay
 todo lighting improvement
