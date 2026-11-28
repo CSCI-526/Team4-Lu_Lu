@@ -340,6 +340,7 @@ public class CobraKingFightController: MonoBehaviour {
             CobraKingArenaFruit picked = rig.fruits[index];
             if (picked.isGolden) {
                 armor.HideGolden();
+                GoldenMelonHint.Grabbed();
                 rig.nextGoldenTime = Time.time + config.GoldenIntervalS;
                 armor.TakeGoldenBanana();
                 return true;

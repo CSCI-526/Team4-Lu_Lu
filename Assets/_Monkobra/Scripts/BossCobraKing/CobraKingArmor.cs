@@ -82,14 +82,8 @@ public sealed class CobraKingArmor {
         golden.branch.SetActive(true);
         golden.root.SetActive(true);
         rig.goldenHideTime = Time.time + config.GoldenShowS;
-        rig.hud.PopText(
-            "Golden watermelon!", golden.root.transform.position,
-                config.GoldenColor
-        );
-        // & a toast on the popup plate, so it is never missed
-        if (PopUpManager.I != null) {
-            PopUpManager.I.Show(PopUpId.BossGoldenWatermelon);
-        }
+        // the first one of a session gets the popup w/ a line to it
+        GoldenMelonHint.Show(golden.root.transform);
     }
 
     public void HideGolden() {

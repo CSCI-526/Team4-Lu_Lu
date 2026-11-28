@@ -127,6 +127,10 @@ todo add 3x fruit
   spot to the health bar; the bar and heart count drop as it lands
   (`BossFightHud.PopDamage`, `BossHitColor`); a kill hit's finisher starts
   at once
+- golden watermelon: the floating word and the big toast give way to a
+  pineapple-style popup (gold watermelon icon, hold hint, a line to the
+  melon) once per session, until one is grabbed (`GoldenMelonHint`,
+  `PopUpId.GoldenWatermelonFirst`, `TutorialItem.GoldenWatermelonGrab`)
 
 ##### Houdong Pan
 

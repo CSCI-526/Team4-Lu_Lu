@@ -52,4 +52,4 @@ An id with no definition logs a warning and shows nothing.
 
 ## Dev Skip
 
-`TutorialSkipManager` keeps 6 teaching pop ups from showing once seen in a session, or always while its dev checkbox is on (never in a release build): the fruit grabs (`BananaFirst`, `PineappleFirst`, `CoconutGrab`), `CoconutFirst`, `SpiderWebHint` and `LowStaminaHint`. The feedback pop ups still show. A new teaching pop up adds a `TutorialItem` and asks the manager, see [Tutorial Skip Manager](monkobra-tdd.md#tutorial-skip-manager).
+`TutorialSkipManager` keeps 7 teaching pop ups from showing once seen in a session, or always while its dev checkbox is on (never in a release build): the fruit grabs (`BananaFirst`, `PineappleFirst`, `CoconutGrab`), `GoldenWatermelonFirst` (a Fruit popup w/ a line to the golden watermelon, held by `GoldenMelonHint` while it is up, seen on its grab), `CoconutFirst`, `SpiderWebHint` and `LowStaminaHint`. The feedback pop ups still show. A new teaching pop up adds a `TutorialItem` and asks the manager, see [Tutorial Skip Manager](monkobra-tdd.md#tutorial-skip-manager).

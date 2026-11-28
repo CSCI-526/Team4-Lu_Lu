@@ -20,4 +20,5 @@ public enum PopUpId {
     BossCobraComing,
     BossArmorIntro,
     BossGoldenWatermelon,
+    GoldenWatermelonFirst,
 }

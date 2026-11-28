@@ -354,12 +354,8 @@ public sealed class SpiderKingArena {
         rig.goldenHideTime = Time.time + config.GoldenShowS;
         rig.Parry.Burst(rig.goldenMelon.root.transform.position,
             config.GoldenColor, 10);
-        rig.hud.PopText("Golden watermelon!",
-            rig.goldenMelon.root.transform.position,
-            UIStyle.Gold);
-        if (PopUpManager.I != null) {
-            PopUpManager.I.Show(PopUpId.BossGoldenWatermelon);
-        }
+        // the first one of a session gets the popup w/ a line to it
+        GoldenMelonHint.Show(rig.goldenMelon.root.transform);
     }
 
     // as the Cobra King's golden watermelon: its reach outline swapped for a

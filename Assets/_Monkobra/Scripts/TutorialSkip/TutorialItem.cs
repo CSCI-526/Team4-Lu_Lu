@@ -20,5 +20,6 @@ public enum TutorialItem {
     AttackTail,
     AttackWebShot,
     AttackDash,
-    AttackSlash
+    AttackSlash,
+    GoldenWatermelonGrab
 }
