@@ -8,6 +8,12 @@ using UnityEngine;
 public class ScoreManager: MonoBehaviour {
     // Public Members  #########################################################
     public static ScoreManager I { get; private set; }
+
+    // factor on every score: the config's Hardcore scale in Hardcore Mode,
+    // else 1
+    public float ModeScale =>
+        GameController.I != null && GameController.I.Mode == RunMode.Hardcore
+            ? scoreConfig.HardcoreScoreScale : 1f;
     public long TotalScore => DistanceScore + RewardScore;
     public long DistanceScore { get; private set; }
     public long RewardScore { get; private set; }
@@ -48,7 +54,7 @@ public class ScoreManager: MonoBehaviour {
         long oldScore = TotalScore;
         if (kind == PickupKind.Coconut) {
             long coconutPoints = Math.Min(
-                (long)scoreConfig.PointsFor(RewardKind.Coconut),
+                ScaledPoints(RewardKind.Coconut, 1f),
                 long.MaxValue - TotalScore);
             RewardScore += coconutPoints;
             rewardScoreByKind[(int)RewardKind.Coconut] += coconutPoints;
@@ -60,7 +66,7 @@ public class ScoreManager: MonoBehaviour {
         }
 
         long bananaPoints = Math.Min(
-            (long)scoreConfig.PointsFor(RewardKind.Banana),
+            ScaledPoints(RewardKind.Banana, 1f),
             long.MaxValue - TotalScore);
         RewardScore += bananaPoints;
         rewardScoreByKind[(int)RewardKind.Banana] += bananaPoints;
@@ -74,13 +80,13 @@ public class ScoreManager: MonoBehaviour {
 
     // awards the config's points for a good deed that is not a fruit pickup
     public bool AddReward(RewardKind kind, float scale = 1f) {
-        int points = Mathf.FloorToInt(scoreConfig.PointsFor(kind) * scale);
+        long points = ScaledPoints(kind, scale);
         if (!CanScore || points <= 0) {
             return false;
         }
 
         long oldScore = TotalScore;
-        long added = Math.Min((long)points, long.MaxValue - TotalScore);
+        long added = Math.Min(points, long.MaxValue - TotalScore);
         RewardScore += added;
         rewardScoreByKind[(int)kind] += added;
         NotifyIfChanged(oldScore);
@@ -305,6 +311,12 @@ public class ScoreManager: MonoBehaviour {
         pendingBossScales.Clear();
     }
 
+    // config points of a reward, times the caller's scale & the mode scale
+    private long ScaledPoints(RewardKind kind, float scale) {
+        return (long)Mathf.FloorToInt(
+            scoreConfig.PointsFor(kind) * scale * ModeScale);
+    }
+
     private void SampleHeight() {
         if (RampedDifficultyManager.I == null) {
             return;
@@ -319,7 +331,8 @@ public class ScoreManager: MonoBehaviour {
 
         long oldScore = TotalScore;
         highestClimbedUnits = climbedUnits;
-        double points = Math.Floor(HighestClimbedMeters) * pointsPerMeter;
+        double points = Math.Floor(
+            Math.Floor(HighestClimbedMeters) * pointsPerMeter * ModeScale);
         //高度分 = 最高爬升米数向下取整 × 每米分值
         long available = long.MaxValue - RewardScore;
         DistanceScore = points >= available ? available : (long)points;

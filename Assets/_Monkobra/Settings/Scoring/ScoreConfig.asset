@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreConfig
   pointsPerMeter: 1
   unitsPerMeter: 0.1
+  hardcoreScoreScale: 1.5
   bananaPoints: 100
   coconutPoints: 200
   pineapplePoints: 50

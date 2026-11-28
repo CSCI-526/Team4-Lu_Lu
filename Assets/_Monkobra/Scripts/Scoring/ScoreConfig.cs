@@ -18,6 +18,10 @@ public class ScoreConfig: ScriptableObject {
     /// <returns>Unity units per meter of height</returns>
     public float UnitsPerMeter => unitsPerMeter;
 
+    /// <returns>factor every score is multiplied by in Hardcore Mode
+    /// </returns>
+    public float HardcoreScoreScale => hardcoreScoreScale;
+
     /// <returns>points a banana grab adds</returns>
     public int BananaPoints => bananaPoints;
 
@@ -101,6 +105,13 @@ public class ScoreConfig: ScriptableObject {
     [Tooltip("Unity units per meter of height")]
     private float unitsPerMeter = 0.1f;
 
+    [Header("Hardcore")]
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("factor every score (height, fruit, rewards, bosses) is "
+        + "multiplied by in Hardcore Mode")]
+    private float hardcoreScoreScale = 1.5f;
+
     [Header("Rewards")]
     [SerializeField]
     [Min(0)]
@@ -167,6 +178,7 @@ public class ScoreConfig: ScriptableObject {
     private void OnValidate() {
         pointsPerMeter = Mathf.Max(0, pointsPerMeter);
         unitsPerMeter = Mathf.Max(0.001f, unitsPerMeter);
+        hardcoreScoreScale = Mathf.Max(0f, hardcoreScoreScale);
         bananaPoints = Mathf.Max(0, bananaPoints);
         coconutPoints = Mathf.Max(0, coconutPoints);
         pineapplePoints = Mathf.Max(0, pineapplePoints);
