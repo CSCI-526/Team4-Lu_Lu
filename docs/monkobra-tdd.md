@@ -161,6 +161,25 @@ The keys group by use: F1~F3 cheats that toggle, 3~6 spawns, F8~F10 analytics, F
 - **Numbers in one asset.** `BossDevStartConfig` (`Settings/DevScenes/DEVBossStartConfig.asset`) holds `otherKingGapU`, `approachU` and the 2 pre-seen lists; change it, then rebuild (the scenes keep the `startOffsetU` the last build wrote).
 - **Headless build.** `Unity.exe -batchmode -nographics -quit -projectPath . -executeMethod BossDevSceneBuilder.BuildInBatch -logFile <log>` does the menu's build without the Editor window (the project must not be open in the Editor).
 
+### Boss Danger Indicators
+
+Every boss attack warning is a see-through, animated, textured surface in the one shader `Monkobra/DangerIndicator` (`Shaders/BossWarning/`), instead of a solid tinted primitive. The art is the Stencil Painted Decal Pack (see [CREDITS.md](../CREDITS.md)): 2 PNGs in `Textures/BossWarning/`, `StripesLargeRed1` (heavy, wide stripes) and `StripesLargeRed2` (thin bars). Each PNG holds 2 bands, the **top band slanted bars** (a *strip*, for an area) and the **bottom band chevrons `>`** (an *arrow*, for a path). The texture's own dark red grain is shown; the shader multiplies its alpha by the material opacity and a pulse, and the tint only nudges the hue.
+
+| Material (`Materials/BossWarning/`) | Texture and band | Used for |
+| --- | --- | --- |
+| `DangerStripHeavy` | `StripesLargeRed1`, top | Cobra King ZoneFill (bite mark) and SweepBand |
+| `DangerStripThin` | `StripesLargeRed2`, top | Cobra King ZoneRim, Spider King SlashSign |
+| `DangerArrowHeavy` | `StripesLargeRed1`, bottom | Cobra King StripFill (minion line), Spider King DashLane |
+| `DangerArrowThin` | `StripesLargeRed2`, bottom | Cobra King StripRim, Spider King SlashAim |
+
+The rule: a **fill** takes the heavy texture, a **rim, aim line or sign** takes the thin one. The Spider King dash lane is filled across its whole catch width (2 x `DashHitU`), as a row of `PATH_PARTS` flat pieces that share one continuous pattern (`SetStrip`, `_AlongOffset`), not 2 edge lines. The Cobra minion arrows point and run down the trunk.
+
+- **Config.** `CobraKingConfig` and `SpiderKingConfig` each hold the 4 material slots (`stripHeavyMaterial`, `stripThinMaterial`, `arrowHeavyMaterial`, `arrowThinMaterial`), `indicatorAlpha` (global opacity, times each material's own) and `indicatorTintStrength` (0 is the pure texture, 1 the full tint). A warning is made by `CreateIndicator` in `CobraKingFeedback` / `SpiderKingFeedback`, with its plane and direction.
+- **Shared helper.** `DangerIndicator` (`Scripts/BossWarning/`) dresses a renderer through a `MaterialPropertyBlock`: `Dress` (material, plane, direction, tint), `SetColor` (the hue only, alpha fixed to material opacity x `indicatorAlpha`, so a dim or a lerp never changes opacity), `SetUrgency` (the attack's progress: faster pulse, more glow) and `SetAlongOffset`.
+- **Planes.** `DangerIndicatorPlane.Disc` (a flat cylinder cap, the trunk zones), `Line` (a cube face or a cylinder side, along its Y: strips, lanes, aim, sign) and `Wall` (a cylinder wall round the trunk, the sweep band). Disc and Line fit the band to the object's width, so the bar count stays as a fill grows; Wall tiles in world units.
+- **Tuning.** Opacity: a material's `_BaseColor` alpha, then `indicatorAlpha`. Bar count: `_TileSize` on a material (Disc and Line: a size multiple, bigger shows fewer bars; Wall: world units per band height). Motion: `_Scroll` (tiles per second, the sign is the direction), `_PulseRate`, `_PulseRateMax`, `_PulseDepth`, `_Glow`. Hue pull: `indicatorTintStrength`. Which art a warning takes: swap its material slot in the config asset. Only the look is set here; warning durations, hit distances and `AttackDangerLeftS` are untouched.
+- **Cost.** 2 textures at 2048 x 2048, about 5.3 MB each with mipmaps; a per-platform 1024 override on a `.meta` halves it if WebGL memory is tight.
+
 ### Tutorial Skip Manager
 
 One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Prefabs/GameController/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
