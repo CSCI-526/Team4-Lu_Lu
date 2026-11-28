@@ -58,6 +58,7 @@ MonoBehaviour:
   webEscapeGainScale: 2
   webFruitGapDeg: 25
   bananaBranchPrefab: {fileID: 7489113642335787035, guid: f22e4b5a7e7928042aa31c5673576f77, type: 3}
+$L
   branchEmptyPrefab: {fileID: 7490866546275933270, guid: 92e3089d439b48538d1aca56cda3a5bf, type: 3}
   watermelonMesh: {fileID: 2519597968918171194, guid: f9bec50f8595338488477583e4dd1675, type: 3}
   watermelonScale: {x: 6, y: 6, z: 6}
