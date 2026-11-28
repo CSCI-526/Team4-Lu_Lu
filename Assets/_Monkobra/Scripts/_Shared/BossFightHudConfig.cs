@@ -61,6 +61,10 @@ public class BossFightHudConfig: ScriptableObject {
     /// default</returns>
     public TMP_FontAsset WarningFont => warningFont;
 
+    /// <returns>font of the boss name above the health bar; null takes the
+    /// TMP default</returns>
+    public TMP_FontAsset BossNameFont => bossNameFont;
+
     /// <param name="item">the attack's <see cref="TutorialItem"/> key</param>
     /// <returns>the word its sign shows, null if the table lacks the attack
     /// </returns>
@@ -130,6 +134,10 @@ public class BossFightHudConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("font of an attack sign's ! and word, the Anton SDF asset")]
     private TMP_FontAsset warningFont;
+
+    [SerializeField]
+    [Tooltip("font of the boss name, the Creepster SDF asset")]
+    private TMP_FontAsset bossNameFont;
 
     [SerializeField]
     [Tooltip("the word each attack's sign shows, one word naming the attack")]

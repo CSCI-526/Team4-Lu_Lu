@@ -109,6 +109,8 @@ todo add 3x fruit
   bare stretches or segment seams, density curves per 10 u of trunk, a
   random tree each run (fixed seed on `TrunkScatter` replays one), new
   `Monkobra > Report Trunk Scatter` evenness check
+- boss name font Creepster (OFL) added, built and assigned to both HUD
+  configs by `Monkobra > Build > Warning Font`
 
 ##### Houdong Pan
 
