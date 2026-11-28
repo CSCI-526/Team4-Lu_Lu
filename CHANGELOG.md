@@ -1,27 +1,45 @@
 # Monkobra CHANGELOG
 
 <!--
-TODO boss intro name: hold longer
+BUG dev scene sometimes missing all HUD when launched
+
+TODO boss fight "intro cut scene":
+change aspect ratio -> boss animation + cinematic camera + monkey no mvmt
+-> return aspect ratio -> boss name animation
+(boss fight cut scenes also skippable, except boss name animation always shown)
+
+FIXME boss name hold longer before move up
+
 TODO cobra boss intro animation: fake attack around monkey
-TODO cobra spider king boss fight intro: entry animation
+TODO spider king boss fight intro: entry animation (just like)
+
 FIXME boss fight only start after intro/cut scene, not by 1st watermelon
-FIXME boss fight -1 text need to be larger w/ scaling impact
-FIXME golden watermelon tutorial text: simple text, small size toast
-FIXME golden watermelon tutorial text: only appears when even closer
-TODO spider king web & wave attach also need danger indicator
+
+FIXME boss fight -1 text need to be larger w/ scaling impact animation
+
+FIXME golden watermelon tutorial text: simple text, small sized popup: just explain it will give you golden crown
+FIXME golden watermelon tutorial text: only appears when player is even closer
+
+TODO spider king web & wave attack also need danger zone indicator
 show a thin path from spider to monkey
 also attach the warning "Web!" texts to the danger indicator path
 
 FIXME remove the normal/easy selector after revive:
 for cobra king: reduce to loop 0 (easy mode)
 for spider king: keep the same loop, just revive
+revive must not work in hardcore mode at all
 
-TODO need more tutorial for spider king, using keyboard press symbol
+TODO need more tutorial for spider king, using keyboard press symbol in popup
 
 FIXME golden armor -> only use crown model
 FIXME update all texts & symbols to use golden crown
+FIXME golden crown related thing all use "gold" color, not yellow
 
 FIXME spider king web/wave projectile use pinkish purple (instead of white); and use red (danger) when close (instead of yellow)
+
+FIXME all scores are 1.5x during hardcore mode
+FIXME boss rewarding points should ramp up per loop
+
 
 bug make leaderboard works
 fixme mpv ramping during normal gameplay
