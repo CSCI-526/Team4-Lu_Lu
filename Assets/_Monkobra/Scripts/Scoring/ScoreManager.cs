@@ -280,27 +280,33 @@ public class ScoreManager: MonoBehaviour {
         pendingBossScales.Add(spiderKing != null ? spiderKing.PointsScale : 1f);
     }
 
-    // boss hits & parries queue w/ scale 1, never scaled by the Loop; a parry
-    // freezes time, so the points are paid once it returns
+    // boss hits, parries & dodges scale w/ the live king's Loop, as defeat
+    // points do; a parry freezes time, so the points are paid once it returns
     private void OnCrownHit() {
-        QueueBossReward(RewardKind.CrownHit);
+        QueueBossReward(
+            RewardKind.CrownHit,
+            cobraKing != null ? cobraKing.PointsScale : 1f);
     }
 
     private void OnSpiderHit() {
-        QueueBossReward(RewardKind.SpiderHit);
+        QueueBossReward(RewardKind.SpiderHit, SpiderPointsScale());
     }
 
     private void OnTailParried() {
-        QueueBossReward(RewardKind.TailParry);
+        QueueBossReward(RewardKind.TailParry, SpiderPointsScale());
     }
 
     private void OnDashDodged() {
-        QueueBossReward(RewardKind.DashDodge);
+        QueueBossReward(RewardKind.DashDodge, SpiderPointsScale());
     }
 
-    private void QueueBossReward(RewardKind kind) {
+    private float SpiderPointsScale() {
+        return spiderKing != null ? spiderKing.PointsScale : 1f;
+    }
+
+    private void QueueBossReward(RewardKind kind, float scale) {
         pendingBossRewards.Add(kind);
-        pendingBossScales.Add(1f);
+        pendingBossScales.Add(scale);
     }
 
     private void GrantBossRewards() {
