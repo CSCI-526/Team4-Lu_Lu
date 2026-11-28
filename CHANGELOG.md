@@ -1,6 +1,28 @@
 # Monkobra CHANGELOG
 
 <!--
+TODO boss intro name: hold longer
+TODO cobra boss intro animation: fake attack around monkey
+TODO cobra spider king boss fight intro: entry animation
+FIXME boss fight only start after intro/cut scene, not by 1st watermelon
+FIXME boss fight -1 text need to be larger w/ scaling impact
+FIXME golden watermelon tutorial text: simple text, small size toast
+FIXME golden watermelon tutorial text: only appears when even closer
+TODO spider king web & wave attach also need danger indicator
+show a thin path from spider to monkey
+also attach the warning "Web!" texts to the danger indicator path
+
+FIXME remove the normal/easy selector after revive:
+for cobra king: reduce to loop 0 (easy mode)
+for spider king: keep the same loop, just revive
+
+TODO need more tutorial for spider king, using keyboard press symbol
+
+FIXME golden armor -> only use crown model
+FIXME update all texts & symbols to use golden crown
+
+FIXME spider king web/wave projectile use pinkish purple (instead of white); and use red (danger) when close (instead of yellow)
+
 bug make leaderboard works
 fixme mpv ramping during normal gameplay
 todo lighting improvement
