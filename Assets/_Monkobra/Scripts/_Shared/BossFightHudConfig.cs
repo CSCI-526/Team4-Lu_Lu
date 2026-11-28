@@ -41,8 +41,8 @@ public class BossFightHudConfig: ScriptableObject {
     /// plain heart</returns>
     public Sprite HeartSprite => heartSprite;
 
-    /// <returns>the gold armor image beside the heart row; null draws a
-    /// plain gold diamond</returns>
+    /// <returns>the gold crown image beside the heart row; null draws a
+    /// plain gold crown</returns>
     public Sprite ArmorSprite => armorSprite;
 
     /// <returns>tint of the health bar</returns>
@@ -155,7 +155,7 @@ public class BossFightHudConfig: ScriptableObject {
     private Sprite heartSprite;
 
     [SerializeField]
-    [Tooltip("the gold armor beside the heart row; blank draws a diamond")]
+    [Tooltip("the gold crown beside the heart row; blank draws a crown")]
     private Sprite armorSprite;
 
     [SerializeField]
@@ -177,7 +177,7 @@ public class BossFightHudConfig: ScriptableObject {
 
     [SerializeField]
     [Tooltip("tint of the -1 flying to a lost armor")]
-    private Color armorLossColor = new Color(1f, 0.82f, 0.2f);
+    private Color armorLossColor = UIStyle.Gold;
 
     [SerializeField]
     [Tooltip("how long a loss number flies to the heart row; s")]

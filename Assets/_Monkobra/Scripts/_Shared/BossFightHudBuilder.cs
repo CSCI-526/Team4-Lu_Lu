@@ -319,11 +319,12 @@ public sealed class BossFightHudBuilder {
         RectTransform panel = CreateRect("RewardPanel", rig.rootRect);
         Stretch(panel);
         AddImage(panel, Tint(UIStyle.Background, 0.75f));
-        RectTransform diamond = CreateRect("Diamond", panel);
-        diamond.anchoredPosition = new Vector2(0f, 190f);
-        diamond.sizeDelta = new Vector2(56f, 56f);
-        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        AddImage(diamond, gold);
+        RectTransform crown = CreateRect("Crown", panel);
+        crown.anchoredPosition = new Vector2(0f, 190f);
+        crown.sizeDelta = new Vector2(84f, 84f);
+        Image crownImage = AddImage(crown, gold);
+        crownImage.sprite = DrawnCrown();
+        crownImage.preserveAspect = true;
         rig.rewardTitle = CreateLabel("Title", panel, "", 84f, gold);
         rig.rewardTitle.fontStyle = FontStyles.Bold;
         PlaceLabel(rig.rewardTitle, new Vector2(0f, 100f),
@@ -398,7 +399,7 @@ public sealed class BossFightHudBuilder {
         return ring;
     }
 
-    // a dark plate w/ a gold diamond & GOLDEN ARMOR
+    // a dark plate w/ a gold crown & GOLDEN CROWN
     public RectTransform CreateArmorBadge() {
         Color gold = UIStyle.Gold;
         RectTransform badge = CreateRect("ArmorBadge", rig.rootRect);
@@ -407,14 +408,15 @@ public sealed class BossFightHudBuilder {
         badge.anchoredPosition = new Vector2(-70f, 24f);
         badge.sizeDelta = new Vector2(250f, 54f);
         AddImage(badge, Tint(UIStyle.Panel, 0.85f));
-        RectTransform diamond = CreateRect("Diamond", badge);
-        diamond.anchorMin = diamond.anchorMax = new Vector2(0f, 0.5f);
-        diamond.anchoredPosition = new Vector2(30f, 0f);
-        diamond.sizeDelta = new Vector2(26f, 26f);
-        diamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        AddImage(diamond, gold);
+        RectTransform crown = CreateRect("Crown", badge);
+        crown.anchorMin = crown.anchorMax = new Vector2(0f, 0.5f);
+        crown.anchoredPosition = new Vector2(30f, 0f);
+        crown.sizeDelta = new Vector2(38f, 38f);
+        Image crownImage = AddImage(crown, gold);
+        crownImage.sprite = DrawnCrown();
+        crownImage.preserveAspect = true;
         TextMeshProUGUI label = CreateLabel(
-            "Label", badge, "GOLDEN ARMOR", 24f, gold
+            "Label", badge, "GOLDEN CROWN", 24f, gold
         );
         RectTransform labelRect = label.rectTransform;
         labelRect.anchorMin = new Vector2(0f, 0f);
@@ -437,7 +439,7 @@ public sealed class BossFightHudBuilder {
         mark.sizeDelta = new Vector2(MONKEY_HEART_SIZE * 0.8f, MONKEY_HEART_SIZE * 0.8f);
         Image markImage = AddImage(mark, UIStyle.Gold);
         markImage.sprite = rig.config.ArmorSprite != null
-            ? rig.config.ArmorSprite : DrawnShield();
+            ? rig.config.ArmorSprite : DrawnCrown();
         markImage.preserveAspect = true;
         rig.armorMark = mark;
         row.gameObject.SetActive(false);
@@ -476,13 +478,13 @@ public sealed class BossFightHudBuilder {
     private static readonly Color MONKEY_HEART_LOST = new Color(0.25f, 0.25f, 0.3f, 0.55f);
     private static Sprite drawnHeart;
 
-    private static Sprite drawnShield;
+    private static Sprite drawnCrown;
 
-    // a plain white shield, its edge smoothed, until a sprite is assigned:
-    // flat top, sides narrowing to a point at the bottom
-    public static Sprite DrawnShield() {
-        if (drawnShield != null) {
-            return drawnShield;
+    // a plain white crown, its edge smoothed, until a sprite is assigned:
+    // a band under 3 points
+    public static Sprite DrawnCrown() {
+        if (drawnCrown != null) {
+            return drawnCrown;
         }
         const int SIZE = 64;
         Texture2D texture = new Texture2D(SIZE, SIZE, TextureFormat.RGBA32,
@@ -492,20 +494,24 @@ public sealed class BossFightHudBuilder {
             for (int x = 0; x < SIZE; x++) {
                 float u = ((x + 0.5f) / SIZE - 0.5f) * 2f;
                 float v = (y + 0.5f) / SIZE;
-                float half = v > 0.45f
-                    ? 0.85f
-                    : 0.85f * Mathf.Pow(Mathf.Max(v - 0.04f, 0f) / 0.41f,
-                        0.6f);
-                float side = (half - Mathf.Abs(u)) * SIZE * 0.5f;
-                float top = (0.96f - v) * SIZE;
-                float alpha = Mathf.Clamp01(Mathf.Min(side, top) + 0.5f);
+                // the 3 points rise from the band's top edge, v 0.4
+                float spike = 0f;
+                for (int k = -1; k <= 1; k++) {
+                    spike = Mathf.Max(spike,
+                        1f - Mathf.Abs(u - k * 0.62f) / 0.31f);
+                }
+                float top = 0.4f + 0.5f * spike;
+                float side = (0.93f - Mathf.Abs(u)) * SIZE * 0.5f;
+                float alpha = Mathf.Clamp01(Mathf.Min(
+                    Mathf.Min(side, (top - v) * SIZE),
+                    (v - 0.1f) * SIZE) + 0.5f);
                 texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
             }
         }
         texture.Apply();
-        drawnShield = Sprite.Create(texture, new Rect(0f, 0f, SIZE, SIZE),
+        drawnCrown = Sprite.Create(texture, new Rect(0f, 0f, SIZE, SIZE),
             new Vector2(0.5f, 0.5f), SIZE);
-        return drawnShield;
+        return drawnCrown;
     }
 
     // a plain heart drawn from its curve, until a sprite is assigned

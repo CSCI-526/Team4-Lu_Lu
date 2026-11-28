@@ -442,7 +442,7 @@ public class BossFightHud: MonoBehaviour {
 
     /// <summary>
     /// Shows or hides the armor badge in the bottom right, kept up while the
-    /// monkey keeps the Golden Armor it won; it pops in when shown.
+    /// monkey keeps the Golden Crown it won; it pops in when shown.
     /// </summary>
     public void ShowArmorBadge(bool isShown) {
         if (rig.rootRect == null) {
@@ -452,7 +452,7 @@ public class BossFightHud: MonoBehaviour {
             rig.armorBadge = builder.CreateArmorBadge();
         }
         rig.isArmorShown = isShown;
-        // a golden armor still flying in shows as it lands
+        // a golden crown still flying in shows as it lands
         if (isShown && rig.isArmorGainPending) {
             rig.armorBadge.gameObject.SetActive(false);
             if (rig.armorMark != null) {
@@ -515,7 +515,7 @@ public class BossFightHud: MonoBehaviour {
     }
 
     /// <summary>
-    /// A gold armor sprite flies from <paramref name="fromWorld"/> (the
+    /// A gold crown sprite flies from <paramref name="fromWorld"/> (the
     /// golden watermelon) to the armor mark beside the hearts, as a banana
     /// flies to the energy bar. Call it as the armor is given: it counts as
     /// worn at once, but its mark only shows, w/ a pop, on landing.
@@ -528,7 +528,7 @@ public class BossFightHud: MonoBehaviour {
         rig.isArmorGainPending = true;
         rig.armorGainDeadlineS = Time.unscaledTime + ARMOR_GAIN_MAX_S;
         Sprite sprite = config.ArmorSprite != null
-            ? config.ArmorSprite : BossFightHudBuilder.DrawnShield();
+            ? config.ArmorSprite : BossFightHudBuilder.DrawnCrown();
         FruitFlyEffect.I.Play(fromWorld, FruitFlyTarget.ArmorMark, sprite,
             OnArmorGainLanded, UIStyle.Gold);
     }
