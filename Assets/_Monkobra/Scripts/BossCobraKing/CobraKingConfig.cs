@@ -388,6 +388,27 @@ public class CobraKingConfig: ScriptableObject {
     /// king's own crown</returns>
     public float ArmorCrownScale => armorCrownScale;
 
+    /// <returns>how many harmless strikes the king makes round the monkey
+    /// during the intro cut scene</returns>
+    public int IntroFeintCount => introFeintCount;
+
+    /// <returns>time into the intro the first feint starts; s</returns>
+    public float IntroFeintStartS => introFeintStartS;
+
+    /// <returns>time b/t the starts of two intro feints; s</returns>
+    public float IntroFeintGapS => introFeintGapS;
+
+    /// <returns>how long the king rears b4 an intro feint dives; s</returns>
+    public float IntroFeintWindUpS => introFeintWindUpS;
+
+    /// <returns>how far to the side of the monkey an intro feint dives; u
+    /// </returns>
+    public float IntroFeintMissU => introFeintMissU;
+
+    /// <returns>how far above the monkey's height an intro feint dives; u
+    /// </returns>
+    public float IntroFeintLiftU => introFeintLiftU;
+
     /// <returns>win reward: the armor pieces swirl in onto the monkey
     /// & pulse for this long; s</returns>
     public float ArmorRewardS => armorRewardS;
@@ -829,6 +850,38 @@ public class CobraKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("patch width round the trunk, the climb's own; deg")]
     private Vector2 roughBarkArcRangeDeg = new Vector2(110f, 170f);
+
+    [Header("Intro Cut Scene")]
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("harmless strikes the king makes round the monkey while the "
+        + "intro cut scene plays, to the left then the right")]
+    private int introFeintCount = 2;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip("time into the intro the first feint starts; s")]
+    private float introFeintStartS = 0.8f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    [Tooltip("time b/t the starts of two intro feints; s")]
+    private float introFeintGapS = 1.2f;
+
+    [SerializeField]
+    [Min(0.05f)]
+    [Tooltip("how long the king rears b4 an intro feint dives; s")]
+    private float introFeintWindUpS = 0.45f;
+
+    [SerializeField]
+    [Min(0.5f)]
+    [Tooltip("how far to the side of the monkey an intro feint dives, so it "
+        + "never touches; u")]
+    private float introFeintMissU = 2.5f;
+
+    [SerializeField]
+    [Tooltip("how far above the monkey's height an intro feint dives; u")]
+    private float introFeintLiftU = 0.5f;
 
     [Header("Golden Banana")]
     [SerializeField]

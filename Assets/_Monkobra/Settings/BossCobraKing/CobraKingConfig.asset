@@ -115,6 +115,12 @@ MonoBehaviour:
   armorOutU: 0.45
   armorHelmetU: 0.95
   armorCrownScale: 0.8
+  introFeintCount: 2
+  introFeintStartS: 0.8
+  introFeintGapS: 1.2
+  introFeintWindUpS: 0.45
+  introFeintMissU: 2.5
+  introFeintLiftU: 0.5
   armorRewardS: 1.6
   armorRewardRadiusU: 3
   finisherTimeScale: 0.2

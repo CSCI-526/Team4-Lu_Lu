@@ -428,6 +428,7 @@ public class CobraKingFightController: MonoBehaviour {
         armor = new CobraKingArmor(rig);
         throws = new CobraKingThrows(rig);
         attacks = new CobraKingAttacks(rig);
+        kingIntro = new CobraKingIntro(rig);
         minions = new CobraKingMinions(rig);
         ending = new CobraKingEnding(rig, () => Revived?.Invoke(),
             () => FightEnded?.Invoke());
@@ -638,6 +639,8 @@ public class CobraKingFightController: MonoBehaviour {
 
     // the cut scene that opens the fight, ticked while it plays
     private readonly BossIntroCutScene intro = new BossIntroCutScene();
+    // the king's feints during that scene, its animation hook
+    private CobraKingIntro kingIntro;
 
     // Setup  ------------------------------------------------------------------
     private bool HasReachedTrigger() {
@@ -759,6 +762,8 @@ public class CobraKingFightController: MonoBehaviour {
         }
         // the fight opens on the cut scene, then the boss name; a skipped
         // scene shows the name at once
+        kingIntro.Begin();
+        intro.Playing += kingIntro.Update;
         intro.Begin(
             () => rig.body.HeadPosition, TutorialItem.CobraKingIntro,
             OnIntroEnded
@@ -769,6 +774,7 @@ public class CobraKingFightController: MonoBehaviour {
     // health & hearts; the attack loop starts on its own the frame after
     // (CobraKingAttacks.UpdateFightLoop), w/o a hit
     private void OnIntroEnded() {
+        intro.Playing -= kingIntro.Update;
         rig.hud.Show(config.BossName);
         rig.hud.SetHealth(rig.health, rig.maxHealth);
         MonkeyHearts.Begin(rig.HeartsNow);
