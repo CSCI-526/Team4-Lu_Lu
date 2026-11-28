@@ -1,10 +1,8 @@
 # Monkobra CHANGELOG
 
 <!--
-FIXME erik mpv tutorial for boss fight
-FIXME erik b/t boss fight, better randomization
-
 bug make leaderboard works
+fixme mpv ramping during normal gameplay
 todo lighting improvement
 todo vertical version adaptation
 todo chinese version
