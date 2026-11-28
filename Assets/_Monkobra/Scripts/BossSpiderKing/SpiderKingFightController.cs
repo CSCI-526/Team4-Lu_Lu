@@ -175,6 +175,7 @@ public class SpiderKingFightController: MonoBehaviour {
         }
         int index = rig.melons.FindIndex(m => m.trigger == fruit);
         if (index >= 0) {
+            tips.NotifyMelonGrabbed();
             rig.melons[index].backTime = Time.time + config.MelonRespawnS;
         }
         StaminaBarController stamina = StaminaBarController.I;
@@ -208,6 +209,8 @@ public class SpiderKingFightController: MonoBehaviour {
     private SpiderKingFeedback feedback;
     // the spider's entry during the intro cut scene, its animation hook
     private SpiderKingIntro kingIntro;
+    // the fight's tutorial popups w/ key icons
+    private SpiderKingTips tips;
 
     private void Awake() {
         // Inspector Assignment Guard  -----------------------------------------
@@ -235,6 +238,7 @@ public class SpiderKingFightController: MonoBehaviour {
             () => FightEnded?.Invoke());
         feedback = new SpiderKingFeedback(rig);
         kingIntro = new SpiderKingIntro(rig);
+        tips = new SpiderKingTips(rig);
         rig.Arena = arena;
         rig.Melons = melons;
         rig.Movement = movement;
@@ -374,6 +378,7 @@ public class SpiderKingFightController: MonoBehaviour {
             return;
         }
         if (rig.phase == SpiderKingPhase.Rewarding) {
+            tips.Update(false);
             ending.UpdateRewardPause(game);
             return;
         }
@@ -382,6 +387,7 @@ public class SpiderKingFightController: MonoBehaviour {
             intro.Tick();
             return;
         }
+        tips.Update(rig.phase == SpiderKingPhase.Fighting);
         rig.hud.SpeechAnchor = rig.body.HeadPosition;
         feedback.UpdateCamera();
         parry.UpdateSparks();

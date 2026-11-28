@@ -21,4 +21,8 @@ public enum PopUpId {
     BossArmorIntro,
     BossGoldenWatermelon,
     GoldenWatermelonFirst,
+    SpiderTipParry,
+    SpiderTipMelon,
+    SpiderTipDash,
+    SpiderTipWebEscape,
 }
