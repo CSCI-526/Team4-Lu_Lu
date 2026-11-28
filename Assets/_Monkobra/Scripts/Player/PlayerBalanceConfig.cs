@@ -64,6 +64,10 @@ public class PlayerBalanceConfig: ScriptableObject {
     /// u</returns>
     public float FruitPopUpDetectRadiusU => fruitPopUpDetectRadiusU;
 
+    /// <returns>the golden watermelon's popup shows only while the monkey is
+    /// this close to the melon; u</returns>
+    public float GoldenMelonPopUpRadiusU => goldenMelonPopUpRadiusU;
+
     // Inspector Fields  #######################################################
     [Header("Stamina")]
     [SerializeField]
@@ -152,6 +156,14 @@ public class PlayerBalanceConfig: ScriptableObject {
             + "first-grab popup, whatever side of the tree it hangs on; u"
     )]
     private float fruitPopUpDetectRadiusU = 25f;
+
+    [SerializeField]
+    [Min(0f)]
+    [Tooltip(
+        "the golden watermelon's popup shows only while the monkey is this "
+            + "close to the melon; u"
+    )]
+    private float goldenMelonPopUpRadiusU = 12f;
 
     // Editor Validation  ######################################################
     private void OnValidate() {

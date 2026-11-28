@@ -267,10 +267,10 @@ MonoBehaviour:
     touchHintController: {fileID: 0}
   - id: 14
     kind: 0
-    message: "You get a Golden Armor!\nBlocks 1 fatal hit"
+    message: "You get a Golden Crown!\nBlocks 1 fatal hit"
     touchMessage: 
     fontSize: 48
-    textColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+    textColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
     showS: 0
     fadeInS: 0.15
     fadeOutS: 0.5
@@ -285,10 +285,10 @@ MonoBehaviour:
     touchHintController: {fileID: 0}
   - id: 15
     kind: 0
-    message: "Golden watermelon!\nGrab it for a Golden Armor"
+    message: "Golden watermelon!\nGrab it for a Golden Crown"
     touchMessage: 
     fontSize: 48
-    textColor: {r: 1, g: 0.82, b: 0.15, a: 1}
+    textColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
     showS: 3
     fadeInS: 0.15
     fadeOutS: 0.5
@@ -303,10 +303,10 @@ MonoBehaviour:
     touchHintController: {fileID: 0}
   - id: 16
     kind: 1
-    message: Golden watermelon! Hold
-    touchMessage: Golden watermelon! Touch and hold
-    fontSize: 30
-    textColor: {r: 1, g: 0.9490196, b: 0.8235294, a: 1}
+    message: Golden watermelon! Grab it for a golden crown
+    touchMessage:
+    fontSize: 26
+    textColor: {r: 0.9372549, g: 0.7137255, b: 0.3019608, a: 1}
     showS: 0
     fadeInS: 0.15
     fadeOutS: 0.5
@@ -316,6 +316,6 @@ MonoBehaviour:
     isOncePerScene: 0
     anchorY: 0.5
     offsetY: 80
-    icon: {fileID: 21300000, guid: c4a91e7b3d2f4860a15b9e0d7c3f2a84, type: 3}
-    keyboardHintController: {fileID: 9100000, guid: a3f1c2d4e5b64718a9c0d1e2f3a4b5c6, type: 2}
-    touchHintController: {fileID: 9100000, guid: b4e2d3c5f6a74829bad1e2f3a4b5c6d7, type: 2}
+    icon: {fileID: 0}
+    keyboardHintController: {fileID: 0}
+    touchHintController: {fileID: 0}
