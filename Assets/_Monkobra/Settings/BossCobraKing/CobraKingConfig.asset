@@ -127,6 +127,12 @@ MonoBehaviour:
   goldenColor: {r: 1, g: 0.82, b: 0.15, a: 1}
   warningColor: {r: 1, g: 0.15, b: 0.15, a: 1}
   warningDimColor: {r: 0.45, g: 0.05, b: 0.05, a: 1}
+  stripHeavyMaterial: {fileID: 2100000, guid: 5170d7e776634416a7b1e1bada63c249, type: 2}
+  stripThinMaterial: {fileID: 2100000, guid: e6ac44386ff5459994771c33a2cd8024, type: 2}
+  arrowHeavyMaterial: {fileID: 2100000, guid: 90893d0f9e204ed18981afe03743d006, type: 2}
+  arrowThinMaterial: {fileID: 2100000, guid: db346edbebd1456bba5fc865369bf4ed, type: 2}
+  indicatorAlpha: 1
+  indicatorTintStrength: 0.5
   minionColor: {r: 0.45, g: 0.8, b: 0.45, a: 1}
   tailColor: {r: 0.72, g: 0.56, b: 0.95, a: 1}
   approachLine: Stay away from me!

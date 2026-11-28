@@ -668,17 +668,19 @@ public sealed class CobraKingArena {
             new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
         Quaternion facing = Quaternion.FromToRotation(Vector3.up, outward);
 
-        GameObject rim = rig.Feedback.CreatePrimitive(
+        GameObject rim = rig.Feedback.CreateIndicator(
             PrimitiveType.Cylinder, "ZoneRim",
-            new Vector3(size, 0.02f, size), config.WarningDimColor
+            new Vector3(size, 0.02f, size), config.WarningDimColor,
+            config.StripThinMaterial, DangerIndicatorPlane.Disc, 1f
         );
         rim.transform.position =
             rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.04f);
         rim.transform.rotation = facing;
 
-        GameObject fill = rig.Feedback.CreatePrimitive(
+        GameObject fill = rig.Feedback.CreateIndicator(
             PrimitiveType.Cylinder, "ZoneFill",
-            new Vector3(0.01f, 0.03f, 0.01f), config.WarningColor
+            new Vector3(0.01f, 0.03f, 0.01f), config.WarningColor,
+            config.StripHeavyMaterial, DangerIndicatorPlane.Disc, 1f
         );
         fill.transform.position =
             rig.PointOnTrunk(angle, y, config.TrunkRadiusU + 0.07f);
@@ -711,9 +713,11 @@ public sealed class CobraKingArena {
             new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
         Quaternion facing = Quaternion.LookRotation(outward, Vector3.up);
 
-        GameObject rim = rig.Feedback.CreatePrimitive(
+        // the minions fall, so the arrows point & run down the trunk
+        GameObject rim = rig.Feedback.CreateIndicator(
             PrimitiveType.Cube, "StripRim",
-            new Vector3(width, length, 0.04f), config.WarningDimColor
+            new Vector3(width, length, 0.04f), config.WarningDimColor,
+            config.ArrowThinMaterial, DangerIndicatorPlane.Line, -1f
         );
         rim.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, topY - length * 0.5f,
@@ -721,9 +725,10 @@ public sealed class CobraKingArena {
             facing
         );
         // the whole line is red from the start, it only beats faster
-        GameObject fill = rig.Feedback.CreatePrimitive(
+        GameObject fill = rig.Feedback.CreateIndicator(
             PrimitiveType.Cube, "StripFill",
-            new Vector3(width * 0.8f, length, 0.06f), config.WarningColor
+            new Vector3(width * 0.8f, length, 0.06f), config.WarningColor,
+            config.ArrowHeavyMaterial, DangerIndicatorPlane.Line, -1f
         );
         fill.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, topY - length * 0.5f,

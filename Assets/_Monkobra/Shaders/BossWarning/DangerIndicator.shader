@@ -8,6 +8,7 @@ Shader "Monkobra/DangerIndicator" {
         _TileSize("Disc and wall: world units per band height. Line: width multiple", Float) = 1
         _BandInset("Gap kept from the band edge (V, 0 to 0.1)", Range(0, 0.1)) = 0.02
         _Scroll("Scroll along U, tiles per second", Float) = 0.5
+        _Direction("Direction along U, 1 or -1 (flips arrows and scroll)", Float) = 1
         _PulseRate("Pulse rate at rest, rad per second", Float) = 5
         _PulseRateMax("Pulse rate at full urgency", Float) = 20
         _PulseDepth("Pulse depth, 0 steady to 1 blinking", Range(0,1)) = 0.35
@@ -36,7 +37,7 @@ Shader "Monkobra/DangerIndicator" {
                 float4 _BaseMap_ST;
                 half4 _BaseColor;
                 half _TintStrength, _PulseDepth, _Glow, _Urgency;
-                float _Band, _PlaneMode, _TileSize, _BandInset, _Scroll;
+                float _Band, _PlaneMode, _TileSize, _BandInset, _Scroll, _Direction;
                 float _PulseRate, _PulseRateMax;
             CBUFFER_END
             struct Attributes {float4 positionOS:POSITION;};
@@ -76,7 +77,7 @@ Shader "Monkobra/DangerIndicator" {
                     u=arc/(2.0*_TileSize);
                     t=(p.y*s.y)/_TileSize+0.5;
                 }
-                u+=frac(_Scroll*_Time.y);
+                u=u*_Direction+frac(_Scroll*_Time.y);
                 float bandLow=0.5*(1.0-_Band);
                 float v=bandLow+_BandInset+(0.5-2.0*_BandInset)*MirrorRepeat(t);
                 half4 tex=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,float2(u,v));

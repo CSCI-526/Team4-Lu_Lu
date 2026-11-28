@@ -158,14 +158,15 @@ public sealed class CobraKingAttacks {
     // Sweep: a red band fills round the trunk at the height, then the tail
     // circles it
     public void StartSweep() {
-        GameObject band = rig.Feedback.CreatePrimitive(
+        GameObject band = rig.Feedback.CreateIndicator(
             PrimitiveType.Cylinder, "SweepBand",
             new Vector3(
                 (config.TrunkRadiusU + 0.08f) * 2f,
                 0.01f,
                 (config.TrunkRadiusU + 0.08f) * 2f
             ),
-            config.WarningColor
+            config.WarningColor,
+            config.StripHeavyMaterial, DangerIndicatorPlane.Wall, 1f
         );
         band.transform.position = new Vector3(
             rig.trunkCenter.x, rig.lockY, rig.trunkCenter.z

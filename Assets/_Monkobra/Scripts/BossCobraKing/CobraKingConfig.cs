@@ -425,6 +425,30 @@ public class CobraKingConfig: ScriptableObject {
     /// <returns>tint of an attack warning at its dimmest</returns>
     public Color WarningDimColor => warningDimColor;
 
+    /// <returns>danger indicator material for a filled area: slanted heavy
+    /// stripes</returns>
+    public Material StripHeavyMaterial => stripHeavyMaterial;
+
+    /// <returns>danger indicator material for an area's outline: slanted thin
+    /// bars</returns>
+    public Material StripThinMaterial => stripThinMaterial;
+
+    /// <returns>danger indicator material for a filled lane: heavy
+    /// chevrons</returns>
+    public Material ArrowHeavyMaterial => arrowHeavyMaterial;
+
+    /// <returns>danger indicator material for a lane's outline: thin
+    /// chevrons</returns>
+    public Material ArrowThinMaterial => arrowThinMaterial;
+
+    /// <returns>global opacity of every danger indicator, times the
+    /// opacity of its own material</returns>
+    public float IndicatorAlpha => indicatorAlpha;
+
+    /// <returns>how far an indicator's tint pulls its texture colour; 0 is
+    /// the pure texture</returns>
+    public float IndicatorTintStrength => indicatorTintStrength;
+
     /// <returns>tint of the minions</returns>
     public Color MinionColor => minionColor;
 
@@ -1002,6 +1026,39 @@ public class CobraKingConfig: ScriptableObject {
     [SerializeField]
     [Tooltip("tint of an attack warning at its dimmest")]
     private Color warningDimColor = new Color(0.45f, 0.05f, 0.05f);
+
+    [Header("Danger Indicator")]
+    [SerializeField]
+    [Tooltip("material of a filled area warning (zone fill, sweep band): "
+        + "BossWarning/DangerStripHeavy")]
+    private Material stripHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of an area's outline (zone rim): "
+        + "BossWarning/DangerStripThin")]
+    private Material stripThinMaterial;
+
+    [SerializeField]
+    [Tooltip("material of a filled lane warning (minion strip fill): "
+        + "BossWarning/DangerArrowHeavy")]
+    private Material arrowHeavyMaterial;
+
+    [SerializeField]
+    [Tooltip("material of a lane's outline (minion strip rim): "
+        + "BossWarning/DangerArrowThin")]
+    private Material arrowThinMaterial;
+
+    [SerializeField]
+    [Tooltip("global opacity of every danger indicator, times the opacity "
+        + "its own material sets")]
+    [Range(0f, 1f)]
+    private float indicatorAlpha = 1f;
+
+    [SerializeField]
+    [Tooltip("how far the warning tint pulls the texture's own colour; 0 is "
+        + "the pure texture, 1 the full tint")]
+    [Range(0f, 1f)]
+    private float indicatorTintStrength = 0.5f;
 
     [SerializeField]
     [Tooltip("tint of the minions")]
