@@ -28,6 +28,7 @@ public sealed class SpiderKingEnding {
         rig.finisherTimeS = 0f;
         rig.Attacks.CancelAttack();
         rig.hud.HideBanner();
+        rig.Teaching.HideLessonToasts();
         rig.hud.ClearCallOut();
         rig.hud.ClearWarnings();
         rig.hud.SetPrompt(false, Vector3.zero);
@@ -96,6 +97,7 @@ public sealed class SpiderKingEnding {
         rig.reviveLeftS = config.ReviveOfferS;
         Time.timeScale = 0f;
         rig.hud.HideBanner();
+        rig.Teaching.HideLessonToasts();
         rig.hud.ShowReviveOffer();
         rig.hud.SetReviveCountdown(Mathf.CeilToInt(rig.reviveLeftS));
     }
@@ -196,6 +198,7 @@ public sealed class SpiderKingEnding {
         // waits meanwhile
         rig.teach = SpiderKingTeachStep.Choose;
         rig.hud.HideBanner();
+        rig.Teaching.HideLessonToasts();
         rig.hud.ShowModeChoice();
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
@@ -319,8 +322,9 @@ public sealed class SpiderKingEnding {
         if (rig.cameraFraming != null) {
             rig.cameraFraming.SetBossFraming(0f, 1f);
         }
-        rig.hud.ShowBannerFor("The cobra is coming!", "Climb!",
-            new Color(0.95f, 0.25f, 0.2f), 2.5f);
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(PopUpId.BossCobraComing);
+        }
         onFightEnded?.Invoke();
         if (Debug.isDebugBuild) {
             Debug.Log(

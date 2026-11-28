@@ -235,6 +235,7 @@ public sealed class SpiderKingParry {
         if (!rig.hasTaughtSlash) {
             rig.hasTaughtSlash = true;
             rig.hud.HideBanner();
+            rig.Teaching.HideLessonToasts();
         }
     }
 
@@ -490,8 +491,7 @@ public sealed class SpiderKingParry {
         rig.frozenShot = shot;
         rig.lastTapTime = -10f;
         // the animated double tap icon teaches the gesture, no words
-        rig.Teaching.Teach("Now!", "", UIStyle.Gold, 0f);
-        rig.hud.ShowDoubleTapHint();
+        rig.Teaching.ShowLessonToast(PopUpId.BossParryNow);
     }
 
     // a hit stop, a gold flash & sparks; the ball turns gold & flies back
@@ -505,6 +505,7 @@ public sealed class SpiderKingParry {
         if (!rig.hasTaughtWeb) {
             rig.hasTaughtWeb = true;
             rig.hud.HideBanner();
+            rig.Teaching.HideLessonToasts();
         }
         // the lesson passed: the fight is on once it breaks out
         if (rig.teach == SpiderKingTeachStep.Parry) {

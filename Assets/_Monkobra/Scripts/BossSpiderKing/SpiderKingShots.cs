@@ -99,8 +99,7 @@ public sealed class SpiderKingShots {
                 rig.isTeachFrozen = true;
                 rig.frozenCrescent = crescent;
                 rig.lastTapTime = -10f;
-                rig.Teaching.Teach("Now!", "", UIStyle.Gold, 0f);
-                rig.hud.ShowDoubleTapHint();
+                rig.Teaching.ShowLessonToast(PopUpId.BossParryNow);
             }
             if (IsHitByCrescent(crescent, lastDistanceU)
                 && Time.time >= rig.saveGraceEndTime) {

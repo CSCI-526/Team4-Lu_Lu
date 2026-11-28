@@ -41,7 +41,7 @@ public sealed class SpiderKingTeaching {
                 bool isSlashFree = !rig.isSlashing
                     && !rig.crescents.Exists(c => !c.isReflected);
                 if (Time.time >= rig.nextAttackTime && isFree && isSlashFree) {
-                    Teach("Bounce it back too!", "", config.WarnColor, 0f);
+                    ShowLessonToast(PopUpId.BossBounceBack);
                     rig.Attacks.StartSlash(true);
                 }
                 return 0f;
@@ -52,6 +52,7 @@ public sealed class SpiderKingTeaching {
                 if (rig.teachTimeS >= waitS) {
                     rig.teach = SpiderKingTeachStep.Done;
                     rig.hud.HideBanner();
+                    HideLessonToasts();
                     rig.nextAttackTime = Time.time + 1.5f;
                 }
                 return 0f;
@@ -77,6 +78,23 @@ public sealed class SpiderKingTeaching {
 
     public void Teach(string title, string line, Color color, float seconds) {
         rig.hud.ShowBannerFor(title, line, color, seconds);
+    }
+
+    // a lesson's words on the common popup plate; time may be frozen, so
+    // the toast holds & its owner hides it, see HideLessonToasts
+    public void ShowLessonToast(PopUpId id) {
+        if (PopUpManager.I != null) {
+            PopUpManager.I.Show(id);
+        }
+    }
+
+    // both lesson toasts; hiding one not showing is harmless
+    public void HideLessonToasts() {
+        if (PopUpManager.I == null) {
+            return;
+        }
+        PopUpManager.I.Hide(PopUpId.BossParryNow);
+        PopUpManager.I.Hide(PopUpId.BossBounceBack);
     }
 
 }
