@@ -187,6 +187,8 @@ public class MessagePopUp: MonoBehaviour {
         rect.anchoredPosition = new Vector2(0f, shown.OffsetY);
         if (iconImage != null) {
             iconImage.sprite = shown.Icon;
+            // a popup w/o a picture shows no icon box
+            iconImage.gameObject.SetActive(shown.Icon != null);
         }
         if (hintSlot != null) {
             hintSlot.SetIcons(
