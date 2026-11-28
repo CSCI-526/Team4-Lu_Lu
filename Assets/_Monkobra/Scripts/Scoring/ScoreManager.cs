@@ -167,6 +167,7 @@ public class ScoreManager: MonoBehaviour {
             spiderKing.FightEnded += OnSpiderKingBeaten;
             spiderKing.SpiderHit += OnSpiderHit;
             spiderKing.Parried += OnTailParried;
+            spiderKing.DashDodged += OnDashDodged;
         }
         isRunEnded = RunController.I != null
             && RunController.I.State == GameState.Lost;
@@ -208,6 +209,7 @@ public class ScoreManager: MonoBehaviour {
             spiderKing.FightEnded -= OnSpiderKingBeaten;
             spiderKing.SpiderHit -= OnSpiderHit;
             spiderKing.Parried -= OnTailParried;
+            spiderKing.DashDodged -= OnDashDodged;
         }
         if (I == this) {
             I = null;
@@ -284,6 +286,10 @@ public class ScoreManager: MonoBehaviour {
 
     private void OnTailParried() {
         QueueBossReward(RewardKind.TailParry);
+    }
+
+    private void OnDashDodged() {
+        QueueBossReward(RewardKind.DashDodge);
     }
 
     private void QueueBossReward(RewardKind kind) {

@@ -36,4 +36,7 @@ public enum RewardKind {
 
     /// <summary>the monkey parried a Spider King tail strike</summary>
     TailParry,
+
+    /// <summary>the monkey dodged a Spider King dash</summary>
+    DashDodge,
 }

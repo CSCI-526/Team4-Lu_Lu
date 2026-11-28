@@ -366,6 +366,8 @@ public static class AnalyticsMarkdownWriter {
                 return "Spider Hit";
             case RewardKind.TailParry:
                 return "Tail Parry";
+            case RewardKind.DashDodge:
+                return "Dash Dodge";
             default:
                 return kind.ToString();
         }

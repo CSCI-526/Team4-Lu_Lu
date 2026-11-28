@@ -53,6 +53,9 @@ public class ScoreConfig: ScriptableObject {
     /// <returns>points parrying a Spider King tail strike adds</returns>
     public int TailParryPoints => tailParryPoints;
 
+    /// <returns>points dodging a Spider King dash adds</returns>
+    public int DashDodgePoints => dashDodgePoints;
+
     // Public Methods  #########################################################
     /// <returns>points one reward of the kind adds</returns>
     public int PointsFor(RewardKind kind) {
@@ -79,6 +82,8 @@ public class ScoreConfig: ScriptableObject {
                 return spiderHitPoints;
             case RewardKind.TailParry:
                 return tailParryPoints;
+            case RewardKind.DashDodge:
+                return dashDodgePoints;
             default:
                 return 0;
         }
@@ -153,6 +158,11 @@ public class ScoreConfig: ScriptableObject {
     [Tooltip("points parrying a Spider King tail strike adds")]
     private int tailParryPoints = 150;
 
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("points dodging a Spider King dash adds")]
+    private int dashDodgePoints = 75;
+
     // Editor Validation  ######################################################
     private void OnValidate() {
         pointsPerMeter = Mathf.Max(0, pointsPerMeter);
@@ -168,5 +178,6 @@ public class ScoreConfig: ScriptableObject {
         crownHitPoints = Mathf.Max(0, crownHitPoints);
         spiderHitPoints = Mathf.Max(0, spiderHitPoints);
         tailParryPoints = Mathf.Max(0, tailParryPoints);
+        dashDodgePoints = Mathf.Max(0, dashDodgePoints);
     }
 }

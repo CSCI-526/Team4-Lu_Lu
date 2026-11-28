@@ -322,6 +322,8 @@ public sealed class SpiderKingRig {
     public System.Action onSlashCharge;
     public System.Action onDashWarn;
     public System.Action onParried;
+    // a dash ended on its own w/o a hit
+    public System.Action onDashDodged;
     public SpiderKingShot volleyCharge;
     // a volley's next bullet, charging
     public float callOutEndTime;

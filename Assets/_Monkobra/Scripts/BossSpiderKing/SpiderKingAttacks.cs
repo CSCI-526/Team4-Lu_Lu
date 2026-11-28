@@ -346,6 +346,10 @@ public sealed class SpiderKingAttacks {
             return 1f;
         }
         rig.isDashing = false;
+        // the dash ran its lane w/o catching the monkey
+        if (!rig.hasDashHit) {
+            rig.onDashDodged?.Invoke();
+        }
         rig.body.SetSwipe(0f);
         ClearDashLane();
         rig.nextDashTime =
