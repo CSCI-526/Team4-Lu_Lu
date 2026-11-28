@@ -25,7 +25,13 @@ public class SpiderKingConfig: ScriptableObject {
     /// <returns>the climb's banana branch: bears the arena melons</returns>
     public GameObject BananaBranchPrefab => bananaBranchPrefab;
 
-    /// <returns>the melon model swapped onto the banana</returns>
+    /// <returns>the watermelon branch prefab, a variant of the banana
+    /// branch, bearing the arena melons; built by
+    /// <c>Monkobra > Build > Watermelon Prefab</c></returns>
+    public GameObject WatermelonBranchPrefab => watermelonBranchPrefab;
+
+    /// <returns>the melon model, an input of the watermelon prefab
+    /// builder</returns>
     public Mesh WatermelonMesh => watermelonMesh;
 
     /// <returns>local scale of the melon model on the banana's mesh
@@ -392,7 +398,13 @@ public class SpiderKingConfig: ScriptableObject {
     private GameObject bananaBranchPrefab;
 
     [SerializeField]
-    [Tooltip("the melon model swapped onto the banana")]
+    [Tooltip("the watermelon branch prefab, a variant of the banana branch, "
+        + "bearing the arena melons; from Monkobra > Build > Watermelon "
+        + "Prefab")]
+    private GameObject watermelonBranchPrefab;
+
+    [SerializeField]
+    [Tooltip("the melon model, an input of the watermelon prefab builder")]
     private Mesh watermelonMesh;
 
     [SerializeField]

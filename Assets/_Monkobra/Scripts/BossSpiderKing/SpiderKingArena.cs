@@ -230,11 +230,13 @@ public sealed class SpiderKingArena {
         rig.stickyWebs.RemoveAll(w => w.web == null);
     }
 
-    // the climb's banana branch, its banana swapped for a melon model; the
-    // collider & scripts stay, so the grab works as on any fruit
+    // the watermelon branch prefab, a banana branch variant wearing the Melon
+    // outline; its collider & scripts are the banana's, so the grab works as
+    // on any fruit
     public SpiderKingMelon AddMelon(float angle, float y) {
-        GameObject branch =
-            UnityEngine.Object.Instantiate(config.BananaBranchPrefab, rig.host);
+        GameObject branch = UnityEngine.Object.Instantiate(
+            config.WatermelonBranchPrefab, rig.host
+        );
         branch.transform.SetPositionAndRotation(
             rig.PointOnTrunk(angle, y + BANANA_HANG_U, config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
@@ -242,24 +244,10 @@ public sealed class SpiderKingArena {
         BranchController controller = branch.GetComponent<BranchController>();
         if (controller != null) {
             controller.Setup();
-            // the banana branch prefab bears a banana
+            // the watermelon branch prefab bears a melon
         }
         ScorePickup pickup = branch.GetComponentInChildren<ScorePickup>(true);
         GameObject fruit = pickup != null ? pickup.gameObject : branch;
-        if (config.WatermelonMesh != null) {
-            foreach (MeshFilter filter in
-                fruit.GetComponentsInChildren<MeshFilter>(true)) {
-                filter.sharedMesh = config.WatermelonMesh;
-                filter.transform.localRotation = Quaternion.identity;
-                filter.transform.localScale = config.WatermelonScale;
-                filter.transform.localPosition = config.WatermelonOffset;
-            }
-        }
-        // the branch's banana outline becomes the melon's own hue
-        foreach (FruitOutlineListener listener in
-            branch.GetComponentsInChildren<FruitOutlineListener>(true)) {
-            listener.SetKind(FruitKind.Melon);
-        }
         Collider trigger = fruit.GetComponent<Collider>();
         if (trigger == null) {
             trigger = fruit.GetComponentInChildren<Collider>(true);
