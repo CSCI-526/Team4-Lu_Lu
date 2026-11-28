@@ -184,10 +184,10 @@ The rule: a **fill** takes the heavy texture, a **rim, aim line or sign** takes 
 
 One manager, `TutorialSkipManager`, answers for every tutorial pop up and cut scene whether it skips. It is a component on the across-scene `GameController` (`Prefabs/GameController/GameController.prefab`), so every scene has it, the title included. Each item has a key in `TutorialItem` and uses only these two calls:
 
-- `ShouldSkip(TutorialItem)`: true if the dev checkbox is on, or the item was already seen this session and its entry in `TutorialSkipConfig` (`Settings/TutorialSkip/TutorialSkipConfig.asset`) skips it once seen; a release build never honours the checkbox
-- `MarkSeen(TutorialItem)`: the item calls it once it has shown or been completed
+- `ShouldSkip(TutorialItem)`: true if the dev checkbox is on, or the item was already shown this session as often as its entry in `TutorialSkipConfig` (`Settings/TutorialSkip/TutorialSkipConfig.asset`) allows: its `showLimit` when above 0, else once if it skips once seen; a release build never honours the checkbox
+- `MarkSeen(TutorialItem)`: the item calls it once per show or completion; each call counts one show
 
-The scope is once per session, with nothing saved: an item shows on the first run of a launch and skips on every later run and scene load until the game is closed. The session set lives on the persistent `GameController`, so it survives a restart. To make one item show every run again, untick its entry in `TutorialSkipConfig`; no recompile.
+The scope is per session, with nothing saved: an item shows on the first run of a launch and skips on every later run and scene load until the game is closed; an item with a `showLimit` shows that many times first. The 6 boss attack signs (`AttackBite`, `AttackTail`, `AttackMinions`, `AttackWebShot`, `AttackDash`, `AttackSlash`) are the items with limit 3: `BossFightHud.AddAttackWarning` asks the manager, counts the show, and draws the one standard sign with the word from `BossFightHudConfig`. The counts live on the persistent `GameController`, so they survive a restart. To make one item show every run again, untick its entry in `TutorialSkipConfig` and set its `showLimit` to 0; no recompile.
 
 The dev checkbox is `isSkippingTutorialsAndCutscenes` on the manager, off by default and honoured only when `Debug.isDebugBuild` (the Editor or a development build): open `Prefabs/GameController/GameController.prefab` and tick it to skip every item at once. The box lives in a committed prefab, so untick it before a commit, or every teammate's Editor skips.
 
