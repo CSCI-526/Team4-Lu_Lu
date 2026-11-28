@@ -39,3 +39,21 @@ MonoBehaviour:
     isSkippedOnceSeen: 1
   - item: 12
     isSkippedOnceSeen: 1
+  - item: 13
+    isSkippedOnceSeen: 1
+    showLimit: 3
+  - item: 14
+    isSkippedOnceSeen: 1
+    showLimit: 3
+  - item: 15
+    isSkippedOnceSeen: 1
+    showLimit: 3
+  - item: 16
+    isSkippedOnceSeen: 1
+    showLimit: 3
+  - item: 17
+    isSkippedOnceSeen: 1
+    showLimit: 3
+  - item: 18
+    isSkippedOnceSeen: 1
+    showLimit: 3

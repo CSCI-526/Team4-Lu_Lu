@@ -23,21 +23,26 @@ public class TutorialSkipManager: MonoBehaviour {
 
     /// <param name="item">the tutorial or cut scene asking</param>
     /// <returns>if the item is skipped now, ie the dev switch is on, or it was
-    /// seen this session and the config skips it once seen</returns>
+    /// shown this session as many times as the config allows</returns>
     public bool ShouldSkip(TutorialItem item) {
         if (Debug.isDebugBuild && isSkippingTutorialsAndCutscenes) {
             return true;
         }
-        return seen.Contains(item)
-            && (config == null || config.IsSkippedOnceSeen(item));
+        if (!showCounts.TryGetValue(item, out int shown)) {
+            return false;
+        }
+        int limit = config != null ? config.GetShowLimit(item) : 1;
+        return shown >= limit;
     }
 
     /// <summary>
-    /// the item calls it once it has shown or been completed
+    /// the item calls it once per show or completion; each call counts one
+    /// show toward its limit
     /// </summary>
     /// <param name="item">the tutorial or cut scene that was seen</param>
     public void MarkSeen(TutorialItem item) {
-        seen.Add(item);
+        showCounts.TryGetValue(item, out int shown);
+        showCounts[item] = shown + 1;
     }
 
     // Inspector Fields  #######################################################
@@ -48,7 +53,8 @@ public class TutorialSkipManager: MonoBehaviour {
     private bool isSkippingTutorialsAndCutscenes;
 
     [SerializeField]
-    [Tooltip("whether each item skips once seen; none skips every seen item")]
+    [Tooltip("how often each item shows before it skips; none skips each "
+        + "item after its first show")]
     private TutorialSkipConfig config;
 
     // MonoBehaviour Lifecycle  ################################################
@@ -75,6 +81,7 @@ public class TutorialSkipManager: MonoBehaviour {
     }
 
     // private members  ########################################################
-    // items seen since launch; lives w/ this object, so only a close clears it
-    private readonly HashSet<TutorialItem> seen = new();
+    // times each item showed since launch; lives w/ this object, so only a
+    // close clears it
+    private readonly Dictionary<TutorialItem, int> showCounts = new();
 }

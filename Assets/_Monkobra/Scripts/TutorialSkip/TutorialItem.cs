@@ -15,5 +15,11 @@ public enum TutorialItem {
     SpiderWebIntro,
     CobraKingLesson,
     SpiderKingLesson,
-    ArmorWords
+    ArmorWords,
+    AttackBite,
+    AttackTail,
+    AttackMinions,
+    AttackWebShot,
+    AttackDash,
+    AttackSlash
 }
