@@ -163,8 +163,8 @@ public sealed class SpiderKingEnding {
         }
     }
 
-    // after the ad the fight starts over at full health; a spent armor
-    // stays spent
+    // after the ad the fight starts over at full health, on the same Loop;
+    // a spent armor stays spent
     public void RestartFight() {
         rig.hud.HideRevive();
         Time.timeScale = 1f;
@@ -188,18 +188,17 @@ public sealed class SpiderKingEnding {
         rig.spiderY = rig.startY;
         rig.Movement.ResetSpiderState();
         rig.teachTimeS = 0f;
-        // as in the Cobra King's arena: two melons, a plain EASY & a golden
-        // NORMAL; the first grabbed picks, & the fight waits till then
-        rig.ResetLoop();
+        // the Loop stays: the new try plays the Loop the fight began on, w/
+        // no difficulty card
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
+        rig.lastStage = 0;
         MonkeyHearts.Begin(rig.HeartsNow);
-        // a plain difficulty card, time stopped till a pick; the spider
-        // waits meanwhile
-        rig.teach = SpiderKingTeachStep.Choose;
+        // the parry lesson again only if it was never passed
+        rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Done
+            : SpiderKingTeachStep.Parry;
         rig.hud.HideBanner();
         rig.Teaching.HideLessonToasts();
-        rig.hud.ShowModeChoice();
         StaminaBarController stamina = StaminaBarController.I;
         if (stamina != null) {
             stamina.AddStamina(stamina.MaxStamina);
@@ -309,7 +308,6 @@ public sealed class SpiderKingEnding {
         Time.timeScale = 1f;
         rig.phase = SpiderKingPhase.Done;
         rig.Arena.ClearMelons();
-        rig.Arena.ClearChoices();
         rig.Arena.ClearSkyWeb();
         rig.Arena.EndBareArena();
         if (rig.greatCobra != null) {

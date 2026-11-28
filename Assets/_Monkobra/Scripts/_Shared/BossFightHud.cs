@@ -95,43 +95,6 @@ public class BossFightHud: MonoBehaviour {
     }
 
     /// <summary>
-    /// Raised when a difficulty is picked on the choice card: true for EASY,
-    /// false for NORMAL.
-    /// </summary>
-    public event System.Action<bool> ModeChosen;
-
-    /// <returns>if the difficulty choice card is up</returns>
-    public bool IsChoosingMode => rig.modePanel != null
-        && rig.modePanel.activeSelf;
-
-    /// <summary>
-    /// Shows the difficulty choice after a revive over a dimmed screen: a
-    /// short title & two big buttons, EASY & NORMAL, NORMAL picked first;
-    /// A / D (or the arrows) move the pick, Space (or Enter) takes it, a tap
-    /// or click takes a button at once. <see cref="ModeChosen"/> tells which.
-    /// </summary>
-    public void ShowModeChoice() {
-        if (!builder.TryBuild()) {
-            return;
-        }
-        if (rig.modePanel == null) {
-            rig.modePanel = builder.CreateModeChoice(PickMode);
-        }
-        rig.modePanel.SetActive(true);
-        rig.isModeEasy = false;
-        rig.modeAgeS = 0f;
-        rig.isModeMoveHeld = true;
-        ShowModePick();
-    }
-
-    /// <summary>Hides the difficulty choice.</summary>
-    public void HideModeChoice() {
-        if (rig.modePanel != null) {
-            rig.modePanel.SetActive(false);
-        }
-    }
-
-    /// <summary>
     /// Builds the UI w/o the name & health bar, eg for a fight skipped as
     /// beaten, so its armor badge, loss numbers & flash still show.
     /// </summary>
@@ -679,29 +642,6 @@ public class BossFightHud: MonoBehaviour {
     }
 
     /// <summary>
-    /// Shows EASY & NORMAL tags over the two mode-choice bananas at
-    /// <paramref name="easyWorld"/> & <paramref name="normalWorld"/>, or
-    /// hides them.
-    /// </summary>
-    public void SetChoiceTags(
-        bool isShown, Vector3 easyWorld, Vector3 normalWorld
-    ) {
-        if (rig.rootRect == null) {
-            return;
-        }
-        if (rig.easyTag == null) {
-            rig.easyTag = builder.CreateTag("EasyTag", "EASY",
-                new Color(0.55f, 0.95f, 0.55f));
-            rig.normalTag =
-                builder.CreateTag("NormalTag", "NORMAL", UIStyle.Gold);
-        }
-        rig.easyTag.gameObject.SetActive(isShown);
-        rig.normalTag.gameObject.SetActive(isShown);
-        rig.easyTagWorld = easyWorld;
-        rig.normalTagWorld = normalWorld;
-    }
-
-    /// <summary>
     /// Shows the revive offer: a card asking to watch an ad, with a
     /// countdown and Watch Ad / Give Up buttons.
     /// </summary>
@@ -899,10 +839,6 @@ public class BossFightHud: MonoBehaviour {
                 motion.PlaceSpeech();
             }
         }
-        if (rig.easyTag != null && rig.easyTag.gameObject.activeSelf) {
-            motion.Place(rig.easyTag, rig.easyTagWorld, rig.tagOffset);
-            motion.Place(rig.normalTag, rig.normalTagWorld, rig.tagOffset);
-        }
         motion.UpdatePops();
         motion.UpdateLossFlights();
         motion.UpdateDamageFlights();
@@ -913,63 +849,6 @@ public class BossFightHud: MonoBehaviour {
         motion.UpdateNameIntro();
         UpdateHeart();
         UpdateMonkeyHearts();
-        UpdateModeChoice();
-    }
-
-    // the choice card reads the UI map the event system reads: Navigate
-    // moves the pick, Submit takes it; time stands still, so unscaled
-    private void UpdateModeChoice() {
-        if (!IsChoosingMode) {
-            return;
-        }
-        rig.modeAgeS += Time.unscaledDeltaTime;
-        ShowModePick();
-        RunController game = RunController.I;
-        if (game != null && game.IsPaused) {
-            return;
-        }
-        InputSystemUIInputModule module = EventSystem.current != null
-            ? EventSystem.current.currentInputModule as InputSystemUIInputModule
-            : null;
-        InputAction move = module != null && module.move != null
-            ? module.move.action : null;
-        InputAction submit = module != null && module.submit != null
-            ? module.submit.action : null;
-        float x = move != null ? move.ReadValue<Vector2>().x : 0f;
-        // a press held from b4 the card (eg moving) only counts once let go
-        if (Mathf.Abs(x) < 0.5f) {
-            rig.isModeMoveHeld = false;
-        } else if (!rig.isModeMoveHeld) {
-            rig.isModeMoveHeld = true;
-            rig.isModeEasy = x < 0f;
-        }
-        if (rig.modeAgeS >= MODE_READY_S && submit != null
-            && submit.WasPressedThisFrame()) {
-            PickMode(rig.isModeEasy);
-        }
-    }
-
-    // the picked choice grows a little inside its cream ring
-    private void ShowModePick() {
-        if (rig.easyRing == null) {
-            return;
-        }
-        rig.easyRing.gameObject.SetActive(rig.isModeEasy);
-        rig.normalRing.gameObject.SetActive(!rig.isModeEasy);
-        float beat = 1f + 0.03f * Mathf.Sin(Time.unscaledTime * 5f);
-        Vector3 picked = Vector3.one * 1.08f * beat;
-        rig.easyButton.localScale = rig.isModeEasy ? picked : Vector3.one;
-        rig.normalButton.localScale = rig.isModeEasy ? Vector3.one : picked;
-        rig.easyRing.localScale = rig.easyButton.localScale;
-        rig.normalRing.localScale = rig.normalButton.localScale;
-    }
-
-    private void PickMode(bool isEasy) {
-        if (!IsChoosingMode) {
-            return;
-        }
-        HideModeChoice();
-        ModeChosen?.Invoke(isEasy);
     }
 
     /// <summary>Takes the docked call out away.</summary>

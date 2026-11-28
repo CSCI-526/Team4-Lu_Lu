@@ -218,45 +218,6 @@ public sealed class CobraKingArena {
         }
     }
 
-    // two banana branches beside the monkey, plain & golden: the first throw
-    // picks easy or normal mode
-    public void SpawnChoices() {
-        float angle = rig.AngleOf(rig.entryPosition);
-        float y = rig.entryPosition.y + config.ChoiceAboveU;
-        AddFruit(angle - config.ChoiceSideDeg, y, false);
-        AddFruit(angle + config.ChoiceSideDeg, y, true);
-        rig.choices.Add(rig.fruits[rig.fruits.Count - 2]);
-        rig.choices.Add(rig.fruits[rig.fruits.Count - 1]);
-        rig.fruits.RemoveRange(rig.fruits.Count - 2, 2);
-        rig.isChoosing = true;
-    }
-
-    public void ChooseMode(bool isEasyPick) {
-        rig.isChoosing = false;
-        rig.bossLoop = isEasyPick ? 0 : rig.NormalLoop;
-        rig.maxHealth = rig.BaseMaxHealth;
-        rig.health = rig.maxHealth;
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        foreach (CobraKingArenaFruit choice in rig.choices) {
-            RemoveBranch(choice.branch);
-        }
-        rig.choices.Clear();
-        rig.hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
-        SpawnFruits();
-        rig.hud.PopText(
-            rig.isEasy ? "Easy mode" : "Normal mode",
-            rig.monkey.position,
-            rig.isEasy ? new Color(0.55f, 0.95f, 0.55f) : config.GoldenColor
-        );
-        if (Debug.isDebugBuild) {
-            Debug.Log(
-                "CobraKingFightController:\t" + (rig.isEasy ? "easy" : "normal")
-                    + " mode, king health " + rig.maxHealth,
-                rig.owner
-            );
-        }
-    }
-
     // the monkey's fruit sensor never sees a trigger exit for a fruit that
     // is switched off or destroyed, & a destroyed one would break its reach
     // & grab every physics step, so it is told to forget it first
@@ -285,13 +246,7 @@ public sealed class CobraKingArena {
             RemoveBranch(fruit.branch);
         }
         rig.fruits.Clear();
-        foreach (CobraKingArenaFruit choice in rig.choices) {
-            RemoveBranch(choice.branch);
-        }
-        rig.choices.Clear();
         rig.goldenIndex = -1;
-        rig.isChoosing = false;
-        rig.hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
     }
 
     public void SpawnFruits() {
@@ -603,18 +558,6 @@ public sealed class CobraKingArena {
             rig.PointOnTrunk(angle, fruitY + BANANA_HANG_U,
                 config.BranchRadiusU),
             Quaternion.Euler(0f, 90f - angle, 0f)
-        );
-    }
-
-    // EASY & NORMAL tags over the two choice bananas
-    public void UpdateChoiceTags() {
-        if (!rig.isChoosing || rig.choices.Count < 2) {
-            return;
-        }
-        rig.hud.SetChoiceTags(
-            true,
-            rig.choices[0].root.transform.position,
-            rig.choices[1].root.transform.position
         );
     }
 

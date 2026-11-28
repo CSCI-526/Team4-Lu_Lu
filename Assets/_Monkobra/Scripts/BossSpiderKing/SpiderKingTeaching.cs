@@ -21,10 +21,6 @@ public sealed class SpiderKingTeaching {
     // other attack meanwhile & a lesson never kills (only the guard below)
     public float UpdateTeach() {
         rig.teachTimeS += Time.deltaTime;
-        if (rig.teach == SpiderKingTeachStep.Choose) {
-            rig.Arena.UpdateChoiceTags();
-            return 0f;
-        }
         bool isTrapped = rig.struggle != null && rig.struggle.IsTrapped;
         if (isTrapped) {
             rig.nextAttackTime = Time.time + config.TeachGapS;

@@ -154,8 +154,8 @@ public sealed class CobraKingEnding {
     }
 
     // after the ad the fight starts over: the monkey flies back to where it
-    // began, in the armor, full stamina, a full-health king & the mode
-    // choice again
+    // began, in the armor, full stamina, a full-health king, always at Loop 0
+    // (EASY), w/ no difficulty card
     public void RestartFight() {
         rig.hud.HideRevive();
         Time.timeScale = 1f;
@@ -183,7 +183,8 @@ public sealed class CobraKingEnding {
         rig.hasThrown = false;
         // a new try, so the minion call is heard again
         rig.hasCalledMinions = false;
-        rig.ResetLoop();
+        // a revive restarts at Loop 0, the EASY fight, however far the run got
+        rig.bossLoop = 0;
         rig.maxHealth = rig.BaseMaxHealth;
         rig.health = rig.maxHealth;
         rig.hud.SetHealth(rig.health, rig.maxHealth);
@@ -212,9 +213,11 @@ public sealed class CobraKingEnding {
         }
         rig.Arena.SpawnWebs(config.WebCount);
         rig.Arena.SpawnLowWebs();
-        // a plain difficulty card, time stopped till a pick
-        rig.isChoosing = true;
-        rig.hud.ShowModeChoice();
+        // the fight goes straight on: the new try is EASY
+        rig.Arena.SpawnFruits();
+        rig.hud.PopText(
+            "Easy mode", rig.monkey.position, new Color(0.55f, 0.95f, 0.55f)
+        );
         if (Debug.isDebugBuild) {
             Debug.Log(
                 "CobraKingFightController:\trevived after the ad, fight "
@@ -450,7 +453,6 @@ public sealed class CobraKingEnding {
         rig.hasWon = false;
         rig.isFinisherWin = false;
         rig.ResetLoop();
-        rig.isChoosing = false;
         rig.isArenaFruitGone = false;
         rig.arenaBranchSpots.Clear();
         rig.arenaBranchFruits.Clear();

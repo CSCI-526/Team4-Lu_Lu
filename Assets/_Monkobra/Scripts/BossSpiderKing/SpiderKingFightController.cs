@@ -173,16 +173,6 @@ public class SpiderKingFightController: MonoBehaviour {
             SpiderKingDamage.GiveArmor();
             return true;
         }
-        // a choice melon picks the mode, & is thrown too
-        bool isEasyChoice = rig.choiceEasy != null
-            && rig.choiceEasy.trigger == fruit;
-        bool isNormalChoice = rig.choiceNormal != null
-            && rig.choiceNormal.trigger == fruit;
-        if (isEasyChoice || isNormalChoice) {
-            melons.LaunchMelon(fruit.gameObject, from);
-            arena.ChooseMode(isEasyChoice);
-            return true;
-        }
         int index = rig.melons.FindIndex(m => m.trigger == fruit);
         if (index >= 0) {
             rig.melons[index].backTime = Time.time + config.MelonRespawnS;
@@ -295,7 +285,6 @@ public class SpiderKingFightController: MonoBehaviour {
         rig.hud.CoursePageClicked += ending.OpenCoursePage;
         rig.hud.ContinueClicked += ending.ContinueAfterReward;
         rig.hud.SkipAdClicked += ending.SkipAd;
-        rig.hud.ModeChosen += OnModeChosen;
         rig.colorBlock = new MaterialPropertyBlock();
         if (Debug.isDebugBuild) {
             Debug.Log(
@@ -312,17 +301,6 @@ public class SpiderKingFightController: MonoBehaviour {
         if (I == this && HardcoreBossRush.IsOn) {
             rig.rushEncounter = 1;
         }
-    }
-
-    // the revive's difficulty card picked: time runs again & the fight goes
-    // on in that mode
-    private void OnModeChosen(bool isEasy) {
-        if (rig.teach != SpiderKingTeachStep.Choose
-            || rig.phase != SpiderKingPhase.Fighting) {
-            return;
-        }
-        Time.timeScale = 1f;
-        arena.ChooseMode(isEasy);
     }
 
     private void OnDestroy() {
@@ -396,14 +374,6 @@ public class SpiderKingFightController: MonoBehaviour {
             ending.UpdateRewardPause(game);
             return;
         }
-        // the revive's difficulty card holds time still till a pick
-        if (rig.phase == SpiderKingPhase.Fighting
-            && rig.teach == SpiderKingTeachStep.Choose
-            && rig.hud.IsChoosingMode) {
-            Time.timeScale = 0f;
-            return;
-        }
-
         // the intro cut scene holds the fight: the spider waits where it is
         if (intro.IsPlaying) {
             intro.Tick();

@@ -571,69 +571,6 @@ public sealed class SpiderKingArena {
         rig.stickyWebs.Clear();
     }
 
-    // Mode Choice  ------------------------------------------------------------
-    // the two choice melons beside where the fight began; the rest hidden
-    public void SpawnChoices() {
-        ClearChoices();
-        foreach (SpiderKingMelon melon in rig.melons) {
-            if (melon.branch != null) {
-                ForgetFruits(melon.branch);
-                melon.branch.SetActive(false);
-            }
-        }
-        float angle = rig.AngleOf(rig.entryPosition);
-        float y = rig.entryY + config.ChoiceAboveU;
-        rig.choiceEasy = AddMelon(angle - config.ChoiceSideDeg, y);
-        rig.choiceNormal = AddMelon(angle + config.ChoiceSideDeg, y);
-        MakeGolden(rig.choiceNormal.root);
-    }
-
-    public void ClearChoices() {
-        foreach (SpiderKingMelon choice in new[] { rig.choiceEasy,
-            rig.choiceNormal }) {
-            if (choice != null && choice.branch != null) {
-                ForgetFruits(choice.branch);
-                UnityEngine.Object.Destroy(choice.branch);
-            }
-        }
-        rig.choiceEasy = null;
-        rig.choiceNormal = null;
-        rig.hud.SetChoiceTags(false, Vector3.zero, Vector3.zero);
-    }
-
-    public void UpdateChoiceTags() {
-        if (rig.teach != SpiderKingTeachStep.Choose || rig.choiceEasy == null
-            || rig.choiceNormal == null) {
-            return;
-        }
-        rig.hud.SetChoiceTags(true, rig.choiceEasy.root.transform.position,
-            rig.choiceNormal.root.transform.position);
-    }
-
-    // easy: less health, slower & gentler, never past the 2nd stage
-    public void ChooseMode(bool isEasyPick) {
-        rig.bossLoop = isEasyPick ? 0 : rig.NormalLoop;
-        ClearChoices();
-        foreach (SpiderKingMelon melon in rig.melons) {
-            if (melon.branch != null) {
-                melon.branch.SetActive(true);
-                melon.root.SetActive(true);
-                melon.backTime = -1f;
-            }
-        }
-        rig.maxHealth = rig.BaseMaxHealth;
-        rig.health = rig.maxHealth;
-        rig.hud.SetHealth(rig.health, rig.maxHealth);
-        rig.lastStage = 0;
-        // the parry lesson again if it was never passed
-        rig.teach = rig.hasTaughtWeb ? SpiderKingTeachStep.Ready
-            : SpiderKingTeachStep.Parry;
-        rig.teachTimeS = 0f;
-        rig.Teaching.Teach(rig.isEasy ? "EASY" : "NORMAL", "", rig.isEasy
-            ? new Color(0.55f, 0.95f, 0.55f)
-            : UIStyle.Gold, config.ReadyS);
-    }
-
     public static void ForgetFruits(GameObject branch) {
         UpwardFruitSensor sensor = UpwardFruitSensor.I;
         if (sensor == null || branch == null) {

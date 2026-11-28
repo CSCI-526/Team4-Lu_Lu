@@ -132,26 +132,15 @@ public sealed class CobraKingThrows {
 
     // Hint, Fruits, Camera  ---------------------------------------------------
     public void UpdateFirstThrowHint() {
-        // until a mode is picked: the key prompt between the two choices,
-        // the dotted line from there to the crown
-        bool isShown;
-        Vector3 from;
-        if (rig.isChoosing && rig.choices.Count == 2) {
-            isShown = rig.choices[0].root != null
-                && rig.choices[1].root != null;
-            from = isShown
-                ? (rig.choices[0].root.transform.position
-                    + rig.choices[1].root.transform.position) * 0.5f
-                : Vector3.zero;
-        } else {
-            CobraKingArenaFruit first = rig.fruits.Count > 0 ? rig.fruits[0]
-                : default;
-            isShown = !rig.hasHit && first.root != null
-                && first.root.activeSelf;
-            from = first.root != null
-                ? first.root.transform.position
-                : Vector3.zero;
-        }
+        // until the first hit: the key prompt on the first banana, the
+        // dotted line from there to the crown
+        CobraKingArenaFruit first = rig.fruits.Count > 0 ? rig.fruits[0]
+            : default;
+        bool isShown = !rig.hasHit && first.root != null
+            && first.root.activeSelf;
+        Vector3 from = first.root != null
+            ? first.root.transform.position
+            : Vector3.zero;
         // a seen or dev-skipped lesson shows no prompt and no dotted line
         if (TutorialSkipManager.I != null
             && TutorialSkipManager.I.ShouldSkip(TutorialItem.CobraKingLesson)) {

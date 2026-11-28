@@ -192,15 +192,11 @@ public sealed class CobraKingRig {
     public Vector3 entryPosition;
     // monkey's pose when the fight began
     public Quaternion entryRotation;
-    public bool isChoosing;
-    // waiting for the first throw to pick a mode
     public int bossLoop = 1;
     // if this fight plays Loop 0, the EASY fight
     public bool isEasy => bossLoop == 0;
     public int maxHealth;
-    // the king's full health in the chosen mode
-    public readonly List<CobraKingArenaFruit> choices =
-        new List<CobraKingArenaFruit>();
+    // the king's full health in this fight's Loop
     public bool hasWon;
     public bool isFinisherWin;
     public float finisherTimeS;

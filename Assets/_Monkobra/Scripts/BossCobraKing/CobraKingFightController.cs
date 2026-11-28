@@ -322,19 +322,6 @@ public class CobraKingFightController: MonoBehaviour {
             return false;
         }
 
-        // the first throw picks the mode: plain banana easy, golden normal
-        int choice = rig.choices.FindIndex(f => f.trigger == fruit);
-        if (choice >= 0) {
-            bool isEasyPick = !rig.choices[choice].isGolden;
-            StaminaBarController staminaBar = StaminaBarController.I;
-            if (staminaBar != null) {
-                staminaBar.AddStaminaByFruit();
-            }
-            LaunchBanana(fruit.gameObject, from);
-            arena.ChooseMode(isEasyPick);
-            return true;
-        }
-
         int index = rig.fruits.FindIndex(f => f.trigger == fruit);
         if (index >= 0) {
             CobraKingArenaFruit picked = rig.fruits[index];
@@ -494,18 +481,7 @@ public class CobraKingFightController: MonoBehaviour {
         rig.hud.CoursePageClicked += ending.OpenCoursePage;
         rig.hud.ContinueClicked += ending.ContinueAfterReward;
         rig.hud.SkipAdClicked += ending.SkipAd;
-        rig.hud.ModeChosen += OnModeChosen;
         rig.colorBlock = new MaterialPropertyBlock();
-    }
-
-    // the revive's difficulty card picked: time runs again & the fight goes
-    // on in that mode
-    private void OnModeChosen(bool isEasy) {
-        if (!rig.isChoosing || rig.phase != CobraKingPhase.Fighting) {
-            return;
-        }
-        Time.timeScale = 1f;
-        arena.ChooseMode(isEasy);
     }
 
     // the hardcore run starts as Normal Play does, w/o armor: the boss rush's
@@ -581,12 +557,6 @@ public class CobraKingFightController: MonoBehaviour {
         if (!game.IsRunLive || rig.monkey == null) {
             return;
         }
-        // the revive's difficulty card holds time still till a pick
-        if (rig.phase == CobraKingPhase.Fighting && rig.isChoosing
-            && rig.hud.IsChoosingMode) {
-            Time.timeScale = 0f;
-            return;
-        }
         // after a win only the reward armor is left to follow the monkey
         if (rig.phase == CobraKingPhase.Done) {
             armor.UpdateShieldRing();
@@ -623,7 +593,6 @@ public class CobraKingFightController: MonoBehaviour {
             ending.UpdateReturnToStart();
             feedback.UpdatePendingLine();
             attacks.UpdateWarnings();
-            arena.UpdateChoiceTags();
             throws.UpdateFirstThrowHint();
             attacks.UpdateFightLoop();
             minions.UpdateMinionStream();
