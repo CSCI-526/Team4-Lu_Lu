@@ -23,7 +23,7 @@ MonoBehaviour:
   damageColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   warningColor: {r: 0.95, g: 0.15, b: 0.15, a: 1}
   warningOffset: {x: 0, y: 70}
-  warningFont: {fileID: 11400000, guid: 881b71162a7a0724c9db107bfc1d697c, type: 2}
+  warningFont: {fileID: 11400000, guid: c702ba559046c9c4c9ffd7c3041c8a56, type: 2}
   attackWords:
   - item: 13
     word: Bite!
