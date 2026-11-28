@@ -2542,7 +2542,7 @@ PrefabInstance:
       objectReference: {fileID: 2021668610}
     - target: {fileID: 1544209386470739513, guid: c31179dd7d7b4974f9f6cdf16893bf9d, type: 3}
       propertyPath: startOffsetU
-      value: 25
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1544209386470739513, guid: c31179dd7d7b4974f9f6cdf16893bf9d, type: 3}
       propertyPath: worldBalanceConfig

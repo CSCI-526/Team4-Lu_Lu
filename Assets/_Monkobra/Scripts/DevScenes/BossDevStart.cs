@@ -11,8 +11,8 @@ public enum Boss {
 /// marks the tutorials a player would have met on the climb as seen, sets the
 /// Loop the fight plays, and for the Spider King counts the Cobra King as
 /// beaten, and ends the starting zone at once. The scene's own balance asset
-/// puts the boss's location at the monkey's start, so its fight begins on the
-/// first live frame; nothing here moves the monkey.
+/// puts the monkey's start a short approach below the boss's trigger, so its
+/// fight opens after a short climb; nothing here moves the monkey.
 /// Sits only in the dev scenes built by
 /// <c>Monkobra > Build Boss Dev Scenes</c>, never in <c>GameplayScene</c>.
 /// <para>

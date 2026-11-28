@@ -12,8 +12,9 @@ using UnityEngine.SceneManagement;
 /// first meeting with that boss. The monkey never moves: the menu copies
 /// the main <see cref="WorldBalanceConfig"/> into one DEV asset per scene
 /// whose boss under test sits at the lowest location the asset allows, sets
-/// <c>RampedDifficultyManager.startOffsetU</c> to it so the monkey starts on
-/// that location and the fight begins on the first live frame, points every
+/// <c>RampedDifficultyManager.startOffsetU</c> to it less
+/// <see cref="BossDevStartConfig.ApproachU"/> so the monkey starts a short
+/// climb below that location and the fight opens as in play, points every
 /// reference to the main one in the scene at its copy, and moves the ramp
 /// base to the monkey's start so the scene has no starting zone. Run it again
 /// after the main scene or the balance changes: each scene and copy are
@@ -92,8 +93,8 @@ public static class BossDevSceneBuilder {
 
     // makes the scene's DEV balance asset a fresh copy of the main one, then
     // places the kings' groups of heights: the boss under test at the lowest
-    // location the asset allows, where the monkey is made to start (see
-    // MoveRampBaseToStart), so its fight begins at once; the other king
+    // location the asset allows, whose trigger the monkey starts a short
+    // approach below (see MoveRampBaseToStart); the other king
     // stays out of the way, the Spider King's above the Cobra King's, the
     // Cobra King's, if skipped, collapsed to a thin zone at the start; each
     // group keeps its spacing; returns the location of the boss under test, u
@@ -187,9 +188,9 @@ public static class BossDevSceneBuilder {
         var serialized = new SerializedObject(ramp);
         serialized.FindProperty("rampBase").objectReferenceValue =
             go.transform;
-        // the climb baseline moves down by the boss's location, so the
-        // monkey starts on it & the fight trigger is met on the first live
-        // frame; the monkey itself never moves
+        // the climb baseline moves down by the boss's location less the
+        // approach, so the monkey starts that far below the fight trigger;
+        // the monkey itself never moves
         serialized.FindProperty("startOffsetU").floatValue = startOffsetU;
         serialized.ApplyModifiedPropertiesWithoutUndo();
     }
@@ -318,7 +319,16 @@ public static class BossDevSceneBuilder {
         WriteSkipBox(scene, isSkippingTutorials);
 
         float testedLocationU = RefreshWorldCopy(worldCopyPath, boss);
-        MoveRampBaseToStart(testedLocationU);
+        // the monkey starts a short climb below the trigger, so the fight
+        // opens as in play
+        float startOffsetU =
+            Mathf.Max(0f, testedLocationU - config.ApproachU);
+        Debug.Log(
+            $"BossDevSceneBuilder:\t{boss} trigger at {testedLocationU} u, "
+                + $"monkey starts {config.ApproachU} u below it "
+                + $"(startOffsetU {startOffsetU})"
+        );
+        MoveRampBaseToStart(startOffsetU);
         // the scene must have been opened before the copy is loaded for it
         int count = RepointWorldConfig(scene, worldCopyPath);
         if (count == 0) {
